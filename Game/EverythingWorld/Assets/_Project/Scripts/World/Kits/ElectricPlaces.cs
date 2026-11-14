@@ -54,14 +54,15 @@ namespace EverythingWorld.World
         void StrawWay(LandContext ctx, MeshKit mk, Vector2[] way, bool joinNearest = true)
         {
             var full = new List<Vector2>();
-            if (joinNearest) { Vector2 near = way[0]; var bd = 220f * 220f; foreach (var (p, _) in walkPoints) { var d = (p.x - way[0].x) * (p.x - way[0].x) + (p.z - way[0].y) * (p.z - way[0].y); if (d < bd) { bd = d; near = new Vector2(p.x, p.z); } } full.Add(near); }
+            // joins the nearest walkway point that isn't inside an artist's area or the gate's welcome area
+            if (joinNearest) { Vector2 near = way[0]; var bd = 220f * 220f; foreach (var (p, w) in walkPoints) { if (w == 0 || InFootprint(ctx, p.x, p.z, 2f) || new Vector2(p.x - center.x, p.z - center.z).sqrMagnitude < 17f * 17f) continue; var d = (p.x - way[0].x) * (p.x - way[0].x) + (p.z - way[0].y) * (p.z - way[0].y); if (d < bd) { bd = d; near = new Vector2(p.x, p.z); } } full.Add(near); }
             full.AddRange(way);
             var pts = PlaceTools.Smooth(ctx, full, false, 2.5f);
             for (var i = 0; i < pts.Count; i++) { foreach (var a in ctx.Artists) { var r = Foot(a) + 7f; var v = new Vector2(pts[i].x - a.x, pts[i].z - a.z); var d = v.magnitude; if (d < r) { v = d > .01f ? v / d * r : new Vector2(r, 0); pts[i] = ctx.OnGround(a.x + v.x, a.z + v.y); } } foreach (var c in noGrass) { if (c.y < 6f) continue; var r = c.y + 3f; var v = new Vector2(pts[i].x - c.x, pts[i].z - c.z); var d = v.magnitude; if (d < r) { v = d > .01f ? v / d * r : new Vector2(r, 0); pts[i] = ctx.OnGround(c.x + v.x, c.z + v.y); } } }
             if (pts.Count < 2) return;
-            Strip(mk, pts, WorldMaterials.Solid(Trodden), PathW, .05f); foreach (var p in pts) Remember(p, 700);
+            Strip(mk, pts, WorldMaterials.Solid(Trodden), PathW, .05f, ctx); foreach (var p in pts) Remember(p, 700);
             var up = Vector3.up; var n = 0;
-            for (var i = 4; i < pts.Count; i += 9) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (n % 2 == 0 ? 2.3f : -2.3f); LightPole(ctx, mk, ctx.OnGround(lp.x, lp.z), Neon[n % Neon.Length]); n++; }
+            for (var i = 4; i < pts.Count; i += 9) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (n % 2 == 0 ? 2.3f : -2.3f); if (NearPath(lp.x, lp.z, PathW / 2f + .5f) || InFixture(lp.x, lp.z, .4f)) continue; LightPole(ctx, mk, ctx.OnGround(lp.x, lp.z), Neon[n % Neon.Length]); fixtures.Add(new Vector3(lp.x, .3f, lp.z)); n++; }
             wayP.AddRange(pts);
         }
 

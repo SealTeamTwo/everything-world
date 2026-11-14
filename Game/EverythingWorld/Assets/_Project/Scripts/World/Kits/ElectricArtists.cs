@@ -188,6 +188,10 @@ namespace EverythingWorld.World
                 k.Blob(WorldMaterials.Solid(Bunting[i % Bunting.Length]), horse + up * .35f + new Vector3(-Mathf.Sin(a), 0, Mathf.Cos(a)) * .55f, new Vector3(.15f, .22f, .25f), ctx.Rng, .1f);
             }
             k.Build("Carousel", go.transform, false);
+            float lo = at.y, hi = at.y;
+            for (var i = 0; i < 12; i++) { var h = ctx.Ground(at.x + Mathf.Cos(i * Mathf.PI / 6f) * R, at.z + Mathf.Sin(i * Mathf.PI / 6f) * R); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); }
+            at.y = hi;
+            z.mk.Prism(WorldMaterials.Solid(new Color(.75f, .6f, .45f)), new Vector3(at.x, lo - .3f, at.z), up, R + .15f, hi - lo + .32f, 20);   // a wooden skirt under the turning deck
             go.transform.position = at;
             life.carousel = go.transform;
             halos.Add(at + up * 4.6f + (z.c - at).normalized * -1f, 3f, new Color(1f, .8f, .5f), .8f);
@@ -304,7 +308,10 @@ namespace EverythingWorld.World
             life.lcdAt = c;
             z.area.glowLight = lcdLights[0];
             // All My Friends: a ring of camp chairs and a cooler on the grass outside
+            // on whichever side of the way in is clear of every walkway (a lane used to run through the ring)
             var ringC = z.At(R + 6f, R * .6f);
+            foreach (var (fw, rt) in new[] { (R + 6f, R * .6f), (R + 6f, -R * .6f), (R + 3f, R * .9f), (R + 3f, -R * .9f), (R + 9f, R * .9f), (R + 9f, -R * .9f) })
+            { var q = z.At(fw, rt); if (!NearPath(q.x, q.z, 3.4f + PathW / 2f)) { ringC = q; break; } }
             for (var k = 0; k < 6; k++)
             {
                 var a = k * Mathf.PI * 2f / 6f; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
@@ -388,7 +395,7 @@ namespace EverythingWorld.World
         {
             var ctx = z.ctx; var up = Vector3.up; var rot = Quaternion.LookRotation(z.front);
             var screen = z.At(-5f, 0);
-            foreach (var s in new[] { -1f, 1f }) { z.mk.Box(dark, screen + z.side * s * 5.2f + up * 3.5f, new Vector3(.3f, 7f, .3f), rot); ArtistBits.PostCollider(z.root, screen + z.side * s * 5.2f, 7f, .2f); }
+            foreach (var s in new[] { -1f, 1f }) { var pp = screen + z.side * s * 5.2f; var pg = ctx.Ground(pp.x, pp.z) - .2f; var top = screen.y + 7f; z.mk.Box(dark, new Vector3(pp.x, (pg + top) / 2f, pp.z), new Vector3(.3f, top - pg, .3f), rot); ArtistBits.PostCollider(z.root, new Vector3(pp.x, pg, pp.z), top - pg, .2f); }
             var film = new Material(GlowM(new Color(.8f, .85f, 1f), 1.6f)) { name = "Cinema screen" };
             life.screen = film;
             z.mk.Box(film, screen + up * 4f, new Vector3(10f, 5.5f, .1f), rot);

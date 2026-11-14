@@ -50,7 +50,7 @@ namespace EverythingWorld.World
                 var r = wide ? ctx.Range(40f, 300f) : ctx.Range(nearR + clear + 4f, nearR + clear + 60f);
                 var o = wide ? center : near; float px = o.x + Mathf.Cos(a) * r, pz = o.z + Mathf.Sin(a) * r;
                 var q = new Vector3(px, 0, pz);
-                if (!ctx.IsLand(px, pz, clear + 25f) || !ctx.IsFree(px, pz, clear) || !Open(ctx, px, pz, clear) || InRing(ctx, q, clear + 2f)) continue;
+                if (!ctx.IsLand(px, pz, clear + 25f) || !ctx.IsFree(px, pz, clear) || !Open(ctx, px, pz, clear) || InRing(ctx, q, clear + 2f) || NearFarFields(px, pz, clear + 4f)) continue;
                 if (!Gentle(ctx, px, pz, clear + 2f, tries > 1100 ? clear * .45f : clear * .3f)) continue;
                 var ok = true; foreach (var s in placeSpots) if (Vector2.Distance(new Vector2(s.x, s.z), new Vector2(px, pz)) < clear + 20f) { ok = false; break; }
                 if (!ok) continue;
@@ -59,19 +59,46 @@ namespace EverythingWorld.World
             return Vector3.positiveInfinity;
         }
 
+        /// Is (x, z) within 'pad' of one of the far fields' places or the straw walkways to them (laid after the song places)?
+        static bool NearFarFields(float x, float z, float pad)
+        {
+            var q = new Vector2(x, z);
+            foreach (var (at, r) in PlaceRings) if (Vector2.Distance(q, at) < r + pad) return true;
+            foreach (var way in new[] { SouthWay, SecretWay, NorthEastWay, NorthWay, WestWay })
+                for (var i = 0; i + 1 < way.Length; i++)
+                {
+                    var ab = way[i + 1] - way[i]; var t = Mathf.Clamp01(Vector2.Dot(q - way[i], ab) / Mathf.Max(.01f, ab.sqrMagnitude));
+                    if (Vector2.Distance(q, way[i] + ab * t) < pad + PathW / 2f) return true;
+                }
+            return false;
+        }
+
         /// A straw walkway from the nearest walkway, a flag sign, the tour's mark. Returns the way the place faces.
         Vector3 PlaceWay(LandContext ctx, MeshKit mk, Vector3 c, float clear, string sign, string mark, Color col)
         {
             Vector3 join = default; var best = float.MaxValue;
-            foreach (var (p, _) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(c.x, c.z)); if (d < best) { best = d; join = p; } }
+            // never from inside an artist's area or the gate's welcome area
+            foreach (var (p, w) in walkPoints) { if (w == 0 || InFootprint(ctx, p.x, p.z, 2f) || new Vector2(p.x - center.x, p.z - center.z).sqrMagnitude < 17f * 17f) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(c.x, c.z)); if (d < best) { best = d; join = p; } }
             var face = best < float.MaxValue ? new Vector3(join.x - c.x, 0, join.z - c.z).normalized : new Vector3(center.x - c.x, 0, center.z - c.z).normalized;
             if (face.sqrMagnitude < .1f) face = Vector3.forward;
             var side = Vector3.Cross(Vector3.up, face);
             if (best < float.MaxValue && best > clear + 3f)
             {
                 var pts = new List<Vector3>(); var from = new Vector3(join.x, 0, join.z); var dir = new Vector3(c.x - join.x, 0, c.z - join.z).normalized; var len = best - clear + 1f;
-                for (var d = 1f; ; d += 2f) { var dd = Mathf.Min(d, len); var q = from + dir * dd; if (!ctx.IsLand(q.x, q.z, 0f)) break; pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= len) break; }
-                if (pts.Count > 1) { Strip(mk, pts, WorldMaterials.Solid(Trodden), PathW * .8f, .05f); foreach (var p in pts) Remember(p, 99); }
+                var wside = Vector3.Cross(Vector3.up, dir);
+                for (var d = 1f; ; d += 2f)
+                {
+                    var dd = Mathf.Min(d, len); var q = from + dir * dd; if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round artists' areas in an arc on whichever side the straight line passes
+                    foreach (var o in ctx.Artists)
+                    {
+                        var ov = new Vector3(o.x, 0, o.z); var r = Foot(o) * 1.06f + 3f; var rel = q - ov; rel.y = 0f; if (rel.sqrMagnitude >= r * r) continue;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, wside) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + wside * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+                    }
+                    pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= len) break;
+                }
+                if (pts.Count > 1) { Strip(mk, pts, WorldMaterials.Solid(Trodden), PathW * .8f, .05f, ctx); foreach (var p in pts) Remember(p, 99); }
             }
             var sp = ctx.OnGround(c.x + face.x * (clear - .5f) + side.x * 2.6f, c.z + face.z * (clear - .5f) + side.z * 2.6f); var rot = Quaternion.LookRotation(face);
             mk.Prism(wood, sp - Vector3.up * .3f, Vector3.up, .08f, 3.8f, 6);

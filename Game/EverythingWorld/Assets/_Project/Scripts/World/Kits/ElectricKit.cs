@@ -35,6 +35,8 @@ namespace EverythingWorld.World
         readonly List<(Vector3 p, int w)> walkPoints = new List<(Vector3, int)>();
         readonly Dictionary<string, Vector3> facing = new Dictionary<string, Vector3>();
         readonly List<Vector3> noGrass = new List<Vector3>();
+        // x, radius, z: things in the gate's welcome area and the walkway poles, which a walkway must not start through
+        readonly List<Vector3> fixtures = new List<Vector3>();
         ElectricLife life;
         MeshKit soft;
 
@@ -104,7 +106,7 @@ namespace EverythingWorld.World
         {
             MakeMaterials();
             halos = new GlowHalos();
-            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear();
+            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear(); fixtures.Clear();
             center = ctx.Plaza;
             life = new GameObject("Electric life").AddComponent<ElectricLife>();
             life.transform.SetParent(ctx.Root, false);
@@ -212,7 +214,7 @@ namespace EverythingWorld.World
             {
                 var a = k * Mathf.PI * 2f / 12f; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
                 if (Vector3.Dot(d, face) > .7f || Vector3.Dot(d, face) < -.85f) continue;          // keep the way in and the way on open
-                var g = ctx.OnGround(c.x + d.x * 15f, c.z + d.z * 15f);
+                var g = ctx.OnGround(c.x + d.x * 15f, c.z + d.z * 15f); fixtures.Add(new Vector3(g.x, .4f, g.z));
                 mk.Prism(wood, g - up * .3f, up, .08f, 7.3f, 6);
                 ArtistBits.PostCollider(ctx.Root, g, 7f, .1f);
                 var fc = WorldMaterials.Solid(Bunting[k % Bunting.Length]); var along = Vector3.Cross(up, d);
@@ -227,6 +229,8 @@ namespace EverythingWorld.World
                 mk.Tri(m, merch + a0 + up * 2.2f, merch + a1 + up * 2.2f, merch + up * 4.6f, merch + up * 2f);
                 mk.Quad(m, merch + a0, merch + a1, merch + a1 + up * 2.2f, merch + a0 + up * 2.2f, merch + up);
             }
+            fixtures.Add(new Vector3(merch.x, 3.3f, merch.z));
+            foreach (var s in new[] { -1f, 1f }) { var t = c + side * s * (span / 2f + .45f); fixtures.Add(new Vector3(t.x, 1f, t.z)); }
             solid.Box(canvas, merch + up * 1.1f, new Vector3(4.4f, 2.2f, 4.4f), Quaternion.LookRotation(face));
             mk.Blob(GlowM(new Color(1f, .85f, .55f), 2.4f), merch + up * 4.7f, Vector3.one * .25f, ctx.Rng, 0f);
             halos.Add(merch + up * 4.8f, 1.6f, new Color(1f, .85f, .55f), .8f);
@@ -234,6 +238,7 @@ namespace EverythingWorld.World
             foreach (var s in new[] { -1f, 1f }) mk.Prism(wood, map + side * s * 1.2f, up, .07f, 2.4f, 5);
             mk.Box(WorldMaterials.Solid(new Color(.95f, .9f, .75f)), map + up * 1.7f, new Vector3(2.6f, 1.4f, .08f), Quaternion.LookRotation(-face));
             for (var k = 0; k < 9; k++) mk.Blob(WorldMaterials.Solid(Bunting[k % Bunting.Length]), map + up * (1.3f + (k % 3) * .3f) + side * ((k / 3) * .7f - .7f) - face * .06f, new Vector3(.12f, .12f, .02f), ctx.Rng, 0f);
+            fixtures.Add(new Vector3(map.x, 1.5f, map.z));
             solid.Box(wood, map + up * 1.2f, new Vector3(2.6f, 2.4f, .3f), Quaternion.LookRotation(face));
             noGrass.Add(new Vector3(c.x, 9f, c.z));
             life.gate = c;
@@ -252,15 +257,24 @@ namespace EverythingWorld.World
             var bulbMats = new List<Material>();
             for (var i = 0; i < 5; i++) bulbMats.Add(new Material(GlowM(new Color(1f, .82f, .55f), 2.2f)) { name = "Festoon" });
             life.festoon = bulbMats.ToArray();
+            var gateC = new Vector3(center.x, 0, center.z);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
+                IslandWorldData.Artist nextAny = null; Vector3 joinAny = default; var bestAny = float.MaxValue;   // if every way out is blocked
                 foreach (var a in todo)
-                    foreach (var (p, _) in walkPoints)
+                    foreach (var (p0, w) in walkPoints)
                     {
+                        // never branch from inside another artist's area; from the gate's welcome area, start at the
+                        // edge of its trodden ground (not across the middle, past the merch tent, the map or the flags)
+                        if (w >= 1 && InFootprint(ctx, p0.x, p0.z, 2f)) continue;
+                        var p = p0;
+                        if (w == 0 && walk > 1) { var o = new Vector3(a.x - center.x, 0, a.z - center.z); if (o.sqrMagnitude < 1f) continue; o.Normalize(); p = ctx.OnGround(center.x + o.x * 9f, center.z + o.z * 9f); }
                         var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
-                        if (d < best) { best = d; next = a; join = p; }
+                        if (d < bestAny) { bestAny = d; nextAny = a; joinAny = p; }
+                        if (d < best && !Blocked(p, a)) { best = d; next = a; join = p; }
                     }
+                if (next == null) { next = nextAny; join = joinAny; }
                 if (next == null) break;
                 todo.Remove(next);
                 var from = new Vector3(join.x, 0, join.z); var to = new Vector3(next.x, 0, next.z);
@@ -269,18 +283,29 @@ namespace EverythingWorld.World
                 facing[next.name] = -dir;
                 var side = Vector3.Cross(Vector3.up, dir);
                 var end = total - Foot(next) * .8f;
-                var pts = new List<Vector3>();
+                var pts = new List<Vector3>(); var fromGate = Vector3.Distance(from, gateC) < 18f;
                 for (var d = walk == 1 ? 0f : PathW / 2f + .1f; ; d += 3f)
                 {
                     var dd = Mathf.Min(d, end);
                     var q = from + dir * dd + side * Mathf.Sin(dd / Mathf.Max(end, 1f) * Mathf.PI) * Mathf.Min(5f, end * .05f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area, the far fields' places and the gate's welcome area (unless the
+                    // walkway starts there) instead of running across them: an arc on whichever side the straight line
+                    // passes, so the walkway never flips across
+                    void Round(Vector3 ov, float r)
+                    {
+                        var rel = q - ov; rel.y = 0f; if (rel.sqrMagnitude >= r * r) return;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+                    }
+                    foreach (var o in ctx.Artists) if (o != next) Round(new Vector3(o.x, 0, o.z), Foot(o) * 1.06f + 3f);
+                    foreach (var (at, r) in PlaceRings) Round(new Vector3(at.x, 0, at.y), r + PathW / 2f + 1f);
+                    if (!fromGate) Round(gateC, 16f + PathW / 2f);
                     pts.Add(ctx.OnGround(q.x, q.z));
                     if (dd >= end) break;
                 }
                 if (pts.Count < 2) continue;
-                Strip(mk, pts, path, PathW, .05f);
-                foreach (var p in pts) Remember(p, walk);
+                Strip(mk, pts, path, PathW, .05f, ctx);
                 // poles every 12 m alternating sides, bunting and festoon lights swagged between them
                 Vector3? prevPole = null; var k = 0;
                 for (var i = 2; i < pts.Count; i += 4, k++)
@@ -288,8 +313,9 @@ namespace EverythingWorld.World
                     var s = k % 2 == 0 ? 1f : -1f;
                     var pole = pts[i] + side * s * (PathW / 2f + .8f);
                     var near = false; foreach (var o in poles) if ((o - pole).sqrMagnitude < 25f) near = true;
-                    if (near) { prevPole = null; continue; }
-                    poles.Add(pole);
+                    // never on another walkway, in the welcome area's things or on an artist's plaque, board or pole
+                    if (near || NearPath(pole.x, pole.z, PathW / 2f + .5f) || InFixture(pole.x, pole.z, .4f) || InFootprint(ctx, pole.x, pole.z, 0f, .85f)) { prevPole = null; continue; }
+                    poles.Add(pole); fixtures.Add(new Vector3(pole.x, .3f, pole.z));
                     var g = ctx.OnGround(pole.x, pole.z);
                     mk.Prism(wood, g - Vector3.up * .3f, Vector3.up, .07f, 4.3f, 6);
                     ArtistBits.PostCollider(ctx.Root, g, 4f, .1f);
@@ -316,14 +342,34 @@ namespace EverythingWorld.World
                     prevPole = top;
                     if (k % 4 == 1) ArtistBits.PointLight(ctx.Root, top - Vector3.up * .5f, new Color(1f, .8f, .55f), 10f, .9f);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
+            }
+            // would a walkway leaving p toward a run into one of the welcome area's things or a walkway pole in its first stretch?
+            bool Blocked(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector2(a.x - p.x, a.z - p.z); var len = Mathf.Min(20f, d.magnitude); if (len < .1f) return false; d /= d.magnitude;
+                foreach (var f in fixtures)
+                {
+                    var rel = new Vector2(f.x - p.x, f.z - p.z); var t = Mathf.Clamp(Vector2.Dot(rel, d), 0f, len);
+                    if ((rel - d * t).sqrMagnitude < (f.y + PathW / 2f + .2f) * (f.y + PathW / 2f + .2f)) return true;
+                }
+                return false;
             }
         }
 
-        /// A walkway laid on the ground as one seamless strip, mitred at the bends.
-        void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift)
+        bool InFixture(float x, float z, float pad)
         {
-            var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
+            foreach (var f in fixtures) { float dx = x - f.x, dz = z - f.z, r = f.y + pad; if (dx * dx + dz * dz < r * r) return true; }
+            return false;
+        }
+
+        /// A walkway laid on the ground as one seamless strip, mitred at the bends, in narrow lanes across its width
+        /// with every vertex on its own ground, so on a side slope it follows the ground instead of burying one edge
+        /// and lifting the other.
+        void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
+        {
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -331,9 +377,10 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] + Vector3.up * lift - side * (w / 2f * miter); R[i] = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         // ---------------------------------------------------------------- ground cover

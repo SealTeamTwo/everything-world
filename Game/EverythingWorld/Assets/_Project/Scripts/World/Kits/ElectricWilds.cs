@@ -24,7 +24,7 @@ namespace EverythingWorld.World
                 var nearWalk = NearWalk(px, pz, 45f);
                 var roll = ctx.Range(0f, 1f);
                 if (roll < .15f) { Campsite(ctx, mk, solid, p, camps); camps++; }
-                else if (roll < .3f && nearWalk) { FoodTruck(ctx, mk, solid, p, toGate); trucks++; }
+                else if (roll < .3f && nearWalk) { if (Fall(ctx, p, 3f) < .7f) { FoodTruck(ctx, mk, solid, p, toGate); trucks++; } else { ctx.Rng.Next(Bunting.Length); continue; } }
                 else if (roll < .55f && bales < 40) { HayBales(ctx, mk, solid, p, toGate); bales++; }
                 else if (roll < .63f) { Inflatable(ctx, mk, solid, p, inflatables++); }
                 else if (roll < .72f) { LightTower(ctx, mk, solid, p); towers++; }
@@ -34,6 +34,14 @@ namespace EverythingWorld.World
                 noGrass.Add(new Vector3(px, 5f, pz));
             }
             Debug.Log($"The Electric Fields: {camps} campsites, {trucks} food trucks, {bales} hay-bale synths, {inflatables} inflatables, {towers} light towers, {loos} loo rows");
+        }
+
+        /// How much the ground falls across a round of radius r round 'at'.
+        static float Fall(LandContext ctx, Vector3 at, float r)
+        {
+            float lo = float.MaxValue, hi = float.MinValue;
+            for (var k = 0; k < 8; k++) { var h = ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); }
+            return hi - lo;
         }
 
         bool NearWalk(float x, float z, float within)
@@ -153,6 +161,8 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(Vector3.Cross(Vector3.up, face)); var side = face;
             var col = WorldMaterials.Solid(Bunting[ctx.Rng.Next(Bunting.Length)]);
+            // level at the lowest ground under its wheels, so none hangs in the air
+            foreach (var w in new[] { new Vector3(-1.25f, 0, -1.7f), new Vector3(1.25f, 0, -1.7f), new Vector3(-1.25f, 0, 1.7f), new Vector3(1.25f, 0, 1.7f) }) { var q = at + rot * w; at.y = Mathf.Min(at.y, ctx.Ground(q.x, q.z)); }
             mk.Box(col, at + up * 1.7f, new Vector3(2.4f, 2.6f, 5.5f), rot);
             mk.Box(WorldMaterials.Solid(Ink), at + up * 3.1f, new Vector3(2.5f, .2f, 5.6f), rot);
             foreach (var z in new[] { -1.7f, 1.7f }) mk.Prism(dark, at + rot * new Vector3(-1.25f, .45f, z), rot * Vector3.right, .45f, 2.5f, 10);
@@ -184,17 +194,20 @@ namespace EverythingWorld.World
         void HayBales(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 face)
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(Vector3.up, face);
+            // each bale on its own ground, sunk a little so no corner hangs; the top bale, synths and lamp follow them
+            var bl = new Vector3[3];
             for (var k = 0; k < 3; k++)
             {
-                var p = at + side * ((k - 1) * 1.6f);
+                var p = at + side * ((k - 1) * 1.6f); p = ctx.OnGround(p.x, p.z) - up * Mathf.Min(.35f, Fall(ctx, p, .8f) * .6f); bl[k] = p;
                 mk.Box(straw, p + up * .45f, new Vector3(1.5f, .9f, .9f), rot * Quaternion.Euler(0, ctx.Range(-4f, 4f), 0));
                 solid.Box(straw, p + up * .45f, new Vector3(1.5f, .9f, .9f), rot);
             }
+            at = bl[1];
             mk.Box(straw, at + up * 1.35f, new Vector3(1.5f, .9f, .9f), rot * Quaternion.Euler(0, 8f, 0)); solid.Box(straw, at + up * 1.35f, new Vector3(1.5f, .9f, .9f), rot * Quaternion.Euler(0, 8f, 0));   // the bale on top
             // synths on top, glowing keys, a lamp and a cable snaking off
             foreach (var s in new[] { -1.6f, 1.6f })
             {
-                var syn = at + side * s + up * .95f;
+                var syn = (s < 0 ? bl[0] : bl[2]) + up * .95f;
                 mk.Box(dark, syn, new Vector3(1.2f, .12f, .45f), rot);
                 for (var key = 0; key < 7; key++) mk.Box(GlowM(Neon[(key + (s > 0 ? 2 : 0)) % Neon.Length], 2.2f), syn + up * .07f + side * ((key - 3f) * .15f) + face * .08f, new Vector3(.1f, .02f, .18f), rot);
             }
@@ -224,6 +237,7 @@ namespace EverythingWorld.World
                     break;
                 case 2: // a rainbow arch
                     var dirA = Quaternion.Euler(0, ctx.Range(0, 180f), 0) * Vector3.right;
+                    at.y = Mathf.Min(ctx.Ground(at.x + dirA.x * 6f, at.z + dirA.z * 6f), ctx.Ground(at.x - dirA.x * 6f, at.z - dirA.z * 6f)) - .1f;
                     Color[] bands = { new Color(.95f, .3f, .3f), new Color(1f, .65f, .2f), new Color(1f, .9f, .3f), new Color(.4f, .8f, .4f), new Color(.35f, .55f, 1f), new Color(.65f, .4f, .9f) };
                     for (var b = 0; b < bands.Length; b++)
                         for (var k = 0; k < 14; k++)
@@ -246,7 +260,10 @@ namespace EverythingWorld.World
         void LightTower(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
             var up = Vector3.up; const float H = 10f;
-            foreach (var (x, z) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) mk.Box(metal, at + new Vector3(x, 0, z) * .7f + up * H / 2f, new Vector3(.12f, H, .12f), Quaternion.identity);
+            // the deck sits at the highest leg's ground; every leg reaches down to its own ground
+            var hiG = at.y; foreach (var (x, z) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) hiG = Mathf.Max(hiG, ctx.Ground(at.x + x * .7f, at.z + z * .7f));
+            at.y = hiG;
+            foreach (var (x, z) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) { var lg = ctx.Ground(at.x + x * .7f, at.z + z * .7f) - .2f; mk.Box(metal, new Vector3(at.x + x * .7f, (lg + at.y + H) / 2f, at.z + z * .7f), new Vector3(.12f, at.y + H - lg, .12f), Quaternion.identity); }
             for (var y = 1.5f; y < H; y += 2f) mk.Box(metal, at + up * y, new Vector3(1.5f, .08f, 1.5f), Quaternion.identity);
             solid.Box(metal, at + up * H / 2f, new Vector3(1.6f, H, 1.6f), Quaternion.identity);
             var col = Neon[ctx.Rng.Next(Neon.Length)];
