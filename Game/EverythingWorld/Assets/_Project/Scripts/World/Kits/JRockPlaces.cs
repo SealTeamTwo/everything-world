@@ -41,7 +41,7 @@ namespace EverythingWorld.World
         public override void ShapeGround(IslandWorldData data, int index)
         {
             ShapeIsles(data, index);   // everything the land already did, unchanged
-            foreach (var (at, r) in PlaceRings) Level(data, index, at, r, r + 16f);
+            foreach (var (at, r) in PlaceRings) Level(data, index, at, r, r + 26f);   // a wide easing, so the lanes up to them aren't steep
         }
 
         /// A vertical neon board on a pole, like the city's. Signs on the +x side of a place's road; the photo spot on the −x side.
@@ -70,7 +70,7 @@ namespace EverythingWorld.World
             Strip(mk, pts, laneM, PathW + .4f, .16f, ctx); foreach (var p in pts) Remember(p, 700);
             // power poles down one side with lanterns strung between them, the way the city's streets have
             var up = Vector3.up; Vector3? prev = null;
-            for (var i = 3; i < pts.Count; i += 9) { var d = pts[Mathf.Min(i + 1, pts.Count - 1)] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (PathW / 2f + 1.1f); if (InNoGrass(lp.x, lp.z, 1f) || !ctx.IsLand(lp.x, lp.z, 2f)) { prev = null; continue; } lp = ctx.OnGround(lp.x, lp.z); mk.Prism(woodDark, lp - up * .2f, up, .11f, 5.2f, 6); mk.Box(woodDark, lp + up * 4.7f, new Vector3(1.2f, .08f, .08f), Quaternion.LookRotation(d)); ArtistBits.PostCollider(ctx.Root, lp, 5f, .13f); var top = lp + up * 4.3f; if (prev.HasValue) LanternString(mk, prev.Value, top, prng); prev = top; }
+            for (var i = 3; i < pts.Count; i += 9) { var d = pts[Mathf.Min(i + 1, pts.Count - 1)] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (PathW / 2f + 1.1f); if (InNoGrass(lp.x, lp.z, 1f) || !ctx.IsLand(lp.x, lp.z, 2f) || NearPath(lp.x, lp.z, 2f)) { prev = null; continue; } lp = ctx.OnGround(lp.x, lp.z); mk.Prism(woodDark, lp - up * .2f, up, .11f, 5.2f, 6); mk.Box(woodDark, lp + up * 4.7f, new Vector3(1.2f, .08f, .08f), Quaternion.LookRotation(d)); ArtistBits.PostCollider(ctx.Root, lp, 5f, .13f); var top = lp + up * 4.3f; if (prev.HasValue) LanternString(mk, prev.Value, top, prng); prev = top; }
             laneP.AddRange(pts); return pts;
         }
 

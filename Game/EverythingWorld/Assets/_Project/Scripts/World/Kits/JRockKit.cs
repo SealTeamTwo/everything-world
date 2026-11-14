@@ -208,7 +208,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -216,12 +218,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); R[i] = pts[i] + side * (w / 2f * miter);
-                // each edge follows its own ground, lifted a little only where the middle bulges
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(R[i].x, R[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; R[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A red paper lantern hanging from a short bracket.
@@ -245,6 +246,8 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); i = Mathf.Abs(i); var body = WorldMaterials.Solid(new[] { new Color(.85f, .2f, .2f), new Color(.2f, .4f, .8f), new Color(.92f, .92f, .92f) }[i % 3]);
             mk.Box(body, g + up * .95f, new Vector3(1f, 1.9f, .75f), rot);
+            var lo = g.y; foreach (var (x, z) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) { var q = g + rot * new Vector3(x * .5f, 0, z * .375f); lo = Mathf.Min(lo, ctx.Ground(q.x, q.z)); }
+            if (g.y - lo > .04f) mk.Box(dark, new Vector3(g.x, (g.y + lo) / 2f - .05f, g.z), new Vector3(1.04f, g.y - lo + .1f, .79f), rot);
             mk.Box(vendM, g + up * 1.25f + face * .38f, new Vector3(.8f, .9f, .02f), rot);
             for (var k = 0; k < 6; k++) mk.Box(GlowM(NeonC[(i + k) % NeonC.Length], 1.6f), g + up * (1.25f + ((k / 3) - .5f) * .4f) + face * .4f + Vector3.Cross(up, face) * ((k % 3 - 1) * .24f), new Vector3(.14f, .3f, .02f), rot);
             halos.Add(g + up * 1.2f + face * .8f, 1.4f, new Color(.9f, .95f, 1f), .5f);
@@ -267,7 +270,8 @@ namespace EverythingWorld.World
         void Torii(LandContext ctx, MeshKit mk, Vector3 g, Vector3 face, float s = 1f)
         {
             var up = Vector3.up; var sd = Vector3.Cross(up, face); var rot = Quaternion.LookRotation(face);
-            foreach (var e in new[] { -1f, 1f }) { mk.Prism(red, g + sd * e * 1.6f * s - up * .2f, up, .2f * s, 4.4f * s, 10); mk.Prism(dark, g + sd * e * 1.6f * s - up * .2f, up, .26f * s, .5f * s, 10); ArtistBits.PostCollider(ctx.Root, g + sd * e * 1.6f * s, 4f * s, .22f * s); }
+            // each pillar stands on its own ground (on a side slope the downhill one reaches further down)
+            foreach (var e in new[] { -1f, 1f }) { var pp = g + sd * e * 1.6f * s; var gy = Mathf.Min(g.y, ctx.Ground(pp.x, pp.z)); var drop = g.y - gy; var foot = new Vector3(pp.x, gy, pp.z); mk.Prism(red, foot - up * .2f, up, .2f * s, 4.4f * s + drop, 10); mk.Prism(dark, foot - up * .2f, up, .26f * s, .5f * s, 10); ArtistBits.PostCollider(ctx.Root, foot, 4f * s + drop, .22f * s); }
             mk.Box(red, g + up * 3.4f * s, new Vector3(3.9f * s, .25f * s, .26f * s), Quaternion.LookRotation(face));
             mk.Box(dark, g + up * 4.25f * s, new Vector3(4.8f * s, .28f * s, .4f * s), rot);
             foreach (var e in new[] { -1f, 1f }) mk.Box(dark, g + up * 4.35f * s + sd * e * 2.55f * s, new Vector3(.7f * s, .22f * s, .4f * s), rot * Quaternion.Euler(0, 0, e * -12f));
@@ -314,6 +318,15 @@ namespace EverythingWorld.World
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 12f) * Mathf.Min(2.5f, end * .04f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area in the way instead of running across it
+                    // (an arc on whichever side the straight line passes, so the lane never flips across the area)
+                    foreach (var o in ctx.Artists)
+                    {
+                        if (o.name == artist) continue; var r = Foot(o) + 3f; var ov = new Vector3(o.x, 0, o.z); var rel = q - ov;
+                        if (rel.sqrMagnitude >= r * r) continue;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+                    }
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
@@ -327,7 +340,7 @@ namespace EverythingWorld.World
                     if (torii && i > pts.Count - 46) { Torii(ctx, mk, pts[i], a, .9f); continue; }
                     if (torii) continue;
                     var s = (i / 10) % 2 == 0 ? 1f : -1f; var lp = ctx.OnGround(pts[i].x + side.x * s * (PathW / 2f + .9f), pts[i].z + side.z * s * (PathW / 2f + .9f));
-                    if (InFootprint(ctx, lp.x, lp.z, 1f)) continue;
+                    if (InFootprint(ctx, lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, 1.8f)) continue;
                     mk.Box(woodDark, lp + Vector3.up * 1.4f, new Vector3(.14f, 2.8f, .14f), Quaternion.identity); mk.Box(woodDark, lp + Vector3.up * 2.75f + side * s * -.3f, new Vector3(.08f, .08f, .7f), Quaternion.LookRotation(side));
                     PaperLantern(mk, lp + Vector3.up * 2.3f + side * s * -.55f, ctx.Rng); ArtistBits.PostCollider(ctx.Root, lp, 2.7f, .12f);
                 }
@@ -340,7 +353,7 @@ namespace EverythingWorld.World
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p, w) in walkPoints) { if (w > 0 && InFootprint(ctx, p.x, p.z, 2f)) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name, false);
@@ -602,7 +615,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var face = new Vector3(center.x - g.x, 0, center.z - g.z).normalized; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face);
             float lo = g.y, hi = g.y; foreach (var (x, z) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) { var q = g + sd * x * 3.6f + face * z * 3f; var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); }
-            if (hi - lo > 3f) return false;
+            if (hi - lo > 3f || NearPath(g.x, g.z, 7f)) return false;
             var b = new Vector3(g.x, hi + .2f, g.z);
             mk.Box(concreteDark, new Vector3(b.x, (lo + b.y) / 2f, b.z), new Vector3(7.4f, b.y - lo + .4f, 6.2f), rot);
             var wall = WorldMaterials.Solid(new[] { new Color(.88f, .85f, .78f), new Color(.75f, .7f, .62f), new Color(.82f, .8f, .74f) }[i % 3]);
