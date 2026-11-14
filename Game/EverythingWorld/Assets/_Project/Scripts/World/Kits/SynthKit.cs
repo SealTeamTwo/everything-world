@@ -156,7 +156,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -164,11 +166,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A street lamp: a slim chrome post with a long cyan tube on top.
@@ -220,17 +222,26 @@ namespace EverythingWorld.World
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 18f) * Mathf.Min(1.6f, end * .03f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area instead of running across it (an arc on whichever side the
+                    // straight line passes, so the lane never flips across)
+                    foreach (var o in ctx.Artists)
+                    {
+                        if (o.name == artist) continue; var r = Foot(o) * 1.06f + 3f; var ov = new Vector3(o.x, 0, o.z); var rel = q - ov;
+                        if (rel.sqrMagnitude >= r * r) continue;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+                    }
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, asphalt, PathW, .12f, ctx); var edge = new List<Vector3>(); foreach (var p in pts) edge.Add(p + side * (PathW / 2f - .1f)); Strip(mk, edge, n % 2 == 0 ? pinkN : cyanN, .08f, .14f, ctx);
-                foreach (var p in pts) Remember(p, walk);
                 for (var i = 6; i < pts.Count; i += 10, n++)
                 {
                     var s = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .8f);
-                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue;
+                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, PathW / 2f + .4f)) continue;
                     TubeLamp(ctx, mk, ctx.OnGround(lp.x, lp.z), -side * s, n % 3 == 0);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
             }
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
@@ -238,7 +249,7 @@ namespace EverythingWorld.World
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p, w) in walkPoints) { if (w >= 10 && InFootprint(ctx, p.x, p.z, 2f)) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
@@ -257,12 +268,15 @@ namespace EverythingWorld.World
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 4f)) continue;
                 var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var rot = Quaternion.LookRotation(f); var up = Vector3.up;
+                // how much the ground falls across a round of radius r round p; steep spots are skipped after the random
+                // numbers are drawn, so the rest of the layout stays put
+                float Fall(float r) { float lo = p.y, hi = p.y; for (var k = 0; k < 8; k++) { var gh = ctx.Ground(px + Mathf.Cos(k * Mathf.PI / 4f) * r, pz + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, gh); hi = Mathf.Max(hi, gh); } return hi - lo; }
                 if (roll < .34f) { NeonPalm(ctx, mk, p, .9f + s * .7f, rng, palms); palms++; }
                 else if (roll < .46f) { if (!Open(ctx, px, pz, 10f) || Mathf.Abs(ctx.Ground(px + 6f, pz) - ctx.Ground(px - 6f, pz)) > 3f) continue; GridPad(ctx, mk, p, rot, 16f, 4f); grids++; }
-                else if (roll < .52f) { SportsCar(ctx.Root, mk, p + up * .02f, Quaternion.LookRotation(Vector3.Cross(up, f)), new[] { Magenta, Cyan, Chrome, new Color(1f, .5f, .2f), Violet }[cars % 5]); noGrass.Add(new Vector3(p.x, 3f, p.z)); cars++; }
-                else if (roll < .58f) { var h = 4f + s * 6f; var m = pyramids % 2 == 0 ? pinkN : cyanN; var c0 = p + up * h; for (var k = 0; k < 4; k++) { var a = p + Quaternion.Euler(0, k * 90f + 45f, 0) * Vector3.forward * h * .8f; var b = p + Quaternion.Euler(0, k * 90f + 135f, 0) * Vector3.forward * h * .8f; mk.Prism(m, a, (b - a).normalized, .05f, (b - a).magnitude, 4); mk.Prism(m, a, (c0 - a).normalized, .05f, (c0 - a).magnitude, 4); } halos.Add(c0, 1.4f, pyramids % 2 == 0 ? Magenta : Cyan, .3f); noGrass.Add(new Vector3(p.x, h * .8f, p.z)); pyramids++; }
-                else if (roll < .63f) { var side = Vector3.Cross(up, f); foreach (var e in new[] { -1.8f, 1.8f }) { mk.Prism(chrome, p + side * e - up * .3f, up, .1f, 4.6f, 5); ArtistBits.PostCollider(ctx.Root, p + side * e, 4.4f, .12f); } mk.Box(dark, p + up * 5.4f, new Vector3(5.4f, 2.4f, .2f), rot); mk.Box(boards % 2 == 0 ? pinkN : cyanN, p + up * 5.4f + f * .11f, new Vector3(5.2f, .06f, .02f), rot); mk.Box(boards % 2 == 0 ? pinkN : cyanN, p + up * 6.5f + f * .11f, new Vector3(5.2f, .06f, .02f), rot); Sign(p + up * 5.7f + f * .12f, f, words[boards % words.Length], .6f, boards % 2 == 0 ? Magenta : Cyan); noGrass.Add(new Vector3(p.x, 3f, p.z)); boards++; }
-                else if (roll < .7f) { var side = Vector3.Cross(up, f); for (var k = 0; k < 3; k++) mk.Box(chrome, p + up * .46f + f * (-.16f + k * .16f), new Vector3(2f, .05f, .13f), rot); mk.Box(chrome, p + up * .8f - f * .26f, new Vector3(2f, .3f, .05f), rot); BoxCol(ctx.Root, p + up * .45f, new Vector3(2f, .9f, .5f), rot); Interact.Bench(tlife.transform, p + up * .52f - side * .5f, p + up * .52f + side * .5f, f); TubeLamp(ctx, mk, p - f * 1f + side * 1.4f, f, benches % 2 == 0); noGrass.Add(new Vector3(p.x, 2f, p.z)); benches++; }
+                else if (roll < .52f) { if (Fall(2.4f) > .5f) continue; SportsCar(ctx.Root, mk, p + up * .02f, Quaternion.LookRotation(Vector3.Cross(up, f)), new[] { Magenta, Cyan, Chrome, new Color(1f, .5f, .2f), Violet }[cars % 5]); noGrass.Add(new Vector3(p.x, 3f, p.z)); cars++; }
+                else if (roll < .58f) { var h = 4f + s * 6f; if (!Open(ctx, px, pz, h * .8f + 1f)) continue; var m = pyramids % 2 == 0 ? pinkN : cyanN; var c0 = p + up * h; for (var k = 0; k < 4; k++) { var a = ctx.OnGround(p.x, p.z) + Quaternion.Euler(0, k * 90f + 45f, 0) * Vector3.forward * h * .8f; a.y = ctx.Ground(a.x, a.z); var b = p + Quaternion.Euler(0, k * 90f + 135f, 0) * Vector3.forward * h * .8f; b.y = ctx.Ground(b.x, b.z); mk.Prism(m, a, (b - a).normalized, .05f, (b - a).magnitude, 4); mk.Prism(m, a, (c0 - a).normalized, .05f, (c0 - a).magnitude, 4); } halos.Add(c0, 1.4f, pyramids % 2 == 0 ? Magenta : Cyan, .3f); noGrass.Add(new Vector3(p.x, h * .8f, p.z)); pyramids++; }
+                else if (roll < .63f) { if (Fall(2.2f) > 1.6f) continue; var side = Vector3.Cross(up, f); foreach (var e in new[] { -1.8f, 1.8f }) { var pg = ctx.OnGround((p + side * e).x, (p + side * e).z); mk.Prism(chrome, pg - up * .3f, up, .1f, p.y + 4.6f - pg.y, 5); ArtistBits.PostCollider(ctx.Root, p + side * e, 4.4f, .12f); } mk.Box(dark, p + up * 5.4f, new Vector3(5.4f, 2.4f, .2f), rot); mk.Box(boards % 2 == 0 ? pinkN : cyanN, p + up * 5.4f + f * .11f, new Vector3(5.2f, .06f, .02f), rot); mk.Box(boards % 2 == 0 ? pinkN : cyanN, p + up * 6.5f + f * .11f, new Vector3(5.2f, .06f, .02f), rot); Sign(p + up * 5.7f + f * .12f, f, words[boards % words.Length], .6f, boards % 2 == 0 ? Magenta : Cyan); noGrass.Add(new Vector3(p.x, 3f, p.z)); boards++; }
+                else if (roll < .7f) { if (Fall(1.4f) > .35f) continue; var side = Vector3.Cross(up, f); for (var k = 0; k < 3; k++) mk.Box(chrome, p + up * .46f + f * (-.16f + k * .16f), new Vector3(2f, .05f, .13f), rot); mk.Box(chrome, p + up * .8f - f * .26f, new Vector3(2f, .3f, .05f), rot); BoxCol(ctx.Root, p + up * .45f, new Vector3(2f, .9f, .5f), rot); Interact.Bench(tlife.transform, p + up * .52f - side * .5f, p + up * .52f + side * .5f, f); TubeLamp(ctx, mk, p - f * 1f + side * 1.4f, f, benches % 2 == 0); noGrass.Add(new Vector3(p.x, 2f, p.z)); benches++; }
             }
             Debug.Log($"The Synthwave Coast: Coast Road {streetL:0} m{(toSea ? " to the sea" : "")}, {palms} neon palms, {grids} grid pads, {cars} chrome cars, {pyramids} wireframe pyramids, {boards} billboards, {benches} benches");
         }
