@@ -58,14 +58,14 @@ namespace EverythingWorld.World
         Vector3 PlaceWay(LandContext ctx, MeshKit mk, Vector3 c, float clear, string sign, string mark)
         {
             Vector3 join = default; var best = float.MaxValue;
-            foreach (var cell in pathCells.Values) foreach (var p in cell) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(c.x, c.z)); if (d < best) { best = d; join = p; } }
+            foreach (var cell in pathCells.Values) foreach (var p in cell) { if (InArtist(ctx, p.x, p.z, 1f)) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(c.x, c.z)); if (d < best) { best = d; join = p; } }
             var face = best < float.MaxValue ? new Vector3(join.x - c.x, 0, join.z - c.z).normalized : new Vector3(center.x - c.x, 0, center.z - c.z).normalized;
             if (face.sqrMagnitude < .1f) face = Vector3.forward;
             var stop = clear - 1f;
             if (best < float.MaxValue && best > stop + 3f)
             {
                 var pts = new List<Vector3>(); var from = new Vector3(join.x, 0, join.z); var dir = new Vector3(c.x - join.x, 0, c.z - join.z).normalized; var len = best - stop;
-                for (var d = 1f; ; d += 1.5f) { var dd = Mathf.Min(d, len); var q = from + dir * dd; if (!ctx.IsLand(q.x, q.z, 0f)) break; pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= len) break; }
+                for (var d = 1f; ; d += 1.5f) { var dd = Mathf.Min(d, len); var q = RoundArtists(ctx, from + dir * dd, from, dir, null); if (!ctx.IsLand(q.x, q.z, 0f)) break; pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= len) break; }
                 if (pts.Count > 1) { Ribbon(ctx, mk, track, pts, 1.6f, .05f); foreach (var p in pts) Remember(p); }
             }
             var side = Vector3.Cross(Vector3.up, face); var sp = ctx.OnGround(c.x + face.x * stop + side.x * 2.2f, c.z + face.z * stop + side.z * 2.2f); var rot = Quaternion.LookRotation(face);

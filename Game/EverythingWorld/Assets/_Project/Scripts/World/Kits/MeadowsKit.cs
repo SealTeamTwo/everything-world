@@ -119,6 +119,7 @@ namespace EverythingWorld.World
                 pts = smooth;
             }
             foreach (var p in pts) { var g = ctx.OnGround(p.x, p.z); loop.Add(g); Remember(g); }
+            for (var k = 0; k < N; k++) Remember((loop[k] + loop[(k + 1) % N]) / 2f);   // the loop's points are ~4 m apart: remember between them too, so things kept off it stay off its whole length
             var closed = new List<Vector3>(loop) { loop[0] };
             Ribbon(ctx, mk, track, closed, 2.6f, .07f);
 
@@ -172,14 +173,17 @@ namespace EverythingWorld.World
             if (best < art.r * .6f) return;
             var route = new List<Vector3>();
             Leg(route, c + dir * art.r * .5f, new Vector3(join.x, 0, join.z));
-            Lay(ctx, mk, route, 1.5f);
+            Lay(ctx, mk, route, 1.5f, art.name);
         }
 
-        void Lay(LandContext ctx, MeshKit mk, List<Vector3> route, float width)
+        void Lay(LandContext ctx, MeshKit mk, List<Vector3> route, float width, string own = null)
         {
             var run = new List<Vector3>();
-            foreach (var p in route)
+            if (route.Count < 2) return;
+            var from = route[0]; var dir = route[route.Count - 1] - from; dir.y = 0; dir = dir.sqrMagnitude > .01f ? dir.normalized : Vector3.forward;
+            foreach (var p0 in route)
             {
+                var p = RoundArtists(ctx, p0, from, dir, own);
                 if (!ctx.IsLand(p.x, p.z, 0f)) { if (run.Count > 1) Ribbon(ctx, mk, track, run, width, .08f); run.Clear(); continue; }
                 var g = ctx.OnGround(p.x, p.z); run.Add(g); Remember(g);
             }
@@ -212,17 +216,48 @@ namespace EverythingWorld.World
             return false;
         }
 
-        static void Ribbon(LandContext ctx, MeshKit mk, Material m, List<Vector3> pts, float width, float lift)
+        /// Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+        /// middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+        static void Ribbon(LandContext ctx, MeshKit mk, Material m, List<Vector3> raw, float width, float lift)
         {
-            for (var i = 0; i + 1 < pts.Count; i++)
+            var pts = new List<Vector3>();
+            foreach (var p in raw) { if (pts.Count > 0) { var d = p - pts[pts.Count - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; } pts.Add(p); }
+            var n = pts.Count; if (n < 2) return;
+            var lanes = Mathf.Max(1, Mathf.CeilToInt(width / 1.2f)); var V = new Vector3[n, lanes + 1];
+            Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
+            for (var i = 0; i < n; i++)
             {
-                var dir = pts[i + 1] - pts[i]; dir.y = 0;
-                if (dir.sqrMagnitude < .01f) continue;
-                var side = Vector3.Cross(Vector3.up, dir.normalized) * width / 2f;
-                Vector3 E(Vector3 p, Vector3 s) { var q = p + s; q.y = Mathf.Max(ctx.Ground(q.x, q.z), ctx.Ground(p.x, p.z)) + lift; return q; }
-                Vector3 a = E(pts[i], -side), b = E(pts[i], side), c = E(pts[i + 1], side), d = E(pts[i + 1], -side);
-                mk.Quad(m, a, b, c, d, (a + c) / 2f - Vector3.up);
+                var a = i > 0 ? Flat(pts[i] - pts[i - 1]) : Flat(pts[1] - pts[0]);
+                var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
+                var t = (a + b).sqrMagnitude > .01f ? (a + b).normalized : b; var side = Vector3.Cross(Vector3.up, t);
+                var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
+                Vector3 l = pts[i] - side * (width / 2f * miter), r = pts[i] + side * (width / 2f * miter);
+                var mid = ctx.Ground(pts[i].x, pts[i].z);
+                var bulge = Mathf.Clamp(mid - (ctx.Ground(l.x, l.z) + ctx.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ctx.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        /// Bends a point of a lane round any artist's area it would cross (other than `own`), along an arc on the side
+        /// the straight line passes, so the lane never flips across.
+        Vector3 RoundArtists(LandContext ctx, Vector3 q, Vector3 from, Vector3 dir, string own)
+        {
+            var side = Vector3.Cross(Vector3.up, dir);
+            foreach (var o in ctx.Artists)
+            {
+                if (o.name == own) continue; var r = o.r + 3f; var ov = new Vector3(o.x, 0, o.z); var rel = new Vector3(q.x - o.x, 0, q.z - o.z);
+                if (rel.sqrMagnitude >= r * r) continue;
+                var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(new Vector3(from.x, 0, from.z) - ov, side) >= 0f ? 1f : -1f;
+                q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+            }
+            return q;
+        }
+
+        bool InArtist(LandContext ctx, float x, float z, float pad)
+        {
+            foreach (var o in ctx.Artists) { float dx = x - o.x, dz = z - o.z; if (dx * dx + dz * dz < (o.r + pad) * (o.r + pad)) return true; }
+            return false;
         }
 
         /// Little glowing bulbs for the Chase Lights shader: vertex colour = colour, uv.x = how far round the loop.
@@ -312,7 +347,14 @@ namespace EverythingWorld.World
                 var spin = Quaternion.LookRotation(along) * Quaternion.Euler(0, (i * 23) % 9 - 4, 0);
                 var footprint = new Vector3(6.5f, rise, run * (steps - i) + 1.2f);
                 var c2 = at - along * (footprint.z / 2f - run / 2f - .6f);
-                if (i == 0) farEdge = c2 - along * (footprint.z / 2f);
+                if (i == 0)
+                {
+                    farEdge = c2 - along * (footprint.z / 2f);
+                    // where the ground under the bottom book falls below the bed's floor, a footing of more books reaches down to it
+                    var stairLo = baseY;
+                    for (var u = -1; u <= 1; u++) for (var w = -4; w <= 4; w++) { var q = c2 + side * u * 3.2f + along * w * footprint.z / 8.2f; stairLo = Mathf.Min(stairLo, ctx.Ground(q.x, q.z)); }
+                    if (stairLo < baseY - .05f) { var fh = baseY - stairLo + .2f; mk.Box(WorldMaterials.Solid(spines[(i + 2) % spines.Length]), new Vector3(c2.x, baseY - fh / 2f + .1f, c2.z), new Vector3(footprint.x, fh, footprint.z), spin); }
+                }
                 mk.Box(WorldMaterials.Solid(spines[i % spines.Length]), c2, footprint, spin);
                 mk.Box(pages, c2 + side * .06f + along * .08f, new Vector3(footprint.x + .1f, rise * .7f, footprint.z - .4f), spin);   // .06 sideways: at .05 the top book's pages met its cover's side
             }
@@ -336,7 +378,9 @@ namespace EverythingWorld.World
                 mk.Prism(WorldMaterials.Solid(new Color(.82f, .7f, .92f)), hp + side * s * 3.2f + Vector3.up * .4f, Vector3.up, 1f, .12f, 14);
             }
             // the bedside table and its lamp: the warm light at the heart of the field
+            // the table stands on the lowest ground under its corners (its uphill side sinks into the grass)
             var table = P(-W / 2f - 5f, 0, L / 2f - 3f); table.y = ctx.Ground(table.x, table.z);
+            for (var i = -1; i <= 1; i++) for (var j = -1; j <= 1; j++) { var q = table + side * i * 3f + along * j * 3f; table.y = Mathf.Min(table.y, ctx.Ground(q.x, q.z)); }
             mk.Box(frame, table + Vector3.up * 3.5f, new Vector3(6f, 7f, 6f), rot);
             solid.Box(frame, table + Vector3.up * 3.5f, new Vector3(6f, 7f, 6f), rot);
             mk.Prism(darkWood, table + Vector3.up * 7f, Vector3.up, .35f, 5f, 8);
@@ -398,6 +442,8 @@ namespace EverythingWorld.World
             }
             var pic = WorldMaterials.Picture(ctx.CoverAtlas);
             var counts = new int[5];
+            // the lowest ground round p within r (no random numbers: things stand on it instead of floating off a slope)
+            float Low(Vector3 p, float r) { var lo = ctx.Ground(p.x, p.z); for (var k = 0; k < 8; k++) lo = Mathf.Min(lo, ctx.Ground(p.x + Mathf.Cos(k * Mathf.PI / 4f) * r, p.z + Mathf.Sin(k * Mathf.PI / 4f) * r)); return lo; }
             for (var i = 0; i < 70; i++)
             {
                 var kind = i % 5;
@@ -410,6 +456,7 @@ namespace EverythingWorld.World
                     case 0: // a lava lamp, glowing
                     {
                         var h = ctx.Range(3.5f, 6.5f);
+                        p.y = Low(p, 1.1f);
                         var metal = WorldMaterials.Solid(new Color(.7f, .66f, .8f), .5f);
                         mk.Prism(metal, p, Vector3.up, 1.1f, h * .22f, 12, .7f);
                         var glass = WorldMaterials.Glow(color, 1.5f);
@@ -431,6 +478,7 @@ namespace EverythingWorld.World
                             if (a.songList != null && a.songList.Length > 0) cover = a.songList[ctx.Rng.Next(a.songList.Length)].cover;
                         }
                         var lean = Quaternion.LookRotation(face) * Quaternion.Euler(-8f, 0, ctx.Range(-6f, 6f));
+                        { var rt = Vector3.Cross(Vector3.up, face) * 1.6f; p.y = Mathf.Min(ctx.Ground((p + rt).x, (p + rt).z), ctx.Ground((p - rt).x, (p - rt).z), p.y); }
                         var c = p + Vector3.up * 2.1f;
                         mk.Box(fabric, c, new Vector3(3.2f, 3.9f, .12f), lean);
                         solid.Box(fabric, c, new Vector3(3.2f, 3.9f, .3f), lean);
@@ -445,6 +493,7 @@ namespace EverythingWorld.World
                     {
                         var paper = WorldMaterials.Solid(new Color(.98f, .97f, .95f));
                         var dive = Quaternion.LookRotation(face) * Quaternion.Euler(28f, 0, ctx.Range(-15f, 15f));
+                        { var nz = p + Vector3.up * 1.1f + dive * new Vector3(0, 0, 2.6f); p.y += ctx.Ground(nz.x, nz.z) - .25f - nz.y; }   // the nose is in the ground wherever the slope falls
                         Vector3 L(float x, float y, float z) => p + Vector3.up * 1.1f + dive * new Vector3(x, y, z);
                         var nose = L(0, 0, 2.6f); var tail = L(0, 0, -2.6f);
                         foreach (var s in new[] { -1f, 1f })
@@ -461,6 +510,7 @@ namespace EverythingWorld.World
                     {
                         var r = ctx.Range(1.6f, 2.6f); var th = r * .45f;
                         var standing = ctx.Chance(.5f);
+                        p.y = standing ? Mathf.Min(p.y, ctx.Ground((p + Vector3.Cross(Vector3.up, face) * r * .6f).x, (p + Vector3.Cross(Vector3.up, face) * r * .6f).z), ctx.Ground((p - Vector3.Cross(Vector3.up, face) * r * .6f).x, (p - Vector3.Cross(Vector3.up, face) * r * .6f).z)) : Low(p, r * .8f);
                         var rot = standing ? Quaternion.LookRotation(face) : Quaternion.LookRotation(Vector3.up, face);
                         var c = p + Vector3.up * (standing ? r * 1.05f : th * .5f + .05f);
                         var mat = WorldMaterials.Solid(color);
