@@ -84,6 +84,8 @@ namespace EverythingWorld.World
             for (var k = 0; k < 4; k++) { var d = Quaternion.Euler(0, k * 90f + 45f, 0) * D; FlagPole(ctx, mk, c + d * 18f + up * .12f, Quaternion.Euler(0, 60f, 0) * d); }
             for (var k = 0; k < 3; k++) mk.Prism(puddleM, c + Quaternion.Euler(0, k * 130f + 70f, 0) * D * (8f + k * 3f) + up * .13f, up, 1.2f + k * .3f, .012f, 9);
             Folk(c + D * 6f + S * 2f + up * .12f, (-D - S * .2f).normalized, Resident.Pose.Wave, new[] { "Morning, morning! You just missed the rain. Look: it left you a rainbow.", "Straight down Bay Road to the beach. The Sound System's already warming up.", "Take a mango. Sit under the tree. Nobody here has an appointment." });
+            // the Yard's rim, where the lanes to the artists leave from (never its middle)
+            for (var k = 0; k < 12; k++) Remember(c + Quaternion.Euler(0, k * 30f + 15f, 0) * D * 19.5f, 1);
             Mark(c, 21f);
             Shot(ctx, "the yard", c + D * 15f - S * 12f + up * 2.6f, tr + up * 3f);
         }
@@ -95,7 +97,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var pts = new List<Vector3>(); for (var d = 19f; d <= roadL + .01f; d += 2f) pts.Add(G(ctx, d, Mathf.Sin(d / 40f) * 2f)); if (pts.Count < 2) return;
             Strip(mk, pts, earthM, RoadW, .13f, ctx); foreach (var p in pts) Remember(p, 1);
-            var rng = new System.Random(6); for (var i = 5; i < pts.Count; i += 6) mk.Prism(puddleM, pts[i] + S * ((float)rng.NextDouble() * 3.6f - 1.8f) + up * .145f, up, .6f + (float)rng.NextDouble() * .9f, .01f, 9);
+            var rng = new System.Random(6); for (var i = 5; i < pts.Count; i += 6) { var at = pts[i] + S * ((float)rng.NextDouble() * 3.6f - 1.8f); var r = .6f + (float)rng.NextDouble() * .9f; Puddle(ctx, mk, at, r, .145f); }
             var route = new List<Vector3>(); for (var d = 24f; d <= roadL - 6f; d += 15f) route.Add(G(ctx, d, 1.8f + Mathf.Sin(d / 40f) * 2f) + up * .14f); for (var d = roadL - 6f; d >= 24f; d -= 15f) route.Add(G(ctx, d, -1.8f + Mathf.Sin(d / 40f) * 2f) + up * .14f);
             if (route.Count > 3) Folk(route[0], D, Resident.Pose.Walk, new[] { "Going down for the first tune of the day. Then up for breakfast. Then down again.", "Left, right, left, right. If you walk it in time you never get tired." }, null, route.ToArray()).speed = 1.1f;
             Shot(ctx, "down bay road to the rainbow", G(ctx, 21f, 0) + up * 2.4f, G(ctx, Mathf.Min(roadL, 140f), 0) + up * 14f);
@@ -109,6 +111,8 @@ namespace EverythingWorld.World
             for (var d = 30f + (e > 0 ? 0f : 5f); d <= roadL - 30f; d += 11f, i++)
             {
                 var p = Wp(d, e * (RoadW / 2f + 6.4f) + Mathf.Sin(d / 40f) * 2f); if (!ctx.IsLand(p.x, p.z, 6f) || InFootprint(ctx, p.x, p.z, 5.4f) || LaneNear(p.x, p.z, 5.6f)) continue;
+                // the whole house, its verandah and its steps clear of every lane, not only its middle
+                { var ff = new PlaceFrame(p, -S * e); var hit = false; foreach (var (x, zz) in new[] { (-3f, -2.3f), (3f, -2.3f), (3f, 2.3f), (-3f, 2.3f), (-3f, 4f), (3f, 4f), (0f, 4.6f) }) { var q = ff.P(x, 0, zz); if (LaneNear(q.x, q.z, PathW / 2f + .5f)) { hit = true; break; } } if (hit) continue; }
                 var f = new PlaceFrame(ctx.OnGround(p.x, p.z), -S * e); var po = Shack(ctx, mk, solid, f, 5.6f, 4.2f, i);
                 if (i % 3 == 0) { Stool(mk, po.P(1.6f, 0, 0), po.Fwd, i); Folk(po.P(-1.4f, 0, .1f), po.Fwd, Resident.Pose.Lean, new[] { "Good morning! Good morning. Good morning to you too.", "I painted it red last year. Gold the year before. Green's next. You have to be fair to all three.", "Rain washed the road for us. Saved me a job." }); }
                 else if (i % 3 == 1) Guitar(mk, po.P(1.8f, 0, -.5f), po.r, Paint(new Color(.6f, .42f, .24f)), rng);
@@ -122,7 +126,7 @@ namespace EverythingWorld.World
         void Beach(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = ctx.OnGround(beach2.x, beach2.y); var rng = new System.Random(77); var along = Quaternion.LookRotation(D);
-            mk.Prism(sandM, c - up * .26f, up, 21f, .34f, 28); for (var k = 0; k < 8; k++) Remember(c + Quaternion.Euler(0, k * 45f, 0) * D * 11f, 1); Remember(c, 1);
+            mk.Prism(sandM, c - up * .26f, up, 21f, .34f, 28); for (var k = 0; k < 8; k++) Remember(c + Quaternion.Euler(0, k * 45f, 0) * D * 11f, 2); Remember(c, 2); for (var k = 0; k < 16; k++) { var rp = c + Quaternion.Euler(0, k * 22.5f, 0) * D * 20f; if (ctx.IsLand(rp.x, rp.z, 0f)) Remember(ctx.OnGround(rp.x, rp.z), 1); }
             // painted canoes pulled up, a net drying on poles
             for (var k = 0; k < 3; k++) { var cp = c + D * (9f + k * 1.4f) + S * (4f + k * 5f); cp.y = ctx.Ground(cp.x, cp.z) + .1f; var cr = Quaternion.LookRotation((D + S * (k - 1) * .3f).normalized); mk.Box(Paint(Paints[k]), cp + up * .3f, new Vector3(1f, .5f, 5.2f), cr); mk.Box(woodM, cp + up * .5f, new Vector3(.8f, .12f, 4.8f), cr); mk.Box(Paint(Paints[(k + 1) % 3]), cp + up * .44f, new Vector3(1.04f, .14f, 5.24f), cr); foreach (var e in new[] { -1f, 1f }) mk.Prism(Paint(Paints[k]), cp + up * .3f + cr * Vector3.forward * e * 2.6f, cr * (Vector3.forward * e + Vector3.up * .5f).normalized, .34f, 1f, 4, .2f); Col(cp + up * .35f, new Vector3(1f, .7f, 5.4f), cr); Interact.Seat(tlife.transform, cp + up * .56f, cr * Vector3.right, "Sit in the canoe").seatHeight = .5f; }
             var na = c - S * 12f + D * 6f; var nb = na - S * 4f + D * 1f; na.y = ctx.Ground(na.x, na.z); nb.y = ctx.Ground(nb.x, nb.z); foreach (var g in new[] { na, nb }) { mk.Prism(woodM, g - up * .2f, up, .05f, 2.2f, 4); ArtistBits.PostCollider(ctx.Root, g, 2f, .07f); } for (var k = 0; k < 7; k++) mk.Prism(Paint(new Color(.36f, .5f, .5f)), Vector3.Lerp(na, nb, k / 6f) + up * 2f, -up, .01f, 1.5f, 3); for (var k = 0; k < 4; k++) mk.Prism(Paint(new Color(.36f, .5f, .5f)), na + up * (.7f + k * .4f), (nb - na).normalized, .01f, (nb - na).magnitude, 3);
