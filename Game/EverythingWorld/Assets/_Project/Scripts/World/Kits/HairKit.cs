@@ -309,13 +309,14 @@ namespace EverythingWorld.World
         Vector3 HairsprayCan(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 g, float s, Color paint)
         {
             var up = Vector3.up; var body = WorldMaterials.Solid(paint, .85f);
-            mk.Prism(body, g - up * .5f, up, 2f * s, 8f * s, 20);
+            var sink = Mathf.Max(0f, g.y - LowRing(ctx, g, 2f * s) - .3f);   // reaches the lowest ground round its foot
+            mk.Prism(body, g - up * (.5f + sink), up, 2f * s, 8f * s + sink, 20);
             mk.Prism(chrome, g + up * (7.5f * s), up, 2f * s, 1.2f * s, 20, .55f);
             mk.Prism(chrome, g + up * (8.7f * s), up, 1.1f * s, 1f * s, 14);
             mk.Box(black, g + up * (9.3f * s) + Vector3.forward * 1f * s, new Vector3(.4f, .4f, .8f) * s, Quaternion.identity);
             mk.Box(WorldMaterials.Solid(new Color(.95f, .95f, .95f)), g + up * (4f * s) + Vector3.forward * 2.01f * s, new Vector3(2.4f, 2.6f, .02f) * s, Quaternion.identity);   // label
             mk.Box(GlowM(Gold, 1.8f), g + up * (4.9f * s) + Vector3.forward * 2.03f * s, new Vector3(2f, .3f, .02f) * s, Quaternion.identity);
-            solid.Prism(body, g - up * .5f, up, 2f * s, 9.5f * s, 12);
+            solid.Prism(body, g - up * (.5f + sink), up, 2f * s, 9.5f * s + sink, 12);
             noGrass.Add(new Vector3(g.x, 2.5f * s, g.z));
             return g + up * (9.3f * s) + Vector3.forward * 1.5f * s;
         }
@@ -388,9 +389,9 @@ namespace EverythingWorld.World
                 float px = x + ctx.Range(0f, cell), pz = z + ctx.Range(0f, cell);
                 if (!ctx.IsLand(px, pz, 6f) || OnStrip(px, pz, 4f) || InNoGrass(px, pz, 4f) || !ctx.IsFree(px, pz, 8f)) continue;
                 var p = ctx.OnGround(px, pz); var roll = ctx.Range(0f, 1f);
-                if (roll < .1f && mesas < 14) { Mesa(ctx, mk, solid, p); mesas++; }
+                if (roll < .1f && mesas < 14) { if (NearRoad(px, pz, 12f)) continue; Mesa(ctx, mk, solid, p); mesas++; }
                 else if (roll < .22f && cans < 11) { life.cans.Add(HairsprayCan(ctx, mk, solid, p, ctx.Range(.9f, 1.4f), Neon[cans % Neon.Length])); cans++; }
-                else if (roll < .55f) { for (var k = 0; k < ctx.Rng.Next(1, 4); k++) Saguaro(ctx, mk, ctx.OnGround(px + ctx.Range(-6f, 6f), pz + ctx.Range(-6f, 6f))); cacti++; }
+                else if (roll < .55f) { for (var k = 0; k < ctx.Rng.Next(1, 4); k++) { var sp = ctx.OnGround(px + ctx.Range(-6f, 6f), pz + ctx.Range(-6f, 6f)); Saguaro(ctx, mk, sp, NearRoad(sp.x, sp.z, 1.2f) || OnStrip(sp.x, sp.z, 0f)); } cacti++; }
                 else if (roll < .62f && boards < 9) { Billboard(ctx, mk, solid, p, boards); boards++; }
                 else if (roll < .68f && guitars < 7) { ChromeGuitar(ctx, mk, solid, p); guitars++; }
                 else continue;
@@ -399,16 +400,27 @@ namespace EverythingWorld.World
             Debug.Log($"The Hair Metal Strip: {mesas} mesas, {cans} hairspray cans, {cacti} cactus groups, {boards} billboards, {guitars} chrome guitars");
         }
 
+        /// The lowest ground on a ring of radius r round g (and at g).
+        float LowRing(LandContext ctx, Vector3 g, float r)
+        {
+            var lo = ctx.Ground(g.x, g.z); for (var k = 0; k < 12; k++) { var a = k * Mathf.PI / 6f; lo = Mathf.Min(lo, ctx.Ground(g.x + Mathf.Cos(a) * r, g.z + Mathf.Sin(a) * r)); }
+            return lo;
+        }
+
         void Mesa(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 g)
         {
             var up = Vector3.up; var r = ctx.Range(6f, 11f); var h = ctx.Range(7f, 14f);
-            mk.Prism(rock, g - up * 1f, up, r, h * .55f, 9, .85f, ctx.Range(0, 40f));
+            // the base reaches down to the lowest ground under its rim, so it never shows a gap on the downhill side
+            var sink = Mathf.Max(0f, g.y - LowRing(ctx, g, r) - .6f);
+            mk.Prism(rock, g - up * (1f + sink), up, r, h * .55f + sink, 9, .85f, ctx.Range(0, 40f));
             mk.Prism(WorldMaterials.Solid(new Color(.7f, .45f, .34f)), g + up * (h * .55f - 1.05f), up, r * .85f, h * .45f, 9, .9f, ctx.Range(0, 40f));
-            solid.Prism(rock, g - up * 1f, up, r * .9f, h, 8);
+            solid.Prism(rock, g - up * (1f + sink), up, r * .9f, h + sink, 8);
         }
 
-        void Saguaro(LandContext ctx, MeshKit mk, Vector3 g)
+        void Saguaro(LandContext ctx, MeshKit mk, Vector3 g, bool skip = false)
         {
+            // a skipped one (it would stand on a road) still draws its random numbers, so the rest of the desert stays put
+            if (skip) mk = new MeshKit();
             var up = Vector3.up; var green = WorldMaterials.Solid(new Color(.3f, .48f, .3f)); var h = ctx.Range(3f, 6f);
             mk.Prism(green, g - up * .2f, up, .35f, h, 8, .9f);
             mk.Blob(green, g + up * h, Vector3.one * .33f, ctx.Rng, 0f);
@@ -418,15 +430,15 @@ namespace EverythingWorld.World
                 var d = Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.right * s; var y = h * ctx.Range(.35f, .6f);
                 mk.Box(green, g + up * y + d * .5f, new Vector3(.55f, .45f, .5f), Quaternion.LookRotation(d));
                 mk.Prism(green, g + up * y + d * .8f, up, .26f, h * .35f, 8, .9f);
-                BoxCol(ctx.Root, g + up * (y + h * .175f) + d * .7f, new Vector3(.6f, h * .35f + .5f, .8f), Quaternion.LookRotation(d));   // the arm
+                if (!skip) BoxCol(ctx.Root, g + up * (y + h * .175f) + d * .7f, new Vector3(.6f, h * .35f + .5f, .8f), Quaternion.LookRotation(d));   // the arm
             }
-            ArtistBits.PostCollider(ctx.Root, g, h, .35f);
+            if (!skip) ArtistBits.PostCollider(ctx.Root, g, h, .35f);
         }
 
         void Billboard(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 g, int k)
         {
             var up = Vector3.up; var face = new Vector3(streetA.x - g.x, 0, streetA.z - g.z).normalized; var rot = Quaternion.LookRotation(face);
-            foreach (var s in new[] { -3f, 3f }) { mk.Box(chrome, g + up * 4f + Vector3.Cross(up, face) * s, new Vector3(.4f, 8f, .4f), rot); ArtistBits.PostCollider(ctx.Root, g + Vector3.Cross(up, face) * s, 8f, .3f); }
+            foreach (var s in new[] { -3f, 3f }) { var q = g + Vector3.Cross(up, face) * s; var gy = Mathf.Min(g.y, ctx.Ground(q.x, q.z)) - .2f; var len = g.y + 8f - gy; q.y = gy; mk.Box(chrome, q + up * len / 2f, new Vector3(.4f, len, .4f), rot); ArtistBits.PostCollider(ctx.Root, q, len, .3f); }
             mk.Box(chrome, g + up * 9.5f, new Vector3(10f, 4.4f, .4f), rot);
             mk.Box(leopard, g + up * 9.5f + face * .21f, new Vector3(9.4f, 3.8f, .02f), rot);
             for (var i = 0; i < 14; i++) mk.Blob(black, g + up * (8f + (i % 4) * .9f) + Vector3.Cross(up, face) * ((i * 1.37f) % 8.6f - 4.3f) + face * .23f, new Vector3(.22f, .16f, .02f), ctx.Rng, .4f);
@@ -439,7 +451,7 @@ namespace EverythingWorld.World
         void ChromeGuitar(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 g)
         {
             var up = Vector3.up; var face = new Vector3(streetA.x - g.x, 0, streetA.z - g.z).normalized; var rot = Quaternion.LookRotation(face) * Quaternion.Euler(0, 0, ctx.Range(-25f, 25f));
-            mk.Box(black, g + up * .5f, new Vector3(3f, 1f, 3f), Quaternion.LookRotation(face));
+            { var lo = LowRing(ctx, g, 2.1f); var ph = g.y + 1f - lo + .2f; mk.Box(black, new Vector3(g.x, lo - .2f + ph / 2f, g.z), new Vector3(3f, ph, 3f), Quaternion.LookRotation(face)); }
             // a flying-V in chrome, standing on its point
             var u = rot * Vector3.up; var r = rot * Vector3.right;
             mk.Tri(chrome, g + up * 1f, g + up * 1f + u * 5f + r * 2.2f, g + up * 1f + u * 3.4f, g + up * 1f + face * 3f);

@@ -188,6 +188,12 @@ namespace EverythingWorld.World
         void GuitarPool(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c)
         {
             var up = Vector3.up; var face = new Vector3(streetA.x - c.x, 0, streetA.z - c.z).normalized; var side = Vector3.Cross(up, face);
+            // the pool and its deck sit level at the highest ground under them, on a deck that reaches down to the lowest,
+            // so on a slope the water is never tilted into the hill or hanging over it
+            float lo = c.y, hi = c.y;
+            for (var i = -2; i <= 2; i++) for (var j = -2; j <= 2; j++) { var q = c + side * (i * 3.9f + 2.8f) + face * (j * 2.4f - .8f); var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); }
+            c.y = hi;
+            if (hi - lo > .1f) { var dh = hi - lo + .4f; var deck = WorldMaterials.Solid(new Color(.5f, .44f, .46f)); var dc = c + side * 2.8f - face * .8f; dc.y = lo - .4f + dh / 2f + .04f; mk.Box(deck, dc, new Vector3(17f, dh, 11.4f), Quaternion.LookRotation(face)); solid.Box(deck, dc, new Vector3(17f, dh, 11.4f), Quaternion.LookRotation(face)); }
             var water = GlowM(new Color(.25f, .85f, 1f), .9f); const int N = 28; var pts = new List<Vector3>();
             for (var k = 0; k < N; k++) { var a = k * Mathf.PI * 2f / N; var r = 1f + .28f * Mathf.Cos(2f * a); pts.Add(c + side * Mathf.Cos(a) * 4.2f * r + face * Mathf.Sin(a) * 3f * r); }
             for (var k = 0; k < N; k++) { var a = pts[k]; var b = pts[(k + 1) % N]; mk.Tri(water, c + up * .08f, a + up * .08f, b + up * .08f, c - up); mk.Box(chrome, (a + b) / 2f + up * .14f, new Vector3(.25f, .14f, Vector3.Distance(a, b) + .1f), Quaternion.LookRotation(b - a)); }

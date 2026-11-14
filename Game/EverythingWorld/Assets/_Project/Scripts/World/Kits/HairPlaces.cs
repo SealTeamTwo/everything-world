@@ -20,7 +20,7 @@ namespace EverythingWorld.World
         static readonly Vector2[] SouthWay = { new Vector2(7716, 3152), new Vector2(7730, 3105), new Vector2(7722, 3040), new Vector2(7700, 2985), new Vector2(7675, 2925), new Vector2(7666, 2892) };
         static readonly (Vector2 at, float r)[] PlaceRings = { (MotelAt, 16f), (SalonAt, 10f), (ChapelAt, 10f), (ShootAt, 15f), (ShedAt, 10f), (PointAt, 12f) };
 
-        HairPlacesLife plife; System.Random prng; Transform rootT; LandContext ctx0; readonly List<Vector3> roadPts = new List<Vector3>();
+        HairPlacesLife plife; System.Random prng; Transform rootT; LandContext ctx0; readonly List<Vector3> roadPts = new List<Vector3>(), lanePts = new List<Vector3>();
 
         static readonly Color[] Spandex = { new Color(1f, .25f, .65f), new Color(.1f, .1f, .12f), new Color(.3f, .9f, 1f), new Color(1f, .78f, .25f), new Color(.65f, .35f, 1f), new Color(.95f, .95f, .95f), new Color(.85f, .15f, .15f) };
         static readonly Color[] Tights = { new Color(.1f, .1f, .12f), new Color(.85f, .62f, .28f), new Color(1f, .25f, .65f), new Color(.2f, .3f, .6f), new Color(.95f, .95f, .95f) };
@@ -80,15 +80,27 @@ namespace EverythingWorld.World
 
         void RoadStrip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift)
         {
-            var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
                 var a = i > 0 ? Flat(pts[i] - pts[i - 1]) : Flat(pts[1] - pts[0]); var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t); var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] + Vector3.up * lift - side * (w / 2f * miter); R[i] = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ctx0.Ground(l.x, l.z) + ctx0.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ctx0.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        /// Whether a spot is within 'pad' metres of the edge of one of the neon roads or the lanes off them.
+        bool NearRoad(float x, float z, float pad)
+        {
+            foreach (var q in roadPts) { float dx = x - q.x, dz = z - q.z, r = 2.5f + pad; if (dx * dx + dz * dz < r * r) return true; }
+            foreach (var q in lanePts) { float dx = x - q.x, dz = z - q.z, r = 1.3f + pad; if (dx * dx + dz * dz < r * r) return true; }
+            return false;
         }
 
         List<Vector3> NeonRoad(LandContext ctx, MeshKit mk, Vector2[] way, Color c)
@@ -116,12 +128,12 @@ namespace EverythingWorld.World
             var from = Nearest(roadPts, to); var d = new Vector2(to.x - from.x, to.z - from.z); var len = d.magnitude; if (len < stopShort + 3f) return; d /= len;
             var a = new Vector2(from.x, from.z) + d * 2.6f; var b = new Vector2(from.x, from.z) + d * (len - stopShort);
             var pts = Smooth(ctx, new[] { a, Vector2.Lerp(a, b, .5f), b }, false, 2f, 1f); if (pts.Count < 2) return;
-            RoadStrip(mk, pts, pave, 2.6f, .065f); foreach (var p in pts) noGrass.Add(new Vector3(p.x, 3f, p.z));
+            RoadStrip(mk, pts, pave, 2.6f, .065f); foreach (var p in pts) noGrass.Add(new Vector3(p.x, 3f, p.z)); lanePts.AddRange(pts);
         }
 
         void StripPlaces(LandContext ctx, MeshKit mk, MeshKit solid)
         {
-            roadPts.Clear(); rootT = ctx.Root; ctx0 = ctx; prng = new System.Random(1987);
+            roadPts.Clear(); lanePts.Clear(); rootT = ctx.Root; ctx0 = ctx; prng = new System.Random(1987);
             plife = new GameObject("Strip places life").AddComponent<HairPlacesLife>(); plife.transform.SetParent(life.transform, false);
             foreach (var (at, r) in PlaceRings) noGrass.Add(new Vector3(at.x, r, at.y));
             var loop = NeonRoad(ctx, mk, LoopWay, Pink); NeonRoad(ctx, mk, WestWay, Cyan); NeonRoad(ctx, mk, SouthWay, Violet);
