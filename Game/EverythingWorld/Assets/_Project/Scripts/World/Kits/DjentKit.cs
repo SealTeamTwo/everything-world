@@ -72,6 +72,13 @@ namespace EverythingWorld.World
             go.AddComponent<BoxCollider>().size = size; go.isStatic = true;
         }
 
+        /// The lowest ground in a ring of the given radius round a point (for footings that reach down to it).
+        static float Lowest(LandContext ctx, Vector3 at, float r)
+        {
+            var lo = ctx.Ground(at.x, at.z);
+            for (var k = 0; k < 8; k++) { var a = k * Mathf.PI / 4f; lo = Mathf.Min(lo, ctx.Ground(at.x + Mathf.Cos(a) * r, at.z + Mathf.Sin(a) * r)); }
+            return lo;
+        }
         static float Ease(float a, float b, float x) { var t = Mathf.Clamp01((x - a) / (b - a)); return t * t * (3f - 2f * t); }
 
         // ---------------------------------------------------------------- shaping the ground
@@ -197,7 +204,10 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground = null)
         {
-            var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
+            // On the ground it is laid in narrow lanes across its width with every vertex on its own ground (raised only a
+            // little where the middle is higher), so over a terrace edge or a side slope it follows the hill instead of
+            // burying its middle or lifting an edge (it had only an edge vertex each side).
+            var n = pts.Count; var lanes = ground != null ? Lanes(w) : 1; var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -205,16 +215,35 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] + Vector3.up * lift - side * (w / 2f * miter); R[i] = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
-                if (ground != null)
+                var bump = ground != null ? Bump(ground, pts[i], side, w * miter) : 0f;
+                for (var k = 0; k <= lanes; k++)
                 {
-                    // follow the ground across the path (a flat path on a cross-slope floated up to a metre on its
-                    // low side); lift both edges only if the middle bulges above the line between them
-                    float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(R[i].x, R[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .35f);
-                    L[i].y = gl + bulge + lift; R[i].y = gr + bulge + lift;
+                    var q = pts[i] + Vector3.up * lift + side * ((k / (float)lanes - .5f) * w * miter);
+                    if (ground != null) q.y = ground.Ground(q.x, q.z) + bump + lift;
+                    V[i, k] = q;
                 }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        static int Lanes(float w) => Mathf.Max(1, Mathf.CeilToInt(w / 1.2f));
+        static float Bump(LandContext g, Vector3 p, Vector3 side, float w)
+        {
+            var l = p - side * (w / 2f); var r = p + side * (w / 2f);
+            return Mathf.Clamp(p.y - (g.Ground(l.x, l.z) + g.Ground(r.x, r.z)) / 2f, 0f, .25f);
+        }
+
+        /// A gold fret across a path at p, laid in the same lanes as the path so it lies on its surface everywhere
+        /// (one straight bar from edge to edge was buried in the middle where the path crested a terrace edge).
+        void FretAcross(LandContext ctx, MeshKit mk, Vector3 p, Vector3 side, float w, float over = .04f)
+        {
+            var lanes = Lanes(w); var bump = Bump(ctx, p, side, w); Vector3? prev = null;
+            for (var k = 0; k <= lanes; k++)
+            {
+                var q = p + side * ((k / (float)lanes - .5f) * (w - .2f)); q.y = ctx.Ground(q.x, q.z) + bump + .2f + over;
+                if (prev is Vector3 o) mk.Box(fretM, (o + q) / 2f, new Vector3(.12f, .05f, Vector3.Distance(o, q) + .02f), Quaternion.LookRotation(q - o));
+                prev = q;
+            }
         }
 
         /// A pointed hexagonal crystal (the land's building block).
@@ -361,10 +390,8 @@ namespace EverythingWorld.World
                     var a = pts[i]; var b = pts[i - 1]; var dl = a - b; dl.y = 0; if (dl.sqrMagnitude < .01f) continue; var sdd = Vector3.Cross(Vector3.up, dl.normalized);
                     // the fret lies on the path's surface, tilted with it across a slope (it used to sit level at the
                     // path's highest point and float over the low side)
-                    float gl = ctx.Ground(a.x - sdd.x * PathW / 2f, a.z - sdd.z * PathW / 2f), gr = ctx.Ground(a.x + sdd.x * PathW / 2f, a.z + sdd.z * PathW / 2f);
-                    var bulge = Mathf.Clamp(a.y - (gl + gr) / 2f, 0f, .35f); var y = (gl + gr) / 2f + bulge;
-                    var fl = new Vector3(a.x, gl + bulge + .24f, a.z) - sdd * (PathW / 2f); var fr = new Vector3(a.x, gr + bulge + .24f, a.z) + sdd * (PathW / 2f);
-                    mk.Box(fretM, (fl + fr) / 2f, new Vector3(.12f, .05f, PathW - .2f), Quaternion.LookRotation(fr - fl));
+                    var y = a.y + Bump(ctx, a, sdd, PathW);
+                    FretAcross(ctx, mk, a, sdd, PathW);
                     fretN++;
                     if (fretN % 12 == 6) foreach (var s in new[] { -.6f, .6f }) mk.Prism(pearlM, new Vector3(a.x, y + .22f, a.z) - dl.normalized * .75f + sdd * s, Vector3.up, .16f, .04f, 10);
                 }
@@ -446,8 +473,11 @@ namespace EverythingWorld.World
                 var len = k == 0 ? big : big * ctx.Range(.25f, .65f);
                 var d = k == 0 ? Vector3.up : (Quaternion.Euler(ctx.Range(15f, 40f), ctx.Range(0, 360f), 0) * Vector3.up).normalized;
                 var off = k == 0 ? Vector3.zero : new Vector3(ctx.Range(-1.2f, 1.2f), 0, ctx.Range(-1.2f, 1.2f)) * (big * .15f);
-                var foot = at + off; foot.y = Mathf.Min(at.y, ctx.Ground(foot.x, foot.z));
-                Crystal(mk, gold && k == 1 ? goldGlow : (k % 4 == 3 ? crystalDeep : crystal), foot - Vector3.up * .4f, d, len * .13f, len, ctx.Range(0, 60f));
+                var foot = at + off; foot.y = Mathf.Min(at.y, ctx.Ground(foot.x, foot.z)); var twist = ctx.Range(0, 60f);
+                // a big leaning crystal could reach out over a path (only the cluster's middle was kept clear)
+                var reach = foot + d * Mathf.Min(len, 3f / Mathf.Max(.3f, d.y));
+                if (k > 0 && (NearPath(reach.x, reach.z, PathW / 2f + .6f) || NearPath(foot.x, foot.z, PathW / 2f + .6f))) continue;
+                Crystal(mk, gold && k == 1 ? goldGlow : (k % 4 == 3 ? crystalDeep : crystal), foot - Vector3.up * .4f, d, len * .13f, len, twist);
                 // each leaning crystal gets its own collider up to head height (the one box in the middle missed the outer ones)
                 if (k > 0) { var cl = Mathf.Min(len, 3f / Mathf.Max(.3f, d.y)); BoxCol(ctx.Root, foot - Vector3.up * .4f + d * cl / 2f, new Vector3(len * .26f, len * .26f, cl), Quaternion.LookRotation(d)); }
             }
@@ -478,8 +508,9 @@ namespace EverythingWorld.World
         void TeslaCoil(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
             var up = Vector3.up;
-            mk.Prism(slate, at - up * .3f, up, 1.4f, 1.3f, 6); solid.Prism(slate, at - up * .3f, up, 1.4f, 1.3f, 6);
-            mk.Prism(metal, at + up, up, .35f, 6.5f, 10);
+            var lo = Lowest(ctx, at, 1.4f) - .3f;   // the slate base reaches its lowest ground (on a slope it stood a metre off the downhill side)
+            mk.Prism(slate, new Vector3(at.x, lo, at.z), up, 1.4f, at.y + 1f - lo, 6); solid.Prism(slate, new Vector3(at.x, lo, at.z), up, 1.4f, at.y + 1f - lo, 6);
+            mk.Prism(metal, at - up * .3f, up, .35f, 7.8f, 10);   // the rod runs down into its base
             for (var k = 0; k < 9; k++) mk.Prism(k % 2 == 0 ? stoneLight : crystal, at + up * (1.4f + k * .65f), up, .7f, .25f, 12);
             var top = at + up * 8f;
             for (var k = 0; k < 16; k++) { var a = k * Mathf.PI / 8f; var a2 = (k + 1) * Mathf.PI / 8f; var p0 = top + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * 1.4f; var p1 = top + new Vector3(Mathf.Cos(a2), 0, Mathf.Sin(a2)) * 1.4f; mk.Box(metal, (p0 + p1) / 2f, new Vector3(.7f, .7f, Vector3.Distance(p0, p1) + .1f), Quaternion.LookRotation(p1 - p0)); }
@@ -528,10 +559,15 @@ namespace EverythingWorld.World
         void FallenColumn(LandContext ctx, MeshKit mk, Vector3 at)
         {
             var dir = Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward; var r = ctx.Range(.5f, .9f);
+            // only the first piece was kept off the paths, so the others could lie across one: turn it round if that
+            // clears it, and leave out any piece that would still lie on a path (the random numbers are drawn as before)
+            bool Clear(Vector3 dv) { for (var k = 0; k < 3; k++) for (var e = -1.2f; e <= 1.2f; e += 1.2f) { var q = at + dv * (k * 2.6f + e); if (NearPath(q.x, q.z, PathW / 2f + 1f)) return false; } return true; }
+            if (!Clear(dir) && Clear(-dir)) dir = -dir;
             for (var k = 0; k < 3; k++)
             {
                 var p = at + dir * (k * 2.6f); p = ctx.OnGround(p.x, p.z) + Vector3.up * (r * .6f);
                 var d = Quaternion.Euler(0, ctx.Range(-12f, 12f), 0) * dir;
+                if (NearPath(p.x - d.x * 1.2f, p.z - d.z * 1.2f, PathW / 2f + 1f) || NearPath(p.x + d.x * 1.2f, p.z + d.z * 1.2f, PathW / 2f + 1f)) continue;
                 mk.Prism(k == 2 ? crystalDeep : crystal, p - d * 1.1f, d, r, 2.3f, 6, 1f, k * 20f);
                 BoxCol(ctx.Root, p, new Vector3(r * 1.8f, r * 1.8f, 2.4f), Quaternion.LookRotation(d));
             }
@@ -542,7 +578,8 @@ namespace EverythingWorld.World
         void Marker(LandContext ctx, MeshKit mk, Vector3 at)
         {
             var up = Vector3.up;
-            mk.Box(stoneLight, at + up * .3f, new Vector3(1.1f, .6f, 1.1f), Quaternion.Euler(0, 45f, 0));
+            var lo = Lowest(ctx, at, .78f) - .1f;   // the plinth reaches its lowest ground
+            mk.Box(stoneLight, new Vector3(at.x, (lo + at.y + .6f) / 2f, at.z), new Vector3(1.1f, at.y + .6f - lo, 1.1f), Quaternion.Euler(0, 45f, 0));
             mk.Prism(goldM, at + up * .6f, up, .22f, 2.6f, 4, .2f, 45f);
             mk.Blob(goldGlow, at + up * 3.3f, Vector3.one * .14f, ctx.Rng, 0f); halos.Add(at + up * 3.3f, 1.2f, Gold, .5f);
             ArtistBits.PostCollider(ctx.Root, at, 3f, .5f);

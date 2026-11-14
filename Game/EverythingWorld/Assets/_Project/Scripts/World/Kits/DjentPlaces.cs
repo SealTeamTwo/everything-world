@@ -44,7 +44,7 @@ namespace EverythingWorld.World
         void FretSign(MeshKit mk, Vector3 at, Vector3 face, string text, float w = 3f, float size = .2f)
         {
             var up = Vector3.up; var g = G(at); var rot = Quaternion.LookRotation(face);
-            mk.Box(slate, g + up * 1f, new Vector3(w, 1.6f, .25f), rot); Col(g + up * 1f, new Vector3(w, 2f, .3f), rot); foreach (var y in new[] { .22f, 1.78f }) mk.Box(fretM, g + up * y + face * .13f, new Vector3(w, .06f, .03f), rot); mk.Box(stoneLight, g + up * .1f, new Vector3(w + .3f, .2f, .5f), rot);
+            mk.Box(slate, g + up * 1f, new Vector3(w, 1.6f, .25f), rot); Col(g + up * 1f, new Vector3(w, 2f, .3f), rot); foreach (var y in new[] { .22f, 1.78f }) mk.Box(fretM, g + up * y + face * .13f, new Vector3(w, .06f, .03f), rot); var slo = Mathf.Min(g.y, Mathf.Min(G(g + rot * Vector3.right * (w / 2f)).y, G(g - rot * Vector3.right * (w / 2f)).y)) - .05f; mk.Box(stoneLight, new Vector3(g.x, (slo + g.y + .2f) / 2f, g.z), new Vector3(w + .3f, g.y + .2f - slo, .5f), rot);   // the base reaches its lowest ground
             ArtistBits.Label(rootT, text, g + up * 1f + face * .14f, face, size, Gold, TextAnchor.MiddleCenter);
         }
 
@@ -52,7 +52,8 @@ namespace EverythingWorld.World
         void HexBench(MeshKit mk, Vector3 at, Vector3 face, float len = 2.2f)
         {
             var up = Vector3.up; var g = G(at); var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
-            mk.Box(stoneLight, g + up * .25f, new Vector3(len, .5f, .6f), rot); mk.Box(fretM, g + up * .5f + face * .28f, new Vector3(len, .03f, .04f), rot); Col(g + up * .25f, new Vector3(len, .5f, .6f), rot);
+            var blo = Mathf.Min(G(g + side * (len / 2f)).y, G(g - side * (len / 2f)).y) - .05f;   // on a slope the bench reaches down to its lowest end
+            mk.Box(stoneLight, new Vector3(g.x, (blo + g.y + .5f) / 2f, g.z), new Vector3(len, g.y + .5f - blo, .6f), rot); mk.Box(fretM, g + up * .5f + face * .28f, new Vector3(len, .03f, .04f), rot); Col(g + up * .25f, new Vector3(len, .5f, .6f), rot);
             Interact.Bench(plife.transform, g + up * .56f - side * (len / 2f - .45f), g + up * .56f + side * (len / 2f - .45f), face);
         }
 
@@ -62,7 +63,7 @@ namespace EverythingWorld.World
             for (var i = 0; i < pts.Count; i++) { foreach (var a in ctx.Artists) { var r = Foot(a) + 7f; var v = new Vector2(pts[i].x - a.x, pts[i].z - a.z); var d = v.magnitude; if (d < r) { v = d > .01f ? v / d * r : new Vector2(r, 0); pts[i] = ctx.OnGround(a.x + v.x, a.z + v.y); } } if (lanterns) foreach (var c in noGrass) { if (c.y < 8f) continue; var r = c.y + 3f; var v = new Vector2(pts[i].x - c.x, pts[i].z - c.z); var d = v.magnitude; if (d < r) { v = d > .01f ? v / d * r : new Vector2(r, 0); pts[i] = ctx.OnGround(c.x + v.x, c.z + v.y); } } }
             if (pts.Count < 2) return pts;
             Strip(mk, pts, slate, w, .2f, ctx); var up = Vector3.up;
-            for (var i = 1; i < pts.Count - 1; i++) { var d = pts[i + 1] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var sd = Vector3.Cross(up, d); var fl = pts[i] - sd * (w / 2f - .1f); var fr = pts[i] + sd * (w / 2f - .1f); fl.y = ctx.Ground(fl.x, fl.z) + .22f; fr.y = ctx.Ground(fr.x, fr.z) + .22f; mk.Box(fretM, (fl + fr) / 2f, new Vector3(.12f, .05f, w - .2f), Quaternion.LookRotation(fr - fl)); if (i % 12 == 6) foreach (var s in new[] { -.6f, .6f }) mk.Prism(pearlM, pts[i] + up * .22f - d * .75f + sd * s, up, .16f, .04f, 10); }
+            for (var i = 1; i < pts.Count - 1; i++) { var d = pts[i + 1] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var sd = Vector3.Cross(up, d); FretAcross(ctx, mk, pts[i], sd, w, .02f); if (i % 12 == 6) foreach (var s in new[] { -.6f, .6f }) mk.Prism(pearlM, pts[i] + up * (.22f + Bump(ctx, pts[i], sd, w)) - d * .75f + sd * s, up, .16f, .04f, 10); }
             foreach (var p in pts) Remember(p, lanterns ? 700 : 900);
             if (lanterns) { var n = 0; for (var i = 10; i < pts.Count; i += 20) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (n++ % 2 == 0 ? 1f : -1f) * (w / 2f + 1f); if (!InNoGrass(lp.x, lp.z, 1f)) Lantern(ctx, mk, ctx.OnGround(lp.x, lp.z)); } scaleP.AddRange(pts); }
             return pts;
