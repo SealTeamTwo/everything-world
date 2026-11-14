@@ -73,7 +73,9 @@ namespace EverythingWorld.World
                 default: Others(z, SignPost(z)); break;
             }
             SongLamps(z);
-            Board(z, z.At(reach * .6f, -reach * .45f - 1.5f), front);
+            // the covers' wall stands to one side, its near end clear of the lane coming in
+            var bn = Mathf.Max(1, Mathf.Min(7, a.songList?.Length ?? 1)); var bHalf = (bn * .9f * 1.25f + 1.6f) / 2f;
+            Board(z, z.At(reach * .6f, -Mathf.Max(reach * .45f + 1.5f, bHalf + PathW / 2f + .8f)), front);
             ArtistBits.Plaque(z.mk, z.solid, labels, a, z.At(reach * .6f + 1.5f, reach * .45f + 1.5f), front, iron, stripeM, Color.white, 1.6f);
             Lamp(ctx, z.mk, z.At(reach * .5f, reach * .7f), true);
             if (z.area.glowLight == null) z.area.glowLight = ArtistBits.PointLight(root, z.c + up * 4f + front * 3f, a.name.Length % 2 == 0 ? Cold : Red, HasStation(a) ? 22f : 14f, 1.6f);
@@ -92,7 +94,10 @@ namespace EverythingWorld.World
             dir = Vector3.ProjectOnPlane(dir, Vector3.up).normalized; var rot = Quaternion.LookRotation(dir);
             var n = Mathf.Max(1, Mathf.Min(7, z.a.songList?.Length ?? 1)); const float size = .9f; var w = n * size * 1.25f + .6f;
             var c = ground + Vector3.up * 1.7f;
-            z.mk.Box(tileM, c - Vector3.up * .5f - dir * .1f, new Vector3(w + 1f, size + 2.6f, .3f), rot); z.solid.Box(tileM, c - Vector3.up * .5f, new Vector3(w + 1f, size + 2.6f, .4f), rot); z.mk.Box(stripeM, c - Vector3.up * 1.3f + dir * .06f, new Vector3(w + 1f, .2f, .02f), rot); z.mk.Box(dark, c - Vector3.up * .1f + dir * .06f, new Vector3(w + .2f, size + 1.1f, .04f), rot); z.mk.Box(Paint(new Color(.9f, .88f, .82f)), c - Vector3.up * .1f + dir * .09f, new Vector3(w, size + .9f, .02f), rot);
+            // the tiled wall reaches down to the lowest ground under its ends
+            var sd = Vector3.Cross(Vector3.up, dir); var lo = ground.y; foreach (var e in new[] { -1f, -.5f, .5f, 1f }) { var q = ground + sd * e * (w + 1f) / 2f; lo = Mathf.Min(lo, z.ctx.Ground(q.x, q.z)); }
+            var drop = Mathf.Max(0f, ground.y - lo);
+            z.mk.Box(tileM, c - Vector3.up * (.5f + drop / 2f) - dir * .1f, new Vector3(w + 1f, size + 2.6f + drop, .3f), rot); z.solid.Box(tileM, c - Vector3.up * (.5f + drop / 2f), new Vector3(w + 1f, size + 2.6f + drop, .4f), rot); z.mk.Box(stripeM, c - Vector3.up * 1.3f + dir * .06f, new Vector3(w + 1f, .2f, .02f), rot); z.mk.Box(dark, c - Vector3.up * .1f + dir * .06f, new Vector3(w + .2f, size + 1.1f, .04f), rot); z.mk.Box(Paint(new Color(.9f, .88f, .82f)), c - Vector3.up * .1f + dir * .09f, new Vector3(w, size + .9f, .02f), rot);
             ArtistBits.CoverWall(z.pictures, z.labels, z.ctx, z.a, c + dir * .11f + Vector3.up * .08f, dir, n, size, n, true, Ink);
         }
 

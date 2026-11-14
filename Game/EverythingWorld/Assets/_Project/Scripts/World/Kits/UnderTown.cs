@@ -54,7 +54,12 @@ namespace EverythingWorld.World
             var up = Vector3.up; var c = ctx.OnGround(center.x, center.z); var rot = Quaternion.LookRotation(D); const float D0 = -28f, D1 = 12f, H = 7f;
             // floor: the platform in tiles, the track bed of dark ballast with two rails
             mk.Box(concreteD, c + D * ((D0 + D1) / 2f) - up * .25f, new Vector3(20f, .5f, D1 - D0), rot); mk.Box(tileM, c + D * ((D0 + D1) / 2f) + S * 2f + up * .01f, new Vector3(10f, .02f, D1 - D0), rot); mk.Box(Paint(new Color(.9f, .76f, .2f)), c + D * ((D0 + D1) / 2f) - S * 2.9f + up * .02f, new Vector3(.3f, .02f, D1 - D0), rot); mk.Box(Paint(new Color(.16f, .14f, .14f)), c + D * ((D0 + D1) / 2f) - S * 6f + up * .01f, new Vector3(5.6f, .02f, D1 - D0), rot); foreach (var e in new[] { -6.7f, -5.3f }) mk.Box(iron, c + D * ((D0 + D1) / 2f) + S * e + up * .08f, new Vector3(.1f, .14f, D1 - D0), rot); for (var k = 0; k < 40; k++) mk.Box(Paint(new Color(.3f, .24f, .2f)), c + D * (D0 + k * 1f) - S * 6f + up * .03f, new Vector3(2.4f, .04f, .3f), rot);
-            for (var k = -2; k <= 2; k++) { Remember(c + S * 8.8f + D * k * 6f, 0); Remember(c + D * 11f + S * k * 2f, 0); }
+            // inside the platform (kept clear, but no lane starts here: a lane from the middle would run across the benches,
+            // the tracks or the train); lanes leave from the ways off it: the gaps between the columns on the open side (the
+            // one by the ticket machine shifted clear of it), and both sides of the front end past the train
+            for (var k = -2; k <= 2; k++) { Remember(c + S * 8.8f + D * k * 6f, 2); Remember(c + D * 11f + S * k * 2f, 2); }
+            foreach (var d in new[] { -20f, -12f, -5.5f, 4f, 10.2f }) Remember(ctx.OnGround((c + D * d + S * 9.6f).x, (c + D * d + S * 9.6f).z), 3);
+            Remember(ctx.OnGround((c + D * 10.2f - S * 9.6f).x, (c + D * 10.2f - S * 9.6f).z), 3);
             // the vault and its columns
             for (var d = D0; d <= D1 + .01f; d += 4f) { for (var k = 0; k <= 12; k++) { var a = Mathf.PI * k / 12f; var p = c + D * d + S * Mathf.Cos(a) * 9.6f + up * (4.6f + Mathf.Sin(a) * 2.6f); mk.Box(concrete, p, new Vector3(2.6f, .5f, 4.04f), rot * Quaternion.Euler(0, 0, -Mathf.Cos(a) * 60f)); } if (((int)d) % 8 == 0) foreach (var e in new[] { -1f, 1f }) Column(ctx, mk, c + D * d + S * e * 9.2f, 4.6f, e > 0); }
             for (var d = D0 + 4f; d <= D1; d += 8f) { var lp = c + D * d + S * 2f + up * 5.4f; mk.Box(lampM, lp, new Vector3(.2f, .1f, 2.4f), rot); halos.Add(lp, 2f, Amber, .3f); ArtistBits.PointLight(ctx.Root, lp - up * .4f, new Color(1f, .8f, .6f), 14f, 1.6f, true); }
