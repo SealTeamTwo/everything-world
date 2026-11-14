@@ -79,9 +79,9 @@ namespace EverythingWorld.World
             Vector2 near = way[0]; var bd = 140f * 140f; foreach (var (p, _) in walkPoints) { var d = (p.x - way[0].x) * (p.x - way[0].x) + (p.z - way[0].y) * (p.z - way[0].y); if (d < bd) { bd = d; near = new Vector2(p.x, p.z); } }
             var full = new List<Vector2> { near }; full.AddRange(way);
             var pts = Smooth(ctx, full, false, 2.5f); Bend(ctx, pts); pts.RemoveAll(p => WaterAt(p.x, p.z, 2f, out _)); if (pts.Count < 2) return;
-            Strip(mk, pts, WorldMaterials.Solid(new Color(.6f, .52f, .38f)), 3.6f, .05f);
+            GroundStrip(ctx, mk, pts, WorldMaterials.Solid(new Color(.6f, .52f, .38f)), 3.6f, .05f);
             var up = Vector3.up; var n = 0;
-            for (var i = 8; i < pts.Count; i += 16) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (n++ % 2 == 0 ? 2.6f : -2.6f); if (ctx.IsLand(lp.x, lp.z, 2f) && !WaterAt(lp.x, lp.z, 2f, out _) && !InFootprint(ctx, lp.x, lp.z, 3f)) Lamp(ctx, mk, ctx.Root, ctx.OnGround(lp.x, lp.z)); }
+            for (var i = 8; i < pts.Count; i += 16) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (n++ % 2 == 0 ? 2.6f : -2.6f); if (ctx.IsLand(lp.x, lp.z, 2f) && !WaterAt(lp.x, lp.z, 2f, out _) && !InFootprint(ctx, lp.x, lp.z, 3f) && !NearPath(lp.x, lp.z, 2.2f)) Lamp(ctx, mk, ctx.Root, ctx.OnGround(lp.x, lp.z)); }
             foreach (var p in pts) Remember(p, 700);
             roadPts.AddRange(pts);
         }
@@ -92,7 +92,7 @@ namespace EverythingWorld.World
             var a = new Vector2(from.x, from.z) + d * 1.9f; var b = new Vector2(from.x, from.z) + d * (len - stopShort); var side = new Vector2(-d.y, d.x);
             var pts = Smooth(ctx, new[] { a, Vector2.Lerp(a, b, .5f) + side * Mathf.Min(6f, len * .1f), b }, false, 2f, 1f); pts.RemoveAll(p => WaterAt(p.x, p.z, 1.5f, out _));
             if (pts.Count < 2) return;
-            Strip(mk, pts, WorldMaterials.Solid(new Color(.52f, .45f, .33f)), 2.4f, .045f); foreach (var p in pts) Remember(p, 900);
+            GroundStrip(ctx, mk, pts, WorldMaterials.Solid(new Color(.52f, .45f, .33f)), 2.4f, .045f); foreach (var p in pts) Remember(p, 900);
         }
 
         void BayouPlaces(LandContext ctx, MeshKit mk, MeshKit solid)

@@ -64,8 +64,8 @@ namespace EverythingWorld.World
             if (best < float.MaxValue && best > stop + 3f)
             {
                 var pts = new List<Vector3>(); var from = new Vector3(join.x, 0, join.z); var dir = new Vector3(c.x - join.x, 0, c.z - join.z).normalized; var len = best - stop; var wet = false;
-                for (var d = RoadW / 2f + .1f; ; d += 1.5f) { var dd = Mathf.Min(d, len); var q = from + dir * dd; if (!ctx.IsLand(q.x, q.z, 0f)) break; if (WaterAt(q.x, q.z, 1f, out _)) wet = true; pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= len) break; }
-                if (pts.Count > 1) { if (wet) Bridge(ctx, mk, solid, pts); else Strip(mk, pts, WorldMaterials.Solid(Mud * 1.2f), 2.4f, .06f); foreach (var p in pts) Remember(p, 350); }
+                for (var d = RoadW / 2f + .1f; ; d += 1.5f) { var dd = Mathf.Min(d, len); var q = RoundAreas(ctx, from + dir * dd, from, dir, null, 3f); if (!ctx.IsLand(q.x, q.z, 0f)) break; if (WaterAt(q.x, q.z, 1f, out _)) wet = true; pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= len) break; }
+                if (pts.Count > 1) { if (wet) Bridge(ctx, mk, solid, pts); else GroundStrip(ctx, mk, pts, WorldMaterials.Solid(Mud * 1.2f), 2.4f, .06f); foreach (var p in pts) Remember(p, 350); }
             }
             var side = Vector3.Cross(Vector3.up, face); var sp = ctx.OnGround(c.x + face.x * stop + side.x * 2.4f, c.z + face.z * stop + side.z * 2.4f); var rot = Quaternion.LookRotation(face);
             mk.Box(greyWood, sp + Vector3.up * .7f, new Vector3(.2f, 1.4f, .2f), rot); mk.Box(plank, sp + Vector3.up * 1.5f, new Vector3(2.8f, .6f, .1f), rot * Quaternion.Euler(0, 0, 3f));
@@ -103,7 +103,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var dir = Vector3.Cross(up, face); var rot = Quaternion.LookRotation(dir); var asphalt = WorldMaterials.Solid(new Color(.22f, .22f, .24f));
             var pts = new List<Vector3>(); for (var k = -8; k <= 8; k++) { var p = c + dir * k * 1.2f; pts.Add(ctx.OnGround(p.x, p.z)); }
-            Strip(mk, pts, asphalt, 5f, .07f); for (var k = -7; k <= 7; k += 2) mk.Box(WorldMaterials.Solid(new Color(.95f, .85f, .3f)), ctx.OnGround(c.x + dir.x * k * 1.2f, c.z + dir.z * k * 1.2f) + up * .09f, new Vector3(.12f, .02f, .9f), rot);
+            GroundStrip(ctx, mk, pts, asphalt, 5f, .07f); for (var k = -7; k <= 7; k += 2) mk.Box(WorldMaterials.Solid(new Color(.95f, .85f, .3f)), ctx.OnGround(c.x + dir.x * k * 1.2f, c.z + dir.z * k * 1.2f) + up * .09f, new Vector3(.12f, .02f, .9f), rot);
             var paint = WorldMaterials.Solid(new Color(.15f, .35f, .6f), .8f); var car = c + up * .1f; var side = face;
             mk.Box(paint, car + up * .6f, new Vector3(1.9f, .6f, 4.6f), rot); mk.Box(WorldMaterials.Solid(new Color(.9f, .88f, .8f)), car + up * .92f - dir * .4f, new Vector3(1.7f, .12f, 1.6f), rot);
             mk.Box(WorldMaterials.Solid(new Color(.2f, .25f, .3f), .9f), car + up * 1.15f + dir * .6f, new Vector3(1.7f, .45f, .05f), rot * Quaternion.Euler(-25f, 0, 0));

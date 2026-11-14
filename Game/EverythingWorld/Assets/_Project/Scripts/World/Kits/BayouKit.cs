@@ -430,6 +430,41 @@ namespace EverythingWorld.World
             return built.GetComponent<Renderer>();
         }
 
+        /// A road or path laid on the ground: in narrow lanes across its width with every vertex on its own ground
+        /// (raised only a little where the middle is higher), so on a side slope it follows the ground instead of
+        /// burying one edge and lifting the other.
+        void GroundStrip(LandContext ground, MeshKit mk, List<Vector3> pts, Material m, float w, float lift)
+        {
+            var n = pts.Count; if (n < 2) return; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
+            Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
+            for (var i = 0; i < n; i++)
+            {
+                var a = i > 0 ? Flat(pts[i] - pts[i - 1]) : Flat(pts[1] - pts[0]);
+                var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
+                var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
+                var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(ground.Ground(pts[i].x, pts[i].z) - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
+            }
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        /// Bend a point round any artist's area it falls in (other than its own): onto an arc on whichever side the
+        /// straight line from `from` passes, so the path never flips across the area.
+        Vector3 RoundAreas(LandContext ctx, Vector3 q, Vector3 from, Vector3 dir, string own, float pad)
+        {
+            var side = Vector3.Cross(Vector3.up, dir);
+            foreach (var o in ctx.Artists)
+            {
+                if (o.name == own) continue; var r = Foot(o) + pad; var ov = new Vector3(o.x, 0, o.z); var rel = new Vector3(q.x, 0, q.z) - ov;
+                if (rel.sqrMagnitude >= r * r) continue;
+                var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(new Vector3(from.x, 0, from.z) - ov, side) >= 0f ? 1f : -1f;
+                q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+            }
+            return q;
+        }
+
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift)
         {
             var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
@@ -582,8 +617,9 @@ namespace EverythingWorld.World
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, _) in walkPoints)
+                    foreach (var (p, w) in walkPoints)
                     {
+                        if (w > 0 && InFootprint(ctx, p.x, p.z, 2f)) continue;   // never branch from inside an artist's area
                         var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
                         if (d < best) { best = d; next = a; join = p; }
                     }
@@ -600,6 +636,7 @@ namespace EverythingWorld.World
                 {
                     var dd = Mathf.Min(d, end);
                     var q = from + dir * dd + side * Mathf.Sin(dd / Mathf.Max(end, 1f) * Mathf.PI) * Mathf.Min(7f, end * .05f);
+                    q = RoundAreas(ctx, q, from, dir, next.name, 3f);   // round other artists' areas, not across them
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
                     var g = ctx.Ground(q.x, q.z);
                     var over = WaterAt(q.x, q.z, 2.5f, out var s);
@@ -612,7 +649,7 @@ namespace EverythingWorld.World
                 for (var i = 0; i <= pts.Count; i++)
                 {
                     if (i < pts.Count && (run.Count == 0 || wet[i] == runWet)) { run.Add(pts[i]); runWet = wet[i]; continue; }
-                    if (run.Count > 1) { if (runWet) Bridge(ctx, mk, solid, run); else Strip(mk, run, dirt, RoadW, .05f); }
+                    if (run.Count > 1) { if (runWet) Bridge(ctx, mk, solid, run); else GroundStrip(ctx, mk, run, dirt, RoadW, .05f); }
                     if (i < pts.Count) { var last = run[run.Count - 1]; run = new List<Vector3> { last, pts[i] }; runWet = wet[i]; }
                 }
                 foreach (var p in pts) Remember(p, walk);
@@ -621,7 +658,7 @@ namespace EverythingWorld.World
                     if (wet[i]) continue;
                     var lp = pts[i] + side * ((i / 8) % 2 == 0 ? 1f : -1f) * (RoadW / 2f + .8f);
                     var near = false; foreach (var o in lamps) if ((o - lp).sqrMagnitude < 24f * 24f) near = true;
-                    if (near || WaterAt(lp.x, lp.z, 1f, out _)) continue;
+                    if (near || WaterAt(lp.x, lp.z, 1f, out _) || NearPath(lp.x, lp.z, 2.2f) || InFootprint(ctx, lp.x, lp.z, 1f)) continue;
                     lamps.Add(lp);
                     Lamp(ctx, mk, ctx.Root, ctx.OnGround(lp.x, lp.z));
                 }

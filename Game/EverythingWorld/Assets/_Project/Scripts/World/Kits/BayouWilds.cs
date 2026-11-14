@@ -46,12 +46,14 @@ namespace EverythingWorld.World
                 var nearWater = WaterAt(px, pz, 14f, out var surface);
                 var nearRoad = NearPath(px, pz, 12f);
                 var roll = ctx.Range(0f, 1f);
+                // how much the ground falls across r round the spot: trucks and benches only go where it's level
+                float Fall(float r) { float lo = p.y, hi = p.y; for (var k = 0; k < 8; k++) { var a = k * Mathf.PI / 4f; var h = ctx.Ground(px + Mathf.Cos(a) * r, pz + Mathf.Sin(a) * r); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
                 if (nearWater && docks < 6 && roll < .22f) { if (Dock(ctx, mk, solid, p)) docks++; else continue; }
                 else if (nearWater && shacks < 5 && roll < .36f) { StiltShack(ctx, mk, solid, p); shacks++; }
                 else if (nearWater && roll < .5f) { Heron(ctx, mk, p); herons++; }
-                else if (nearRoad && trucks < 3 && roll < .12f) { Pickup(ctx, mk, solid, p, Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward, new Color(.55f, .3f, .2f)); trucks++; }
-                else if (nearRoad && benches < 7 && roll < .24f) { Bench(ctx, mk, solid, p); benches++; }
-                else if (roll < .42f) { for (var k = 0; k < ctx.Rng.Next(1, 3); k++) { var q = ctx.OnGround(px + ctx.Range(-7f, 7f), pz + ctx.Range(-7f, 7f)); if (WaterAt(q.x, q.z, 3f, out _)) continue; LiveOak(ctx, mk, q, ctx.Range(1.1f, 1.6f)); } oaks++; }
+                else if (nearRoad && trucks < 3 && roll < .12f) { if (Fall(2.7f) > .45f) continue; Pickup(ctx, mk, solid, p, Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward, new Color(.55f, .3f, .2f)); trucks++; }
+                else if (nearRoad && benches < 7 && roll < .24f) { if (Fall(1.6f) > .3f) continue; Bench(ctx, mk, solid, p); benches++; }
+                else if (roll < .42f) { for (var k = 0; k < ctx.Rng.Next(1, 3); k++) { var q = ctx.OnGround(px + ctx.Range(-7f, 7f), pz + ctx.Range(-7f, 7f)); if (WaterAt(q.x, q.z, 3f, out _) || NearPath(q.x, q.z, 4f) || InFootprint(ctx, q.x, q.z, 2f)) continue; LiveOak(ctx, mk, q, ctx.Range(1.1f, 1.6f)); } oaks++; }
                 else if (roll < .58f) { Palmettos(ctx, p); palms++; }
                 else if (roll < .64f && camps < 4) { Camp(ctx, mk, solid, p); camps++; }
                 else if (roll < .7f && hammocks < 3) { Hammock(ctx, mk, solid, p); hammocks++; }
@@ -284,7 +286,7 @@ namespace EverythingWorld.World
             for (var d = RoadW / 2f; ; d += 3f)
             {
                 var dd = Mathf.Min(d, total);
-                var q = from + dir * dd + side * Mathf.Sin(dd / total * Mathf.PI * 2f) * 4f;
+                var q = RoundAreas(ctx, from + dir * dd + side * Mathf.Sin(dd / total * Mathf.PI * 2f) * 4f, from, dir, null, 3f);
                 var g = ctx.Ground(q.x, q.z); var over = WaterAt(q.x, q.z, 2f, out var s);
                 pts.Add(new Vector3(q.x, over ? Mathf.Max(g, s + .7f) : g, q.z)); wet.Add(over);
                 if (dd >= total) break;
@@ -294,7 +296,7 @@ namespace EverythingWorld.World
             for (var i = 0; i <= pts.Count; i++)
             {
                 if (i < pts.Count && (run.Count == 0 || wet[i] == runWet)) { run.Add(pts[i]); runWet = wet[i]; continue; }
-                if (run.Count > 1) { if (runWet) Bridge(ctx, mk, solid, run); else Strip(mk, run, dirt, 2.4f, .05f); }
+                if (run.Count > 1) { if (runWet) Bridge(ctx, mk, solid, run); else GroundStrip(ctx, mk, run, dirt, 2.4f, .05f); }
                 if (i < pts.Count) { var last = run[run.Count - 1]; run = new List<Vector3> { last, pts[i] }; runWet = wet[i]; }
             }
             foreach (var p in pts) Remember(p, 997);
