@@ -41,6 +41,29 @@ namespace EverythingWorld.World
             return hi - lo < drop;
         }
 
+        /// The lowest and highest ground under a w by d footprint facing face (a 3 by 3 grid).
+        (float lo, float hi) Under(LandContext ctx, Vector3 c, Vector3 face, float w, float d)
+        {
+            var side = Vector3.Cross(Vector3.up, face); float lo = float.MaxValue, hi = float.MinValue;
+            for (var i = -1; i <= 1; i++) for (var j = -1; j <= 1; j++) { var q = c + side * (i * w / 2f) + face * (j * d / 2f); var y = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, y); hi = Mathf.Max(hi, y); }
+            return (lo, hi);
+        }
+
+        /// A footing under a level floor whose top is at top, down into the lowest ground under it.
+        void Footing(MeshKit mk, MeshKit solid, Material m, Vector3 c, Quaternion rot, float w, float d, float lo, float top)
+        {
+            if (top - lo < .08f) return;
+            var h = top - lo + .3f; var at = new Vector3(c.x, top - h / 2f, c.z);
+            mk.Box(m, at, new Vector3(w, h, d), rot); solid.Box(m, at, new Vector3(w, h, d), rot);
+        }
+
+        /// A post standing on its own ground and reaching up to the height top.
+        void PostTo(LandContext ctx, MeshKit mk, Vector3 p, float top, float r, int sides)
+        {
+            var g = ctx.OnGround(p.x, p.z); mk.Prism(metal, g - Vector3.up * .2f, Vector3.up, r, top - g.y + .2f, sides);
+            ArtistBits.PostCollider(ctx.Root, g, top - g.y, r + .05f);
+        }
+
         bool InRing(LandContext ctx, Vector3 q, float pad)
         {
             foreach (var a in ctx.Artists) if (new Vector2(q.x - a.x, q.z - a.z).magnitude < a.r + pad) return true;
@@ -173,6 +196,7 @@ namespace EverythingWorld.World
         void BuskerStage(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face, string id)
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
+            var (lo, hi) = Under(ctx, c, face, 3.3f, 2.4f); c.y = hi; Footing(mk, solid, dark, c, rot, 3.2f, 2.3f, lo, c.y);   // level, on a footing down to the ground
             for (var k = 0; k < 3; k++) mk.Box(wood, c + side * (k - 1f) * 1.1f + up * .08f, new Vector3(1.05f, .16f, 2.4f), rot);
             solid.Box(wood, c + up * .08f, new Vector3(3.3f, .16f, 2.4f), rot);
             var mic = c + up * .16f; mk.Prism(metal, mic, up, .03f, 1.55f, 6); mk.Box(dark, mic + up * 1.6f, new Vector3(.1f, .2f, .1f), rot); ArtistBits.PostCollider(ctx.Root, mic, 1.6f, .15f);
@@ -181,7 +205,7 @@ namespace EverythingWorld.World
             mk.Box(dark, case_ + up * .06f, new Vector3(.45f, .1f, 1.1f), rot * Quaternion.Euler(0, 20f, 0));
             mk.Box(WorldMaterials.Solid(new Color(.5f, .15f, .2f)), case_ + up * .1f, new Vector3(.38f, .03f, 1f), rot * Quaternion.Euler(0, 20f, 0));
             for (var k = 0; k < 6; k++) mk.Prism(SongGlow(id, Yellow, 1.6f), case_ + up * .12f + side * (k % 2 - .5f) * .15f + face * (k * .1f - .25f), up, .03f, .01f, 8);
-            foreach (var s in new[] { -1f, 1f }) { var p = c - face * 1.6f + side * s * 2f; mk.Prism(metal, p, up, .06f, 3.6f, 6); ArtistBits.PostCollider(ctx.Root, p, 3.6f, .1f); }
+            foreach (var s in new[] { -1f, 1f }) PostTo(ctx, mk, c - face * 1.6f + side * s * 2f, c.y + 3.6f, .06f, 6);
             mk.Box(metal, c - face * 1.6f + up * 3.6f, new Vector3(4.2f, .1f, .1f), rot);
             mk.Prism(SongGlow(id, Yellow, 2.8f), c - face * 1.4f + up * 3.4f, (face - up).normalized, .22f, .3f, 10, 1.4f);
             ArtistBits.PointLight(ctx.Root, c + up * 2.2f, Yellow, 9f, 2.2f);
@@ -192,6 +216,7 @@ namespace EverythingWorld.World
         void TvStack(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face, string id)
         {
             var up = Vector3.up; var side = Vector3.Cross(up, face); var shell = WorldMaterials.Solid(new Color(.3f, .27f, .25f));
+            var (lo, hi) = Under(ctx, c, face, 4.2f, .9f); c.y = hi; Footing(mk, solid, dark, c, Quaternion.LookRotation(face), 4.3f, 1f, lo, c.y + .03f);   // the bottom row stands level on a plinth
             for (var row = 0; row < 3; row++)
                 for (var col = 0; col < 4 - row; col++)
                 {
@@ -236,12 +261,13 @@ namespace EverythingWorld.World
         void DanceFloor(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face, string id)
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
+            var (lo, hi) = Under(ctx, c, face, 5.1f, 5.1f); c.y = hi; Footing(mk, solid, dark, c, rot, 5.2f, 5.2f, lo, c.y);   // level, on a footing down to the ground
             for (var i = 0; i < 5; i++) for (var j = 0; j < 5; j++)
             {
                 var col = (i + j) % 3 == 0 ? Hot : (i + j) % 3 == 1 ? Cyan : Yellow;
                 mk.Box(SongGlow(id, col, 1.4f), c + side * (i - 2f) * 1.02f + face * (j - 2f) * 1.02f + up * .06f, new Vector3(1f, .12f, 1f), rot);
             }
-            foreach (var s in new[] { -1f, 1f }) foreach (var t in new[] { -1f, 1f }) { var p = c + side * s * 3f + face * t * 3f; mk.Prism(metal, p, up, .06f, 4.4f, 6); ArtistBits.PostCollider(ctx.Root, p, 4.4f, .1f); }
+            foreach (var s in new[] { -1f, 1f }) foreach (var t in new[] { -1f, 1f }) PostTo(ctx, mk, c + side * s * 3f + face * t * 3f, c.y + 4.4f, .06f, 6);
             foreach (var s in new[] { -1f, 1f }) { mk.Box(metal, c + side * s * 3f + up * 4.4f, new Vector3(.08f, .08f, 6f), rot); mk.Box(metal, c + face * s * 3f + up * 4.4f, new Vector3(6f, .08f, .08f), rot); }
             mk.Box(metal, c + up * 4.05f, new Vector3(.02f, .7f, .02f), rot);
             mk.Blob(WorldMaterials.Solid(new Color(.85f, .88f, .95f), .95f), c + up * 3.5f, Vector3.one * .45f, ctx.Rng, 0f);
@@ -254,14 +280,16 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
             var dirt = WorldMaterials.Solid(new Color(.45f, .33f, .25f)); var white = WorldMaterials.Solid(new Color(.95f, .95f, .93f));
-            mk.Prism(dirt, c + up * .02f, up, 4.4f, .03f, 16);
-            var plate = c - face * 2.4f; mk.Box(white, plate + up * .06f, new Vector3(.45f, .02f, .45f), rot * Quaternion.Euler(0, 45f, 0));
-            foreach (var (a, d) in new[] { (45f, 3f), (-45f, 3f) }) { var q = plate + Quaternion.Euler(0, a, 0) * face * d; mk.Box(white, q + up * .07f, new Vector3(.35f, .06f, .35f), rot); }
-            for (var k = -3; k <= 3; k++) { var p = plate - face * 1.8f + side * k * .9f; mk.Prism(metal, p, up, .04f, 3.2f, 6); }
+            // the infield dirt laid on the ground (a fan of triangles, every vertex on the ground)
+            Vector3 D(float a, float r) { var q = c + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * r; return ctx.OnGround(q.x, q.z) + up * .04f; }
+            for (var k = 0; k < 16; k++) { float a0 = k * Mathf.PI / 8f, a1 = (k + 1) * Mathf.PI / 8f; mk.Tri(dirt, D(0, 0), D(a0, 2.2f), D(a1, 2.2f), D(0, 0) - up * 2f); mk.Quad(dirt, D(a0, 2.2f), D(a0, 4.4f), D(a1, 4.4f), D(a1, 2.2f), D(a0, 3.3f) - up * 2f); }
+            var plate = c - face * 2.4f; plate = ctx.OnGround(plate.x, plate.z); mk.Box(white, plate + up * .06f, new Vector3(.45f, .02f, .45f), rot * Quaternion.Euler(0, 45f, 0));
+            foreach (var (a, d) in new[] { (45f, 3f), (-45f, 3f) }) { var q = plate + Quaternion.Euler(0, a, 0) * face * d; q = ctx.OnGround(q.x, q.z); mk.Box(white, q + up * .07f, new Vector3(.35f, .06f, .35f), rot); }
+            for (var k = -3; k <= 3; k++) { var p = plate - face * 1.8f + side * k * .9f; var gp = ctx.Ground(p.x, p.z); mk.Prism(metal, new Vector3(p.x, gp - .2f, p.z), up, .04f, plate.y + 3.2f - gp + .2f, 6); }   // each from its own ground
             mk.Box(WorldMaterials.Solid(new Color(.4f, .42f, .45f), .3f), plate - face * 1.8f + up * 1.6f, new Vector3(5.6f, 3.2f, .03f), rot);
             solid.Box(metal, plate - face * 1.8f + up * 1.6f, new Vector3(5.6f, 3.2f, .2f), rot);
-            var bench = c + side * 4.4f; mk.Box(wood, bench + up * .45f, new Vector3(.45f, .06f, 2.4f), rot); solid.Box(wood, bench + up * .25f, new Vector3(.45f, .5f, 2.4f), rot);
-            const float PH = 6.5f; var pole = c + side * -4.6f - face * 1f; mk.Prism(metal, pole, up, .14f, PH, 8); ArtistBits.PostCollider(ctx.Root, pole, PH, .2f);
+            var bench = c + side * 4.4f; bench = ctx.OnGround(bench.x, bench.z); mk.Box(wood, bench + up * .45f, new Vector3(.45f, .06f, 2.4f), rot); solid.Box(wood, bench + up * .25f, new Vector3(.45f, .5f, 2.4f), rot);
+            const float PH = 6.5f; var pole = c + side * -4.6f - face * 1f; pole = ctx.OnGround(pole.x, pole.z); mk.Prism(metal, pole, up, .14f, PH, 8); ArtistBits.PostCollider(ctx.Root, pole, PH, .2f);
             mk.Box(dark, pole + up * PH, new Vector3(2f, 1.2f, .3f), rot);
             for (var i = 0; i < 3; i++) for (var j = 0; j < 2; j++) mk.Box(SongGlow(id, new Color(.9f, .95f, 1f), 3f), pole + up * (PH - .3f + j * .55f) + side * (i - 1f) * .6f + face * .16f, new Vector3(.45f, .4f, .03f), rot);
             var flag = WorldMaterials.Solid(new Color(.95f, .5f, .15f)); mk.Box(flag, bench + up * 1.4f, new Vector3(.03f, .35f, .9f), rot * Quaternion.Euler(0, 0, 0)); mk.Box(SongGlow(id, Blue, 2f), bench + up * 1.4f + side * .02f, new Vector3(.02f, .12f, .7f), rot);

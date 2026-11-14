@@ -31,6 +31,10 @@ namespace EverythingWorld.World
             if (hasStreet) c.y = StreetY(Vector3.Dot(c - streetA, streetDir)) + .05f;
             var wallM = WorldMaterials.Solid(Paint[Mathf.Abs(a.name.GetHashCode()) % Paint.Length]);
             var concrete = WorldMaterials.Solid(new Color(.45f, .45f, .46f));
+            // the Row climbs along its length, so the floor sits at the highest ground under the garage, on a concrete
+            // footing down to the lowest (no wall left in the air at the low end)
+            var (gLo, gHi) = Under(ctx, c, face, W, D); c.y = Mathf.Max(c.y, gHi + .05f);
+            Footing(mk, solid, concrete, c, rot, W + .1f, D + .1f, gLo, c.y);
             void Wall(Vector3 p, Vector3 size) { mk.Box(wallM, p, size, rot); solid.Box(wallM, p, size, rot); }
             // the floor, walls (the sides fit between front and back), the roof, the header over the door
             mk.Box(concrete, c + up * .05f, new Vector3(W, .1f, D), rot);
@@ -64,7 +68,7 @@ namespace EverythingWorld.World
             halos.Add(signAt + face * 1.4f, 1.8f, col, .8f);
             // the plaque by the door
             ArtistBits.Plaque(mk, solid, labels, a, ctx.OnGround(fz.x + face.x * 2.4f + side.x * (W / 2f + 1.2f), fz.z + face.z * 2.4f + side.z * (W / 2f + 1.2f)), face, wood, dark, Ink, 1.5f);
-            var outside = fz + face * 3.2f; outside.y = c.y;
+            var outside = fz + face * 3.2f; outside = ctx.OnGround(outside.x, outside.z);   // the car or van outside stands on the ground, not at the raised floor's height
             switch (a.name)
             {
                 case "Arctic Monkeys": Soundwave(ctx, mk, fz + face * .2f + up * (H + 1.8f), face, side, W); Car(ctx, mk, solid, outside + side * (W / 2f + 1f) + face * 1f, streetDir, new Color(.08f, .08f, .1f), true); JacketHook(ctx, mk, c - face * (D / 2f - .5f) + side * (W / 2f - 1.2f) + up * 1.7f, face); break;

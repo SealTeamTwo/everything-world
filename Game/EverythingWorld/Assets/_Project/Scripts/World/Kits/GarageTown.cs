@@ -51,6 +51,11 @@ namespace EverythingWorld.World
             var H = kind == "MOTEL" ? 7f : ctx.Range(5f, 8.5f);
             var wall = kind == "PUB" || kind == "BAR" ? brick : WorldMaterials.Solid(Paint[i % Paint.Length]);
             var c = at + face * 1f; c.y = StreetY(Vector3.Dot(at - streetA, streetDir));
+            // the Row climbs along its length: stand the building level at the highest ground under it, on a footing
+            // down to the lowest (the gas station's forecourt and kiosk together)
+            var fc = kind == "GAS" ? c - face * 2.5f : c; float fw = kind == "GAS" ? 12.4f : W, fd = kind == "GAS" ? 12f : D;
+            var (lo, hi) = Under(ctx, fc, face, fw, fd); c.y = Mathf.Max(c.y, hi);
+            Footing(mk, solid, kind == "GAS" ? WorldMaterials.Solid(new Color(.36f, .35f, .34f)) : dark, new Vector3(fc.x, c.y, fc.z), rot, fw + .1f, fd + .1f, lo, c.y);
             if (kind == "GAS")
             {
                 // a canopy on posts over two pumps, a little kiosk behind
@@ -228,6 +233,7 @@ namespace EverythingWorld.World
                     for (var k = 0; k < ctx.Rng.Next(1, 4); k++)
                     {
                         var q = ctx.OnGround(px + ctx.Range(-5f, 5f), pz + ctx.Range(-5f, 5f)); var h = ctx.Range(4f, 8f);
+                        if (Blocked(q, 2.2f)) continue;   // never on a road or a place (the random numbers are already drawn)
                         mk.Prism(trunk, q - up * .3f, up, .25f, h * .5f, 6);
                         mk.Blob(tree, q + up * h * .65f, new Vector3(2f, h * .45f, 2f), ctx.Rng, .25f);
                         solid.Blob(tree, q + up * h * .65f, new Vector3(2f, h * .45f, 2f) * 1.05f, ColRng, 0f);   // a low, dense crown down to head height
@@ -241,6 +247,7 @@ namespace EverythingWorld.World
                     for (var k = 0; k < 5; k++)
                     {
                         var a0 = ctx.OnGround(px + dir.x * k * 3f, pz + dir.z * k * 3f); var a1 = ctx.OnGround(px + dir.x * (k + 1) * 3f, pz + dir.z * (k + 1) * 3f);
+                        if (Blocked(a0, 1f) || Blocked(a1, 1f)) break;   // the run stops before a road or a place instead of crossing it
                         mk.Prism(metal, a0, up, .05f, 2f, 5);
                         mk.Quad(WorldMaterials.Solid(new Color(.5f, .52f, .55f), .3f), a0 + up * .2f, a1 + up * .2f, a1 + up * 1.9f, a0 + up * 1.9f, a0 + Vector3.Cross(up, dir));
                         mk.Quad(WorldMaterials.Solid(new Color(.5f, .52f, .55f), .3f), a0 + up * .2f, a1 + up * .2f, a1 + up * 1.9f, a0 + up * 1.9f, a0 - Vector3.Cross(up, dir));
@@ -276,10 +283,18 @@ namespace EverythingWorld.World
                 }
         }
 
+        /// On a road (the Row's town, a suburb street, a back road or drive) or a place, with a margin.
+        bool Blocked(Vector3 q, float pad)
+        {
+            if (OnTown(q.x, q.z, pad) || OnSubRoad(q.x, q.z, pad) || InNoGrass(q.x, q.z, pad)) return true;
+            foreach (var p in roadP) if ((p.x - q.x) * (p.x - q.x) + (p.z - q.z) * (p.z - q.z) < (3f + pad) * (3f + pad)) return true;
+            return false;
+        }
+
         void WaterTower(LandContext ctx, MeshKit mk, Vector3 at)
         {
             var up = Vector3.up; var white = WorldMaterials.Solid(new Color(.75f, .76f, .78f));
-            foreach (var (x, z) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) { var f = at + new Vector3(x, 0, z) * 3f; mk.Prism(metal, f - up * .3f, (up - new Vector3(x, 0, z) * .08f).normalized, .2f, 14.5f, 6); ArtistBits.PostCollider(ctx.Root, f, 12f, .25f); }
+            foreach (var (x, z) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) { var f = at + new Vector3(x, 0, z) * 3f; f.y = ctx.Ground(f.x, f.z); var ld = (up - new Vector3(x, 0, z) * .08f).normalized; mk.Prism(metal, f - up * .3f, ld, .2f, (at.y + 14.2f - f.y) / ld.y, 6); ArtistBits.PostCollider(ctx.Root, f, 12f, .25f); }   // each leg from its own ground
             mk.Prism(white, at + up * 14f, up, 4.2f, 5f, 14);
             mk.Cone(white, at + up * 19f, 4.4f, 2f, 14);
             var face = new Vector3(center.x - at.x, 0, center.z - at.z).normalized;
@@ -314,7 +329,7 @@ namespace EverythingWorld.World
         void Billboard(LandContext ctx, MeshKit mk, Vector3 at, int i)
         {
             var up = Vector3.up; var face = new Vector3(center.x - at.x, 0, center.z - at.z).normalized; var side = Vector3.Cross(Vector3.up, face); var rot = Quaternion.LookRotation(face);
-            foreach (var s in new[] { -3f, 3f }) { mk.Prism(metal, at + side * s - up * .3f, up, .15f, 7.3f, 6); ArtistBits.PostCollider(ctx.Root, at + side * s, 7f, .2f); }
+            foreach (var s in new[] { -3f, 3f }) { var pp = ctx.OnGround(at.x + side.x * s, at.z + side.z * s); mk.Prism(metal, pp - up * .3f, up, .15f, at.y + 7f - pp.y + .3f, 6); ArtistBits.PostCollider(ctx.Root, pp, 7f, .2f); }   // each post from its own ground
             var col = NeonC[i % NeonC.Length];
             mk.Box(WorldMaterials.Solid(Color.Lerp(col, new Color(.9f, .88f, .8f), .5f)), at + up * 8.5f, new Vector3(9f, 4f, .2f), rot);
             mk.Box(WorldMaterials.Solid(col * .8f), at + up * 8.5f + face * .11f, new Vector3(5f, 2.4f, .02f), rot);

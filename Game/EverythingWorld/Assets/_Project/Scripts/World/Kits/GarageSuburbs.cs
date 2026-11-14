@@ -112,6 +112,15 @@ namespace EverythingWorld.World
         }
 
         // ---------------------------------------------------------------- the streets and houses
+        /// A flat patch (a driveway, a pad) w across and len along fwd, laid in small cells with every vertex on the ground.
+        void GroundPatch(LandContext ctx, MeshKit mk, Material m, Vector3 c, Vector3 fwd, float w, float len, float lift)
+        {
+            fwd.y = 0; fwd.Normalize(); var sd = Vector3.Cross(Vector3.up, fwd);
+            int nw = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)), nl = Mathf.Max(1, Mathf.CeilToInt(len / 1.5f));
+            Vector3 P(int i, int j) { var q = c + sd * ((i / (float)nw - .5f) * w) + fwd * ((j / (float)nl - .5f) * len); return ctx.OnGround(q.x, q.z) + Vector3.up * lift; }
+            for (var i = 0; i < nw; i++) for (var j = 0; j < nl; j++) mk.Quad(m, P(i, j), P(i + 1, j), P(i + 1, j + 1), P(i, j + 1), P(i, j) + (P(i + 1, j + 1) - P(i, j)) / 2f - Vector3.up * 2f);
+        }
+
         bool NearPlace(Vector3 q, float r) { foreach (var p in placeSpots) if (new Vector2(q.x - p.x, q.z - p.z).magnitude < r) return true; return false; }
 
         static readonly Color[] HouseC = { new Color(.82f, .78f, .68f), new Color(.66f, .72f, .76f), new Color(.72f, .78f, .7f), new Color(.86f, .84f, .8f), new Color(.7f, .64f, .56f), new Color(.6f, .62f, .66f), new Color(.8f, .74f, .6f) };
@@ -127,18 +136,23 @@ namespace EverythingWorld.World
             var lampM = GlowM(Sodium, 2.4f);
             const float seg = 4f;
             bool SegOk(Vector3 a, Vector3 b) => ctx.IsLand(a.x, a.z, 3f) && ctx.IsLand(b.x, b.z, 3f) && Mathf.Abs(ctx.Ground(a.x, a.z) - ctx.Ground(b.x, b.z)) < 2f && !InRing(ctx, a, 1f) && !InRing(ctx, b, 1f);
-            // one strip of road: asphalt with a pale pavement both sides, each corner on the ground
+            // one strip of road: asphalt with a pale pavement both sides, laid in narrow lanes across its width with
+            // every vertex on the ground (so on a side slope it follows the ground instead of burying one edge)
             void Strip(Vector3 a, Vector3 b)
             {
                 var d = b - a; d.y = 0; var sd = Vector3.Cross(up, d.normalized);
                 Vector3 G(Vector3 p, float o) { var q = p + sd * o; return ctx.OnGround(q.x, q.z); }
-                var lift = up * .09f;
-                mk.Quad(road, G(a, -SubRoadHalf) + lift, G(a, SubRoadHalf) + lift, G(b, SubRoadHalf) + lift, G(b, -SubRoadHalf) + lift, (a + b) / 2f - up * 2f);
-                foreach (var s in new[] { -1f, 1f })
+                void Band(Material m, float o0, float o1, float lift)
                 {
-                    float o0 = s * SubRoadHalf, o1 = s * (SubRoadHalf + SubWalk); var pl = up * .13f;
-                    mk.Quad(pave, G(a, o0) + pl, G(a, o1) + pl, G(b, o1) + pl, G(b, o0) + pl, (a + b) / 2f - up * 2f);
+                    var n = Mathf.Max(1, Mathf.CeilToInt(Mathf.Abs(o1 - o0) / 1.2f)); var l = up * lift;
+                    for (var k = 0; k < n; k++)
+                    {
+                        float u0 = Mathf.Lerp(o0, o1, k / (float)n), u1 = Mathf.Lerp(o0, o1, (k + 1f) / n);
+                        mk.Quad(m, G(a, u0) + l, G(a, u1) + l, G(b, u1) + l, G(b, u0) + l, (a + b) / 2f - up * 2f);
+                    }
                 }
+                Band(road, -SubRoadHalf, SubRoadHalf, .09f);
+                foreach (var s in new[] { -1f, 1f }) Band(pave, s * SubRoadHalf, s * (SubRoadHalf + SubWalk), .13f);
             }
             var roadCount = 0;
             // the long streets, parallel to the Row
@@ -262,8 +276,7 @@ namespace EverythingWorld.World
             var drive = side * (W / 2f + (hasGarage ? 2.7f : 1.6f));
             var dStart = c + drive + face * (D / 2f - 1f); var dEnd = c + drive + face * (D / 2f + 4.6f);
             var dMid = (dStart + dEnd) / 2f; var dLen = Vector3.Distance(dStart, dEnd);
-            var dy = Mathf.Max(ctx.Ground(dStart.x, dStart.z), ctx.Ground(dEnd.x, dEnd.z));
-            mk.Box(WorldMaterials.Solid(new Color(.38f, .38f, .37f)), new Vector3(dMid.x, dy + .02f, dMid.z), new Vector3(hasGarage ? 4.4f : 2.8f, .14f, dLen), rot);
+            GroundPatch(ctx, mk, WorldMaterials.Solid(new Color(.38f, .38f, .37f)), dMid, face, hasGarage ? 4.4f : 2.8f, dLen, .09f);   // on the ground, not level across the slope
             noGrass.Add(new Vector3(dMid.x, 2.6f, dMid.z));
             var mb = c - drive * .2f + face * (D / 2f + 4.2f) + side * (doorX > 0 ? -1f : 1f) * 1.2f; mb = ctx.OnGround(mb.x, mb.z);
             mk.Prism(wood, mb - up * .2f, up, .05f, 1.25f, 6);
