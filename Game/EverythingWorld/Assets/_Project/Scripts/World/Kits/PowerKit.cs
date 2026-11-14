@@ -241,7 +241,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground = null)
         {
-            var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = ground != null ? Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)) : 1; var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -249,17 +251,16 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] + Vector3.up * lift - side * (w / 2f * miter); R[i] = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
-                if (ground != null)
+                Vector3 l = pts[i] + Vector3.up * lift - side * (w / 2f * miter), r = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
+                var bump = ground != null ? Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .25f) : 0f;
+                for (var k = 0; k <= lanes; k++)
                 {
-                    float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(R[i].x, R[i].z), top = Mathf.Max(pts[i].y, Mathf.Max(gl, gr) - .05f);
-                    // Each edge follows its own ground (raised only a little where the middle is higher), so on a
-                    // side slope the downhill edge no longer floats out into the air.
-                    var bump = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .25f);
-                    L[i].y = gl + bump + lift; R[i].y = gr + bump + lift;
+                    var q = Vector3.Lerp(l, r, k / (float)lanes);
+                    if (ground != null) q.y = ground.Ground(q.x, q.z) + bump + lift;
+                    V[i, k] = q;
                 }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A torch on an iron pole: a flame in a cage, its light warm on the path (PowerLife makes it flicker and spark).
@@ -314,6 +315,7 @@ namespace EverythingWorld.World
             // the name stone, a great sword driven into its top
             var s = c - toCastle * 15f; s.y = ctx.Ground(s.x, s.z); var rot = Quaternion.LookRotation(toCastle);
             mk.Box(rock, s + up * 1.8f, new Vector3(8f, 3.6f, 1.6f), rot); solid.Box(rock, s + up * 1.8f, new Vector3(8f, 3.6f, 1.6f), rot);
+            { var lo = Lowest(ctx, s, 4.1f); if (s.y - lo > .05f) mk.Box(rock, s - up * ((s.y - lo) / 2f - .05f), new Vector3(8f, s.y - lo + .1f, 1.6f), rot); }   // its foot reaches the lowest ground under it
             mk.Box(rockDark, s + up * 3.8f, new Vector3(8.6f, .5f, 2f), rot);
             ArtistBits.Label(ctx.Root, "THE POWER METAL PEAKS", s + up * 1.9f + toCastle * .82f, toCastle, .46f, Gold, TextAnchor.MiddleCenter);
             var steel = WorldMaterials.Solid(new Color(.75f, .76f, .8f), .9f);
@@ -507,18 +509,28 @@ namespace EverythingWorld.World
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 13f) * Mathf.Min(3.5f, end * .05f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area instead of running across it (an arc on whichever side the
+                    // straight line passes, so the path never flips across)
+                    foreach (var o in ctx.Artists)
+                    {
+                        if (o.name == artist) continue; var r = Foot(o) * 1.06f + 3f; var ov = new Vector3(o.x, 0, o.z); var rel = q - ov;
+                        if (rel.sqrMagnitude >= r * r) continue;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+                    }
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, path, PathW, .18f, ctx);
-                foreach (var p in pts) Remember(p, walk);
                 for (var i = 8; i < pts.Count; i += 12)
                 {
                     var lp = pts[i] + side * ((i / 12) % 2 == 0 ? 1f : -1f) * (PathW / 2f + .9f);
                     var near = false; foreach (var o in posts) if ((o - lp).sqrMagnitude < 16f * 16f) near = true;
-                    if (near || InFootprint(ctx, lp.x, lp.z, 1f)) continue;
+                    // torches stay off other paths too (this path's own points are remembered after, so they don't count)
+                    if (near || InFootprint(ctx, lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, PathW / 2f + .4f)) continue;
                     posts.Add(lp); Torch(ctx, mk, ctx.OnGround(lp.x, lp.z));
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
             }
             if (hasCastle) Lay(ctx.OnGround(center.x, center.z), new Vector3(castle2.x, 0, castle2.y), CastleR - 2f, null);
@@ -528,7 +540,7 @@ namespace EverythingWorld.World
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p, w) in walkPoints) { if (w >= 3 && InFootprint(ctx, p.x, p.z, 2f)) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
@@ -553,11 +565,11 @@ namespace EverythingWorld.World
                 else if (roll < .42f) continue;
                 else if (roll < .44f) { Banner(ctx, mk, p, Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward, ctx.Chance(.5f) ? bannerRed : bannerPurple, ctx.Range(5f, 8f)); banners++; }
                 else if (roll < .51f) { SwordInStone(ctx, mk, p); swords++; }
-                else if (roll < .53f) { TreasureChest(ctx, mk, p, Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward); chests++; }
+                else if (roll < .53f) { var cf = Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward; p.y = Lowest(ctx, p, .75f); TreasureChest(ctx, mk, p, cf); chests++; }   // sits on the lowest ground under it, no gap beneath on a slope
                 else if (roll < .56f) { Brazier(ctx, mk, p); braziers++; }
                 else if (roll < .58f && ruins < 8) { Watchtower(ctx, mk, solid, p); ruins++; }
                 else if (roll < .61f) { KawaiiSign(ctx, mk, p); neons++; }
-                else if (roll < .64f && !high) { StoneLantern(ctx, mk, p); toro++; }
+                else if (roll < .64f && !high) { p.y = Lowest(ctx, p, .45f); StoneLantern(ctx, mk, p); toro++; }
                 else if (roll < .67f && !high) { Cherry(ctx, mk, p); cherries++; }
                 else if (roll < .78f)
                 {
@@ -570,12 +582,23 @@ namespace EverythingWorld.World
             Debug.Log($"The Power Metal Peaks: castle {(hasCastle ? "yes" : "no")}, cove {(hasCove ? "yes" : "no")}, {peaks.Count} peaks, {pines} pine stands, {banners} banners, {swords} swords, {chests} chests, {braziers} braziers, {ruins} watchtowers, {neons} neon signs, {toro} stone lanterns, {cherries} cherry trees, {rocks} rocks");
         }
 
+        /// The lowest ground in a round of radius r round p (and under p itself).
+        static float Lowest(LandContext ctx, Vector3 p, float r)
+        {
+            var lo = ctx.Ground(p.x, p.z);
+            for (var k = 0; k < 8; k++) lo = Mathf.Min(lo, ctx.Ground(p.x + Mathf.Cos(k * Mathf.PI / 4f) * r, p.z + Mathf.Sin(k * Mathf.PI / 4f) * r));
+            return lo;
+        }
+
         void Pines(LandContext ctx, MeshKit mk, Vector3 at)
         {
             var needles = WorldMaterials.Solid(new Color(.1f, .17f, .13f)); var n = ctx.Rng.Next(2, 6);
             for (var k = 0; k < n; k++)
             {
                 var q = ctx.OnGround(at.x + ctx.Range(-5f, 5f), at.z + ctx.Range(-5f, 5f)); var h = ctx.Range(6f, 13f);
+                // a tree of the stand that would stand on a path or in an artist's area is left out (after its random
+                // numbers are drawn, so the rest of the wilds stay put)
+                if (NearPath(q.x, q.z, PathW / 2f + 1.2f) || InFootprint(ctx, q.x, q.z, 1f) || !ctx.IsLand(q.x, q.z, 1f)) continue;
                 // Lift the crown so its lowest boughs clear head height even over the uphill ground beside the trunk.
                 var hi = q.y; var r0 = h * .26f;
                 for (var a = 0; a < 6; a++) hi = Mathf.Max(hi, ctx.Ground(q.x + Mathf.Cos(a * 1.047f) * r0, q.z + Mathf.Sin(a * 1.047f) * r0));
@@ -600,7 +623,9 @@ namespace EverythingWorld.World
         void Watchtower(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
             var up = Vector3.up; var h = ctx.Range(7f, 12f);
-            mk.Prism(wallStone, at - up * 1f, up, 2.4f, h, 8, .9f); solid.Prism(wallStone, at - up * 1f, up, 2.4f, h, 8, .9f);
+            // the base reaches down to the lowest ground round the tower, so on a slope it has no gap beneath it
+            var foot = Mathf.Min(at.y - 1f, Lowest(ctx, at, 2.5f) - .3f);
+            mk.Prism(wallStone, new Vector3(at.x, foot, at.z), up, 2.4f, h + (at.y - 1f - foot), 8, .9f); solid.Prism(wallStone, new Vector3(at.x, foot, at.z), up, 2.4f, h + (at.y - 1f - foot), 8, .9f);
             for (var k = 0; k < 8; k += 2) { var a = k * Mathf.PI / 4f; mk.Box(wallStone, at + up * (h - .5f) + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * 2f, new Vector3(.7f, ctx.Range(.4f, 1.4f), .7f), Quaternion.Euler(0, -a * Mathf.Rad2Deg, 0)); }
             mk.Box(GlowM(new Color(1f, .7f, .35f), 1.8f), at + up * (h * .55f) + new Vector3(0, 0, 2.2f), new Vector3(.4f, .9f, .1f), Quaternion.identity);
             Brazier(ctx, mk, at + up * (h - 1f), .8f);

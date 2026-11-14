@@ -65,9 +65,9 @@ namespace EverythingWorld.World
             if (pts.Count < 2) return pts;
             Strip(mk, pts, flagM, PathW, .2f, ctx); foreach (var p in pts) Remember(p, 700);
             var up = Vector3.up; var n = 0;
-            for (var i = 6; i < pts.Count; i += 13) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var sd = Vector3.Cross(up, d) * (n % 2 == 0 ? 1f : -1f); var lp = pts[i] + sd * (PathW / 2f + .9f); if (ctx.IsLand(lp.x, lp.z, 2f) && !InNoGrass(lp.x, lp.z, 1f)) { if (n % 4 == 3) Banner(ctx, mk, ctx.OnGround(lp.x, lp.z), -sd, n % 8 == 3 ? bannerRed : bannerPurple); else Torch(ctx, mk, ctx.OnGround(lp.x, lp.z)); } n++; }
+            for (var i = 6; i < pts.Count; i += 13) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var sd = Vector3.Cross(up, d) * (n % 2 == 0 ? 1f : -1f); var lp = pts[i] + sd * (PathW / 2f + .9f); if (ctx.IsLand(lp.x, lp.z, 2f) && !InNoGrass(lp.x, lp.z, 1f) && !InFootprint(ctx, lp.x, lp.z, 1f) && !NearPath(lp.x, lp.z, PathW / 2f + .4f)) { if (n % 4 == 3) Banner(ctx, mk, ctx.OnGround(lp.x, lp.z), -sd, n % 8 == 3 ? bannerRed : bannerPurple); else Torch(ctx, mk, ctx.OnGround(lp.x, lp.z)); } n++; }
             flagP.AddRange(pts);
-            if (pts.Count > 40) { var i = pts.Count / 2; var d = pts[i + 1] - pts[i - 1]; d.y = 0; d.Normalize(); var sd = Vector3.Cross(up, d); var bp = pts[i] - sd * 3.2f; if (ctx.IsLand(bp.x, bp.z, 2f)) { OakBench(mk, bp, sd); Ring(bp, 2f); } }
+            if (pts.Count > 40) { var i = pts.Count / 2; var d = pts[i + 1] - pts[i - 1]; d.y = 0; d.Normalize(); var sd = Vector3.Cross(up, d); var bp = pts[i] - sd * 3.2f; if (ctx.IsLand(bp.x, bp.z, 2f) && G(bp).y - Lowest(ctx, G(bp), 1.3f) < .35f && !NearPath(bp.x, bp.z, PathW / 2f + .4f)) { OakBench(mk, bp, sd); Ring(bp, 2f); } }
             return pts;
         }
 
