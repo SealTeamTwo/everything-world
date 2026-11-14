@@ -81,7 +81,11 @@ namespace EverythingWorld.World
         {
             dir = Vector3.ProjectOnPlane(dir, Vector3.up).normalized; var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(Vector3.up, dir);
             var n = Mathf.Max(1, Mathf.Min(5, z.a.songList?.Length ?? 1)); const float size = .9f; var w = n * size * 1.25f + .4f;
-            foreach (var s in new[] { -1f, 1f }) z.mk.Prism(logM, ground + side * s * (w / 2f - .1f) - dir * .05f, Vector3.up, .1f, 2.4f, 6);
+            foreach (var s in new[] { -1f, 1f })
+            {   // each post reaches its own ground (on a slope the downhill one stood short of it)
+                var pp = ground + side * s * (w / 2f - .1f) - dir * .05f; var pg = Mathf.Min(z.ctx.Ground(pp.x, pp.z), ground.y);
+                z.mk.Prism(logM, new Vector3(pp.x, pg - .3f, pp.z), Vector3.up, .1f, ground.y + 2.4f - pg + .3f, 6);
+            }
             var c = ground + Vector3.up * 1.8f;
             z.mk.Box(wood, c - Vector3.up * .1f, new Vector3(w, size + .6f, .1f), rot); z.solid.Box(wood, c - Vector3.up * .1f, new Vector3(w, size + .6f, .2f), rot);
             z.mk.Box(WorldMaterials.Solid(new Color(.35f, .32f, .3f)), c + Vector3.up * (size / 2f + .4f), new Vector3(w + .4f, .08f, .5f), rot * Quaternion.Euler(-12f, 0, 0));

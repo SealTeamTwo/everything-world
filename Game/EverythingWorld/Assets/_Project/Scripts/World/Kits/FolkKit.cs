@@ -174,7 +174,10 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground = null)
         {
-            var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
+            // On the ground it is laid in narrow lanes across its width with every vertex on its own ground (raised only
+            // a little where the middle is higher), so on side slopes it tilts with the hill instead of burying one edge
+            // and lifting the other (they were two edge vertices, each held up to the higher side).
+            var n = pts.Count; var lanes = ground != null ? Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)) : 1; var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -182,15 +185,20 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] + Vector3.up * lift - side * (w / 2f * miter); R[i] = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
+                var bump = 0f;
                 if (ground != null)
                 {
-                    // on bumpy ground, lift each edge to the ground under it so no terrain pokes through
-                    float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(R[i].x, R[i].z), top = Mathf.Max(pts[i].y, Mathf.Max(gl, gr) - .05f);
-                    L[i].y = Mathf.Max(gl, top - .15f) + lift; R[i].y = Mathf.Max(gr, top - .15f) + lift;
+                    var l = pts[i] - side * (w / 2f * miter); var r = pts[i] + side * (w / 2f * miter);
+                    bump = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .25f);
+                }
+                for (var k = 0; k <= lanes; k++)
+                {
+                    var q = pts[i] + Vector3.up * lift + side * ((k / (float)lanes - .5f) * w * miter);
+                    if (ground != null) q.y = ground.Ground(q.x, q.z) + bump + lift;
+                    V[i, k] = q;
                 }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         void Lantern(LandContext ctx, MeshKit mk, Vector3 g)
@@ -350,7 +358,16 @@ namespace EverythingWorld.World
             if (!ctx.IsLand(a.x, a.z, 2f) || !ctx.IsLand(b.x, b.z, 2f)) return;
             var y = lakeY + 1.4f; var len = Vector3.Distance(a, b); var dir = (b - a).normalized; var side = Vector3.Cross(Vector3.up, dir);
             var pts = new List<Vector3>();
-            for (var d = 0f; d <= len; d += 2f) { var p = a + dir * d; var arch = Mathf.Sin(d / len * Mathf.PI) * 2.2f; p.y = Mathf.Max(ctx.Ground(p.x, p.z), y + arch); pts.Add(p); }
+            // each end ramps down to its own ground (the deck ended a metre and more up in the air over the bank, no
+            // way on or off): never steeper than about 1 in 3, never below the ground or near the water
+            float ga = ctx.Ground(a.x, a.z), gb = ctx.Ground(b.x, b.z);
+            var steps = Mathf.CeilToInt(len / 2f);
+            for (var i = 0; i <= steps; i++)
+            {
+                var d = len * i / steps; var p = a + dir * d; var arch = Mathf.Sin(d / len * Mathf.PI) * 2.2f; var g = ctx.Ground(p.x, p.z);
+                var ramp = Mathf.Min(ga + .1f + d * .32f, gb + .1f + (len - d) * .32f);
+                p.y = Mathf.Max(g + .1f, Mathf.Max(lakeY + .6f, Mathf.Min(y + arch, ramp))); pts.Add(p);
+            }
             Strip(mk, pts, wood, 3f, .1f);
             for (var i = 0; i + 1 < pts.Count; i++)
             {
@@ -381,7 +398,7 @@ namespace EverythingWorld.World
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { if (w >= 400) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p, w) in walkPoints) { if (w >= 400 || InFootprint(ctx, p.x, p.z, .5f)) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
                 if (next == null) break;
                 todo.Remove(next);
                 var from = new Vector3(join.x, 0, join.z); var to = new Vector3(next.x, 0, next.z);
@@ -392,6 +409,13 @@ namespace EverythingWorld.World
                 for (var d = walk == 1 ? 10f : TrailW / 2f + .1f; ; d += 1.5f)
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 16f) * Mathf.Min(3f, end * .05f);
+                    // round the other artists' areas, not through them (trails ran across their pads, onto a levee,
+                    // a parked car, the stones of a story clearing); far enough to clear its cover board, plaque and lantern too
+                    foreach (var o in ctx.Artists)
+                    {
+                        if (o == next) continue; var r = Foot(o) + 5f; var v = new Vector2(q.x - o.x, q.z - o.z); var od = v.magnitude;
+                        if (od < r) { v = od > .01f ? v / od * r : new Vector2(side.x, side.z) * r; q = new Vector3(o.x + v.x, 0, o.z + v.y); }
+                    }
                     if (!ctx.IsLand(q.x, q.z, 0f) || InLake(q.x, q.z, 1f)) break;
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
@@ -423,7 +447,8 @@ namespace EverythingWorld.World
                 float px = x + ctx.Range(0f, cell), pz = z + ctx.Range(0f, cell);
                 if (!Open(ctx, px, pz, 3f)) continue;
                 var p = ctx.OnGround(px, pz); var roll = ctx.Range(0f, 1f);
-                if (roll < .06f && cabins < 8 && NearPath(px, pz, 24f)) { Cabin(ctx, mk, solid, p); cabins++; }
+                // a cabin goes near a trail, but far enough that its porch stays off it (only its middle was kept clear)
+                if (roll < .06f && cabins < 8 && NearPath(px, pz, 24f) && !NearPath(px, pz, 7.5f)) { Cabin(ctx, mk, solid, p); cabins++; }
                 else if (roll < .085f && fires < 6) { Campfire(ctx, mk, solid, p); fires++; }
                 else if (roll < .12f && life.shafts.Count < 26 && NearPath(px, pz, 30f)) { life.shafts.Add(p); if (life.shafts.Count == 1) { var mark = new GameObject("Shot: a sun shaft").transform; mark.SetParent(ctx.Root, false); var cam = p; for (var k = 0; k < 8; k++) { var q = ctx.OnGround(px + Mathf.Cos(k * .785f) * 18f, pz + Mathf.Sin(k * .785f) * 18f); if (ctx.IsLand(q.x, q.z, 2f) && (cam == p || q.y > cam.y)) cam = q; } mark.SetPositionAndRotation(cam, Quaternion.LookRotation(new Vector3(p.x - cam.x, 0, p.z - cam.z).normalized + Vector3.up * .2f)); } }
                 else if (roll < .55f) { Pine(ctx, mk, p, ctx.Range(.9f, 1.5f)); pines++; }
