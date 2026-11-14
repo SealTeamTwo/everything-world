@@ -74,7 +74,7 @@ namespace EverythingWorld.World
             var pc = c - D * 14f; mk.Prism(marble, pc - up * .1f, up, 2.6f, .36f, 18); Piano(ctx.Root, mk, pc + up * .26f, D, "Play the piano under the moon");
             // the moon, huge and low over the sea
             var moon = new Material(WorldMaterials.Glow(new Color(.9f, .94f, 1f), 1.6f)) { name = "Concert moon" }; life.moon = moon; var mp = c - D * 170f + up * 46f; mk.Prism(moon, mp, D, 20f, .4f, 40); halos.Add(mp + D * 4f, 50f, Silver, .2f);
-            foreach (var e in new[] { -1f, 1f }) foreach (var q in new[] { -1f, 1f }) Lamp(ctx, mk, c + S * e * 7f + D * q * 15.8f * (q > 0 ? 1f : .2f) + D * (q > 0 ? 0f : -6f), true);
+            foreach (var e in new[] { -1f, 1f }) foreach (var q in new[] { -1f, 1f }) { var lp = c + S * e * 7f + D * q * 15.8f * (q > 0 ? 1f : .2f) + D * (q > 0 ? 0f : -6f); Lamp(ctx, mk, lp, true); props.Add(new Vector3(lp.x, .4f, lp.z)); }
             Folk(c + D * 3f + S * 3f + up * .17f, (-D - S * .3f).normalized, Resident.Pose.Wave, new[] { "Welcome to the Concert Isles. Every hedge hides a garden, and every garden a composer.", "The Palace Walk goes up to the hall. Somebody's at the organ.", "Sit at the piano. The moon doesn't mind wrong notes." });
             Folk(pc + S * 2.4f + up * .26f, -S, Resident.Pose.Stand, new[] { "I come out here for the moonlight. And the piano. Mostly the moonlight.", "Play something slow." }, Local());
             Mark(c, 19.5f);
@@ -86,7 +86,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var pts = new List<Vector3>(); for (var d = 18.5f; d <= streetL + .01f; d += 2f) pts.Add(G(ctx, d, 0)); if (pts.Count < 2) return;
             Strip(mk, pts, gravel, WalkW, .13f, ctx); foreach (var e in new[] { -1f, 1f }) { var edge = new List<Vector3>(); foreach (var p in pts) edge.Add(p + S * e * (WalkW / 2f + .2f)); Strip(mk, edge, marble, .4f, .16f, ctx); } foreach (var p in pts) Remember(p, 1);
-            var n = 0; for (var d = 24f; d <= streetL - 2f; d += 8f, n++) { foreach (var e in new[] { -1f, 1f }) Topiary(ctx, mk, G(ctx, d, e * (WalkW / 2f + 1.4f))); if (n % 2 == 1) { var a0 = G(ctx, d, -(WalkW / 2f + .4f)); var a1 = G(ctx, d, WalkW / 2f + .4f); foreach (var ap in new[] { a0, a1 }) { mk.Prism(iron, ap, up, .08f, 4.4f, 6); ArtistBits.PostCollider(ctx.Root, ap, 4.4f, .1f); } for (var k = 0; k <= 12; k++) { var a = Mathf.PI * k / 12f; var p = (a0 + a1) / 2f + S * Mathf.Cos(a) * (WalkW / 2f + .4f) + up * (4.4f + Mathf.Sin(a) * 1.6f); mk.Box(iron, p, new Vector3(.1f, .1f, .5f), Quaternion.LookRotation(S) * Quaternion.Euler(0, 0, 0) * Quaternion.Euler(-a * Mathf.Rad2Deg + 90f, 0, 0)); } Chandelier(mk, (a0 + a1) / 2f + up * 4f, .7f); if (n % 4 == 1) ArtistBits.PointLight(ctx.Root, (a0 + a1) / 2f + up * 3.6f, Candle, 12f, 1.4f); } }
+            var n = 0; for (var d = 24f; d <= streetL - 2f; d += 8f, n++) { foreach (var e in new[] { -1f, 1f }) { var tp = G(ctx, d, e * (WalkW / 2f + 1.4f)); Topiary(ctx, mk, tp); props.Add(new Vector3(tp.x, 1f, tp.z)); } if (n % 2 == 1) { var a0 = G(ctx, d, -(WalkW / 2f + .4f)); var a1 = G(ctx, d, WalkW / 2f + .4f); foreach (var ap in new[] { a0, a1 }) { props.Add(new Vector3(ap.x, .4f, ap.z)); mk.Prism(iron, ap, up, .08f, 4.4f, 6); ArtistBits.PostCollider(ctx.Root, ap, 4.4f, .1f); } for (var k = 0; k <= 12; k++) { var a = Mathf.PI * k / 12f; var p = (a0 + a1) / 2f + S * Mathf.Cos(a) * (WalkW / 2f + .4f) + up * (4.4f + Mathf.Sin(a) * 1.6f); mk.Box(iron, p, new Vector3(.1f, .1f, .5f), Quaternion.LookRotation(S) * Quaternion.Euler(0, 0, 0) * Quaternion.Euler(-a * Mathf.Rad2Deg + 90f, 0, 0)); } Chandelier(mk, (a0 + a1) / 2f + up * 4f, .7f); if (n % 4 == 1) ArtistBits.PointLight(ctx.Root, (a0 + a1) / 2f + up * 3.6f, Candle, 12f, 1.4f); } }
             Folk(G(ctx, 28f, 1.4f), D, Resident.Pose.Walk, new[] { "The candles never burn down. I've checked. Every night.", "Evening, evening. Lovely night for a nocturne." }, Local(), new[] { G(ctx, 28f, 1.4f), G(ctx, streetL - 4f, 1.4f), G(ctx, streetL - 4f, -1.4f), G(ctx, 28f, -1.4f) }).speed = .9f;
             Shot(ctx, "along the palace walk", G(ctx, 20f, -1f) + up * 2f, G(ctx, streetL + 14f, 0) + up * 6f);
         }
@@ -94,7 +94,7 @@ namespace EverythingWorld.World
         // ---------------------------------------------------------------- the Concert Hall
         void ConcertHall(LandContext ctx, MeshKit mk, MeshKit solid)
         {
-            var up = Vector3.up; var hc = G(ctx, streetL + 14f, 0); var f = new PlaceFrame(hc, -D); const float W = 18f, L = 14f, H = 8f, P = .9f; var rng = new System.Random(6);
+            var up = Vector3.up; var hc = G(ctx, streetL + 14f, 0); hallC = hc; var f = new PlaceFrame(hc, -D); const float W = 18f, L = 14f, H = 8f, P = .9f; var rng = new System.Random(6);
             // the podium, with three steps up at the front
             mk.Box(marbleD, f.P(0, P / 2f - .3f, 0), new Vector3(W + 1f, P + .6f, L + 1f), f.r); solid.Box(marbleD, f.P(0, P / 2f - .3f, 0), new Vector3(W + 1f, P + .6f, L + 1f), f.r); mk.Box(marble, f.P(0, P + .01f, 0), new Vector3(W, .02f, L), f.r);
             for (var k = 0; k < 3; k++) { var sz = new Vector3(8f, (k + 1) * .3f, .6f); var sp = f.P(0, sz.y / 2f - .05f, L / 2f + .5f + (2 - k) * .6f); mk.Box(marble, sp, sz, f.r); solid.Box(marble, sp, sz, f.r); }

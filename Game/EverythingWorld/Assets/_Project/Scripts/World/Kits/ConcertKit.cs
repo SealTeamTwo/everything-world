@@ -20,7 +20,9 @@ namespace EverythingWorld.World
 
         Material marble, marbleD, gravel, hedgeM, iron, dark, white, leafM, trunkM, candleM, waterM, windowM, goldM;
         GlowHalos halos; Vector3 center, D, S; ConcertLife life;
-        readonly Dictionary<(int, int), List<Vector3>> pathCells = new Dictionary<(int, int), List<Vector3>>();
+        readonly Dictionary<(int, int), List<(Vector3 p, int w)>> pathCells = new Dictionary<(int, int), List<(Vector3, int)>>();
+        // things along the walk and on the terrace a lane must not run through (x, radius, z); the hall's middle
+        readonly List<Vector3> props = new List<Vector3>(); Vector3 hallC;
         readonly List<(Vector3 p, int w)> walkPoints = new List<(Vector3, int)>();
         readonly Dictionary<string, Vector3> facing = new Dictionary<string, Vector3>();
         // x, radius, z
@@ -71,7 +73,8 @@ namespace EverythingWorld.World
             {
                 if (a.sceneId != isl.sceneId) continue;
                 a.r = Mathf.Max(a.r, Foot(a) + 6f);
-                Level(data, index, new Vector2(a.x, a.z), Foot(a) + 1f, Foot(a) + 9f, Mathf.Max(data.HeightAt(a.x, a.z), waterY + 2.6f));
+                // flat out to the garden room's hedge corners (the room is a square, so its corners reach past its middle's width)
+                var flat = Mathf.Max(Foot(a) + 1f, Foot(a) * 1.22f + .6f); Level(data, index, new Vector2(a.x, a.z), flat, flat + 8f, Mathf.Max(data.HeightAt(a.x, a.z), waterY + 2.6f));
             }
         }
 
@@ -96,7 +99,7 @@ namespace EverythingWorld.World
         {
             MakeMaterials();
             halos = new GlowHalos();
-            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear();
+            pathCells.Clear(); walkPoints.Clear(); props.Clear(); facing.Clear(); noGrass.Clear();
             center = ctx.Plaza; D = new Vector3(D2.x, 0, D2.y); S = new Vector3(S2.x, 0, S2.y);
             life = new GameObject("Concert life").AddComponent<ConcertLife>();
             life.transform.SetParent(ctx.Root, false);
@@ -119,8 +122,8 @@ namespace EverythingWorld.World
         void Remember(Vector3 p, int walk)
         {
             var key = (Mathf.FloorToInt(p.x / 8f), Mathf.FloorToInt(p.z / 8f));
-            if (!pathCells.TryGetValue(key, out var l)) pathCells[key] = l = new List<Vector3>();
-            l.Add(p); walkPoints.Add((p, walk));
+            if (!pathCells.TryGetValue(key, out var l)) pathCells[key] = l = new List<(Vector3, int)>();
+            l.Add((p, walk)); walkPoints.Add((p, walk));
         }
 
         bool NearPath(float x, float z, float within)
@@ -129,7 +132,7 @@ namespace EverythingWorld.World
             for (var i = -n; i <= n; i++)
             for (var j = -n; j <= n; j++)
                 if (pathCells.TryGetValue((cx + i, cz + j), out var l))
-                    foreach (var p in l) { float dx = p.x - x, dz = p.z - z; if (dx * dx + dz * dz < within * within) return true; }
+                    foreach (var (p, _) in l) { float dx = p.x - x, dz = p.z - z; if (dx * dx + dz * dz < within * within) return true; }
             return false;
         }
 
@@ -152,7 +155,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -160,11 +165,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A marble bench.
@@ -193,6 +198,35 @@ namespace EverythingWorld.World
             halos.Add(at + up * .2f, r * 2.4f, Candle, .4f);
         }
 
+        /// Whether a spot is on the Palace Walk or a lane (by their real width), with `clear` to spare.
+        bool OnAnyPath(float x, float z, float clear)
+        {
+            int cx = Mathf.FloorToInt(x / 8f), cz = Mathf.FloorToInt(z / 8f); var n = Mathf.CeilToInt((WalkW / 2f + clear) / 8f);
+            for (var i = -n; i <= n; i++)
+            for (var j = -n; j <= n; j++)
+                if (pathCells.TryGetValue((cx + i, cz + j), out var l))
+                    foreach (var (p, w) in l)
+                    {
+                        var half = w == 1 ? WalkW / 2f : w >= 10 ? PathW / 2f : 0f; if (half <= 0f) continue;
+                        float dx = p.x - x, dz = p.z - z, r = half + clear; if (dx * dx + dz * dz < r * r) return true;
+                    }
+            return false;
+        }
+
+        /// A point of a lane running from `from` along `dir`, bent round any other artist's garden in an arc (on whichever side
+        /// the straight line passes) instead of running across it.
+        Vector3 AroundArtists(LandContext ctx, Vector3 q, Vector3 from, Vector3 dir, Vector3 side, string artist)
+        {
+            foreach (var o in ctx.Artists)
+            {
+                if (o.name == artist) continue; var ov = new Vector3(o.x, 0, o.z); var r = Foot(o) * 1.22f + PathW / 2f + .4f;
+                var rel = q - ov; rel.y = 0; if (rel.sqrMagnitude >= r * r) continue;
+                var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(new Vector3(from.x, 0, from.z) - ov, side) >= 0f ? 1f : -1f;
+                q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+            }
+            return q;
+        }
+
         // ---------------------------------------------------------------- the lanes to the gardens
         void Paths(LandContext ctx, MeshKit mk, MeshKit solid)
         {
@@ -206,28 +240,60 @@ namespace EverythingWorld.World
                 var pts = new List<Vector3>();
                 for (var d = PathW / 2f + .1f; ; d += 1.5f)
                 {
-                    var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 18f) * Mathf.Min(1.4f, end * .03f);
+                    // the wiggle starts and ends gently, so the lane leaves straight and comes in straight through the garden's gate
+                    var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 18f) * Mathf.Min(1.4f, end * .03f) * Mathf.Clamp01(dd / 8f) * Mathf.Clamp01((end - dd) / 8f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    q = AroundArtists(ctx, q, from, dir, side, artist);
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, gravel, PathW, .13f, ctx);
-                foreach (var p in pts) Remember(p, walk);
+                // a lantern now and then (never on another lane or the walk, in a garden or on the terrace)
                 for (var i = 6; i < pts.Count; i += 10, n++)
                 {
                     var s = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .8f);
-                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue;
+                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || OnAnyPath(lp.x, lp.z, .4f)) continue;
                     Lamp(ctx, mk, ctx.OnGround(lp.x, lp.z), n % 3 == 0);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
+            }
+            var c0 = ctx.OnGround(center.x, center.z);
+            // the terrace (its fountain, hedges, piano and lanterns), the hall and the things along the walk, which a lane must not cross
+            bool InPlace(Vector3 q)
+            {
+                q.y = 0; if ((q - new Vector3(c0.x, 0, c0.z)).sqrMagnitude < 16f * 16f) return true;
+                var h = q - new Vector3(hallC.x, 0, hallC.z); float dd = Vector3.Dot(h, D), ss = Vector3.Dot(h, S); if (Mathf.Abs(ss) < 10.5f && dd > -9.6f && dd < 8.6f) return true;
+                foreach (var o in props) { float dx = q.x - o.x, dz = q.z - o.z; if (dx * dx + dz * dz < o.y * o.y) return true; }
+                return false;
+            }
+            // where a lane may leave from: the terrace's rim (never its middle), the Palace Walk or another lane, and never from
+            // inside another artist's garden
+            bool Start(Vector3 p, int w, IslandWorldData.Artist a)
+            {
+                if (w == 0 && (new Vector3(p.x - c0.x, 0, p.z - c0.z)).sqrMagnitude < 16.5f * 16.5f) return false;
+                foreach (var o in ctx.Artists) { if (o == a) continue; float dx = p.x - o.x, dz = p.z - o.z, r = Foot(o) * 1.25f + 2f; if (dx * dx + dz * dz < r * r) return false; }
+                return true;
+            }
+            bool Crosses(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector3(a.x - p.x, 0, a.z - p.z); var len = d.magnitude - Foot(a) * .8f; if (len < 1f) return false; d /= d.magnitude; var sd = Vector3.Cross(Vector3.up, d);
+                for (var t = PathW / 2f; t < len; t += .8f) { var q = p + d * t; if (InPlace(q) || InPlace(q + sd * (PathW / 2f + .3f)) || InPlace(q - sd * (PathW / 2f + .3f))) return true; }
+                return false;
             }
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
-                foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
-                if (next == null) break;
+                for (var pass = 0; pass < 2 && next == null; pass++)
+                    foreach (var a in todo)
+                        foreach (var (p, w) in walkPoints)
+                        {
+                            if (!Start(p, w, a)) continue;
+                            var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
+                            if (d < best && (pass == 1 || !Crosses(p, a))) { best = d; next = a; join = p; }
+                        }
+                if (next == null) { foreach (var a in todo) Debug.LogWarning("The Concert Isles: no lane to " + a.name); break; }
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
             }
@@ -243,14 +309,20 @@ namespace EverythingWorld.World
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += cell)
             {
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
-                if (!Open(ctx, px, pz, 3f)) continue;
+                if (!Open(ctx, px, pz, 3f) || OnAnyPath(px, pz, 3f)) continue;
                 var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var rot = Quaternion.LookRotation(f); var side = Vector3.Cross(Vector3.up, f); var up = Vector3.up;
-                if (roll < .18f) { for (var k = 0; k < 3; k++) Topiary(ctx, mk, p + side * (k - 1) * 2.4f, .8f + s * .4f); Mark(p, 3.6f); topiary++; }
-                else if (roll < .4f) { var h = 6f + s * 5f; for (var k = 0; k < 1 + (int)(s * 3f); k++) { var tp = p + side * (k * 1.8f) - f * (k % 2) * 1.2f; mk.Prism(trunkM, tp, up, .16f, 1f, 5); mk.Cone(leafM, tp + up * .8f, .9f, h, 8); ArtistBits.PostCollider(ctx.Root, tp, 2f, .5f); } Mark(p, 2f); trees++; }
-                else if (roll < .5f) { mk.Box(marbleD, p + up * .2f, new Vector3(4f, .4f, 1.6f), rot); BoxCol(ctx.Root, p + up * .3f, new Vector3(4f, .6f, 1.6f), rot); for (var k = 0; k < 10; k++) { var rp = p + side * (-1.7f + (k % 5) * .85f) + f * ((k / 5) * .7f - .35f) + up * .55f; mk.Blob(hedgeM, rp, new Vector3(.4f, .3f, .4f), rng, .2f); mk.Blob(Paint(k % 3 == 0 ? new Color(.9f, .86f, .9f) : new Color(.8f, .2f, .3f)), rp + up * .28f, Vector3.one * .12f, rng, 0f); } Mark(p, 2.2f); roses++; }
-                else if (roll < .6f) { if (s < .5f) { mk.Box(marble, p + up * .5f, new Vector3(.9f, 1f, .9f), rot); mk.Prism(marble, p + up * 1f, up, .4f, .6f, 10, 1.4f); mk.Prism(marble, p + up * 1.6f, up, .56f, .1f, 10); BoxCol(ctx.Root, p + up * .85f, new Vector3(1.1f, 1.7f, 1.1f), rot); } else { mk.Box(marble, p + up * .2f, new Vector3(1.4f, .4f, 1.4f), rot); mk.Prism(marble, p + up * .4f, up, .4f, 1.6f + s * 2f, 10); mk.Box(marble, p + up * .3f + f * 1.4f + side * .6f, new Vector3(.8f, .6f, 1.6f), rot * Quaternion.Euler(0, 30f, 80f)); ArtistBits.PostCollider(ctx.Root, p, 3f, .5f); BoxCol(ctx.Root, p + up * .3f + f * 1.4f + side * .6f, new Vector3(1.6f, .8f, 1.6f), rot); } Mark(p, 1.6f); urns++; }
-                else if (roll < .66f) { if (!Open(ctx, px, pz, 4f)) continue; mk.Prism(marble, p - up * .3f, up, 2.4f, .8f, 16); mk.Prism(waterM, p + up * .48f, up, 2.1f, .02f, 16); mk.Prism(marble, p, up, .2f, 1.4f, 8); mk.Prism(marble, p + up * 1.4f, up, .7f, .14f, 12); mk.Prism(waterM, p + up * 1.55f, up, .6f, .02f, 12); BoxCol(ctx.Root, p + up * .2f, new Vector3(4.8f, .8f, 4.8f), Quaternion.identity); ArtistBits.PostCollider(ctx.Root, p, 1.7f, .8f); life.fountains.Add(p + up * 1.6f); Mark(p, 2.6f); fountains++; }
-                else if (roll < .74f) { Bench(ctx.Root, mk, p, f); Lamp(ctx, mk, p - f * .8f + side * 1.6f, benches % 2 == 0); Mark(p, 2.2f); benches++; }
+                // how much the ground falls within r of a spot (benches and fountains skip a steep spot; neither uses up random
+                // numbers, so the rest of the layout stays put); the lowest ground within r
+                float Fall(Vector3 at, float r) { float lo = at.y, hi = at.y; for (var k = 0; k < 8; k++) { var gh = ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, gh); hi = Mathf.Max(hi, gh); } return hi - lo; }
+                float Low(Vector3 at, float r) { var lo = at.y; for (var k = 0; k < 8; k++) lo = Mathf.Min(lo, ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r)); return lo; }
+                // each cone of a topiary row and each cypress stands on its own ground, and never on the walk, a lane or in a garden
+                bool Clear(Vector3 q, float r) => !OnAnyPath(q.x, q.z, r) && !InFootprint(ctx, q.x, q.z, r) && !InNoGrass(q.x, q.z, r * .5f);
+                if (roll < .18f) { for (var k = 0; k < 3; k++) { var tp = ctx.OnGround(p.x + side.x * (k - 1) * 2.4f, p.z + side.z * (k - 1) * 2.4f); if (k == 1 || Clear(tp, 1f)) Topiary(ctx, mk, tp, .8f + s * .4f); } Mark(p, 3.6f); topiary++; }
+                else if (roll < .4f) { var h = 6f + s * 5f; for (var k = 0; k < 1 + (int)(s * 3f); k++) { var to = p + side * (k * 1.8f) - f * (k % 2) * 1.2f; var tp = ctx.OnGround(to.x, to.z); if (k > 0 && !Clear(tp, 1.2f)) continue; mk.Prism(trunkM, tp, up, .16f, 1f, 5); mk.Cone(leafM, tp + up * .8f, .9f, h, 8); ArtistBits.PostCollider(ctx.Root, tp, 2f, .5f); } Mark(p, 2f); trees++; }
+                else if (roll < .5f) { var rl = Mathf.Min(p.y, Low(p, 2.1f)) - .1f; mk.Box(marbleD, new Vector3(p.x, (p.y + .4f + rl) / 2f, p.z), new Vector3(4f, p.y + .4f - rl, 1.6f), rot); BoxCol(ctx.Root, p + up * .3f, new Vector3(4f, .6f, 1.6f), rot); for (var k = 0; k < 10; k++) { var rp = p + side * (-1.7f + (k % 5) * .85f) + f * ((k / 5) * .7f - .35f) + up * .55f; mk.Blob(hedgeM, rp, new Vector3(.4f, .3f, .4f), rng, .2f); mk.Blob(Paint(k % 3 == 0 ? new Color(.9f, .86f, .9f) : new Color(.8f, .2f, .3f)), rp + up * .28f, Vector3.one * .12f, rng, 0f); } Mark(p, 2.2f); roses++; }
+                else if (roll < .6f) { var ul = Mathf.Min(p.y, Low(p, .7f)) - .05f; if (s < .5f) { mk.Box(marble, new Vector3(p.x, (p.y + 1f + ul) / 2f, p.z), new Vector3(.9f, p.y + 1f - ul, .9f), rot); mk.Prism(marble, p + up * 1f, up, .4f, .6f, 10, 1.4f); mk.Prism(marble, p + up * 1.6f, up, .56f, .1f, 10); BoxCol(ctx.Root, p + up * .85f, new Vector3(1.1f, 1.7f, 1.1f), rot); } else { mk.Box(marble, new Vector3(p.x, (p.y + .4f + ul) / 2f, p.z), new Vector3(1.4f, p.y + .4f - ul, 1.4f), rot); mk.Prism(marble, p + up * .4f, up, .4f, 1.6f + s * 2f, 10); mk.Box(marble, p + up * .3f + f * 1.4f + side * .6f, new Vector3(.8f, .6f, 1.6f), rot * Quaternion.Euler(0, 30f, 80f)); ArtistBits.PostCollider(ctx.Root, p, 3f, .5f); BoxCol(ctx.Root, p + up * .3f + f * 1.4f + side * .6f, new Vector3(1.6f, .8f, 1.6f), rot); } Mark(p, 1.6f); urns++; }
+                else if (roll < .66f) { if (!Open(ctx, px, pz, 4f) || Fall(p, 2.4f) > .5f) continue; var fl = Mathf.Min(p.y - .3f, Low(p, 2.4f) - .1f); mk.Prism(marble, new Vector3(p.x, fl, p.z), up, 2.4f, p.y + .5f - fl, 16); mk.Prism(waterM, p + up * .48f, up, 2.1f, .02f, 16); mk.Prism(marble, p, up, .2f, 1.4f, 8); mk.Prism(marble, p + up * 1.4f, up, .7f, .14f, 12); mk.Prism(waterM, p + up * 1.55f, up, .6f, .02f, 12); BoxCol(ctx.Root, p + up * .2f, new Vector3(4.8f, .8f, 4.8f), Quaternion.identity); ArtistBits.PostCollider(ctx.Root, p, 1.7f, .8f); life.fountains.Add(p + up * 1.6f); Mark(p, 2.6f); fountains++; }
+                else if (roll < .74f) { if (Fall(p, 1.2f) > .3f) continue; Bench(ctx.Root, mk, p, f); var bl = p - f * .8f + side * 1.6f; Lamp(ctx, mk, ctx.OnGround(bl.x, bl.z), benches % 2 == 0); Mark(p, 2.2f); benches++; }
                 else if (roll < .78f && chandeliers < 14) { if (!Open(ctx, px, pz, 4f)) continue; var tr = p; mk.Prism(trunkM, tr, up, .4f, 4f, 7, .7f); var br = tr + up * 4f; mk.Prism(trunkM, br, (f + up).normalized, .2f, 3f, 6, .6f); for (var k = 0; k < 4; k++) mk.Blob(leafM, br + Quaternion.Euler(0, k * 90f, 0) * f * 1.6f + up * 1.4f, new Vector3(2f, 1.2f, 2f), rng, .3f); ArtistBits.PostCollider(ctx.Root, tr, 4f, .5f); var ch = br + (f + up).normalized * 2.6f - up * 2.2f; Chandelier(mk, ch, .7f); ArtistBits.PointLight(ctx.Root, ch, Candle, 10f, 1.4f); Mark(p, 3f); chandeliers++; }
             }
             Debug.Log($"The Concert Isles: Palace Walk {streetL:0} m, {topiary} topiary rows, {trees} cypress groves, {roses} rose beds, {urns} urns and columns, {fountains} fountains, {benches} benches, {chandeliers} chandelier trees");
