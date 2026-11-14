@@ -54,7 +54,8 @@ namespace EverythingWorld.World
         /// A log to sit on.
         void LogSeat(MeshKit mk, Vector3 g, Vector3 face, float len = 2.2f)
         {
-            var up = Vector3.up; var side = Vector3.Cross(up, face); mk.Prism(trunk, g + up * .28f - side * len / 2f, side, .28f, len, 8); Col(g + up * .28f, new Vector3(len, .56f, .56f), Quaternion.LookRotation(face));
+            var up = Vector3.up; var side = Vector3.Cross(up, face); g.y = LowUnder(ctx0, g, len / 2f) + .05f;   // resting on its lowest ground, so neither end hangs on a slope
+            mk.Prism(trunk, g + up * .28f - side * len / 2f, side, .28f, len, 8); Col(g + up * .28f, new Vector3(len, .56f, .56f), Quaternion.LookRotation(face));
             Interact.Bench(plife.transform, g + up * .58f - side * (len / 2f - .4f), g + up * .58f + side * (len / 2f - .4f), face);
         }
 
@@ -82,7 +83,7 @@ namespace EverythingWorld.World
             {
                 var pts = new List<Vector3>(); for (var d = from; d <= to + .1f; d += 2f) pts.Add(ctx.OnGround(c.x + toShip.x * d * dirn, c.z + toShip.z * d * dirn)); if (pts.Count < 2) continue;
                 Strip(mk, pts, paveDark, 4.4f, .15f, ctx); foreach (var p in pts) Remember(p, 1);
-                for (var i = 0; i < pts.Count; i++) { mk.Box(tileM[i % 4], pts[i] + up * .18f, new Vector3(1.5f, .03f, 1.5f), Quaternion.LookRotation(toShip)); if (i % 6 == 3) foreach (var e in new[] { -1f, 1f }) { var lp = pts[i] + sideways * e * 4.2f; if (!InNoGrass(lp.x, lp.z, .5f)) FruitLamp(ctx, mk, ctx.OnGround(lp.x, lp.z), -sideways * e, e > 0, i); } }
+                for (var i = 0; i < pts.Count; i++) { var td = pts[Mathf.Min(i + 1, pts.Count - 1)] - pts[Mathf.Max(i - 1, 0)]; mk.Box(tileM[i % 4], new Vector3(pts[i].x, ctx.Ground(pts[i].x, pts[i].z) + .19f, pts[i].z), new Vector3(1.5f, .03f, 1.5f), Quaternion.LookRotation(td * dirn)); if (i % 6 == 3) foreach (var e in new[] { -1f, 1f }) { var lp = pts[i] + sideways * e * 4.2f; if (!InNoGrass(lp.x, lp.z, .5f)) FruitLamp(ctx, mk, ctx.OnGround(lp.x, lp.z), -sideways * e, e > 0, i); } }
             }
         }
 
@@ -125,7 +126,7 @@ namespace EverythingWorld.World
             Folk(df - f.Right * 2.6f + f.Fwd * 1f + up * .16f, -f.Fwd, Resident.Pose.Wave, new[] { "The floor lights up where the beat is. Step on the purple. NOW the orange.", "I haven't sat down since the ship landed." });
             Folk(df - f.Right * .2f - f.Fwd * 2f + up * .16f, f.Right, Resident.Pose.Wave, new[] { "Watch the hips. No, mine. I'm teaching.", "Tear the roof off? Honey, look up. There isn't one. We already did." });
             LogSeat(mk, df + f.Fwd * 7f - f.Right * 4f, -f.Fwd, 2.6f); LogSeat(mk, df + f.Fwd * 7f + f.Right * 4f, -f.Fwd, 2.6f); LogSeat(mk, df + f.Right * 9f + f.Fwd * 1f, -f.Right, 2.6f);
-            Mark(g, SaucerR + 10f); Remember(ctx.OnGround(df.x + f.Fwd.x * 6f, df.z + f.Fwd.z * 6f), 1);
+            Mark(g, SaucerR + 10f); blocks.Add((new Vector2(g.x, g.z), SaucerR + 11f)); Remember(ctx.OnGround(df.x + f.Fwd.x * 6f, df.z + f.Fwd.z * 6f), 1);
             Shot(ctx, "the mothership", df + f.Fwd * 16f - f.Right * 7f + up * 2.4f, g + up * (SaucerH + 1f));
             Shot(ctx, "on the mothership stage", so - f.Fwd * 2.6f + f.Right * 4f + up * 1.8f, df + up * 1f);
         }
@@ -171,7 +172,7 @@ namespace EverythingWorld.World
         /// A neon shopfront you can't go into: a dark building outlined in light, a glowing window, leaves over the roof.
         void Shopfront(LandContext ctx, MeshKit mk, Vector3 g, Vector3 face, float W, float H, string name, string under, Color col, int i)
         {
-            var up = Vector3.up; var f = new PlaceFrame(g + up * .25f, face); const float D = 8f; var wall = WorldMaterials.Glow(Color.Lerp(new Color(.34f, .26f, .5f), col, .25f), .24f); var glow = GlowM(col, 2f);
+            var up = Vector3.up; var f = new PlaceFrame(g + up * .25f, face); const float D = 8f; blocks.Add((new Vector2(g.x, g.z), Mathf.Sqrt(W * W + D * D) / 2f + .3f)); var wall = WorldMaterials.Glow(Color.Lerp(new Color(.34f, .26f, .5f), col, .25f), .24f); var glow = GlowM(col, 2f);
             mk.Box(wall, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, D), f.r); BoxCol(ctx.Root, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, D), f.r);
             foreach (var e in new[] { -1f, 1f }) mk.Box(glow, f.P(e * (W / 2f - .05f), H / 2f, D / 2f + .03f), new Vector3(.08f, H, .05f), f.r); mk.Box(glow, f.P(0, H - .04f, D / 2f + .03f), new Vector3(W, .08f, .05f), f.r); mk.Box(glow, f.P(0, 3f, D / 2f + .03f), new Vector3(W, .06f, .05f), f.r);
             mk.Box(dark, f.P(-W / 2f + 1.5f, 1.1f, D / 2f + .03f), new Vector3(1.1f, 2.2f, .06f), f.r); var win = new Material(WorldMaterials.Glow(Color.Lerp(col, Color.white, .3f), 1.3f)) { name = "Funk window" }; mk.Box(win, f.P(1f, 1.6f, D / 2f + .03f), new Vector3(W - 4.4f, 1.9f, .06f), f.r); halos.Add(f.P(1f, 1.6f, D / 2f + 1f), 2.4f, col, .35f);
@@ -183,7 +184,7 @@ namespace EverythingWorld.World
 
         void RibShack(LandContext ctx, MeshKit mk, Vector3 g, Vector3 face)
         {
-            var up = Vector3.up; var f = new PlaceFrame(g + up * .15f, face); var tin = WorldMaterials.Solid(new Color(.3f, .3f, .36f), .6f);
+            blocks.Add((new Vector2(g.x, g.z), 4.5f)); var up = Vector3.up; var f = new PlaceFrame(g + up * .15f, face); var tin = WorldMaterials.Solid(new Color(.3f, .3f, .36f), .6f);
             mk.Box(WorldMaterials.Solid(new Color(.3f, .16f, .14f)), f.P(0, .55f, 0), new Vector3(4.2f, 1.1f, 1f), f.r); mk.Box(tin, f.P(0, 1.13f, 0), new Vector3(4.4f, .06f, 1.2f), f.r); Col(f.P(0, .55f, 0), new Vector3(4.4f, 1.1f, 1.2f), f.r);
             foreach (var e in new[] { -2.1f, 2.1f }) { mk.Prism(trunk, f.P(e, 0, -1.2f), up, .1f, 3f, 6); ArtistBits.PostCollider(ctx.Root, f.P(e, 0, -1.2f), 3f, .12f); } mk.Box(tin, f.P(0, 3f, -.2f), new Vector3(5f, .08f, 3.2f), f.r * Quaternion.Euler(-8f, 0, 0));
             var sm = f.P(-1.2f, 0, -1.4f); mk.Prism(dark, sm + up * .9f - f.Right * .9f, f.Right, .55f, 1.8f, 12); foreach (var e in new[] { -.6f, .6f }) mk.Prism(dark, sm + f.Right * e, up, .05f, .5f, 5); mk.Prism(dark, sm + up * 1.3f + f.Right * .7f, up, .1f, 1.3f, 6); mk.Blob(GlowM(Orange, 1.6f), sm + up * .9f + f.Fwd * .56f, new Vector3(.3f, .12f, .03f), prng, 0f); halos.Add(sm + up * 1f + f.Fwd * .8f, 1.4f, Orange, .5f); Col(sm + up * .8f, new Vector3(2f, 1.6f, 1.2f), f.r);
@@ -231,7 +232,7 @@ namespace EverythingWorld.World
             // a booth along the front wall
             var bo = fo.P(4.6f, 0, D / 2f - T - .5f); mk.Box(WorldMaterials.Solid(new Color(.45f, .12f, .35f)), bo + up * .25f, new Vector3(5f, .5f, .7f), fo.r); mk.Box(WorldMaterials.Solid(new Color(.45f, .12f, .35f)), bo + up * .85f + fo.Fwd * .3f, new Vector3(5f, .8f, .14f), fo.r); Col(bo + up * .45f, new Vector3(5f, .9f, .8f), fo.r); Interact.Bench(plife.transform, bo + up * .52f - fo.Right * 2f, bo + up * .52f + fo.Right * 2f, -fo.Fwd);
             Folk(bo + up * .52f + fo.Right * 1.8f, -fo.Fwd, Resident.Pose.Sit, new[] { "I'm resting my feet, not my spirit.", "Best seat in the house. You can see the whole floor and nobody can see you can't dance." }, null, null, .52f);
-            Mark(g, 11f);
+            Mark(g, 11f); blocks.Add((new Vector2(g.x, g.z), 10.5f));
             Shot(ctx, "inside the pocket", fo.P(dx, 1.7f, D / 2f - 1.2f), fo.P(2.6f, 1.2f, sz));
         }
 
@@ -262,7 +263,7 @@ namespace EverythingWorld.World
             var kid = Fly(); Folk(bo - f.Right * 2.8f - f.Fwd * .2f, -f.Right, Resident.Pose.Lean, new[] { "Skates are free. Dignity's extra.", "We only rent them one at a time. Keeps people humble." }, kid);
             LogSeat(mk, g + f.Fwd * (R + 3f) - f.Right * 6f, -f.Fwd, 2.6f); LogSeat(mk, g - f.Right * (R + 2.6f), f.Right, 2.6f); LogSeat(mk, g + f.Right * (R + 2.6f) - f.Fwd * 4f, -f.Right, 2.6f);
             foreach (var e in new[] { -5f, 5f }) { mk.Prism(chrome, g + f.Fwd * (R + 1.5f) + f.Right * e, up, .12f, 5f, 6); ArtistBits.PostCollider(ctx.Root, g + f.Fwd * (R + 1.5f) + f.Right * e, 5f, .14f); } NeonSign(mk, g + f.Fwd * (R + 1.5f) + up * 5.2f, f.Fwd, 10.6f, 1.6f, "ROLLERAMA", Pink, .8f);
-            Mark(g, R + 5f); Remember(ctx.OnGround(g.x + f.Fwd.x * (R + 2f), g.z + f.Fwd.z * (R + 2f)), 2);
+            Mark(g, R + 5f); blocks.Add((new Vector2(g.x, g.z), R + 4f)); Remember(ctx.OnGround(g.x + f.Fwd.x * (R + 2f), g.z + f.Fwd.z * (R + 2f)), 2);
             Shot(ctx, "rollerama", g + f.Fwd * (R + 11f) - f.Right * 8f + up * 3.4f, g + up * 3.5f);
         }
     }
