@@ -27,6 +27,8 @@ namespace EverythingWorld.World
         readonly Dictionary<string, Vector3> facing = new Dictionary<string, Vector3>();
         // x, radius, z
         readonly List<Vector3> noGrass = new List<Vector3>();
+        // x, radius, z: the light poles along Honey Street and the posts of its arch, which a lane must not start through
+        readonly List<Vector3> fixtures = new List<Vector3>();
         Vector2 heart2, D2 = new Vector2(0, -1), S2 = new Vector2(1, 0); float plazaY, waterY, streetL;
 
         void MakeMaterials()
@@ -115,7 +117,7 @@ namespace EverythingWorld.World
         {
             MakeMaterials();
             halos = new GlowHalos();
-            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear();
+            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear(); fixtures.Clear();
             center = ctx.Plaza; D = new Vector3(D2.x, 0, D2.y); S = new Vector3(S2.x, 0, S2.y);
             life = new GameObject("Neo Soul life").AddComponent<NeoLife>();
             life.transform.SetParent(ctx.Root, false);
@@ -171,7 +173,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -179,11 +183,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A candle: a pale stub with a flame.
@@ -220,7 +224,11 @@ namespace EverythingWorld.World
         /// A giant terracotta pot. Returns the top of the soil.
         Vector3 Pot(LandContext ctx, MeshKit mk, Vector3 g, float s)
         {
-            var up = Vector3.up; mk.Prism(pot, g - up * .1f, up, .7f * s, 1f * s, 10, 1.3f); mk.Prism(pot, g + up * .82f * s, up, .98f * s, .14f * s, 10); mk.Prism(dark, g + up * .96f * s, up, .86f * s, .02f, 10); ArtistBits.PostCollider(ctx.Root, g, 1f * s, .9f * s); return g + up * (.96f * s + .02f);
+            var up = Vector3.up;
+            // on a slope the pot's foot reaches down to the lowest ground round it, so its downhill side never hangs in the air
+            var lo = g.y; for (var k = 0; k < 8; k++) lo = Mathf.Min(lo, ctx.Ground(g.x + Mathf.Cos(k * Mathf.PI / 4f) * .7f * s, g.z + Mathf.Sin(k * Mathf.PI / 4f) * .7f * s));
+            if (g.y - lo > .08f) mk.Prism(pot, new Vector3(g.x, lo - .2f, g.z), up, .7f * s, g.y - lo + .2f, 10);
+            mk.Prism(pot, g - up * .1f, up, .7f * s, 1f * s, 10, 1.3f); mk.Prism(pot, g + up * .82f * s, up, .98f * s, .14f * s, 10); mk.Prism(dark, g + up * .96f * s, up, .86f * s, .02f, 10); ArtistBits.PostCollider(ctx.Root, g, 1f * s, .9f * s); return g + up * (.96f * s + .02f);
         }
 
         /// A monstera as big as a tree: long stems, great split leaves.
@@ -284,29 +292,60 @@ namespace EverythingWorld.World
                 if (artist != null) facing[artist] = -dir;
                 var side = Vector3.Cross(Vector3.up, dir); var end = total - stopShort; if (end < PathW) return;
                 var pts = new List<Vector3>();
+                var fromCourt = new Vector2(join.x - center.x, join.z - center.z).magnitude < 21f;
                 for (var d = PathW / 2f + .1f; ; d += 1.5f)
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 14f) * Mathf.Min(2f, end * .04f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area and the Courtyard (unless the lane starts there) instead of
+                    // running across them: an arc on whichever side the straight line passes
+                    void Round(Vector3 ov, float r)
+                    {
+                        var rel = q - ov; rel.y = 0; if (rel.sqrMagnitude >= r * r) return;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along)); q.y = 0;
+                    }
+                    foreach (var o in ctx.Artists) if (o.name != artist) Round(new Vector3(o.x, 0, o.z), Foot(o) * 1.06f + 3f);
+                    if (!fromCourt) Round(new Vector3(center.x, 0, center.z), 20f + PathW / 2f);
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, tile, PathW, .13f, ctx);
-                foreach (var p in pts) Remember(p, walk);
                 for (var i = 6; i < pts.Count; i += 9, n++)
                 {
                     var s = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .7f);
-                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue;
+                    // never on another lane, Honey Street or the Courtyard
+                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, PathW / 2f + .4f)) continue;
                     if (n % 2 == 0) Lantern(ctx, mk, ctx.OnGround(lp.x, lp.z), true); else Candles(mk, ctx.OnGround(lp.x, lp.z) + Vector3.up * .02f, 4, rng);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
+            }
+            // would a lane leaving p toward a run into a light pole on Honey Street or a post of its arch in its first stretch?
+            bool Blocked(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector2(a.x - p.x, a.z - p.z); var len = Mathf.Min(12f, d.magnitude); if (len < .1f) return false; d /= d.magnitude;
+                foreach (var f in fixtures)
+                {
+                    var rel = new Vector2(f.x - p.x, f.z - p.z); var t = Mathf.Clamp(Vector2.Dot(rel, d), 0f, len);
+                    if ((rel - d * t).sqrMagnitude < (f.y + PathW / 2f + .2f) * (f.y + PathW / 2f + .2f)) return true;
+                }
+                return false;
             }
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p, w) in walkPoints)
+                    {
+                        // never from the middle of the Courtyard (across the cushions, the stall and the great monstera:
+                        // its rim is remembered for that) or from inside another artist's area
+                        if (w == 0) continue;
+                        if (w >= 10 && InFootprint(ctx, p.x, p.z, 2f)) continue;
+                        var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
+                        if (d < best && !Blocked(p, a)) { best = d; next = a; join = p; }
+                    }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
@@ -325,11 +364,14 @@ namespace EverythingWorld.World
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 4f)) continue;
                 var p = ctx.OnGround(px, pz);
+                // how much the ground falls across a round of radius r round 'at' (steep spots are skipped without drawing a
+                // different count of random numbers, so the rest of the layout stays put)
+                float Fall(Vector3 at, float r) { float lo = at.y, hi = at.y; for (var k = 0; k < 8; k++) { var h = ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
                 if (roll < .16f) { Monstera(ctx, mk, p, 1.2f + s * .9f, rng); monsteras++; }
                 else if (roll < .3f) { Fern(ctx, mk, p, 1f + s * .7f, rng); ferns++; }
                 else if (roll < .42f) { SnakePlant(ctx, mk, p, 1f + s * .8f, rng); snakes++; }
                 else if (roll < .54f) { Fig(ctx, mk, p, 1.1f + s * .7f, rng); figs++; }
-                else if (roll < .6f) { var f = FaceTo(p, NearestWalk(p)); Sofa(ctx.Root, mk, p, f, clothM, 2f); Lantern(ctx, mk, p - f * 1.2f + Vector3.Cross(Vector3.up, f) * 1.4f, benches % 2 == 0); noGrass.Add(new Vector3(p.x, 2f, p.z)); benches++; }
+                else if (roll < .6f) { if (Fall(p, 1.2f) > .35f) continue; var f = FaceTo(p, NearestWalk(p)); Sofa(ctx.Root, mk, p, f, clothM, 2f); var lq = p - f * 1.2f + Vector3.Cross(Vector3.up, f) * 1.4f; Lantern(ctx, mk, ctx.OnGround(lq.x, lq.z), benches % 2 == 0); noGrass.Add(new Vector3(p.x, 2f, p.z)); benches++; }
                 else if (roll < .72f) { Candles(mk, p + Vector3.up * .02f, 5 + (int)(s * 5f), rng); candles++; }
             }
             Debug.Log($"The Neo Soul Quarter: Honey Street {streetL:0} m, {monsteras} monsteras, {ferns} ferns, {snakes} snake plants, {figs} fig trees, {benches} sofas with lanterns, {candles} clusters of candles");

@@ -98,7 +98,7 @@ namespace EverythingWorld.World
             Folk(tt - tr * Vector3.forward * .9f, tr * Vector3.forward, Resident.Pose.Stand, new[] { "Hibiscus, ginger, or the one I don't tell people what's in.", "The incense is sandalwood. The other smell is the plants, thinking.", "Let it steep. Everything here is better steeped." }, Local(Residents.Tool.Mug)); Mark(tt, 2f);
             // two sofas, the name over the mouth of Honey Street, a welcome
             Sofa(ctx.Root, mk, c - D * 2f + S * 15.5f + up * .14f, -S, clothM, 2.4f); Sofa(ctx.Root, mk, c + D * 15f - S * 4f + up * .14f, (-D + S * .2f).normalized, Paint(new Color(.3f, .42f, .34f)), 2.2f);
-            var ar = c + D * 20.5f + up * .1f; foreach (var e in new[] { -3.6f, 3.6f }) { mk.Prism(Paint(Walls[0]), ar + S * e - up * .2f, up, .3f, 4.6f, 6); ArtistBits.PostCollider(ctx.Root, ar + S * e, 4.4f, .32f); Candles(mk, ar + S * (e + Mathf.Sign(e) * .8f) + up * .05f, 4, rng); }
+            var ar = c + D * 20.5f + up * .1f; foreach (var e in new[] { -3.6f, 3.6f }) { mk.Prism(Paint(Walls[0]), ar + S * e - up * .2f, up, .3f, 4.6f, 6); ArtistBits.PostCollider(ctx.Root, ar + S * e, 4.4f, .32f); fixtures.Add(new Vector3((ar + S * e).x, .5f, (ar + S * e).z)); Candles(mk, ar + S * (e + Mathf.Sign(e) * .8f) + up * .05f, 4, rng); }
             mk.Box(Paint(Walls[0]), ar + up * 4.5f, new Vector3(8f, .9f, .4f), Quaternion.LookRotation(D)); Sign(ar + up * 4.5f - D * .22f, -D, "HONEY STREET", .42f, Honey); Sign(ar + up * 4.5f + D * .22f, D, "THE NEO SOUL QUARTER", .36f, Honey);
             Folk(c + D * 5f + S * 3f + up * .16f, (-D - S * .3f).normalized, Resident.Pose.Wave, new[] { "Evening. Come in, come in. Mind the fern.", "Honey Street's through the arch. The Listening Room's just there, with the crates on the step.", "Nobody's going to rush you. We wouldn't know how." });
             Mark(c, 21f);
@@ -114,7 +114,7 @@ namespace EverythingWorld.World
             var n = 0; for (var d = 30f; d <= streetL - 4f; d += 10f, n++)
             {
                 var a = G(ctx, d, -(StreetW / 2f + .5f)); var b = G(ctx, d + 3f * (n % 2 == 0 ? 1f : -1f), StreetW / 2f + .5f);
-                foreach (var g in new[] { a, b }) { mk.Prism(iron, g - up * .2f, up, .06f, 4.8f, 5); ArtistBits.PostCollider(ctx.Root, g, 4.4f, .09f); }
+                foreach (var g in new[] { a, b }) { mk.Prism(iron, g - up * .2f, up, .06f, 4.8f, 5); ArtistBits.PostCollider(ctx.Root, g, 4.4f, .09f); fixtures.Add(new Vector3(g.x, .2f, g.z)); }
                 BulbString(mk, a + up * 4.5f, b + up * 4.5f, n); if (n % 2 == 0) ArtistBits.PointLight(ctx.Root, (a + b) / 2f + up * 3.4f, new Color(1f, .78f, .48f), 18f, 2.2f);
             }
             var route = new List<Vector3>(); for (var d = 24f; d <= streetL - 6f; d += 15f) route.Add(G(ctx, d, 1.3f) + up * .16f); for (var d = streetL - 6f; d >= 24f; d -= 15f) route.Add(G(ctx, d, -1.3f) + up * .16f);
@@ -146,10 +146,18 @@ namespace EverythingWorld.World
         void House(LandContext ctx, MeshKit mk, MeshKit solid, PlaceFrame f, int i, System.Random rng)
         {
             var up = Vector3.up; float W = HouseW, Dp = HouseD, H = 6.2f + (i % 3) * 1.3f; var wall = Paint(Walls[i % Walls.Length]); var trim = Paint(Walls[(i + 3) % Walls.Length]);
-            mk.Box(wall, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, Dp), f.r); solid.Box(wall, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, Dp), f.r); mk.Box(trim, f.P(0, H + .1f, 0), new Vector3(W + .3f, .3f, Dp + .3f), f.r); mk.Box(trim, f.P(0, 3.25f, Dp / 2f + .04f), new Vector3(W + .1f, .16f, .1f), f.r);
+            // it stands with its front level with the highest ground along it (so no door or stoop is buried), and its
+            // walls go down past the lowest ground under it (on a slope the low side would otherwise hang in the air)
+            float lo = f.o.y, hi = f.o.y;
+            foreach (var (cx, cz) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f), (0f, 1f), (0f, -1f), (-1f, 0f), (1f, 0f), (-.5f, 1.3f), (.5f, 1.3f) })
+            {
+                var q = f.P(cx * W / 2f, 0, cz * Dp / 2f); var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); if (cz > 0) hi = Mathf.Max(hi, h);
+            }
+            f = new PlaceFrame(new Vector3(f.o.x, hi, f.o.z), f.Fwd); var sink = Mathf.Max(.6f, hi - lo + .6f);
+            mk.Box(wall, f.P(0, (H - sink) / 2f, 0), new Vector3(W, H + sink, Dp), f.r); solid.Box(wall, f.P(0, (H - sink) / 2f, 0), new Vector3(W, H + sink, Dp), f.r); mk.Box(trim, f.P(0, H + .1f, 0), new Vector3(W + .3f, .3f, Dp + .3f), f.r); mk.Box(trim, f.P(0, 3.25f, Dp / 2f + .04f), new Vector3(W + .1f, .16f, .1f), f.r);
             // the door on its stoop
             var dx = (i % 2 == 0 ? -1f : 1f) * W / 4f; mk.Box(woodM, f.P(dx, 1.25f, Dp / 2f + .04f), new Vector3(1.2f, 2.3f, .08f), f.r); mk.Box(windowM, f.P(dx, 2.66f, Dp / 2f + .04f), new Vector3(1.2f, .4f, .08f), f.r); mk.Blob(lampM, f.P(dx + .36f, 1.2f, Dp / 2f + .11f), Vector3.one * .04f, rng, 0f);
-            mk.Box(tileDark, f.P(dx, 0f, Dp / 2f + .7f), new Vector3(2f, .3f, 1.4f), f.r); solid.Box(tileDark, f.P(dx, -.2f, Dp / 2f + .7f), new Vector3(2f, .7f, 1.4f), f.r); Candles(mk, f.P(dx + .72f, .15f, Dp / 2f + 1f), 3, rng);
+            { var sq = f.P(dx, 0, Dp / 2f + 1.4f); var stepH = Mathf.Max(.7f, hi - ctx.Ground(sq.x, sq.z) + .5f); mk.Box(tileDark, f.P(dx, .15f - stepH / 2f, Dp / 2f + .7f), new Vector3(2f, stepH, 1.4f), f.r); solid.Box(tileDark, f.P(dx, .15f - stepH / 2f, Dp / 2f + .7f), new Vector3(2f, stepH, 1.4f), f.r); } Candles(mk, f.P(dx + .72f, .15f, Dp / 2f + 1f), 3, rng);
             // windows: one by the door, two above, one on each other wall
             void Window(Vector3 at, Quaternion r, float w, float h, bool halo) { mk.Box(white, at, new Vector3(w + .24f, h + .24f, .06f), r); mk.Box(windowM, at + r * Vector3.forward * .05f, new Vector3(w, h, .06f), r); mk.Box(white, at + r * Vector3.forward * .09f, new Vector3(.06f, h, .03f), r); if (halo) halos.Add(at + r * Vector3.forward * .5f, 1.5f, Honey, .32f); }
             Window(f.P(-dx, 1.7f, Dp / 2f + .02f), f.r, 1.7f, 1.5f, true); foreach (var e in new[] { -1f, 1f }) Window(f.P(e * W / 4f, 4.5f, Dp / 2f + .02f), f.r, 1.2f, 1.7f, e * dx < 0f);
@@ -162,7 +170,7 @@ namespace EverythingWorld.World
             for (var k = 0; k < 5; k++) { var len = .6f + (float)rng.NextDouble() * 1.6f; mk.Box(k % 2 == 0 ? leafM : leafDark, f.P(-W / 2f + .8f + k * 1.9f + (float)rng.NextDouble() * .6f, H - len / 2f, Dp / 2f + .2f + (k % 2) * .04f), new Vector3(.5f, len, .03f), f.r); }
             for (var k = 0; k < 6; k++) { var rp = f.P(-W / 2f + 1.2f + (float)rng.NextDouble() * (W - 2.4f), H + .2f, -Dp / 2f + 1.2f + (float)rng.NextDouble() * (Dp - 2.4f)); mk.Prism(k % 2 == 0 ? leafDark : leafPale, rp, (up + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * .4f).normalized, .14f, 1.2f + (float)rng.NextDouble() * 1.6f, 4, .2f); }
             if (i % 3 == 0) Folk(f.P(dx - .5f, .16f, Dp / 2f + .9f), f.Fwd, Resident.Pose.Sit, new[] { "Just out on the step. It's that kind of evening. They all are.", "You can hear four different records from here and somehow they agree.", "I've lived here since before the fern got ideas." }, null, null, .3f);
-            else if (i % 3 == 1) { var cp = f.P(dx + 1.7f, 0, Dp / 2f + .9f); Crate(mk, cp, f.r * Quaternion.Euler(0, 16f, 0), rng); }
+            else if (i % 3 == 1) { var cp = f.P(dx + 1.7f, 0, Dp / 2f + .9f); cp = ctx.OnGround(cp.x, cp.z); Crate(mk, cp, f.r * Quaternion.Euler(0, 16f, 0), rng); }
             else { var sp = f.P(-dx, 0, Dp / 2f + 1.6f); var top = Pot(ctx, mk, ctx.OnGround(sp.x, sp.z), .5f); for (var q = 0; q < 6; q++) mk.Prism(q % 2 == 0 ? leafM : leafDark, top, (up + Quaternion.Euler(0, q * 60f, 0) * Vector3.forward * .22f).normalized, .08f, 1.3f + (q % 3) * .4f, 4, .2f); }
             Mark(f.o, 7f);
         }

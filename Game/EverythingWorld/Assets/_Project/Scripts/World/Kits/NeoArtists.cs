@@ -85,7 +85,8 @@ namespace EverythingWorld.World
                 default: Others(z, Nook(z)); break;
             }
             SongLamps(z);
-            Board(z, z.At(reach * .6f, -reach * .45f - 1.5f), front);
+            // the board stands to one side, its inner end clear of the way in from the lane
+            { var nb = Mathf.Max(1, Mathf.Min(7, a.songList?.Length ?? 1)); var bw = nb * .9f * 1.25f + 1.1f; Board(z, z.At(reach * .6f, -Mathf.Max(reach * .45f + 1.5f, bw / 2f + PathW / 2f + .5f)), front); }
             ArtistBits.Plaque(z.mk, z.solid, labels, a, z.At(reach * .6f + 1.5f, reach * .45f + 1.5f), front, woodM, Paint(Honey), Ink, 1.6f);
             Lantern(ctx, z.mk, z.At(reach * .5f, reach * .66f));
             if (z.area.glowLight == null) z.area.glowLight = ArtistBits.PointLight(root, z.c + up * 4f + front * 3f, new Color(1f, .8f, .52f), HasStation(a) ? 24f : 16f, 2.2f);
@@ -305,7 +306,7 @@ namespace EverythingWorld.World
                 case "Kali Uchis":
                 {
                     // "telepatía": a tin-can telephone, the string glowing
-                    var s = Song(z, "telepat"); var pink = SongGlow(s, new Color(1f, .5f, .7f), 1.6f); var a = z.At(1.4f, -2.8f) + up * 1.3f; var b = z.At(1.4f, 2.8f) + up * 1.3f; var d = (b - a).normalized;
+                    var s = Song(z, "telepat"); var pink = SongGlow(s, new Color(1f, .5f, .7f), 1.6f); var a = z.At(-1.6f, -2.8f) + up * 1.3f; var b = z.At(3.4f, -2.8f) + up * 1.3f; /* along one side of the way in, not across it */ var d = (b - a).normalized;
                     foreach (var (g, e) in new[] { (a, 1f), (b, -1f) }) { z.mk.Prism(woodM, g - up * 1.5f, up, .05f, 1.4f, 4); ArtistBits.PostCollider(z.root, g - up * 1.3f, 1.3f, .08f); z.mk.Prism(Paint(new Color(.7f, .72f, .76f)), g - d * e * .14f, d * e, .09f, .24f, 8); }
                     var prev = a + d * .1f; for (var k = 1; k <= 10; k++) { var t = k / 10f; var q = Vector3.Lerp(a + d * .1f, b - d * .1f, t) - up * Mathf.Sin(t * Mathf.PI) * .3f; z.mk.Prism(pink, prev, (q - prev).normalized, .012f, Vector3.Distance(prev, q), 3); prev = q; } halos.Add((a + b) / 2f - up * .3f, 1.2f, new Color(1f, .5f, .7f), .3f);
                     break;
