@@ -85,6 +85,8 @@ namespace EverythingWorld.World
             var bp = c - U * 13f - R * 7f + up * .12f; var br = Quaternion.LookRotation(-R); var bm = new MeshKit(); Danfo(bm, "", null); var bgo = bm.BuildSingle("Parked danfo", ctx.Root, false); bgo.transform.SetPositionAndRotation(bp, br); Col(bp + up * 1.2f, new Vector3(1.9f, 2.2f, 4.6f), br);
             Sign(bp + up * 1.26f + R * 2.33f, R, "NO SHAKING", .16f, Ink); Interact.Seat(tlife.transform, bp + up * .9f + U * 1.1f, U, "Sit in the danfo's doorway").seatHeight = .7f;
             Folk(bp + U * 2.2f - R * 1.4f, U, Resident.Pose.Wave, new[] { "Beach! Beach! Beach! One more passenger and we go! (He has been saying this for an hour.)", "Enter with your change, o! ...I'm joking, it doesn't go anywhere. That one goes.", "Hold something. He drives like the song is ending." });
+            // the roundabout's rim, where the lanes to the artists leave from (never its middle)
+            for (var k = 0; k < 24; k++) { var rp = c + Quaternion.Euler(0, k * 15f, 0) * U * 23f; Remember(ctx.OnGround(rp.x, rp.z), 2); }
             Mark(c, 24f);
             Shot(ctx, "the roundabout", c - U * 17f - R * 12f + up * 2.6f, di + up * 3f);
         }
@@ -118,6 +120,7 @@ namespace EverythingWorld.World
             for (var d = 26f + (e > 0 ? 0f : 3f); d <= roadL - 10f; d += 6.6f, i++)
             {
                 var p = Wp(e * (RoadW / 2f + 2.5f), -d); if (!ctx.IsLand(p.x, p.z, 4f) || InFootprint(ctx, p.x, p.z, 2.6f) || LaneNear(p.x, p.z, 4.4f)) continue;
+                if (Fall(ctx, p, 1.7f) > .9f) continue;   // too steep for a market table (nothing random is used, so the rest stay put)
                 Stall(ctx, mk, new PlaceFrame(ctx.OnGround(p.x, p.z), -U * e), i); built++;
             }
             Debug.Log($"The Afrobeat Coast: {built} market stalls");
@@ -126,10 +129,14 @@ namespace EverythingWorld.World
         /// A market stall facing the road: four poles, a striped awning, a table of something, a few bulbs.
         void Stall(LandContext ctx, MeshKit mk, PlaceFrame f, int i)
         {
-            var up = Vector3.up; var rng = new System.Random(i * 31 + 7); var kind = i % 6; var c1 = Paint(Cloth[i % 6]); var c2 = Paint(Cloth[(i + 3) % 6 == i % 6 ? 7 : (i * 5 + 1) % 6 == i % 6 ? 7 : (i * 5 + 1) % 6]);
-            foreach (var (x, zz) in new[] { (-1.4f, -.9f), (1.4f, -.9f), (1.4f, 1f), (-1.4f, 1f) }) mk.Prism(woodM, f.P(x, -.4f, zz), up, .05f, zz > 0 ? 2.6f : 3f, 4); ArtistBits.PostCollider(ctx.Root, f.P(-1.4f, 0, 1f), 2.2f, .07f); ArtistBits.PostCollider(ctx.Root, f.P(1.4f, 0, 1f), 2.2f, .07f);
+            var up = Vector3.up; var rng = new System.Random(i * 31 + 7); var kind = i % 6;
+            // it stands at the highest ground under its four poles; poles, table legs and the front cloth reach down to
+            // the lowest, so on a slope nothing hangs in the air
+            float hi = float.MinValue, lo = float.MaxValue; foreach (var (x, zz) in new[] { (-1.4f, -.9f), (1.4f, -.9f), (1.4f, 1f), (-1.4f, 1f), (0f, .7f) }) { var q = f.P(x, 0, zz); var h = ctx.Ground(q.x, q.z); hi = Mathf.Max(hi, h); lo = Mathf.Min(lo, h); }
+            f = new PlaceFrame(new Vector3(f.o.x, hi, f.o.z), f.Fwd); var drop = hi - lo; var c1 = Paint(Cloth[i % 6]); var c2 = Paint(Cloth[(i + 3) % 6 == i % 6 ? 7 : (i * 5 + 1) % 6 == i % 6 ? 7 : (i * 5 + 1) % 6]);
+            foreach (var (x, zz) in new[] { (-1.4f, -.9f), (1.4f, -.9f), (1.4f, 1f), (-1.4f, 1f) }) mk.Prism(woodM, f.P(x, -.4f - drop, zz), up, .05f, (zz > 0 ? 2.6f : 3f) + drop, 4); ArtistBits.PostCollider(ctx.Root, f.P(-1.4f, 0, 1f), 2.2f, .07f); ArtistBits.PostCollider(ctx.Root, f.P(1.4f, 0, 1f), 2.2f, .07f);
             for (var s = 0; s < 6; s++) mk.Box(s % 2 == 0 ? c1 : c2, f.P(-1.375f + s * .55f, 2.42f + (s % 2) * .012f, .1f), new Vector3(.53f, .04f, 2.5f), f.r * Quaternion.Euler(10f, 0, 0));
-            mk.Box(woodM, f.P(0, .78f, .2f), new Vector3(2.6f, .08f, 1f), f.r); mk.Box(kind == 0 ? c2 : c1, f.P(0, .44f, .69f), new Vector3(2.6f, .7f, .03f), f.r); foreach (var x in new[] { -1.2f, 1.2f }) mk.Box(woodM, f.P(x, .37f, .2f), new Vector3(.08f, .74f, .9f), f.r); Col(f.P(0, .45f, .2f), new Vector3(2.6f, .9f, 1f), f.r);
+            mk.Box(woodM, f.P(0, .78f, .2f), new Vector3(2.6f, .08f, 1f), f.r); mk.Box(kind == 0 ? c2 : c1, f.P(0, .44f - drop / 2f, .69f), new Vector3(2.6f, .7f + drop, .03f), f.r); foreach (var x in new[] { -1.2f, 1.2f }) mk.Box(woodM, f.P(x, .37f - drop / 2f, .2f), new Vector3(.08f, .74f + drop, .9f), f.r); Col(f.P(0, .45f - drop / 2f, .2f), new Vector3(2.6f, .9f + drop, 1f), f.r);
             for (var k = 0; k < 4; k++) mk.Blob(bulbM[(i + k) % 3], f.P(-1.2f + k * .8f, 2.14f, 1.3f), Vector3.one * .08f, rng, 0f); if (i % 2 == 0) halos.Add(f.P(0, 2.1f, 1.4f), 1.5f, Gold, .32f);
             var top = f.P(0, .82f, .2f);
             switch (kind)
@@ -153,7 +160,7 @@ namespace EverythingWorld.World
                     var rm = new MeshKit(); rm.Box(Paint(Cloth[(i + 2) % 6]), new Vector3(0, .006f, 0), new Vector3(.31f, .012f, .31f), Quaternion.identity); rm.Prism(dark, new Vector3(0, .013f, 0), Vector3.up, .12f, .004f, 12); Thing(rm, "Record", "a record with no label", top + f.Fwd * .3f, f.r, new Vector3(.31f, .03f, .31f), .12f); break;
             }
             if (i % 3 == 0) { string[][] calls = { new[] { "Fine cloth! Feel it. No, feel it. Now you can't leave it.", "This pattern means 'my enemies are watching'. This one means 'let them watch'." }, new[] { "Sweet oranges! Sweeter than whoever you're thinking about.", "Take one for the road. Take one for the road back." }, new[] { "This drum talks. That one argues.", "Squeeze here, the note goes up. Like so. Now you're talking." }, new[] { "Suya! Pepper is free, regret is extra.", "It's ready when the smoke says so." }, new[] { "Cold one? They're all cold. The cold is the product.", "Sit, drink, watch the sun finish." }, new[] { "Originals only! This one was pressed in '78. Maybe '79. The sleeve is from something else.", "You want the song they're playing at the Shrine? Everybody wants that. It's forty minutes. Two records." } };
-                Folk(f.P(.3f, 0, -.5f), f.Fwd, Resident.Pose.Stand, calls[kind], Local(Residents.Tool.None, true)); }
+                var kp = f.P(.3f, 0, -.5f); Folk(ctx.OnGround(kp.x, kp.z), f.Fwd, Resident.Pose.Stand, calls[kind], Local(Residents.Tool.None, true)); }
             Mark(f.o, 2.4f);
         }
 
@@ -174,8 +181,14 @@ namespace EverythingWorld.World
         /// sometimes a balcony or a black water tank. It stands on a plinth, so it sits on a slope.
         void House(LandContext ctx, MeshKit mk, MeshKit solid, PlaceFrame f, int i)
         {
-            var up = Vector3.up; const float W = 9f, D = 7f; var st = 1 + (i * 3 + 1) % 2; var H = st * 3f + .4f; var wall = Paint(Paints[i % Paints.Length]); var trim = Paint(Paints[(i + 3) % Paints.Length]); var fz = D / 2f; var rng = new System.Random(i * 13 + 2);
-            mk.Box(wall, f.P(0, (H - 3f) / 2f, 0), new Vector3(W, H + 3f, D), f.r); solid.Box(wall, f.P(0, (H - 3f) / 2f, 0), new Vector3(W, H + 3f, D), f.r); mk.Box(trim, f.P(0, .3f, fz + .02f), new Vector3(W, .7f, .04f), f.r);
+            var up = Vector3.up; const float W = 9f, D = 7f;
+            // it stands level with the highest ground along its front and its step (so the door is never up in the air),
+            // its walls reaching below the lowest ground under it
+            float hi = float.MinValue, lo = float.MaxValue; foreach (var (x, zz) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f), (0f, 1f), (0f, -1f) }) { var q = f.P(x * W / 2f, 0, zz * D / 2f); var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); if (zz > 0) hi = Mathf.Max(hi, h); }
+            foreach (var x in new[] { -2.6f, 2.6f }) { var q = f.P(x, 0, D / 2f + 1f); hi = Mathf.Max(hi, ctx.Ground(q.x, q.z)); }
+            f = new PlaceFrame(new Vector3(f.o.x, hi, f.o.z), f.Fwd); var sink = Mathf.Max(3f, hi - lo + .5f);
+            var st = 1 + (i * 3 + 1) % 2; var H = st * 3f + .4f; var wall = Paint(Paints[i % Paints.Length]); var trim = Paint(Paints[(i + 3) % Paints.Length]); var fz = D / 2f; var rng = new System.Random(i * 13 + 2);
+            mk.Box(wall, f.P(0, (H - sink) / 2f, 0), new Vector3(W, H + sink, D), f.r); solid.Box(wall, f.P(0, (H - sink) / 2f, 0), new Vector3(W, H + sink, D), f.r); mk.Box(trim, f.P(0, .3f, fz + .02f), new Vector3(W, .7f, .04f), f.r);
             mk.Box(i % 3 == 0 ? rustM : tin, f.P(0, H + .5f, .3f), new Vector3(W + .8f, .08f, D + 1.4f), f.r * Quaternion.Euler(7f, 0, 0));
             var dx = (i % 2 == 0 ? -1f : 1f) * 2.6f; mk.Box(trim, f.P(dx, 1.1f, fz + .03f), new Vector3(1.05f, 2.2f, .06f), f.r); mk.Box(concrete, f.P(dx, .06f, fz + .5f), new Vector3(1.8f, .2f, 1f), f.r); mk.Blob(bulbM[i % 3], f.P(dx, 2.5f, fz + .2f), Vector3.one * .1f, rng, 0f); halos.Add(f.P(dx, 2.5f, fz + .5f), 1.2f, Gold, .4f);
             for (var s = 0; s < st; s++) for (var k = 0; k < 2; k++)
@@ -195,7 +208,7 @@ namespace EverythingWorld.World
         void Beach(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = ctx.OnGround(beach2.x, beach2.y); var rng = new System.Random(88);
-            mk.Prism(sand, c - up * .26f, up, 21f, .34f, 28); for (var d = roadL; d <= roadL + 4f; d += 2f) Remember(G(ctx, 0, -d), 1); for (var k = 0; k < 8; k++) Remember(c + Quaternion.Euler(0, k * 45f, 0) * U * 12f, 1);
+            mk.Prism(sand, c - up * .26f, up, 21f, .34f, 28); for (var d = roadL; d <= roadL + 4f; d += 2f) Remember(G(ctx, 0, -d), 1); for (var k = 0; k < 16; k++) { var rp = c + Quaternion.Euler(0, k * 22.5f, 0) * U * 21f; Remember(ctx.OnGround(rp.x, rp.z), 2); }   // its rim: lanes leave from there, never across the fires
             // three bonfires with logs round them
             var fires = new[] { c + U * 9f - R * 3f, c - U * 10f - R * 1f, c - R * 13f + U * 1f }; var fi = 0;
             foreach (var fp in fires)

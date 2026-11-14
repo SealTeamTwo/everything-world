@@ -171,6 +171,9 @@ namespace EverythingWorld.World
             return false;
         }
 
+        /// How much the ground falls across a round of radius r round 'at'.
+        float Fall(LandContext ctx, Vector3 at, float r) { float lo = float.MaxValue, hi = float.MinValue; for (var k = 0; k < 8; k++) { var h = ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
+
         bool LaneNear(float x, float z, float within) { foreach (var (p, w) in walkPoints) { if (w < 10) continue; float dx = p.x - x, dz = p.z - z; if (dx * dx + dz * dz < within * within) return true; } return false; }
 
         bool InNoGrass(float x, float z, float pad)
@@ -190,7 +193,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -198,11 +203,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A pole with a coloured bulb on it.
@@ -277,22 +282,36 @@ namespace EverythingWorld.World
                 var dir = to - from; var total = dir.magnitude; if (total < 2f) return; dir /= total;
                 if (artist != null) facing[artist] = -dir;
                 var side = Vector3.Cross(Vector3.up, dir); var end = total - stopShort; if (end < PathW) return;
-                var pts = new List<Vector3>();
+                var pts = new List<Vector3>(); var beachC = new Vector3(beach2.x, 0, beach2.y);
+                bool fromRound = new Vector2(join.x - center.x, join.z - center.z).magnitude < 26f, fromBeach = new Vector2(join.x - beachC.x, join.z - beachC.z).magnitude < 24f;
                 for (var d = PathW / 2f + .1f; ; d += 1.5f)
                 {
-                    var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 14f) * Mathf.Min(2f, end * .04f);
+                    // the wiggle fades out at both ends, so a lane leaves straight and comes in straight
+                    var dd = Mathf.Min(d, end); var fade = Mathf.Clamp01(Mathf.Min(dd, end - dd) / 8f); var q = from + dir * dd + side * Mathf.Sin(dd / 14f) * Mathf.Min(2f, end * .04f) * fade;
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area, the roundabout and the beach (unless the lane starts there) instead
+                    // of running across them: an arc on whichever side the straight line passes
+                    void Round(Vector3 ov, float r)
+                    {
+                        var rel = q - ov; rel.y = 0; if (rel.sqrMagnitude >= r * r) return;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along)); q.y = 0;
+                    }
+                    foreach (var o in ctx.Artists) if (o.name != artist) Round(new Vector3(o.x, 0, o.z), Foot(o) * 1.06f + 3f);
+                    if (!fromRound) Round(new Vector3(center.x, 0, center.z), 24f + PathW / 2f);
+                    if (!fromBeach) Round(beachC, 22f + PathW / 2f);
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, earth, PathW, .13f, ctx);
-                foreach (var p in pts) Remember(p, walk);
                 for (var i = 7; i < pts.Count; i += 11, n++)
                 {
                     var s = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .8f);
-                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue;
+                    // never on another lane or Market Road
+                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, PathW / 2f + .4f)) continue;
                     BulbPole(ctx, mk, ctx.OnGround(lp.x, lp.z), n, true);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
             }
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
@@ -300,7 +319,14 @@ namespace EverythingWorld.World
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p, w) in walkPoints)
+                    {
+                        // never from the middle of the roundabout (past the Big Drum, the benches and the parked bus): its
+                        // rim is remembered for that; nor from inside another artist's area
+                        if (w == 0) continue;
+                        if (w >= 10 && InFootprint(ctx, p.x, p.z, 2f)) continue;
+                        var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; }
+                    }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
@@ -324,8 +350,8 @@ namespace EverythingWorld.World
                 else if (roll < .34f) { Plantain(ctx, mk, p, .9f + s * .4f, rng); plantains++; }
                 else if (roll < .44f) { Hibiscus(mk, p, rng); bushes++; }
                 else if (roll < .47f) { if (goats < 9) { Goat(mk, p, Quaternion.Euler(0, s * 360f, 0), rng, goats); goats++; } }
-                else if (roll < .56f) { if (bikes < 5 && NearPath(px, pz, 40f)) { Okada(ctx, mk, p, Quaternion.Euler(0, s * 360f, 0), bikes); bikes++; } }
-                else if (roll < .66f) { if (kiosks < 6 && NearPath(px, pz, 44f)) { Kiosk(ctx, mk, solid, p, FaceTo(p, NearestWalk(p)), kiosks); kiosks++; } }
+                else if (roll < .56f) { if (bikes < 5 && NearPath(px, pz, 40f) && Fall(ctx, p, 1f) < .3f) { Okada(ctx, mk, p, Quaternion.Euler(0, s * 360f, 0), bikes); bikes++; } }
+                else if (roll < .66f) { if (kiosks < 6 && NearPath(px, pz, 44f) && Fall(ctx, p, 1.7f) < .6f) { Kiosk(ctx, mk, solid, p, FaceTo(p, NearestWalk(p)), kiosks); kiosks++; } }
             }
             Debug.Log($"The Afrobeat Coast: Market Road {roadL:0} m, {palms} palms, {plantains} plantain clumps, {bushes} hibiscus, {goats} goats, {bikes} motorbikes, {kiosks} kiosks");
         }
@@ -367,7 +393,11 @@ namespace EverythingWorld.World
         /// A little painted kiosk selling one thing.
         void Kiosk(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 g, Vector3 face, int i)
         {
-            var up = Vector3.up; var f = new PlaceFrame(g, face); var paint = Paint(Paints[(i * 3 + 1) % Paints.Length]); string[] sells = { "RECHARGE CARDS", "PURE WATER", "SUYA", "BARBING SALON", "TAILOR", "COLD MINERALS" };
+            var up = Vector3.up; var paint = Paint(Paints[(i * 3 + 1) % Paints.Length]);
+            // it stands at the highest ground under it, on a block footing down to the lowest
+            float hi = g.y, lo = g.y; for (var k = 0; k < 8; k++) { var h = ctx.Ground(g.x + Mathf.Cos(k * Mathf.PI / 4f) * 1.6f, g.z + Mathf.Sin(k * Mathf.PI / 4f) * 1.6f); hi = Mathf.Max(hi, h); lo = Mathf.Min(lo, h); }
+            g.y = hi; var f = new PlaceFrame(g, face); if (hi - lo > .05f) mk.Box(concrete, f.P(0, -(hi - lo + .3f) / 2f + .05f, 0), new Vector3(2.5f, hi - lo + .4f, 2.1f), f.r);
+            string[] sells = { "RECHARGE CARDS", "PURE WATER", "SUYA", "BARBING SALON", "TAILOR", "COLD MINERALS" };
             mk.Box(paint, f.P(0, 1.2f, 0), new Vector3(2.4f, 2.4f, 2f), f.r); solid.Box(paint, f.P(0, 1.2f, 0), new Vector3(2.4f, 2.4f, 2f), f.r); mk.Box(tin, f.P(0, 2.5f, .3f), new Vector3(2.8f, .06f, 2.9f), f.r * Quaternion.Euler(8f, 0, 0)); mk.Box(dark, f.P(0, 1.4f, 1.01f), new Vector3(1.7f, 1f, .04f), f.r); mk.Box(windowM, f.P(0, 1.4f, 1.02f), new Vector3(1.5f, .8f, .03f), f.r); mk.Box(woodM, f.P(0, .86f, 1.2f), new Vector3(1.8f, .06f, .4f), f.r);
             ArtistBits.Label(rootT, sells[i % sells.Length], f.P(0, 2.14f, 1.02f), f.Fwd, .15f, Ink, TextAnchor.MiddleCenter); halos.Add(f.P(0, 1.4f, 1.6f), 1.4f, Gold, .35f); noGrass.Add(new Vector3(g.x, 3f, g.z));
         }
