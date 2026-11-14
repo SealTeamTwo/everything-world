@@ -109,6 +109,7 @@ namespace EverythingWorld.World
             GlitterMile(ctx, mk, solid);
             SkyClub(ctx, mk, solid);
             Paths(ctx, mk, solid);
+            MirrorRing(ctx, mk);
             Wilds(ctx, mk, solid);
             mk.Build("The Glitterlands", ctx.Root, false);
             solid.BuildCollider("The Glitterlands walls", ctx.Root);
@@ -153,7 +154,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -161,11 +164,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A bank of cloud: soft lumps, pink and lilac.
@@ -219,6 +222,15 @@ namespace EverythingWorld.World
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 16f) * Mathf.Min(2f, end * .04f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area in the way instead of running across it
+                    // (an arc on whichever side the straight line passes, so the lane never flips across the area)
+                    foreach (var o in ctx.Artists)
+                    {
+                        if (o.name == artist) continue; var r = Foot(o) + 3f; var ov = new Vector3(o.x, 0, o.z); var rel = q - ov;
+                        if (rel.sqrMagnitude >= r * r) continue;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+                    }
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
@@ -227,7 +239,7 @@ namespace EverythingWorld.World
                 for (var i = 6; i < pts.Count; i += 10, n++)
                 {
                     var s = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .7f);
-                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue;
+                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, 1.8f)) continue;
                     BallPost(ctx, mk, ctx.OnGround(lp.x, lp.z), -side * s, 1f, n % 3 == 0);
                 }
                 walk++;
@@ -237,7 +249,7 @@ namespace EverythingWorld.World
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p, w) in walkPoints) { if (w > 0 && InFootprint(ctx, p.x, p.z, 2f)) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
@@ -256,13 +268,16 @@ namespace EverythingWorld.World
             {
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 4f)) continue;
-                var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var up = Vector3.up;
-                if (roll < .36f) { CloudBank(mk, p, .8f + s * 1.2f, rng); clouds++; }
-                else if (roll < .46f) { if (!Open(ctx, px, pz, 6f) || Mathf.Abs(ctx.Ground(px + 3f, pz) - ctx.Ground(px - 3f, pz)) > 1.2f) continue; DanceFloor(mk, solid, p, Quaternion.LookRotation(f), 4, 4); BallPost(ctx, mk, p - f * 3f, f, 1.1f, floors % 2 == 0); noGrass.Add(new Vector3(p.x, 4f, p.z)); floors++; }
-                else if (roll < .52f) { var side = Vector3.Cross(up, f); for (var k = 0; k <= 10; k++) { var a = Mathf.PI * k / 10f; mk.Box(crystal, p + up * Mathf.Sin(a) * 3.4f + side * Mathf.Cos(a) * 2.4f, new Vector3(.4f, .8f, .4f), Quaternion.LookRotation(f) * Quaternion.Euler(0, 0, -Mathf.Cos(a) * 60f + 45f)); } foreach (var e in new[] { -2.4f, 2.4f }) ArtistBits.PostCollider(ctx.Root, p + side * e, 1.4f, .3f); halos.Add(p + up * 3f, 2f, Lilac, .2f); arches++; }
+                var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var up = Vector3.up; var sd0 = Vector3.Cross(up, f);
+                // how much the ground falls across a footprint (half-width hw, half-depth hd) round p
+                float Fall(float hw, float hd) { float lo = p.y, hi = p.y; foreach (var (a, b) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) { var q = p + sd0 * a * hw + f * b * hd; var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
+                // a cloud bank shrinks where it would spill over a path (no extra random numbers, so the rest stays put)
+                if (roll < .36f) { var cs = .8f + s * 1.2f; while (cs > .7f && NearPath(px, pz, cs * 3.2f + 1f)) cs -= .15f; CloudBank(mk, p, cs, rng); clouds++; }
+                else if (roll < .46f) { if (!Open(ctx, px, pz, 6f) || Fall(2.8f, 2.8f) > .5f) continue; DanceFloor(mk, solid, p, Quaternion.LookRotation(f), 4, 4); BallPost(ctx, mk, p - f * 3f, f, 1.1f, floors % 2 == 0); noGrass.Add(new Vector3(p.x, 4f, p.z)); floors++; }
+                else if (roll < .52f) { if (Fall(2.6f, .4f) > .6f) continue; var side = Vector3.Cross(up, f); for (var k = 0; k <= 10; k++) { var a = Mathf.PI * k / 10f; mk.Box(crystal, p + up * Mathf.Sin(a) * 3.4f + side * Mathf.Cos(a) * 2.4f, new Vector3(.4f, .8f, .4f), Quaternion.LookRotation(f) * Quaternion.Euler(0, 0, -Mathf.Cos(a) * 60f + 45f)); } foreach (var e in new[] { -2.4f, 2.4f }) ArtistBits.PostCollider(ctx.Root, p + side * e, 1.4f, .3f); halos.Add(p + up * 3f, 2f, Lilac, .2f); arches++; }
                 else if (roll < .58f) { for (var k = 0; k < 3; k++) { var bp = p + Quaternion.Euler(0, k * 120f, 0) * Vector3.forward * .4f; var h = 2.6f + k * .5f; mk.Prism(white, bp, up, .006f, h, 3); Heart(mk, Paint(Disco[(balloons + k) % Disco.Length]), bp + up * (h + .4f), f, .45f); } balloons++; }
                 else if (roll < .63f) { var fh = 6f + s * 6f; var fp = p + up * fh; DanceFloor(mk, solid, fp, Quaternion.LookRotation(f), 3, 3, 1.2f, .3f); CloudBank(mk, fp - up * 1.2f, 1.1f, rng); Ball(mk, fp + up * 3f, .5f); halos.Add(fp + up * 3f, 2f, Silver, .3f); floaters++; }
-                else if (roll < .69f) { var rot = Quaternion.LookRotation(f); var side = Vector3.Cross(up, f); var m = Paint(new Color(.6f, .3f, .7f)); mk.Box(m, p + up * .3f, new Vector3(2.2f, .4f, .9f), rot); mk.Box(m, p + up * .7f - f * .36f, new Vector3(2.2f, .6f, .2f), rot); BoxCol(ctx.Root, p + up * .45f, new Vector3(2.2f, .9f, .9f), rot); Interact.Bench(tlife.transform, p + up * .52f - side * .5f, p + up * .52f + side * .5f, f); BallPost(ctx, mk, p - f * 1.2f + side * 1.6f, f, .9f, sofas % 2 == 0); noGrass.Add(new Vector3(p.x, 2f, p.z)); sofas++; }
+                else if (roll < .69f) { if (Fall(1.2f, .6f) > .25f) continue; var rot = Quaternion.LookRotation(f); var side = Vector3.Cross(up, f); var m = Paint(new Color(.6f, .3f, .7f)); mk.Box(m, p + up * .3f, new Vector3(2.2f, .4f, .9f), rot); mk.Box(m, p + up * .7f - f * .36f, new Vector3(2.2f, .6f, .2f), rot); BoxCol(ctx.Root, p + up * .45f, new Vector3(2.2f, .9f, .9f), rot); Interact.Bench(tlife.transform, p + up * .52f - side * .5f, p + up * .52f + side * .5f, f); BallPost(ctx, mk, p - f * 1.2f + side * 1.6f, f, .9f, sofas % 2 == 0); noGrass.Add(new Vector3(p.x, 2f, p.z)); sofas++; }
             }
             Debug.Log($"The Glitterlands: Glitter Mile {streetL:0} m, {clouds} cloud banks, {floors} dance floors, {floaters} floating floors, {arches} crystal arches, {balloons} heart balloons, {sofas} sofas");
         }

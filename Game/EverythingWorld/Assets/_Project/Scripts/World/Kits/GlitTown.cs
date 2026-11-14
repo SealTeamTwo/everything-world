@@ -59,7 +59,7 @@ namespace EverythingWorld.World
             for (var k = 0; k < 4; k++) { var d = Quaternion.Euler(0, k * 90f + 45f, 0) * D; var pp = c + d * 15f + up * .14f; mk.Prism(chrome, pp - up * .2f, up, .4f, 20f, 8); ArtistBits.PostCollider(ctx.Root, pp, 6f, .44f); for (var q = 0; q < 6; q++) mk.Box(tileM[(k + q) % 4], pp + up * (2f + q * 3f) + d * .42f, new Vector3(.9f, 1.6f, .04f), Quaternion.LookRotation(d)); var top = pp + up * 19.6f; mk.Prism(iron, top, (bc + up * 4.8f - top).normalized, .05f, Vector3.Distance(top, bc + up * 4.8f), 4); }
             ArtistBits.PointLight(ctx.Root, c + up * 6f, new Color(1f, .9f, 1f), 30f, 2.4f); life.sparkleAt = bc;
             // a ring of cloud round the edge; the glitter bar; the photo booth
-            for (var k = 0; k < 8; k++) { var d = Quaternion.Euler(0, k * 45f + 10f, 0) * D; if (Vector3.Angle(d, D) < 30f) continue; CloudBank(mk, c + d * 21f, 1.4f, rng); }
+            // (the ring of cloud is laid after the lanes, MirrorRing, so it leaves gaps where they go out)
             var gb = new PlaceFrame(c - D * 12f + S * 9f + up * .14f, (D - S * .7f).normalized); mk.Prism(chrome, gb.P(0, 0, 0), up, 2.2f, 1.1f, 16); mk.Prism(mirror, gb.P(0, 1.1f, 0), up, 2.3f, .06f, 16); BoxCol(ctx.Root, gb.P(0, .55f, 0), new Vector3(4.4f, 1.1f, 4.4f), gb.r); mk.Prism(chrome, gb.P(0, 1.1f, 0), up, .2f, 2.4f, 8); mk.Prism(Paint(Pink), gb.P(0, 3.5f, 0), up, 2.6f, .12f, 16); Sign(gb.P(0, 3.9f, 2.62f), gb.Fwd, "GLITTER BAR", .24f, Ink);
             for (var k = 0; k < 3; k++) { var dm = new MeshKit(); dm.Prism(glassM, Vector3.zero, Vector3.up, .04f, .16f, 8, 1.6f); dm.Prism(GlowM(Disco[k], 1.6f), new Vector3(0, .1f, 0), Vector3.up, .055f, .05f, 8); Thing(dm, "Drink", new[] { "a pink fizz with a sparkler in it", "something blue and glowing", "a lemon glitter soda" }[k], gb.P(-.6f + k * .6f, 1.14f, 2.1f), Quaternion.identity, new Vector3(.12f, .2f, .12f), .1f, false); }
             Folk(gb.P(0, 0, 0) + gb.Fwd * 0f + gb.Right * 0f, gb.Fwd, Resident.Pose.Stand, new[] { "What can I get you? Everything comes with glitter. Everything.", "The pink one's sweet, the blue one glows, the yellow one fizzes in your nose.", "On the house. The house is a cloud. It's very generous." }, Local(Residents.Tool.None, true));
@@ -72,6 +72,13 @@ namespace EverythingWorld.World
             for (var k = 0; k < 7; k++) { var d = Quaternion.Euler(0, k * 51f, 0) * D; Folk(c + d * (3f + (k % 3) * 2f) + up * .17f, -d, k % 2 == 0 ? Resident.Pose.Wave : Resident.Pose.Stand, dance[k % 3]); }
             Mark(c, 21f);
             Shot(ctx, "under the mirrorball", c + D * 15f + S * 9f + up * 2.6f, bc - up * 4f);
+        }
+
+        /// The ring of cloud round the Mirrorball's edge, with a gap wherever a lane goes out (and up the Mile).
+        void MirrorRing(LandContext ctx, MeshKit mk)
+        {
+            var c = ctx.OnGround(center.x, center.z); var rng = new System.Random(3);
+            for (var k = 0; k < 8; k++) { var d = Quaternion.Euler(0, k * 45f + 10f, 0) * D; if (Vector3.Angle(d, D) < 30f) continue; var g = c + d * 21f; if (LaneNear(g.x, g.z, 6f)) continue; CloudBank(mk, g, 1.4f, rng); }
         }
 
         // ---------------------------------------------------------------- the Glitter Mile
