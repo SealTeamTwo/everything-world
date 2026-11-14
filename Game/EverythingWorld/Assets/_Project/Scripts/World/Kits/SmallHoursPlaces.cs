@@ -69,7 +69,7 @@ namespace EverythingWorld.World
             var pts = PlaceTools.Smooth(ctx, new[] { a, Vector2.Lerp(a, b, .5f) + bend, b }, false, 2f, 1f);
             for (var i = 0; i < pts.Count; i++) { foreach (var art in ctx.Artists) { var r = art.r + 3f; var v = new Vector2(pts[i].x - art.x, pts[i].z - art.z); var dd = v.magnitude; if (dd < r) { v = dd > .01f ? v / dd * r : new Vector2(r, 0); pts[i] = ctx.OnGround(art.x + v.x, art.z + v.y); } } }
             if (pts.Count < 2) return;
-            Ribbon(ctx, mk, lane, pts, 2.2f, .07f); foreach (var p in pts) Remember(p);
+            Strip(ctx, mk, lane, pts, 2.2f, .07f); foreach (var p in pts) Remember(p);
             for (var i = 12; i < pts.Count - 6; i += 20) { var dir = pts[i + 1] - pts[i - 1]; dir.y = 0; dir.Normalize(); var sd = Vector3.Cross(Vector3.up, dir); var lp = pts[i] + sd * 2f; StreetLamp(ctx, mk, ctx.OnGround(lp.x, lp.z), -sd); }
             var end = to + lampSide; StreetLamp(ctx, mk, ctx.OnGround(end.x, end.z), -lampSide);
         }

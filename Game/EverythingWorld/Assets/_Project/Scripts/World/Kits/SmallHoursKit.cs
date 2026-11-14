@@ -106,20 +106,24 @@ namespace EverythingWorld.World
                 var side = Vector3.Cross(Vector3.up, dir);
                 facing[next.name] = -dir;
                 var pts = new List<Vector3>();
+                var startIn = ArtistAt(ctx, join);   // a lane branching from the end of another lane starts inside that artist's area
                 for (var d = 0f; d <= Mathf.Max(0f, len); d += 3f)
                 {
                     var t = len > 0 ? d / len : 0f;
                     var q = new Vector3(join.x, 0, join.z) + dir * d + side * Mathf.Sin(t * Mathf.PI) * Mathf.Min(5f, len * .07f);
+                    q = RoundArtists(ctx, q, join, dir, next.name, startIn);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
                     pts.Add(ctx.OnGround(q.x, q.z));
                 }
                 if (pts.Count < 2) continue;
-                Ribbon(ctx, mk, lane, pts, 2.6f, .07f);
+                Strip(ctx, mk, lane, pts, 2.6f, .07f);
                 foreach (var p in pts) Remember(p);
                 network.AddRange(pts);
                 for (var i = 2; i < pts.Count; i += 4)
                 {
-                    var post = pts[i] + side * ((i / 4) % 2 == 0 ? 2.2f : -2.2f);
+                    var ld = (i + 1 < pts.Count ? pts[i + 1] : pts[i]) - pts[i - 1]; ld.y = 0;   // beside the lane where it runs here (it bends round other homes)
+                    var ls = ld.sqrMagnitude > .01f ? Vector3.Cross(Vector3.up, ld.normalized) : side;
+                    var post = pts[i] + ls * ((i / 4) % 2 == 0 ? 2.2f : -2.2f);
                     var near = false;
                     foreach (var o in lamps) if ((o - post).sqrMagnitude < 26f * 26f) { near = true; break; }
                     if (near || !ctx.IsFree(post.x, post.z, 1f)) continue;
@@ -157,6 +161,66 @@ namespace EverythingWorld.World
                 if (pathCells.TryGetValue((cx + i, cz + j), out var l))
                     foreach (var p in l) { float dx = p.x - x, dz = p.z - z; if (dx * dx + dz * dz < within * within) return true; }
             return false;
+        }
+
+        /// Laid in narrow strips across its width with every vertex on its own ground (raised only a little where the
+        /// middle is higher), so on a side slope a lane follows the ground instead of burying one edge and lifting the other.
+        static void Strip(LandContext ctx, MeshKit mk, Material m, List<Vector3> raw, float width, float lift)
+        {
+            var pts = new List<Vector3>();
+            foreach (var p in raw) { if (pts.Count > 0) { var d = p - pts[pts.Count - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; } pts.Add(p); }
+            var n = pts.Count; if (n < 2) return;
+            var lanes = Mathf.Max(1, Mathf.CeilToInt(width / 1.2f)); var V = new Vector3[n, lanes + 1];
+            Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
+            for (var i = 0; i < n; i++)
+            {
+                var a = i > 0 ? Flat(pts[i] - pts[i - 1]) : Flat(pts[1] - pts[0]);
+                var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
+                var t = (a + b).sqrMagnitude > .01f ? (a + b).normalized : b; var side = Vector3.Cross(Vector3.up, t);
+                var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
+                Vector3 l = pts[i] - side * (width / 2f * miter), r = pts[i] + side * (width / 2f * miter);
+                var mid = ctx.Ground(pts[i].x, pts[i].z);
+                var bulge = Mathf.Clamp(mid - (ctx.Ground(l.x, l.z) + ctx.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ctx.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
+            }
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        /// The artist whose area holds p (null if none).
+        IslandWorldData.Artist ArtistAt(LandContext ctx, Vector3 p)
+        {
+            foreach (var o in ctx.Artists) { float dx = p.x - o.x, dz = p.z - o.z; if (dx * dx + dz * dz < o.r * o.r) return o; }
+            return null;
+        }
+
+        /// Bends a point of a hamlet lane round any home's area it would cross (not its own, not the one it starts in,
+        /// and never Noah Gallagher's place, whose lanes stay exactly as they were), along an arc on the side the
+        /// straight line passes, so the lane never flips across.
+        Vector3 RoundArtists(LandContext ctx, Vector3 q, Vector3 from, Vector3 dir, string own, IslandWorldData.Artist startIn)
+        {
+            dir.y = 0; if (dir.sqrMagnitude < .0001f) return q; dir.Normalize();
+            var side = Vector3.Cross(Vector3.up, dir);
+            foreach (var o in ctx.Artists)
+            {
+                if (o.name == own || o == startIn || o.name == NoahName) continue;
+                var r = o.r + 3f; var ov = new Vector3(o.x, 0, o.z); var rel = new Vector3(q.x - o.x, 0, q.z - o.z);
+                if (rel.sqrMagnitude >= r * r) continue;
+                var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(new Vector3(from.x, 0, from.z) - ov, side) >= 0f ? 1f : -1f;
+                q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+            }
+            return q;
+        }
+
+        /// The nearest remembered path point to (x, z) within `within`, if any.
+        bool NearestPath(float x, float z, float within, out Vector3 at)
+        {
+            at = default; var bd = within * within; var found = false;
+            int cx = Mathf.FloorToInt(x / 8f), cz = Mathf.FloorToInt(z / 8f), reach = Mathf.CeilToInt(within / 8f);
+            for (var i = -reach; i <= reach; i++)
+            for (var j = -reach; j <= reach; j++)
+                if (pathCells.TryGetValue((cx + i, cz + j), out var l))
+                    foreach (var p in l) { float dx = p.x - x, dz = p.z - z, d = dx * dx + dz * dz; if (d < bd) { bd = d; at = p; found = true; } }
+            return found;
         }
 
         static void Ribbon(LandContext ctx, MeshKit mk, Material m, List<Vector3> pts, float width, float lift)
@@ -246,6 +310,9 @@ namespace EverythingWorld.World
             {
                 if (!ctx.TrySpot(out var p, 6f, 4f) || NearPath(p.x, p.z, 3f) || InNoah(p, 6f)) continue;
                 var r = ctx.Range(1.2f, 2.4f);
+                // the whole hedge (and the tree in it) clear of the lane's width: nudged away from the nearest lane point
+                var keep = r * 1.1f + 2.2f;
+                if (NearestPath(p.x, p.z, keep, out var lp)) { var away = new Vector3(p.x - lp.x, 0, p.z - lp.z); away = away.sqrMagnitude > .01f ? away.normalized : Vector3.right; p = ctx.OnGround(lp.x + away.x * keep, lp.z + away.z * keep); }
                 mk.Blob(i % 3 == 0 ? leaf : WorldMaterials.Solid(new Color(.14f, .2f, .2f)), p + Vector3.up * r * .6f, new Vector3(r, r * .8f, r), ctx.Rng, .2f);
                 solid.Blob(leaf, p + Vector3.up * r * .6f, new Vector3(r, r * .8f, r) * 1.1f, Smooth, 0f);   // the hedge's own round shape
                 solid.Box(leaf, p + Vector3.up * r * .6f, new Vector3(r * 1.9f, r * 1.6f, r * 1.9f), Quaternion.identity);

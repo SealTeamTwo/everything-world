@@ -76,6 +76,7 @@ namespace EverythingWorld.World
             foreach (var s in new[] { -1f, 1f })
             {
                 var h = new Vector3(p.x, 0, p.z) + face * (D / 2f + 3.2f) + side * s * (W / 4f + .9f); h = ctx.OnGround(h.x, h.z);
+                if (NearPath(h.x, h.z, W / 4f + 2.2f)) { new MeshKit().Blob(leaf, h + up * .55f, new Vector3(W / 4f + .3f, .7f, .6f), rng, .2f); continue; }   // not across a lane
                 mk.Blob(leaf, h + up * .55f, new Vector3(W / 4f + .3f, .7f, .6f), rng, .2f);
                 solid.Blob(leaf, h + up * .55f, new Vector3(W / 4f + .3f, .7f, .6f) * 1.1f, Smooth, 0f);
                 solid.Box(leaf, h + up * .55f, new Vector3(W / 2f + .6f, 1.3f, 1.2f), rot);
@@ -96,8 +97,10 @@ namespace EverythingWorld.World
             mk.Prism(iron, butt, up, .45f, 1.1f, 10);
             ArtistBits.PostCollider(ctx.Root, butt, 1.1f, .5f);
             // the washing line: two posts, a sagging line, things pegged out and left in the rain
-            var a = ctx.OnGround((c + face * 4f - side * 3.5f).x, (c + face * 4f - side * 3.5f).z);
-            var b = ctx.OnGround((c + face * 4f + side * 3.5f).x, (c + face * 4f + side * 3.5f).z);
+            var lf = face * 4f;
+            for (var t = -1f; t <= 1f; t += .5f) { var q = c + lf + side * 3.5f * t; if (NearPath(q.x, q.z, 2.4f)) { lf = -face * 4f; break; } }   // the line out the back, not across a lane
+            var a = ctx.OnGround((c + lf - side * 3.5f).x, (c + lf - side * 3.5f).z);
+            var b = ctx.OnGround((c + lf + side * 3.5f).x, (c + lf + side * 3.5f).z);
             foreach (var q in new[] { a, b }) { mk.Prism(darkWood, q, up, .06f, 2.2f, 5); ArtistBits.PostCollider(ctx.Root, q, 2.2f, .12f); }
             Color[] cloth = { new Color(.55f, .58f, .68f), new Color(.68f, .5f, .5f), new Color(.82f, .8f, .76f), new Color(.45f, .52f, .48f) };
             var n = 3 + rng.Next(3);
@@ -128,7 +131,9 @@ namespace EverythingWorld.World
                 if (Mathf.Abs(d - gate) < 1.1f) continue;
                 var q = p + along * d; q = ctx.OnGround(q.x, q.z);
                 var h = 1.05f + (float)rng.NextDouble() * .2f;
-                mk.Box(wet, q + up * (h / 2f - .1f), new Vector3(1.15f, h, .7f), Quaternion.LookRotation(face) * Quaternion.Euler(0, (float)rng.NextDouble() * 6f - 3f, 0));
+                var turn = (float)rng.NextDouble() * 6f - 3f;
+                if (NearPath(q.x, q.z, 2.3f)) continue;   // a gap in the wall where a lane goes through
+                mk.Box(wet, q + up * (h / 2f - .1f), new Vector3(1.15f, h, .7f), Quaternion.LookRotation(face) * Quaternion.Euler(0, turn, 0));
                 mk.Box(stone, q + up * (h - .05f), new Vector3(1.1f, .14f, .8f), Quaternion.LookRotation(face));       // the coping stones
                 solid.Box(wet, q + up * (h / 2f), new Vector3(1.2f, h + .2f, .8f), Quaternion.LookRotation(face));
             }
@@ -140,6 +145,7 @@ namespace EverythingWorld.World
             // a dark tree in the garden behind
             var tree = p - face * 4f + along * ((float)rng.NextDouble() * 6f - 3f); tree = ctx.OnGround(tree.x, tree.z);
             var th = 4f + (float)rng.NextDouble() * 2f;
+            if (NearPath(tree.x, tree.z, 2f)) { new MeshKit().Blob(leaf, tree + up * (th + 1.4f), new Vector3(2.8f, 2.4f, 2.8f), rng, .15f); return; }   // not on a lane
             mk.Prism(bark, tree, up, .25f, th, 6, .7f);
             mk.Blob(leaf, tree + up * (th + 1.4f), new Vector3(2.8f, 2.4f, 2.8f), rng, .15f);
             ArtistBits.PostCollider(ctx.Root, tree, th, .3f);
@@ -155,6 +161,7 @@ namespace EverythingWorld.World
                 var a = (float)rng.NextDouble() * Mathf.PI * 2f; var r = 2f + (float)rng.NextDouble() * 5f;
                 var t = p + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * r; t = ctx.OnGround(t.x, t.z);
                 var h = 3.5f + (float)rng.NextDouble() * 3f; var cr = 2f + (float)rng.NextDouble() * 1.2f;
+                if (NearPath(t.x, t.z, 2f)) { new MeshKit().Blob(leaf, t, Vector3.one, rng, .16f); continue; }   // not on a lane (same random numbers drawn)
                 mk.Prism(bark, t, up, .22f, h + .5f, 6, .7f);
                 soft.Blob(i % 2 == 0 ? leaf : WorldMaterials.Solid(new Color(.12f, .19f, .2f)), t + up * (h + cr * .6f), new Vector3(cr, cr * .85f, cr), rng, .16f);
                 ArtistBits.PostCollider(ctx.Root, t, h, .28f);
