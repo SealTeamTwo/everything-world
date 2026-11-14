@@ -155,7 +155,10 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the hill instead of burying its middle or lifting an edge
+            // (it had only an edge vertex each side, and stretches of the lanes vanished under the turf).
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -163,30 +166,41 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .25f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        /// The lowest ground in a ring of the given radius round a point (for footings that reach down to it).
+        float Lowest(Vector3 at, float r)
+        {
+            var lo = ctx0.Ground(at.x, at.z);
+            for (var k = 0; k < 8; k++) { var a = k * Mathf.PI / 4f; lo = Mathf.Min(lo, ctx0.Ground(at.x + Mathf.Cos(a) * r, at.z + Mathf.Sin(a) * r)); }
+            return lo;
         }
 
         /// A stone bench.
         void Bench(Transform parent, MeshKit mk, Vector3 g, Vector3 face, float len = 2f)
         {
-            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face); mk.Box(rock, g + up * .42f, new Vector3(len, .16f, .5f), rot); foreach (var e in new[] { -1f, 1f }) mk.Box(rockD, g + up * .2f + side * e * (len / 2f - .25f), new Vector3(.3f, .4f, .44f), rot);
+            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face); mk.Box(rock, g + up * .42f, new Vector3(len, .16f, .5f), rot);
+            // each leg reaches down to its own lowest ground (on a slope the downhill leg stood in the air)
+            foreach (var e in new[] { -1f, 1f }) { var lp = g + side * e * (len / 2f - .25f); var gl = Lowest(lp, .3f); var lo = (g.y - gl < 2f ? Mathf.Min(g.y, gl) : g.y) - .1f; var top = g.y + .4f; mk.Box(rockD, new Vector3(lp.x, (lo + top) / 2f, lp.z), new Vector3(.3f, top - lo, .44f), rot); }
             BoxCol(parent, g + up * .25f, new Vector3(len, .5f, .5f), rot); Interact.Bench(tlife.transform, g + up * .5f - side * (len / 2f - .5f), g + up * .5f + side * (len / 2f - .5f), face);
         }
 
         /// A floating lantern held over a carved stone post.
         void Lamp(LandContext ctx, MeshKit mk, Vector3 g, bool light = false)
         {
-            var up = Vector3.up; mk.Box(rock, g + up * .7f, new Vector3(.36f, 1.4f, .36f), Quaternion.Euler(0, 45f, 0)); mk.Box(runeM, g + up * 1f + new Vector3(.13f, 0, .13f), new Vector3(.02f, .5f, .14f), Quaternion.Euler(0, 45f, 0)); mk.Prism(lampM, g + up * 2.1f, up, .2f, .5f, 6, .7f); halos.Add(g + up * 2.35f, 1.4f, Gold, .45f); ArtistBits.PostCollider(ctx.Root, g, 1.4f, .26f); if (light) ArtistBits.PointLight(ctx.Root, g + up * 2.2f, Gold, 12f, 1.4f);
+            var up = Vector3.up; var lo = Mathf.Min(g.y, Lowest(g, .26f)) - .1f; mk.Box(rock, new Vector3(g.x, (lo + g.y + 1.4f) / 2f, g.z), new Vector3(.36f, g.y + 1.4f - lo, .36f), Quaternion.Euler(0, 45f, 0)); mk.Box(runeM, g + up * 1f + new Vector3(.13f, 0, .13f), new Vector3(.02f, .5f, .14f), Quaternion.Euler(0, 45f, 0)); mk.Prism(lampM, g + up * 2.1f, up, .2f, .5f, 6, .7f); halos.Add(g + up * 2.35f, 1.4f, Gold, .45f); ArtistBits.PostCollider(ctx.Root, g, 1.4f, .26f); if (light) ArtistBits.PointLight(ctx.Root, g + up * 2.2f, Gold, 12f, 1.4f);
         }
 
         /// A cluster of glowing crystals growing out of the ground.
         void Crystals(Transform parent, MeshKit mk, Vector3 g, float s, Material m, System.Random rng)
         {
-            var up = Vector3.up; for (var k = 0; k < 5; k++) { var dir = (up + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * .8f).normalized; mk.Prism(m, g - up * .2f + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * s, dir, (.18f + (float)rng.NextDouble() * .14f) * s, (1f + (float)rng.NextDouble() * 1.6f) * s, 6, .05f); } ArtistBits.PostCollider(parent, g, 1.6f * s, .6f * s);
+            // each crystal grows out of its own ground (on a slope the downhill ones stood on air at the middle's height)
+            var up = Vector3.up; for (var k = 0; k < 5; k++) { var dir = (up + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * .8f).normalized; var foot = g + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * s; foot.y = Mathf.Min(g.y, ctx0.Ground(foot.x, foot.z)) - .2f; mk.Prism(m, foot, dir, (.18f + (float)rng.NextDouble() * .14f) * s, (1f + (float)rng.NextDouble() * 1.6f) * s, 6, .05f); } ArtistBits.PostCollider(parent, g, 1.6f * s, .6f * s);
         }
 
         /// A floating island: a turned-down cone of rock with turf on top, a tree, lanterns, sometimes a waterfall off its edge. It bobs (HighLife).
@@ -255,10 +269,17 @@ namespace EverythingWorld.World
                 if (!Open(ctx, px, pz, 3f)) continue;
                 var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var rot = Quaternion.LookRotation(f); var side = Vector3.Cross(Vector3.up, f); var up = Vector3.up;
                 if (roll < .3f) { Crystals(ctx.Root, mk, p, .8f + s, s > .5f ? crystalM : runeM, rng); Mark(p, 1.6f); crystals++; }
-                else if (roll < .42f) { var h = 2.4f + s * 2.4f; mk.Box(rock, p + up * (h / 2f - .3f), new Vector3(1f, h, .7f), rot * Quaternion.Euler(0, 0, (s - .5f) * 10f)); for (var k = 0; k < 4; k++) mk.Box(runeM, p + up * (.6f + k * h / 5f) + f * .36f, new Vector3(.3f + (k % 2) * .2f, .06f, .02f), rot * Quaternion.Euler(0, 0, k * 30f)); BoxCol(ctx.Root, p + up * h / 2f, new Vector3(1f, h, .7f), rot); Mark(p, 1.2f); stones++; }
-                else if (roll < .6f) { var prev = p; for (var k = 0; k < 5; k++) { var dir = (up + new Vector3(Mathf.Sin(k + s * 9f), 0, Mathf.Cos(k * 1.3f)) * .4f).normalized; mk.Prism(trunkM, prev, dir, .26f - k * .03f, 1.2f, 6); prev += dir * 1.2f; } for (var k = 0; k < 4; k++) mk.Blob(k % 2 == 0 ? GlowM(new Color(1f, .6f, .74f), .5f) : leafM, prev + Quaternion.Euler(0, k * 90f, 0) * f * 1.2f + up * (k % 2) * .5f, new Vector3(1.6f, 1.1f, 1.6f), rng, .25f); ArtistBits.PostCollider(ctx.Root, p, 2.4f, .4f); var mid = (p + prev) / 2f; ArtistBits.PostCollider(ctx.Root, new Vector3(mid.x, p.y, mid.z), 4f, .5f); Mark(p, 2f); trees++; }
+                else if (roll < .42f) { var h = 2.4f + s * 2.4f; var sb = Mathf.Min(p.y - .3f, Lowest(p, .7f) - .1f); var st = p.y + h - .3f; mk.Box(rock, new Vector3(p.x, (sb + st) / 2f, p.z), new Vector3(1f, st - sb, .7f), rot * Quaternion.Euler(0, 0, (s - .5f) * 10f));   /* the stone's foot reaches its lowest ground */ for (var k = 0; k < 4; k++) mk.Box(runeM, p + up * (.6f + k * h / 5f) + f * .36f, new Vector3(.3f + (k % 2) * .2f, .06f, .02f), rot * Quaternion.Euler(0, 0, k * 30f)); BoxCol(ctx.Root, p + up * h / 2f, new Vector3(1f, h, .7f), rot); Mark(p, 1.2f); stones++; }
+                else if (roll < .6f) { var prev = p; mk.Prism(trunkM, new Vector3(p.x, Lowest(p, .3f) - .2f, p.z), up, .27f, p.y - Lowest(p, .3f) + .3f, 6);   /* the trunk's foot in the ground on a slope */ for (var k = 0; k < 5; k++) { var dir = (up + new Vector3(Mathf.Sin(k + s * 9f), 0, Mathf.Cos(k * 1.3f)) * .4f).normalized; mk.Prism(trunkM, prev, dir, .26f - k * .03f, 1.2f, 6); prev += dir * 1.2f; } for (var k = 0; k < 4; k++) mk.Blob(k % 2 == 0 ? GlowM(new Color(1f, .6f, .74f), .5f) : leafM, prev + Quaternion.Euler(0, k * 90f, 0) * f * 1.2f + up * (k % 2) * .5f, new Vector3(1.6f, 1.1f, 1.6f), rng, .25f); ArtistBits.PostCollider(ctx.Root, p, 2.4f, .4f); var mid = (p + prev) / 2f; ArtistBits.PostCollider(ctx.Root, new Vector3(mid.x, p.y, mid.z), 4f, .5f); Mark(p, 2f); trees++; }
                 else if (roll < .68f) { Bench(ctx.Root, mk, p, f); Lamp(ctx, mk, p - f * .8f + side * 1.6f, benches % 2 == 0); Mark(p, 2.2f); benches++; }
-                else if (roll < .73f) { if (!Open(ctx, px, pz, 4f)) continue; mk.Prism(rockD, p - up * .3f, up, 3f, .5f, 14); mk.Prism(waterM, p + up * .18f, up, 2.7f, .02f, 14); BoxCol(ctx.Root, p, new Vector3(5.6f, .5f, 5.6f), Quaternion.identity); for (var k = 0; k < 6; k++) { var rp = p + Quaternion.Euler(0, k * 60f, 0) * f * 3f; mk.Blob(rock, rp + up * .1f, new Vector3(.6f, .4f, .6f), rng, .3f); ArtistBits.PostCollider(ctx.Root, rp, .6f, .6f); } Mark(p, 3.4f); pools++; }
+                else if (roll < .73f) { if (!Open(ctx, px, pz, 4f)) continue;
+                    // still water only where the ground is level enough: on a slope the rim stood in the air on the low side;
+                    // such a pool is drawn into a kit that is thrown away, so it uses the same random numbers and nothing else moves
+                    var lo = Lowest(p, 3.2f); var hi = p.y; for (var k = 0; k < 8; k++) { var a = k * Mathf.PI / 4f; hi = Mathf.Max(hi, ctx.Ground(p.x + Mathf.Cos(a) * 3.2f, p.z + Mathf.Sin(a) * 3.2f)); }
+                    var level = hi - lo < .45f; var pm = level ? mk : new MeshKit();
+                    pm.Prism(rockD, p - up * .3f, up, 3f, .5f, 14); pm.Prism(waterM, p + up * .18f, up, 2.7f, .02f, 14); if (level) BoxCol(ctx.Root, p, new Vector3(5.6f, .5f, 5.6f), Quaternion.identity);
+                    for (var k = 0; k < 6; k++) { var rp = p + Quaternion.Euler(0, k * 60f, 0) * f * 3f; pm.Blob(rock, rp + up * .1f, new Vector3(.6f, .4f, .6f), rng, .3f); if (level) ArtistBits.PostCollider(ctx.Root, rp, .6f, .6f); }
+                    Mark(p, 3.4f); if (level) pools++; }
             }
             Debug.Log($"The Melodic Bass Highlands: Rune Road {streetL:0} m, {floaters} floating islands, {crystals} crystal clusters, {stones} rune stones, {trees} blossom trees, {benches} benches, {pools} pools");
         }
