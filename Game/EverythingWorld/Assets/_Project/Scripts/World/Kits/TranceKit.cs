@@ -25,6 +25,10 @@ namespace EverythingWorld.World
         readonly Dictionary<string, Vector3> facing = new Dictionary<string, Vector3>();
         // x, radius, z
         readonly List<Vector3> noGrass = new List<Vector3>();
+        // x, radius, z: the stage's laser emitters, the statues and lamps along the Long Plain and the Monolith, which a
+        // lane must not start through
+        readonly List<Vector3> fixtures = new List<Vector3>();
+        Vector3 monoC; bool haveMono;
         Vector2 heart2, D2 = new Vector2(0, -1), S2 = new Vector2(1, 0); float plazaY, waterY, streetL;
 
         void MakeMaterials()
@@ -97,7 +101,7 @@ namespace EverythingWorld.World
         {
             MakeMaterials();
             halos = new GlowHalos();
-            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear();
+            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear(); fixtures.Clear(); haveMono = false;
             center = ctx.Plaza; D = new Vector3(D2.x, 0, D2.y); S = new Vector3(S2.x, 0, S2.y);
             life = new GameObject("Trance life").AddComponent<TranceLife>();
             life.transform.SetParent(ctx.Root, false);
@@ -152,7 +156,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -160,11 +166,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A low stone bench.
@@ -183,14 +189,14 @@ namespace EverythingWorld.World
         /// A laser emitter on the ground throwing a beam up into the sky; it sweeps (TranceLife).
         void Emitter(LandContext ctx, MeshKit mk, Vector3 g, float ph, Material beam)
         {
-            var up = Vector3.up; mk.Box(dark, g + up * .3f, new Vector3(.7f, .6f, .7f), Quaternion.identity); mk.Box(laserM, g + up * .62f, new Vector3(.3f, .04f, .3f), Quaternion.identity); BoxCol(ctx.Root, g + up * .3f, new Vector3(.7f, .6f, .7f), Quaternion.identity);
+            var up = Vector3.up; mk.Box(dark, g + up * .1f, new Vector3(.7f, 1f, .7f), Quaternion.identity); mk.Box(laserM, g + up * .62f, new Vector3(.3f, .04f, .3f), Quaternion.identity); BoxCol(ctx.Root, g + up * .3f, new Vector3(.7f, .6f, .7f), Quaternion.identity);
             var b = new MeshKit(); b.Prism(beam, Vector3.zero, Vector3.up, .05f, 160f, 4, 6f, 0f, false); var bg = b.BuildSingle("Laser beam", ctx.Root, false); bg.transform.position = g + up * .64f; life.sweepers.Add((bg.transform, ph));
         }
 
         /// A statue with its arms raised.
         void Raised(LandContext ctx, MeshKit mk, Vector3 g, Vector3 face, float s)
         {
-            var up = Vector3.up; var side = Vector3.Cross(up, face); var m = stone; mk.Box(m, g + up * .3f * s, new Vector3(1.2f, .6f, 1.2f) * s, Quaternion.LookRotation(face)); mk.Box(m, g + up * 1.4f * s, new Vector3(.5f, 1.6f, .3f) * s, Quaternion.LookRotation(face)); mk.Blob(m, g + up * 2.45f * s, Vector3.one * .22f * s, new System.Random(2), 0f); foreach (var e in new[] { -1f, 1f }) mk.Box(m, g + up * 2.5f * s + side * e * .45f * s, new Vector3(.14f, 1.1f, .14f) * s, Quaternion.LookRotation(face) * Quaternion.Euler(0, 0, -e * 20f)); BoxCol(ctx.Root, g + up * 1.4f * s, new Vector3(1.2f, 2.8f, 1.2f) * s, Quaternion.LookRotation(face));
+            var up = Vector3.up; var side = Vector3.Cross(up, face); var m = stone; mk.Box(m, g + up * (.3f * s - .4f), new Vector3(1.2f * s, .6f * s + .8f, 1.2f * s), Quaternion.LookRotation(face)); mk.Box(m, g + up * 1.4f * s, new Vector3(.5f, 1.6f, .3f) * s, Quaternion.LookRotation(face)); mk.Blob(m, g + up * 2.45f * s, Vector3.one * .22f * s, new System.Random(2), 0f); foreach (var e in new[] { -1f, 1f }) mk.Box(m, g + up * 2.5f * s + side * e * .45f * s, new Vector3(.14f, 1.1f, .14f) * s, Quaternion.LookRotation(face) * Quaternion.Euler(0, 0, -e * 20f)); BoxCol(ctx.Root, g + up * 1.4f * s, new Vector3(1.2f, 2.8f, 1.2f) * s, Quaternion.LookRotation(face));
         }
 
         // ---------------------------------------------------------------- the lanes to the artists
@@ -204,29 +210,99 @@ namespace EverythingWorld.World
                 if (artist != null) facing[artist] = -dir;
                 var side = Vector3.Cross(Vector3.up, dir); var end = total - stopShort; if (end < PathW) return;
                 var pts = new List<Vector3>();
+                var fromStage = new Vector2(join.x - center.x, join.z - center.z).magnitude < 18f;
+                var fromMono = haveMono && new Vector2(join.x - monoC.x, join.z - monoC.z).magnitude < 8f;
                 for (var d = PathW / 2f + .1f; ; d += 1.5f)
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 18f) * Mathf.Min(1.4f, end * .03f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area, the stage and its ring of emitters, and the Monolith's pad (unless
+                    // the lane starts there) instead of running across them: an arc on whichever side the straight line passes
+                    void Round(Vector3 ov, float r)
+                    {
+                        var rel = q - ov; rel.y = 0; if (rel.sqrMagnitude >= r * r) return;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along)); q.y = 0;
+                    }
+                    foreach (var o in ctx.Artists) if (o.name != artist) Round(new Vector3(o.x, 0, o.z), Foot(o) * 1.06f + 3f);
+                    if (!fromStage) Round(new Vector3(center.x, 0, center.z), 17.2f + PathW / 2f);
+                    if (!fromMono && haveMono) Round(new Vector3(monoC.x, 0, monoC.z), 6.2f + PathW / 2f);
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, path, PathW, .1f, ctx);
-                foreach (var p in pts) Remember(p, walk);
                 for (var i = 6; i < pts.Count; i += 10, n++)
                 {
                     var s = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .8f);
-                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue;
+                    // never on another lane, the Long Plain or the stage
+                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, PathW / 2f + .4f)) continue;
                     Lamp(ctx, mk, ctx.OnGround(lp.x, lp.z), n % 3 == 0);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
+            }
+            // would a lane leaving p toward a run into an emitter, or a statue or lamp on the Long Plain, in its first stretch?
+            bool Blocked(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector2(a.x - p.x, a.z - p.z); var len = Mathf.Min(12f, d.magnitude); if (len < .1f) return false; d /= d.magnitude;
+                foreach (var f in fixtures)
+                {
+                    var rel = new Vector2(f.x - p.x, f.z - p.z); var t = Mathf.Clamp(Vector2.Dot(rel, d), 0f, len);
+                    if ((rel - d * t).sqrMagnitude < (f.y + PathW / 2f + .2f) * (f.y + PathW / 2f + .2f)) return true;
+                }
+                return false;
+            }
+            // from the stage a lane leaves through a gap in the ring of emitters, at the stage's edge (never across the
+            // middle, through the crowd and past the DJ riser), heading outward, and not from the mouth of the Long Plain
+            var gaps = new List<Vector3>();
+            for (var k = 0; k < 16; k++)
+            {
+                var gd = Quaternion.Euler(0, k * 22.5f + 22.25f, 0) * D; if (Vector3.Angle(gd, D) < 25f) continue;
+                gaps.Add(gd);
             }
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
+                // a start whose straight line to the artist clears every other artist's area is preferred (a lane that has
+                // to bend round a neighbour right where it starts makes a pointless loop); otherwise the nearest start
+                IslandWorldData.Artist nextC = null; Vector3 joinC = default; var bestC = float.MaxValue;
+                bool Clear(Vector3 p, IslandWorldData.Artist a)
+                {
+                    var d = new Vector2(a.x - p.x, a.z - p.z); var len = d.magnitude; if (len < .1f) return true; d /= len;
+                    foreach (var o in ctx.Artists)
+                    {
+                        if (o == a) continue; var r = Foot(o) * 1.06f + 3f + PathW / 2f;
+                        var rel = new Vector2(o.x - p.x, o.z - p.z); var t = Mathf.Clamp(Vector2.Dot(rel, d), 0f, len);
+                        if ((rel - d * t).sqrMagnitude < r * r) return false;
+                    }
+                    return true;
+                }
+                void Consider(IslandWorldData.Artist a, Vector3 p)
+                {
+                    var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
+                    if (Blocked(p, a)) return;
+                    if (d < best) { best = d; next = a; join = p; }
+                    if (d < bestC && Clear(p, a)) { bestC = d; nextC = a; joinC = p; }
+                }
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                {
+                    foreach (var (p, w) in walkPoints)
+                    {
+                        // never from the stage's own points, or from inside another artist's area
+                        if (w == 0) continue;
+                        if (w >= 10 && InFootprint(ctx, p.x, p.z, 2f)) continue;
+                        Consider(a, p);
+                    }
+                    foreach (var gd in gaps)
+                    {
+                        var p = ctx.OnGround(center.x + gd.x * 16.3f, center.z + gd.z * 16.3f); var to = new Vector3(a.x - p.x, 0, a.z - p.z);
+                        if (to.sqrMagnitude < 1f || Vector3.Dot(to.normalized, gd) < .6f) continue;
+                        Consider(a, p);
+                    }
+                }
+                // the clear start wins unless it is much farther than the nearest
+                if (nextC != null && bestC < best + 40f) { next = nextC; join = joinC; }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
@@ -245,12 +321,15 @@ namespace EverythingWorld.World
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 3f)) continue;
                 var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var rot = Quaternion.LookRotation(f); var side = Vector3.Cross(Vector3.up, f); var up = Vector3.up;
+                // how much the ground falls across a round of radius r round 'at' (steep spots are skipped without drawing
+                // a different count of random numbers, so the rest of the layout stays put)
+                float Fall(Vector3 at, float r) { float lo = at.y, hi = at.y; for (var k = 0; k < 8; k++) { var h = ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
                 if (roll < .12f && emitters < 40) { Emitter(ctx, mk, p, s * 6f, s > .5f ? beamM : GlowM(new Color(1f, .9f, .8f), .4f)); emitters++; }
                 else if (roll < .22f) { Raised(ctx, mk, p, D, .9f + s * .5f); Mark(p, 1.4f); statues++; }
                 else if (roll < .42f) { var h = 3f + s * 2f; mk.Prism(trunkM, p, (up + side * (s - .5f) * .3f).normalized, .2f, h, 6, .6f); mk.Blob(leafM, p + up * (h + .3f), new Vector3(2.6f + s, .5f, 2.4f + s), rng, .2f); ArtistBits.PostCollider(ctx.Root, p, h, .3f); Mark(p, 2.4f); trees++; }
-                else if (roll < .52f) { var h = 2f + s * 3f; mk.Box(stone, p + up * (h / 2f - .3f), new Vector3(.9f, h, .6f), rot * Quaternion.Euler(0, 0, (s - .5f) * 8f)); BoxCol(ctx.Root, p + up * h / 2f, new Vector3(.9f, h, .6f), rot); Mark(p, 1f); stones++; }
-                else if (roll < .6f) { for (var k = 0; k < 3; k++) { var fp = p + side * (k - 1) * 1.6f; mk.Prism(iron, fp, up, .04f, 5f + k * .6f, 4); ArtistBits.PostCollider(ctx.Root, fp, 5f, .08f); mk.Box(GlowM(new[] { Dawn, Gold, Violet }[(k + (int)(s * 3f)) % 3], .8f), fp + up * (4.2f + k * .6f) + f * .7f, new Vector3(.02f, 1f, 1.4f), Quaternion.LookRotation(side)); } flags++; }
-                else if (roll < .67f) { Bench(ctx.Root, mk, p, D); Lamp(ctx, mk, p - D * .8f + side * 1.6f, benches % 2 == 0); Mark(p, 2.2f); benches++; }
+                else if (roll < .52f) { var h = 2f + s * 3f; mk.Box(stone, p + up * (h / 2f - .8f), new Vector3(.9f, h + 1f, .6f), rot * Quaternion.Euler(0, 0, (s - .5f) * 8f)); BoxCol(ctx.Root, p + up * h / 2f, new Vector3(.9f, h, .6f), rot); Mark(p, 1f); stones++; }
+                else if (roll < .6f) { for (var k = 0; k < 3; k++) { var fp0 = p + side * (k - 1) * 1.6f; var fp = ctx.OnGround(fp0.x, fp0.z); mk.Prism(iron, fp, up, .04f, 5f + k * .6f, 4); ArtistBits.PostCollider(ctx.Root, fp, 5f, .08f); mk.Box(GlowM(new[] { Dawn, Gold, Violet }[(k + (int)(s * 3f)) % 3], .8f), fp + up * (4.2f + k * .6f) + f * .7f, new Vector3(.02f, 1f, 1.4f), Quaternion.LookRotation(side)); } flags++; }
+                else if (roll < .67f) { if (Fall(p, 1.2f) > .35f) continue; var lq = p - D * .8f + side * 1.6f; Bench(ctx.Root, mk, p, D); Lamp(ctx, mk, ctx.OnGround(lq.x, lq.z), benches % 2 == 0); Mark(p, 2.2f); benches++; }
             }
             Debug.Log($"The Trance Steppe: the Long Plain {streetL:0} m, {emitters} laser emitters, {statues} statues, {trees} lone trees, {stones} standing stones, {flags} flag rows, {benches} benches");
         }

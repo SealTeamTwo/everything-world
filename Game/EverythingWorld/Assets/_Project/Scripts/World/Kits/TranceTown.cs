@@ -56,7 +56,7 @@ namespace EverythingWorld.World
             var dj = c - D * 11f; mk.Box(dark, dj + up * .5f, new Vector3(6f, 1f, 3f), Quaternion.LookRotation(D)); solid.Box(dark, dj + up * .5f, new Vector3(6f, 1f, 3f), Quaternion.LookRotation(D)); mk.Box(dark, dj + up * 1.5f, new Vector3(3f, 1f, 1f), Quaternion.LookRotation(D)); mk.Box(laserM, dj + up * 2.02f, new Vector3(2.6f, .04f, .8f), Quaternion.LookRotation(D)); BoxCol(ctx.Root, dj + up * 1.5f, new Vector3(3f, 1f, 1f), Quaternion.LookRotation(D));
             for (var k = 0; k < 3; k++) mk.Box(dark, dj + up * (.17f + k * .33f) + D * (2f - k * .4f) + S * 3.6f, new Vector3(1.2f, .33f + k * .66f, .4f), Quaternion.LookRotation(D));
             // the ring of laser emitters
-            for (var k = 0; k < 16; k++) { var d = Quaternion.Euler(0, k * 22.5f + 11f, 0) * D; Emitter(ctx, mk, c + d * 16.6f, k * .4f, k % 2 == 0 ? beamM : GlowM(new Color(1f, .9f, .8f), .4f)); }
+            for (var k = 0; k < 16; k++) { var d = Quaternion.Euler(0, k * 22.5f + 11f, 0) * D; Emitter(ctx, mk, c + d * 16.6f, k * .4f, k % 2 == 0 ? beamM : GlowM(new Color(1f, .9f, .8f), .4f)); fixtures.Add(new Vector3(c.x + d.x * 16.6f, .5f, c.z + d.z * 16.6f)); }
             string[] hands = { "You throw your hands up. Every laser on the plain swings to meet in one point in the sky, right over the sun.", "The breakdown ends. The whole crowd jumps at once.", "Somebody hugs you. You don't know them. You do now." }; var hn = 0;
             Spot("The front of the stage", c + D * 4f + up * 1.2f, "Put your hands up", new Vector3(4f, 2f, 2f)).onUse = _ => { life.played = Time.time; Say(tlife.transform, c + D * 4f + up * 2.8f, hands[hn++ % hands.Length], 5f); };
             // the crowd, hands up, facing the sun
@@ -72,9 +72,9 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var pts = new List<Vector3>(); for (var d = 16.5f; d <= streetL + 6.01f; d += 2f) pts.Add(G(ctx, d, 0)); if (pts.Count < 2) return;
             Strip(mk, pts, path, PlainW, .1f, ctx); foreach (var p in pts) Remember(p, 1); for (var i = 2; i < pts.Count; i += 3) mk.Box(GlowM(Gold, .7f), pts[i] + up * .12f, new Vector3(.3f, .02f, .8f), Quaternion.LookRotation(D));
-            var n = 0; for (var d = 22f; d <= streetL; d += 14f, n++) foreach (var e in new[] { -1f, 1f }) { if (n % 2 == 0) Raised(ctx, mk, G(ctx, d, e * (PlainW / 2f + 2f)), D, 1.2f); else Lamp(ctx, mk, G(ctx, d, e * (PlainW / 2f + 1f)), e > 0); }
+            var n = 0; for (var d = 22f; d <= streetL; d += 14f, n++) foreach (var e in new[] { -1f, 1f }) { var fx = Wp(d, e * (PlainW / 2f + (n % 2 == 0 ? 2f : 1f))); fixtures.Add(new Vector3(fx.x, n % 2 == 0 ? .9f : .3f, fx.z)); if (n % 2 == 0) Raised(ctx, mk, G(ctx, d, e * (PlainW / 2f + 2f)), D, 1.2f); else Lamp(ctx, mk, G(ctx, d, e * (PlainW / 2f + 1f)), e > 0); }
             // the Monolith
-            var mo = G(ctx, streetL + 12f, 0); mk.Prism(stone, mo - up * .3f, up, 6f, .4f, 20); for (var k = 0; k < 8; k++) Remember(mo + Quaternion.Euler(0, k * 45f, 0) * D * 6.6f, 1);
+            var mo = G(ctx, streetL + 12f, 0); monoC = mo; haveMono = true; mk.Prism(stone, mo - up * 1.2f, up, 6f, 1.3f, 20); for (var k = 0; k < 8; k++) Remember(mo + Quaternion.Euler(0, k * 45f, 0) * D * 6.6f, 1);
             mk.Box(white, mo + up * 6f, new Vector3(1.6f, 12f, 1.6f), Quaternion.LookRotation(D)); solid.Box(white, mo + up * 6f, new Vector3(1.6f, 12f, 1.6f), Quaternion.LookRotation(D)); for (var k = 0; k < 4; k++) mk.Box(laserM, mo + up * 6f + Quaternion.Euler(0, k * 90f, 0) * D * .81f, new Vector3(.1f, 11f, .02f), Quaternion.LookRotation(Quaternion.Euler(0, k * 90f, 0) * D));
             var bm = new MeshKit(); bm.Prism(GlowM(White, .6f), Vector3.zero, Vector3.up, .5f, 300f, 8, 3f, 0f, false); var bg = bm.BuildSingle("Monolith beam", ctx.Root, false); bg.transform.position = mo + up * 12f; life.monolith = bg.transform; halos.Add(mo + up * 12f, 4f, White, .4f); ArtistBits.PointLight(ctx.Root, mo + up * 4f, White, 20f, 1.6f);
             Folk(mo - D * 7f + S * 2f, D, Resident.Pose.Wave, new[] { "Stand at the bottom and look straight up.", "That beam reaches the sun. I'm almost sure." }, Local());
