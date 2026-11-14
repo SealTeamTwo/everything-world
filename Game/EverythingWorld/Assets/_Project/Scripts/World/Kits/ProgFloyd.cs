@@ -174,12 +174,15 @@ namespace EverythingWorld.World
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face); var white = WorldMaterials.Solid(new Color(.94f, .94f, .93f)); var mortar = WorldMaterials.Solid(new Color(.55f, .55f, .56f));
             const float L = 26f, H = 6.5f, T = 1.2f, hole0 = 3f, hole1 = 6.4f, holeTop = 4f;
             var b = c - face * 3f; b.y = ctx.Ground(b.x, b.z) - .3f;
+            // the wall reaches down to the lowest ground along its length (on a slope its ends hung in the air)
+            var wlo = b.y; for (var x = -L / 2f; x <= L / 2f; x += 1f) foreach (var e in new[] { -T / 2f, T / 2f }) { var q = b + side * x + face * e; wlo = Mathf.Min(wlo, ctx.Ground(q.x, q.z) - .3f); }
+            var w0 = wlo - b.y;
             void Block(float x0, float x1, float y0, float y1)
             {
                 var m = b + side * ((x0 + x1) / 2f) + up * ((y0 + y1) / 2f); var size = new Vector3(x1 - x0, y1 - y0, T);
                 mk.Box(white, m, size, rot); solid.Box(white, m, size, rot);
             }
-            Block(-L / 2f, hole0, 0, H + .3f); Block(hole1, L / 2f, 0, H + .3f); Block(hole0, hole1, holeTop, H + .3f);
+            Block(-L / 2f, hole0, w0, H + .3f); Block(hole1, L / 2f, w0, H + .3f); if (w0 < -.05f) Block(hole0, hole1, w0, 0f); Block(hole0, hole1, holeTop, H + .3f);
             foreach (var s in new[] { 1f, -1f })
                 for (var r = 1; r < 14; r++)
                 {

@@ -179,7 +179,10 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground = null)
         {
-            var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
+            // On the ground it is laid in narrow lanes across its width with every vertex on its own ground (raised only
+            // a little where the middle is higher), so on side slopes it tilts with the hill instead of burying one edge
+            // and lifting the other (they were two edge vertices, each held up to the higher side).
+            var n = pts.Count; var lanes = ground != null ? Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)) : 1; var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -187,14 +190,28 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] + Vector3.up * lift - side * (w / 2f * miter); R[i] = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
+                var bump = 0f;
                 if (ground != null)
                 {
-                    float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(R[i].x, R[i].z), top = Mathf.Max(pts[i].y, Mathf.Max(gl, gr) - .05f);
-                    L[i].y = Mathf.Max(gl, top - .15f) + lift; R[i].y = Mathf.Max(gr, top - .15f) + lift;
+                    var l = pts[i] - side * (w / 2f * miter); var r = pts[i] + side * (w / 2f * miter);
+                    bump = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .25f);
+                }
+                for (var k = 0; k <= lanes; k++)
+                {
+                    var q = pts[i] + Vector3.up * lift + side * ((k / (float)lanes - .5f) * w * miter);
+                    if (ground != null) q.y = ground.Ground(q.x, q.z) + bump + lift;
+                    V[i, k] = q;
                 }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        /// The lowest ground under the given offsets from a point (for footings that reach down to it).
+        static float Lowest(LandContext ctx, Vector3 at, params Vector3[] offsets)
+        {
+            var lo = ctx.Ground(at.x, at.z);
+            foreach (var o in offsets) lo = Mathf.Min(lo, ctx.Ground(at.x + o.x, at.z + o.z));
+            return lo;
         }
 
         /// A tall chrome lamp with an amber globe.
@@ -381,7 +398,7 @@ namespace EverythingWorld.World
             float[] radii = { 9f, 5.5f, 3.6f }; var x = -6f;
             for (var k = 0; k < 3; k++)
             {
-                var r = radii[k]; var gc = c + side * x + up * (r * .45f) - face * k * .4f; x += r + (k + 1 < 3 ? radii[k + 1] : 0f) - .6f;
+                var r = radii[k]; var gc = c + side * x + up * (r * .45f) - face * k * .4f; gc.y = ctx.Ground(gc.x, gc.z) + r * .45f;   // each half-sunk in its own ground x += r + (k + 1 < 3 ? radii[k + 1] : 0f) - .6f;
                 var g = new MeshKit(); var teeth = Mathf.RoundToInt(r * 3f);
                 g.Prism(k == 1 ? chrome : brass, new Vector3(0, 0, -.4f), Vector3.forward, r - .4f, .8f, teeth);
                 g.Prism(dark, new Vector3(0, 0, -.45f), Vector3.forward, r * .25f, .9f, 10);
@@ -392,7 +409,7 @@ namespace EverythingWorld.World
                 solid.Box(brass, gc, new Vector3(r * 1.6f, r * 2f, 1.2f), Quaternion.LookRotation(face));
             }
             // the fallen clock face, leaning back on the ground
-            var cc = c + face * 12f + up * 1.2f; var crot = Quaternion.LookRotation(face) * Quaternion.Euler(-65f, 0, 0);
+            var cc = c + face * 12f; cc.y = ctx.Ground(cc.x, cc.z) + 1.2f; var crot = Quaternion.LookRotation(face) * Quaternion.Euler(-65f, 0, 0);
             mk.Prism(brass, cc - crot * Vector3.forward * .3f, crot * Vector3.forward, 6f, .3f, 32); mk.Prism(WorldMaterials.Solid(new Color(.95f, .92f, .82f)), cc + crot * Vector3.forward * .01f, crot * Vector3.forward, 5.6f, .02f, 32);
             for (var h = 0; h < 12; h++) { var a = h * 30f; mk.Box(dark, cc + crot * (Quaternion.Euler(0, 0, a) * Vector3.up * 4.9f) + crot * Vector3.forward * .04f, new Vector3(.2f, h % 3 == 0 ? 1f : .5f, .02f), crot * Quaternion.Euler(0, 0, a)); }
             solid.Box(brass, cc, new Vector3(12f, 1.6f, 6f), Quaternion.LookRotation(face));
@@ -410,6 +427,7 @@ namespace EverythingWorld.World
         void Organ(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, int n)
         {
             var up = Vector3.up; var face = new Vector3(center.x - c.x, 0, center.z - c.z).normalized; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
+            c.y = Lowest(ctx, c, side * 1.6f + face * .8f, -side * 1.6f + face * .8f, side * 3.8f - face * 1.6f, -side * 3.8f - face * 1.6f, -face * 1.6f) + .05f;   // on a slope it settles to its lowest corner (the console and pipes hung off the downhill side)
             mk.Box(wood, c + up * .6f, new Vector3(3f, 1.2f, 1.4f), rot); mk.Box(WorldMaterials.Solid(new Color(.95f, .93f, .88f)), c + up * 1.22f + face * .4f, new Vector3(2.6f, .06f, .4f), rot);
             mk.Box(dark, c + up * 1.26f + face * .45f, new Vector3(2.6f, .04f, .25f), rot); mk.Box(wood, c + up * 1.8f - face * .4f, new Vector3(3f, 1.2f, .3f), rot);
             solid.Box(wood, c + up * .9f, new Vector3(3.2f, 1.8f, 1.6f), rot);
@@ -437,7 +455,8 @@ namespace EverythingWorld.World
                 var inward = (a0 + b0) / 2f + Vector3.Cross(b0 - a0, a1 - a0).normalized * .2f;
                 mk.Quad(chrome, a0, b0, b1, a1, inward); mk.Quad(chrome, a0, a1, b1, b0, (a0 + b0) / 2f - Vector3.Cross(b0 - a0, a1 - a0).normalized * .2f);
             }
-            mk.Prism(darkStone, c - up * .3f, up, 2.4f, 1.4f, 8); solid.Prism(darkStone, c - up * .3f, up, 2.4f, 11f, 8);
+            var mlo = c.y; for (var k = 0; k < 8; k++) { var a = k * Mathf.PI / 4f; mlo = Mathf.Min(mlo, ctx.Ground(c.x + Mathf.Cos(a) * 2.4f, c.z + Mathf.Sin(a) * 2.4f)); }
+            var mb = new Vector3(c.x, mlo - .3f, c.z); mk.Prism(darkStone, mb, up, 2.4f, c.y + 1.1f - mb.y, 8); solid.Prism(darkStone, mb, up, 2.4f, c.y + 10.7f - mb.y, 8);   // the plinth reaches its lowest ground
             halos.Add(o, 6f, new Color(.7f, .75f, 1f), .2f);
             ArtistBits.PointLight(ctx.Root, o + Vector3.forward * 6f, new Color(.8f, .8f, 1f), 16f, 1.2f);
         }
@@ -449,7 +468,7 @@ namespace EverythingWorld.World
             g.Box(GlowM(Spectrum[(k * 2) % 6], 2f), new Vector3(0, 0, .51f), new Vector3(.15f, 4f + k, .02f), Quaternion.identity);
             var t = g.BuildSingle("Floating monolith", life.transform, false).transform; t.position = c + Vector3.up * (5f + k);
             life.floaters.Add(t); life.floatBase.Add(c + Vector3.up * (5f + k));
-            for (var s = 0; s < 6; s++) { var a = s * 60f * Mathf.Deg2Rad; mk.Blob(stone, c + new Vector3(Mathf.Cos(a), .2f, Mathf.Sin(a)) * 2.4f, new Vector3(.45f, .3f, .4f), ctx.Rng, .35f); }
+            for (var s = 0; s < 6; s++) { var a = s * 60f * Mathf.Deg2Rad; var sp = ctx.OnGround(c.x + Mathf.Cos(a) * 2.4f, c.z + Mathf.Sin(a) * 2.4f); mk.Blob(stone, sp + Vector3.up * .48f, new Vector3(.45f, .3f, .4f), ctx.Rng, .35f); }   // each stone on its own ground
             mk.Prism(GlowM(Spectrum[(k * 2) % 6], 1.2f), c + Vector3.up * .02f, Vector3.up, 1.6f, .03f, 16);
         }
 
@@ -475,7 +494,8 @@ namespace EverythingWorld.World
                     for (var k = 0; k < 8; k++) { var a = k * Mathf.PI / 4f; p.y = Mathf.Min(p.y, ctx.Ground(px + Mathf.Cos(a) * br.x * .8f, pz + Mathf.Sin(a) * br.z * .8f)); }
                     mk.Blob(stone, p + Vector3.up * .5f, br, ctx.Rng, .4f); solid.Box(stone, p + Vector3.up * .5f, br * 2f, Quaternion.identity); rocks++;
                 }
-                else if (roll < .36f && FlatEnough(ctx, p, 5f)) { var r = ctx.Range(2.5f, 5f); for (var k = 0; k < 16; k++) { float a0 = k * Mathf.PI / 8f, a1 = (k + 1) * Mathf.PI / 8f; var w = p + Vector3.up * .05f; mk.Tri(pool, w, w + new Vector3(Mathf.Cos(a0), 0, Mathf.Sin(a0)) * r, w + new Vector3(Mathf.Cos(a1), 0, Mathf.Sin(a1)) * r, w - Vector3.up); } for (var k = 0; k < 8; k++) { var a = ctx.Range(0, Mathf.PI * 2f); var q = p + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * (r + .3f); soft.Box(reed, q + Vector3.up * .6f, new Vector3(.05f, 1.2f, .05f), Quaternion.Euler(ctx.Range(-8f, 8f), 0, ctx.Range(-8f, 8f))); } noGrass.Add(new Vector3(p.x, r + .5f, p.z)); pools++; }
+                // a pool shrinks until its edge and reeds stay off the paths (only its middle was kept clear)
+                else if (roll < .36f && FlatEnough(ctx, p, 5f)) { var r = ctx.Range(2.5f, 5f); while (r > 1.5f && NearPath(px, pz, r + 2.4f)) r -= .25f; for (var k = 0; k < 16; k++) { float a0 = k * Mathf.PI / 8f, a1 = (k + 1) * Mathf.PI / 8f; var w = p + Vector3.up * .05f; mk.Tri(pool, w, w + new Vector3(Mathf.Cos(a0), 0, Mathf.Sin(a0)) * r, w + new Vector3(Mathf.Cos(a1), 0, Mathf.Sin(a1)) * r, w - Vector3.up); } for (var k = 0; k < 8; k++) { var a = ctx.Range(0, Mathf.PI * 2f); var q = p + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * (r + .3f); soft.Box(reed, q + Vector3.up * .6f, new Vector3(.05f, 1.2f, .05f), Quaternion.Euler(ctx.Range(-8f, 8f), 0, ctx.Range(-8f, 8f))); } noGrass.Add(new Vector3(p.x, r + .5f, p.z)); pools++; }
                 else if (roll < .39f) { for (var k = 0; k < 5; k++) mk.Blob(stone, p + Vector3.up * (.3f + k * .45f), Vector3.one * (.6f - k * .09f), ctx.Rng, .3f); solid.Box(stone, p + Vector3.up * 1f, new Vector3(1.5f, 2f, 1.5f), Quaternion.identity); cairns++; }
                 else if (roll < .55f) { for (var k = 0; k < 4; k++) soft.Blob(WorldMaterials.Solid(new Color(.45f, .3f, .5f)), p + new Vector3(ctx.Range(-1.2f, 1.2f), .3f, ctx.Range(-1.2f, 1.2f)), new Vector3(.7f, .35f, .7f), ctx.Rng, .3f); }
             }

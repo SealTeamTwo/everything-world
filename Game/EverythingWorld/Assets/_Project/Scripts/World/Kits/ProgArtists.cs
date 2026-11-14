@@ -66,7 +66,7 @@ namespace EverythingWorld.World
         {
             dir = Vector3.ProjectOnPlane(dir, Vector3.up).normalized; var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(Vector3.up, dir);
             var n = Mathf.Max(1, Mathf.Min(5, z.a.songList?.Length ?? 1)); const float size = .9f; var w = n * size * 1.25f + .4f;
-            foreach (var s in new[] { -1f, 1f }) { z.mk.Box(darkStone, ground + side * s * (w / 2f - .1f) + Vector3.up * 1.2f, new Vector3(.25f, 2.6f, .25f), rot); ArtistBits.PostCollider(z.root, ground + side * s * (w / 2f - .1f), 2.4f, .15f); }
+            foreach (var s in new[] { -1f, 1f }) { var pp = ground + side * s * (w / 2f - .1f); var drop = Mathf.Max(0f, ground.y - z.ctx.Ground(pp.x, pp.z)); z.mk.Box(darkStone, pp + Vector3.up * (1.2f - drop / 2f), new Vector3(.25f, 2.6f + drop, .25f), rot); ArtistBits.PostCollider(z.root, pp - Vector3.up * drop, 2.4f + drop, .15f); }   // each post reaches its own ground
             var c = ground + Vector3.up * 1.8f;
             z.mk.Box(darkStone, c - Vector3.up * .1f, new Vector3(w, size + .6f, .14f), rot); z.solid.Box(darkStone, c - Vector3.up * .1f, new Vector3(w, size + .6f, .24f), rot);
             z.mk.Box(chrome, c + Vector3.up * (size / 2f + .22f), new Vector3(w + .1f, .06f, .2f), rot); z.mk.Box(GlowM(Violet, 2f), c - Vector3.up * (size / 2f + .42f), new Vector3(w, .04f, .16f), rot);
