@@ -58,7 +58,7 @@ namespace EverythingWorld.World
         void IronBench(MeshKit mk, Vector3 at, Vector3 face, float len = 2f)
         {
             var up = Vector3.up; var g = G(at); var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
-            mk.Box(iron, g + up * .45f, new Vector3(len, .08f, .45f), rot); foreach (var e in new[] { -1f, 1f }) mk.Box(rock, g + up * .2f + side * e * (len / 2f - .25f), new Vector3(.35f, .45f, .4f), rot);
+            mk.Box(iron, g + up * .45f, new Vector3(len, .08f, .45f), rot); foreach (var e in new[] { -1f, 1f }) { var lp = g + side * e * (len / 2f - .25f); var drop = Mathf.Max(0f, g.y - ctx0.Ground(lp.x, lp.z)); mk.Box(rock, lp + up * (.2f - drop / 2f), new Vector3(.35f, .45f + drop, .4f), rot); }   // each block down to its own ground
             Col(g + up * .3f, new Vector3(len, .6f, .45f), rot); Interact.Bench(plife.transform, g + up * .5f - side * (len / 2f - .4f), g + up * .5f + side * (len / 2f - .4f), face);
         }
 
@@ -73,7 +73,7 @@ namespace EverythingWorld.World
 
         List<Vector3> GravelRoad(LandContext ctx, MeshKit mk, Vector2[] way)
         {
-            Vector2 near = way[0]; var bd = 160f * 160f; foreach (var (p, w) in walkPoints) { if (w >= 400) continue; var d = (p.x - way[0].x) * (p.x - way[0].x) + (p.z - way[0].y) * (p.z - way[0].y); if (d < bd) { bd = d; near = new Vector2(p.x, p.z); } }
+            Vector2 near = way[0]; var bd = 160f * 160f; foreach (var (p, w) in walkPoints) { if (w >= 400 || InArea(ctx, p, null)) continue; var d = (p.x - way[0].x) * (p.x - way[0].x) + (p.z - way[0].y) * (p.z - way[0].y); if (d < bd) { bd = d; near = new Vector2(p.x, p.z); } }
             var full = new List<Vector2> { near }; full.AddRange(way);
             var pts = Smooth(ctx, full, false, 2f); PlaceBend(ctx, pts); pts.RemoveAll(p => InRiver(p.x, p.z, 2f)); if (pts.Count < 2) return pts;
             Strip(mk, pts, WorldMaterials.Solid(new Color(.4f, .36f, .33f)), 3f, .24f, ctx, true);

@@ -200,7 +200,10 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground = null, bool followSlope = false)
         {
-            var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
+            // On the ground a trail is laid in narrow lanes across its width with every vertex on its own ground (raised only
+            // a little where the middle is higher), so on a side slope it follows the ground instead of burying one edge
+            // and lifting the other. A deck in the air stays level across.
+            var n = pts.Count; var lanes = ground != null && followSlope ? Mathf.Max(1, Mathf.CeilToInt(w / 1f)) : 1; var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -208,15 +211,21 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] + Vector3.up * lift - side * (w / 2f * miter); R[i] = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
+                Vector3 L = pts[i] + Vector3.up * lift - side * (w / 2f * miter), R = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
+                var deck = true;
                 if (ground != null)
                 {
-                    float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(R[i].x, R[i].z), top = Mathf.Max(pts[i].y, Mathf.Max(gl, gr) - .05f);
-                    if (!followSlope || pts[i].y > Mathf.Max(gl, gr) + .3f) { L[i].y = Mathf.Max(gl, top - .15f) + lift; R[i].y = Mathf.Max(gr, top - .15f) + lift; }   // a deck in the air: keep it level
-                    else { var bump = Mathf.Max(0f, pts[i].y - (gl + gr) / 2f); L[i].y = gl + bump + lift; R[i].y = gr + bump + lift; }   // on the ground: follow a sidehill, lift over a crown
+                    float gl = ground.Ground(L.x, L.z), gr = ground.Ground(R.x, R.z), top = Mathf.Max(pts[i].y, Mathf.Max(gl, gr) - .05f);
+                    if (!followSlope || pts[i].y > Mathf.Max(gl, gr) + .3f) { L.y = Mathf.Max(gl, top - .15f) + lift; R.y = Mathf.Max(gr, top - .15f) + lift; }   // a deck in the air: keep it level
+                    else
+                    {   // on the ground: every vertex on its own ground
+                        deck = false; var bump = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
+                        for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(L, R, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bump + lift; V[i, k] = q; }
+                    }
                 }
+                if (deck) for (var k = 0; k <= lanes; k++) V[i, k] = Vector3.Lerp(L, R, k / (float)lanes);
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// An iron brazier on a tripod: a bowl of fire.
@@ -329,8 +338,9 @@ namespace EverythingWorld.World
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
+                // a trail branches off before another artist's area, never from the end of a trail inside it
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { if (w >= 400) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p, w) in walkPoints) { if (w >= 400 || InArea(ctx, p, null)) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
                 if (next == null) break;
                 todo.Remove(next);
                 var from = new Vector3(join.x, 0, join.z); var to = new Vector3(next.x, 0, next.z);
@@ -341,10 +351,15 @@ namespace EverythingWorld.World
                 for (var d = walk == 1 ? 10f : TrailW / 2f + .1f; ; d += 1.5f)
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 15f) * Mathf.Min(3f, end * .05f);
+                    q = RoundAreas(q, next.name, from, dir, side);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
-                    pts.Add(ctx.OnGround(q.x, q.z)); hot.Add(InRiver(q.x, q.z, 1.5f)); if (dd >= end) break;
+                    if (pts.Count > 0 && new Vector2(q.x - pts[pts.Count - 1].x, q.z - pts[pts.Count - 1].z).sqrMagnitude < .8f * .8f) { if (dd >= end) break; continue; }   // bunched where it bends round an area
+                    pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) continue;
+                // ease the bends round other areas, so the trail has no kinks that fold it over itself
+                for (var pass = 0; pass < 2; pass++) for (var i = 1; i + 1 < pts.Count; i++) { var m = (pts[i - 1] + pts[i] * 2f + pts[i + 1]) / 4f; pts[i] = ctx.OnGround(m.x, m.z); }
+                foreach (var p in pts) hot.Add(InRiver(p.x, p.z, 1.5f));
                 for (var i = 0; i < pts.Count; i++)
                 {
                     if (!hot[i]) continue;
@@ -363,12 +378,30 @@ namespace EverythingWorld.World
                 {
                     var lp = pts[i] + side * ((i / 13) % 2 == 0 ? 1f : -1f) * (TrailW / 2f + .7f);
                     var near = false; foreach (var o in lamps) if ((o - lp).sqrMagnitude < 20f * 20f) near = true;
-                    if (near || InRiver(lp.x, lp.z, 1f)) continue;
+                    if (near || InRiver(lp.x, lp.z, 1f) || InFootprint(ctx, lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, 1.7f)) continue;
                     lamps.Add(lp); Brazier(ctx, mk, ctx.OnGround(lp.x, lp.z));
                 }
                 walk++;
             }
+            // a trail bends round another artist's area instead of running across it, under their things
+            // (it swings out on the side of the area its straight line passes, along an arc, so a line through the
+            // middle of an area doesn't jump straight across it)
+            Vector3 RoundAreas(Vector3 q, string own, Vector3 from0, Vector3 dir0, Vector3 side0)
+            {
+                foreach (var a in ctx.Artists)
+                {
+                    if (a.name == own) continue; var v = new Vector3(q.x - a.x, 0, q.z - a.z); var r = Foot(a) + 2.5f;
+                    if (v.sqrMagnitude >= r * r) continue;
+                    var c = new Vector3(a.x, 0, a.z); var t = Vector3.Dot(v, dir0); var lineU = Vector3.Dot(from0 - c, side0);
+                    var sgn = lineU >= 0f ? 1f : -1f; var o = c + dir0 * t + side0 * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - t * t));
+                    if (ctx.IsLand(o.x, o.z, 0f)) q = o;
+                }
+                return q;
+            }
         }
+
+        /// Inside some artist's area (other than own).
+        bool InArea(LandContext ctx, Vector3 p, string own) { foreach (var o in ctx.Artists) { if (o.name == own) continue; float dx = p.x - o.x, dz = p.z - o.z, r = Foot(o) + 1.5f; if (dx * dx + dz * dz < r * r) return true; } return false; }
 
         /// A solid slab under a trail ramp, so you walk up it rather than through it.
         void Ramp(MeshKit solid, Vector3 a, Vector3 b)
@@ -406,15 +439,24 @@ namespace EverythingWorld.World
                 float px = x + ctx.Range(0f, cell), pz = z + ctx.Range(0f, cell);
                 if (!Open(ctx, px, pz, 3f)) continue;
                 var p = ctx.OnGround(px, pz); var roll = ctx.Range(0f, 1f); var steep = OnPeak(px, pz, 0f);
-                if (roll < .03f && mines < 9 && !steep) { MinePortal(ctx, mk, solid, p); mines++; }
+                // wide things keep their whole width off the trails and out of the artists' areas
+                if (roll < .03f && mines < 9 && !steep) { if (NearPath(px, pz, 13f) || InFootprint(ctx, px, pz, 12f)) continue; MinePortal(ctx, mk, solid, p); mines++; }
                 else if (roll < .3f) { DeadPine(ctx, pine, deadBark, p); pines++; }
-                else if (roll < .46f) { var s = ctx.Range(1.5f, 4.5f); var cm = ctx.Chance(.5f) ? rock : darkRock; var ch = s * ctx.Range(1.2f, 2.6f); var tw = ctx.Range(0, 60f); mk.Cone(cm, p - Vector3.up * .5f, s, ch, 5, tw); solid.Cone(rock, p - Vector3.up * .5f, s, ch, 5, tw); crags++; }
-                else if (roll < .5f && !steep) { SkullRock(ctx, mk, solid, p); skulls++; }
+                else if (roll < .46f) { var s = ctx.Range(1.5f, 4.5f); if (NearPath(px, pz, s + 2.5f) || InFootprint(ctx, px, pz, s + 1f)) continue; p.y = LowUnder(ctx, p, s * .7f); var cm = ctx.Chance(.5f) ? rock : darkRock; var ch = s * ctx.Range(1.2f, 2.6f); var tw = ctx.Range(0, 60f); mk.Cone(cm, p - Vector3.up * .5f, s, ch, 5, tw); solid.Cone(rock, p - Vector3.up * .5f, s, ch, 5, tw); crags++; }
+                else if (roll < .5f && !steep) { if (NearPath(px, pz, 7f)) continue; p.y = LowUnder(ctx, p, 2.5f); SkullRock(ctx, mk, solid, p); skulls++; }   // sunk to its lowest ground, so no gap shows downhill
                 else if (roll < .6f && !steep) { var dir = Quaternion.Euler(0, ctx.Range(0, 180f), 0) * Vector3.forward; var q = p; for (var k = 0; k < 5; k++) { var nd = Quaternion.Euler(0, ctx.Range(-35f, 35f), 0) * dir; var r = ctx.OnGround(q.x + nd.x * 2.4f, q.z + nd.z * 2.4f); mk.Box(crackM, (q + r) / 2f + Vector3.up * .03f, new Vector3(.18f, .04f, 2.5f), Quaternion.LookRotation(r - q)); q = r; } cracks++; }
-                else if (roll < .63f && !steep) { var r0 = Quaternion.Euler(0, ctx.Range(0, 180f), 0); var r1 = Quaternion.Euler(0, ctx.Range(0, 180f), 0); mk.Box(iron, p + Vector3.up * .4f, new Vector3(1f, .8f, .7f), r0); mk.Box(iron, p + Vector3.up * 1f, new Vector3(1.8f, .4f, .7f), r1); BoxCol(ctx.Root, p + Vector3.up * .2f, new Vector3(1f, 1.4f, .7f), r0); BoxCol(ctx.Root, p + Vector3.up * 1f, new Vector3(1.8f, .4f, .7f), r1); anvils++; }
-                else if (roll < .66f && !steep) { var b = p + new Vector3(ctx.Range(4f, 7f), 0, ctx.Range(-2f, 2f)); b = ctx.OnGround(b.x, b.z); foreach (var e in new[] { p, b }) { mk.Box(timber, e + Vector3.up * 2f, new Vector3(.3f, 4f, .3f), Quaternion.identity); ArtistBits.PostCollider(ctx.Root, e, 4f, .2f); } Chain(mk, p + Vector3.up * 3.8f, b + Vector3.up * 3.8f, 1.2f); }
+                else if (roll < .63f && !steep) { p.y = LowUnder(ctx, p, .9f); var r0 = Quaternion.Euler(0, ctx.Range(0, 180f), 0); var r1 = Quaternion.Euler(0, ctx.Range(0, 180f), 0); mk.Box(iron, p + Vector3.up * .4f, new Vector3(1f, .8f, .7f), r0); mk.Box(iron, p + Vector3.up * 1f, new Vector3(1.8f, .4f, .7f), r1); BoxCol(ctx.Root, p + Vector3.up * .2f, new Vector3(1f, 1.4f, .7f), r0); BoxCol(ctx.Root, p + Vector3.up * 1f, new Vector3(1.8f, .4f, .7f), r1); anvils++; }
+                else if (roll < .66f && !steep) { var b = p + new Vector3(ctx.Range(4f, 7f), 0, ctx.Range(-2f, 2f)); b = ctx.OnGround(b.x, b.z); if (!Open(ctx, b.x, b.z, 2f)) continue; foreach (var e in new[] { p, b }) { mk.Box(timber, e + Vector3.up * 2f, new Vector3(.3f, 4f, .3f), Quaternion.identity); ArtistBits.PostCollider(ctx.Root, e, 4f, .2f); } Chain(mk, p + Vector3.up * 3.8f, b + Vector3.up * 3.8f, 1.2f); }
             }
             Debug.Log($"The Iron Range: peak {(hasPeak ? peakR.ToString("0") + " m" : "none")}, {pines} dead pines, {crags} crags, {mines} mine portals, {skulls} skull rocks, {cracks} glowing cracks, {anvils} anvils");
+        }
+
+        /// The lowest ground in a square of half-size r round a point.
+        static float LowUnder(LandContext ctx, Vector3 at, float r)
+        {
+            var lo = ctx.Ground(at.x, at.z);
+            for (var i = -2; i <= 2; i++) for (var j = -2; j <= 2; j++) lo = Mathf.Min(lo, ctx.Ground(at.x + r * i / 2f, at.z + r * j / 2f));
+            return lo;
         }
 
         void DeadPine(LandContext ctx, Material pine, Material bark, Vector3 at)
@@ -453,8 +495,10 @@ namespace EverythingWorld.World
             mk.Box(timber, at + up * 3.45f + face * 1.6f, new Vector3(3.8f, .4f, .4f), rot);
             BoxCol(ctx.Root, at + up * 1.8f + face * .6f, new Vector3(3.9f, 3.6f, 2.2f), rot);   // the frame and the black mouth
             mk.Prism(GlowM(Molten, 2.4f), at + up * 2.8f + face * 1.9f, up, .15f, .3f, 6); halos.Add(at + up * 3f + face * 2f, .9f, Molten, .8f);
-            for (var k = 0; k < 6; k++) { var tp = at + face * (2f + k * 1.2f); tp.y = Mathf.Max(ctx.Ground(tp.x, tp.z), at.y) + .1f; mk.Box(timber, tp, new Vector3(1.4f, .12f, .25f), rot); foreach (var s in new[] { -.4f, .4f }) mk.Box(iron, tp + side * s + up * .1f, new Vector3(.07f, .08f, 1.25f), rot); }
-            var cart = at + face * 6f; cart.y = Mathf.Max(ctx.Ground(cart.x, cart.z), at.y) + .2f;
+            for (var k = 0; k < 6; k++) { var tp = at + face * (2f + k * 1.2f); tp.y = Mathf.Max(ctx.Ground(tp.x, tp.z), at.y) + .1f; mk.Box(timber, tp, new Vector3(1.4f, .12f, .25f), rot); foreach (var s in new[] { -.4f, .4f }) mk.Box(iron, tp + side * s + up * .1f, new Vector3(.07f, .08f, 1.25f), rot);
+                // the trestle: legs down to their own ground where the track runs out over falling ground
+                foreach (var s in new[] { -.6f, .6f }) { var lg = tp + side * s; var gy = ctx.Ground(lg.x, lg.z); if (lg.y - gy > .25f) mk.Box(timber, new Vector3(lg.x, (lg.y + gy) / 2f - .1f, lg.z), new Vector3(.18f, lg.y - gy + .2f, .18f), rot); } }
+            var cart = at + face * 6f; cart.y = Mathf.Max(ctx.Ground(cart.x, cart.z), at.y) + .2f;   // on the end of the track (ties run to 8 m)
             mk.Box(rust, cart + up * .6f, new Vector3(1.1f, .8f, 1.5f), rot); mk.Blob(darkRock, cart + up * 1.1f, new Vector3(.5f, .25f, .7f), ctx.Rng, .4f);
             foreach (var s in new[] { -.5f, .5f }) foreach (var zz in new[] { -.45f, .45f }) mk.Prism(iron, cart + side * s * 1.1f + face * zz + up * .2f, side * Mathf.Sign(s), .2f, .1f, 8);
             solid.Box(rust, cart + up * .6f, new Vector3(1.2f, 1.2f, 1.6f), rot);
