@@ -191,7 +191,7 @@ namespace EverythingWorld.World
             Folk(f.P(-2.5f, 0, 4.5f), f.Fwd, Resident.Pose.Lean, new[] { "Turns backwards. Un-grinds the flour. Very popular with bakers who've made a mistake.", "Wind's coming from the other side today. Same as always." }, Look(Residents.Tool.None));
             Interact.Bench(plife.transform, f.P(-1.5f, .47f, 7f), f.P(1.5f, .47f, 7f), f.Fwd); mk.Box(wood, f.P(0, .45f, 7f), new Vector3(3.2f, .06f, .45f), f.r); BoxCol(ctx.Root, f.P(0, .25f, 7f), new Vector3(3.2f, .5f, .45f), f.r);
             ArtistBits.PointLight(ctx.Root, f.P(0, 3f, 4f), Sun, 12f, 1.1f);
-            Lane(ctx, mk, f.P(0, 0, 8f), 0f); Ring(g, 9f);
+            Lane(ctx, mk, f.P(0, 0, 8f), 0f, g, 3f); Ring(g, 9f);
             Shot(ctx, "the backwards windmill", f.P(4f, 1.8f, 16f), g + up * 7f);
         }
     }

@@ -155,11 +155,18 @@ namespace EverythingWorld.World
         }
 
         /// A gravel lane from the loop to a place, gently curved.
-        void Lane(LandContext ctx, MeshKit mk, Vector3 to, float stopShort)
+        void Lane(LandContext ctx, MeshKit mk, Vector3 to, float stopShort, Vector3? round = null, float roundR = 0f)
         {
             var from = NearestLoop(to); var d = new Vector2(to.x - from.x, to.z - from.z); var len = d.magnitude; if (len < stopShort + 4f) return; d /= len;
             var end = new Vector2(from.x, from.z) + d * (len - stopShort); var side = new Vector2(-d.y, d.x);
             var mid = Vector2.Lerp(new Vector2(from.x, from.z), end, .5f) + side * Mathf.Min(10f, len * .12f);
+            if (round.HasValue)
+            {
+                // the straight line passes the place's own building: bend out round it on the side the line passes
+                var o = new Vector2(round.Value.x, round.Value.z); var f2 = new Vector2(from.x, from.z); var along = Mathf.Clamp(Vector2.Dot(o - f2, d), 0f, len);
+                var near = f2 + d * along; var off = Vector2.Dot(near - o, side); var sgn = off >= 0f ? 1f : -1f;
+                if (Mathf.Abs(off) < roundR + 3f) mid = o + side * sgn * (roundR + 4f);
+            }
             var pts = Smooth(ctx, new[] { new Vector2(from.x, from.z) + d * (RoadW / 2f + .2f), mid, end }, false, 1.5f);
             if (pts.Count < 2) return;
             Strip(mk, pts, gravel, 3.2f, .12f, ctx); foreach (var p in pts) Remember(p, 99);
@@ -280,7 +287,7 @@ namespace EverythingWorld.World
             for (var k = 0; k < 14; k++)
             {
                 var h = (k + 1) * (S + .6f) / 14f; var p = f.P(SW / 2f + 1f, 0, SW / 2f - .3f - k * .62f);
-                var top = ctx.OnGround(p.x, p.z).y; var hh = g.y + h - top + .2f; var c = new Vector3(p.x, top + hh / 2f - .2f, p.z);
+                var top = ctx.OnGround(p.x, p.z).y; foreach (var (cx, cz) in new[] { (-.8f, -.31f), (.8f, -.31f), (.8f, .31f), (-.8f, .31f) }) { var q = f.P(SW / 2f + 1f + cx, 0, SW / 2f - .3f - k * .62f + cz); top = Mathf.Min(top, ctx.Ground(q.x, q.z)); } var hh = g.y + h - top + .2f; var c = new Vector3(p.x, top + hh / 2f - .2f, p.z);
                 mk.Box(k % 2 == 0 ? wood : woodDark, c, new Vector3(1.6f, hh, .62f), f.r); solid.Box(wood, c, new Vector3(1.6f, hh, .62f), f.r);
             }
             for (var k = -1; k <= 1; k++) Interact.Seat(plife.transform, f.P(k * 1.4f, S + .6f, .4f), f.Fwd, "Sit on the giant chair").seatHeight = .1f;
@@ -460,7 +467,7 @@ namespace EverythingWorld.World
                 BoxCol(ctx.Root, lp + up * .25f, new Vector3(2f, .5f, .5f), Quaternion.LookRotation(tang));
             }
             Folk(ctx.OnGround(pit.x + 3f, pit.z) + up * .5f, FaceTo(new Vector3(pit.x + 3f, 0, pit.z), pit), Resident.Pose.Sit, new[] { "Marshmallow? It's a little burnt. On purpose.", "Best seat in the house is the one by the fire." }, null, null, .5f);
-            Lane(ctx, mk, s - f.Fwd * 30f, 0f); Ring(g + f.Fwd * 4f, 30f);
+            Lane(ctx, mk, s - f.Fwd * 37.5f, 0f); Ring(g + f.Fwd * 4f, 30f);
             Shot(ctx, "the drive-in", s - f.Fwd * 46f + up * 2.2f + f.Right * 3f, s + up * 6f);
         }
 
@@ -674,14 +681,14 @@ namespace EverythingWorld.World
                                 case 0: for (var k = 0; k < 5; k++) { var w = ctx.OnGround(q.x + (float)rng.NextDouble() * 2f - 1f, q.z + (float)rng.NextDouble() * 2f - 1f); var c = Color.Lerp(new Color(.92f, .78f, .35f), new Color(1f, .9f, .55f), (float)rng.NextDouble()); wheat.Tuft(w - up * .04f, .8f + (float)rng.NextDouble() * .3f, c, new Color(1f, .95f, .7f), rng, 4, .05f); } break;
                                 case 1: if (((int)(v / 2f)) % 2 == 0) { crops.Prism(stalk, q, up, .05f, 2.3f, 4); crops.Box(cob, q + up * 1.5f + side * .1f, new Vector3(.1f, .3f, .1f), Quaternion.identity); crops.Box(stalk, q + up * 1.9f, new Vector3(.6f, .04f, .12f), Quaternion.LookRotation(d)); } break;
                                 case 2: if (((int)(u / 2f) + (int)(v / 2f)) % 2 == 0) { crops.Prism(stalk, q, up, .05f, 2f, 4); var head = q + up * 2.05f - side * s * .1f; crops.Prism(petal, head, -side * s, .4f, .06f, 10); crops.Prism(seedM, head - side * s * .05f, -side * s, .2f, .04f, 10); } break;
-                                case 3: if (rng.NextDouble() < .35) { var kr = 1f + (float)rng.NextDouble(); mk.Blob(rng.NextDouble() < .5 ? kudzu : kudzuDark, q + up * .5f, Vector3.one * kr, ctx.Rng, .35f); BoxCol(ctx.Root, q + up * (kr * .5f + .2f), new Vector3(kr * 1.7f, kr + 1f, kr * 1.7f), Quaternion.identity); } break;
+                                case 3: if (rng.NextDouble() < .35) { var kr = 1f + (float)rng.NextDouble(); if (NearPath(q.x, q.z, RoadW / 2f + 1.2f + kr)) break; mk.Blob(rng.NextDouble() < .5 ? kudzu : kudzuDark, q + up * .5f, Vector3.one * kr, ctx.Rng, .35f); BoxCol(ctx.Root, q + up * (kr * .5f + .2f), new Vector3(kr * 1.7f, kr + 1f, kr * 1.7f), Quaternion.identity); } break;
                                 case 4: if (rng.NextDouble() < .12) Flamingo_(ctx, mk, q, (float)rng.NextDouble() * 360f); break;
                             }
                         }
                     if (cells < 20) continue;
                     // a white fence along the road, a hedgerow along the back; a scarecrow in the wheat
                     if (fenceFrom > -Seg) Fence(ctx, mk, mid - d * fenceFrom + side * s * (Near - 1f), mid - d * fenceTo + side * s * (Near - 1f));
-                    for (var u = -Seg / 2f + 2f; u <= Seg / 2f - 2f; u += 4f) { var h = mid - d * u + side * s * (Far + 3f); if (FieldOk(ctx, h.x, h.z, 1f)) { var hg = ctx.OnGround(h.x, h.z); mk.Blob(kudzuDark, hg + up * 1.6f, new Vector3(2.4f, 2f, 2.4f), ctx.Rng, .35f); mk.Blob(kudzu, hg + up * 2.8f, Vector3.one * 1.5f, ctx.Rng, .3f); BoxCol(ctx.Root, hg + up * 1.6f, new Vector3(3.6f, 3.2f, 3.6f), Quaternion.identity); } }
+                    for (var u = -Seg / 2f + 2f; u <= Seg / 2f - 2f; u += 4f) { var h = mid - d * u + side * s * (Far + 3f); if (FieldOk(ctx, h.x, h.z, 1f) && !NearPath(h.x, h.z, RoadW / 2f + 3f)) { var hg = ctx.OnGround(h.x, h.z); mk.Blob(kudzuDark, hg + up * 1.6f, new Vector3(2.4f, 2f, 2.4f), ctx.Rng, .35f); mk.Blob(kudzu, hg + up * 2.8f, Vector3.one * 1.5f, ctx.Rng, .3f); BoxCol(ctx.Root, hg + up * 1.6f, new Vector3(3.6f, 3.2f, 3.6f), Quaternion.identity); } }
                     if (kind == 0 && segN % 2 == 0)
                     {
                         var sc = mid + side * s * (Near + 10f); if (FieldOk(ctx, sc.x, sc.z, 1f))
@@ -705,9 +712,12 @@ namespace EverythingWorld.World
             for (var k = 0; k <= n; k++)
             {
                 var p = a + dir * (len * k / n); p = ctx.OnGround(p.x, p.z);
+                // a lane crossing the fence line gets a gap: no post on it and no rails across it
+                if (NearPath(p.x, p.z, 2.6f)) { prev = default; continue; }
                 mk.Box(fenceM, p + up * .55f, new Vector3(.12f, 1.1f, .12f), Quaternion.LookRotation(dir));
-                if (k > 0) foreach (var h in new[] { .45f, .9f }) { var s = prev + up * h; var e = p + up * h; mk.Box(fenceM, (s + e) / 2f, new Vector3(.06f, .1f, Vector3.Distance(s, e)), Quaternion.LookRotation(e - s)); }
-                if (k > 0) BoxCol(ctx.Root, (prev + p) / 2f + up * .55f, new Vector3(.15f, 1.1f, Vector3.Distance(prev, p)), Quaternion.LookRotation(p - prev));
+                if (k > 0 && prev != default && NearPath((prev.x + p.x) / 2f, (prev.z + p.z) / 2f, 2.6f)) { prev = p; continue; }
+                if (k > 0 && prev != default) foreach (var h in new[] { .45f, .9f }) { var s = prev + up * h; var e = p + up * h; mk.Box(fenceM, (s + e) / 2f, new Vector3(.06f, .1f, Vector3.Distance(s, e)), Quaternion.LookRotation(e - s)); }
+                if (k > 0 && prev != default) BoxCol(ctx.Root, (prev + p) / 2f + up * .55f, new Vector3(.15f, 1.1f, Vector3.Distance(prev, p)), Quaternion.LookRotation(p - prev));
                 prev = p;
             }
         }
