@@ -191,7 +191,14 @@ namespace EverythingWorld.World
             var pale = WorldMaterials.Solid(new Color(.86f, .85f, .8f));
             for (var k = 0; k < 22; k++) { var a = k * 360f / 22f + 6f; var d = Quaternion.Euler(0, a, 0) * f.Fwd; if (Mathf.Abs(Mathf.DeltaAngle(a, 0f)) < 28f) continue; var s = 1f + (k * 7 % 5) * .35f; var p = G(g + d * (R + 1.2f + (k % 3) * .5f)); mk.Blob(k % 3 == 0 ? rock : pale, p + up * s * .3f, new Vector3(s, s * .7f, s * .9f), prng, .28f); BoxCol(ctx.Root, p + up * s * .3f, new Vector3(s * 1.6f, s * 1.3f, s * 1.5f), Quaternion.identity); }
             // the back wall: a cut face three benches high, so it reads as an old pit
-            for (var k = 0; k < 3; k++) { var wr = Quaternion.LookRotation(f.Fwd); var c = g - f.Fwd * (R + 3.5f + k * 2.2f) + up * (1.2f + k * 2.2f); mk.Box(k % 2 == 0 ? rock : rockDark, c, new Vector3(22f - k * 3f, 2.6f + k * .3f, 2.6f), wr); solid.Box(rock, c, new Vector3(22f - k * 3f, 2.6f + k * .3f, 2.6f), wr); }
+            // each step reaches down to the lowest ground under it, so no step hangs in the air behind the one below
+            for (var k = 0; k < 3; k++)
+            {
+                var wr = Quaternion.LookRotation(f.Fwd); var c = g - f.Fwd * (R + 3.5f + k * 2.2f) + up * (1.2f + k * 2.2f); float wd = 22f - k * 3f, top = c.y + (2.6f + k * .3f) / 2f, lo = c.y;
+                for (var i = -4; i <= 4; i++) for (var j = -1; j <= 1; j++) { var q = c + f.Right * (wd / 2f * i / 4f) + f.Fwd * (1.3f * j); lo = Mathf.Min(lo, ctx.Ground(q.x, q.z)); }
+                var bottom = Mathf.Min(c.y - (2.6f + k * .3f) / 2f, lo - .3f); c.y = (top + bottom) / 2f;
+                mk.Box(k % 2 == 0 ? rock : rockDark, c, new Vector3(wd, top - bottom, 2.6f), wr); solid.Box(rock, c, new Vector3(wd, top - bottom, 2.6f), wr);
+            }
             // the jumping rock: a slab out over the water with steps cut up the back
             var jr = g + f.Right * (R - 1.5f) - f.Fwd * 2f; var jrot = Quaternion.LookRotation(-f.Right); mk.Box(pale, jr + up * 1.1f, new Vector3(3f, 2.2f, 4.5f), jrot); solid.Box(pale, jr + up * 1.1f, new Vector3(3f, 2.2f, 4.5f), jrot);
             for (var k = 0; k < 6; k++) { var sp = jr + f.Right * (2.4f + (5 - k) * .4f) + up * ((k + .5f) * .366f / 1f); mk.Box(pale, sp - up * (k * .183f), new Vector3(1.6f, .366f * (k + 1), .4f), jrot); solid.Box(pale, sp - up * (k * .183f), new Vector3(1.6f, .366f * (k + 1), .4f), jrot); }
