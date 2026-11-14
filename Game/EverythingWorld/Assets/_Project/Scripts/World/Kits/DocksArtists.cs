@@ -195,7 +195,16 @@ namespace EverythingWorld.World
             for (var k = 0; k < 9; k++) z.mk.Box(plank, pool + up * .35f + z.front * (2.8f - k * .55f), new Vector3(1.2f, .08f, .45f), rot);
             var endL = pool + up * .35f - z.front * 1.8f; z.mk.Prism(steel, endL + z.side * .55f, up, .05f, 2.2f, 6); z.mk.Blob(SongGlow(EndOfTheWorld, new Color(.75f, .85f, 1f), 2.6f), endL + z.side * .55f + up * 2.3f, Vector3.one * .15f, ctx.Rng, 0f);
             halos.Add(endL + z.side * .55f + up * 2.2f, 1.4f, new Color(.75f, .85f, 1f), .6f); halos.Add(pool + up * .05f, 3f, new Color(.6f, .7f, 1f), .12f);
-            z.solid.Prism(water, pool, up, 3.6f, 1f, 12);
+            // keep walkers off the water with a ring round its rim, open where the jetty starts, and the jetty itself to walk out on
+            // (one solid drum over the whole pool stood in the way and kept you off the jetty)
+            for (var k = 0; k < 24; k++)
+            {
+                var a = (k + .5f) * Mathf.PI * 2f / 24f; if (Mathf.Cos(a) > .98f) continue; var dir = z.front * Mathf.Cos(a) + z.side * Mathf.Sin(a);
+                BoxCol(z.root, pool + dir * 3.65f + up * .5f, new Vector3(1.05f, 1f, .3f), Quaternion.LookRotation(Vector3.Cross(up, dir)));
+            }
+            BoxCol(z.root, pool + z.front * .9f + up * .2f, new Vector3(1.2f, .3f, 5.6f), rot);
+            foreach (var e in new[] { -1f, 1f }) BoxCol(z.root, pool + z.front * .9f + z.side * e * .75f + up * .8f, new Vector3(.1f, 1.2f, 5.6f), rot);
+            BoxCol(z.root, pool - z.front * 1.95f + up * .8f, new Vector3(1.5f, 1.2f, .1f), rot);
         }
 
         // ---------------------------------------------------------------- Sonic Youth

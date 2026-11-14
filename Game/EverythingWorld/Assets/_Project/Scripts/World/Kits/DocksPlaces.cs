@@ -94,7 +94,8 @@ namespace EverythingWorld.World
             var f = new PlaceFrame(g, along); const float L = 36f, W = 9f, H = 6f; var y = g.y + H;   // the deck crosses the street at right angles
             Vector3 D(float x, float z, float h = 0f) => new Vector3(g.x, y + h, g.z) + f.Right * x + f.Fwd * z;
             mk.Box(concrete, D(0, 0, -.4f), new Vector3(L, .8f, W), f.r); solid.Box(concrete, D(0, 0, -.4f), new Vector3(L, .8f, W), f.r); mk.Box(asphalt, D(0, 0, .02f), new Vector3(L, .04f, W - 1.2f), f.r);
-            foreach (var e in new[] { -1f, 1f }) { mk.Box(concrete, D(0, e * (W / 2f - .2f), .5f), new Vector3(L, 1f, .4f), f.r); solid.Box(concrete, D(0, e * (W / 2f - .2f), .5f), new Vector3(L, 1f, .4f), f.r); }
+            // the side parapets; on the stairs' side a gap where the stairs arrive (the landing met a wall)
+            foreach (var e in new[] { -1f, 1f }) foreach (var (x0, x1) in e > 0 ? new[] { (-L / 2f, -L / 2f + 1.9f), (-L / 2f + 4.1f, L / 2f) } : new[] { (-L / 2f, L / 2f) }) { var pc = D((x0 + x1) / 2f, e * (W / 2f - .2f), .5f); mk.Box(concrete, pc, new Vector3(x1 - x0, 1f, .4f), f.r); solid.Box(concrete, pc, new Vector3(x1 - x0, 1f, .4f), f.r); }
             for (var k = 0; k < 9; k++) mk.Box(yellow, D(-L / 2f + 2f + k * 4f, 0, .045f), new Vector3(1.8f, .01f, .14f), f.r);
             // the broken end: jagged slab, rebar sticking out, a warning light; a low wall so nobody walks off
             for (var k = 0; k < 6; k++) mk.Prism(rust, D(L / 2f, -3.2f + k * 1.3f, -.3f + (k % 2) * .25f), (f.Right + up * (.1f - k % 3 * .12f)).normalized, .03f, 1.2f + (k % 3) * .5f, 4);

@@ -161,7 +161,7 @@ namespace EverythingWorld.World
         {
             MakeMaterials();
             halos = new GlowHalos(); lampHalos = new GlowHalos();
-            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear();
+            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear(); quayStacks.Clear();
             center = ctx.Plaza;
             life = new GameObject("Docklands life").AddComponent<DocksLife>();
             life.transform.SetParent(ctx.Root, false);
@@ -175,6 +175,7 @@ namespace EverythingWorld.World
             if (hasHarbour) Grid(ctx, mk, solid);
             Streets(ctx, mk, solid);
             DockPlaces(ctx, mk, solid);
+            KeepQuayStacks(ctx);
             City(ctx, mk, solid);
             mk.Build("Post-Punk Docklands", ctx.Root, false);
             solid.BuildCollider("Post-Punk Docklands walls", ctx.Root);
@@ -218,6 +219,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground = null)
         {
+            // With ground: laid in narrow lanes across its width with every vertex on its own ground (raised only a
+            // little where the middle is higher), so on a side slope it follows the hill instead of lifting one edge.
+            if (ground != null) { StripOnGround(mk, pts, m, w, lift, ground); return; }
             var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
@@ -234,6 +238,40 @@ namespace EverythingWorld.World
                 }
             }
             for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        void StripOnGround(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
+        {
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
+            Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
+            for (var i = 0; i < n; i++)
+            {
+                var a = i > 0 ? Flat(pts[i] - pts[i - 1]) : Flat(pts[1] - pts[0]);
+                var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
+                var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
+                var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .25f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
+            }
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        /// The lowest ground under a rectangle W wide and D deep (sampled on a 5 x 5 grid over it).
+        float LowUnder(LandContext ctx, Vector3 at, Quaternion rot, float W, float D)
+        {
+            var lo = ctx.Ground(at.x, at.z);
+            for (var i = 0; i <= 4; i++) for (var j = 0; j <= 4; j++) { var q = at + rot * new Vector3((i / 4f - .5f) * W, 0, (j / 4f - .5f) * D); lo = Mathf.Min(lo, ctx.Ground(q.x, q.z)); }
+            return lo;
+        }
+
+        /// A concrete footing under a building on a slope, from its floor down into the lowest ground under it (on a
+        /// hillside the downhill wall stood in the air).
+        void Footing(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Quaternion rot, float W, float D)
+        {
+            var lo = LowUnder(ctx, at, rot, W, D) - .3f; if (at.y + .05f - lo < .4f) return;
+            var c = new Vector3(at.x, (lo + at.y + .05f) / 2f, at.z); var size = new Vector3(W, at.y + .05f - lo, D);
+            mk.Box(darkConcrete, c, size, rot); solid.Box(darkConcrete, c, size, rot);
         }
 
         /// A plain box collider on its own object (for big simple shapes like container stacks).
@@ -331,7 +369,7 @@ namespace EverythingWorld.World
                 var p = p0; p.y = ctx.Ground(p.x, p.z) - .5f; if (!ctx.IsLand(p.x, p.z, 10f) || InFootprint(ctx, p.x, p.z, W * .7f)) continue;
                 var face = new Vector3(c.x - p.x, 0, c.z - p.z).normalized; if (hasHarbour) face = Mathf.Abs(Vector3.Dot(face, GU)) > Mathf.Abs(Vector3.Dot(face, GV)) ? GU * Mathf.Sign(Vector3.Dot(face, GU)) : GV * Mathf.Sign(Vector3.Dot(face, GV));
                 var rot = Quaternion.LookRotation(face); var s2 = Vector3.Cross(up, face);
-                const float FH = 3f; var H = floors * FH + 1f;
+                const float FH = 3f; var H = floors * FH + 1f; Footing(ctx, mk, solid, p, rot, W, D);
                 mk.Box(concrete, p + up * H / 2f, new Vector3(W, H, D), rot); solid.Box(concrete, p + up * H / 2f, new Vector3(W, H, D), rot);
                 mk.Box(darkConcrete, p + up * (H + .4f), new Vector3(W + .4f, .8f, D + .4f), rot);
                 // windows on the front and the back, a balcony slab under each floor, ribs between bays
@@ -404,7 +442,13 @@ namespace EverythingWorld.World
                 var q = quayEdge[k]; var n = new Vector3(quayNormal[k].x, 0, quayNormal[k].y); var inland = new Vector3(q.x, 0, q.y) - n * ctx.Range(22f, 46f);
                 var p = ctx.OnGround(inland.x, inland.z); if (p.y > QuayY + 1.5f || !Open(ctx, p.x, p.z, 7f)) continue;
                 if (sheds < 4 && rng.NextDouble() < .25) { Warehouse(ctx, mk, solid, p, n); sheds++; }
-                else if (stacks < 14 && rng.NextDouble() < .5) { ContainerStack(ctx, mk, solid, p, Vector3.Cross(up, n)); stacks++; }
+                else if (stacks < 14 && rng.NextDouble() < .5)
+                {
+                    // made now (so the random numbers and the rest of the layout stay as they were) but kept only if the
+                    // streets laid later leave it clear (a street ran along or through a stack)
+                    var smk = new MeshKit(); var ssol = new MeshKit(); var dirS = Vector3.Cross(up, n);
+                    ContainerStack(ctx, smk, ssol, p, dirS); quayStacks.Add((smk, ssol, ctx.Root.GetChild(ctx.Root.childCount - 1).gameObject, p, dirS, lastStackRows)); stacks++;
+                }
             }
         }
 
@@ -504,11 +548,29 @@ namespace EverythingWorld.World
             var cam = start - n * 12f + t * 14f; cam.y = ctx.Ground(cam.x, cam.z) + 1.7f; var look = lamp - up * 6f - cam; mark.SetPositionAndRotation(cam, Quaternion.LookRotation(look.normalized));
         }
 
+        int lastStackRows;
+        readonly List<(MeshKit mk, MeshKit solid, GameObject col, Vector3 at, Vector3 dir, int rows)> quayStacks = new List<(MeshKit, MeshKit, GameObject, Vector3, Vector3, int)>();
+
+        /// The quay's container stacks that no street runs through (the streets are laid after the harbour).
+        void KeepQuayStacks(LandContext ctx)
+        {
+            var kept = 0;
+            foreach (var (smk, ssol, col, at, dir, rows) in quayStacks)
+            {
+                var rot = Quaternion.LookRotation(dir); var clear = true;
+                for (var i = 0; i <= 4 && clear; i++) for (var j = 0; j <= 6 && clear; j++) { var q = at + rot * new Vector3((i / 4f - .5f) * rows * 2.6f, 0, (j / 6f - .5f) * 12.2f); if (NearPath(q.x, q.z, 2.5f)) clear = false; }
+                if (!clear) { Object.Destroy(col); continue; }
+                smk.Build("Docklands quay stack", ctx.Root, false); ssol.BuildCollider("Docklands quay stack footing", ctx.Root); kept++;
+            }
+            Debug.Log($"The Post-Punk Docklands: {kept} of {quayStacks.Count} quay container stacks kept clear of the streets");
+            quayStacks.Clear();
+        }
+
         void ContainerStack(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 dir)
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(dir); var sd = Vector3.Cross(up, dir);
             Color[] cc = { new Color(.5f, .14f, .1f), new Color(.14f, .28f, .42f), new Color(.55f, .42f, .14f), new Color(.22f, .36f, .26f), new Color(.4f, .4f, .42f), new Color(.6f, .3f, .1f) };
-            var rows = ctx.Rng.Next(1, 4); var high = ctx.Rng.Next(1, 4);
+            var rows = ctx.Rng.Next(1, 4); var high = ctx.Rng.Next(1, 4); lastStackRows = rows; Footing(ctx, mk, solid, at, rot, rows * 2.6f, 12.2f);
             for (var r = 0; r < rows; r++) for (var h = 0; h < high - (r % 2); h++)
             {
                 var c = at + sd * (r - (rows - 1) / 2f) * 2.6f + up * (1.3f + h * 2.6f); var m = WorldMaterials.Solid(cc[ctx.Rng.Next(cc.Length)], .3f);
@@ -524,7 +586,7 @@ namespace EverythingWorld.World
         void Warehouse(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 seaN)
         {
             var up = Vector3.up; var face = seaN; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face);
-            const float W = 24f, D = 12f, H = 7f; var tin = WorldMaterials.Solid(new Color(.3f, .32f, .34f), .5f);
+            const float W = 24f, D = 12f, H = 7f; var tin = WorldMaterials.Solid(new Color(.3f, .32f, .34f), .5f); Footing(ctx, mk, solid, at, rot, W, D);
             mk.Box(tin, at + up * H / 2f, new Vector3(W, H, D), rot); solid.Box(tin, at + up * H / 2f, new Vector3(W, H, D), rot);
             mk.GableRoof(darkConcrete, at + up * H, new Vector3(D + .6f, 0, W + .6f), 2f, Quaternion.LookRotation(sd));
             for (var k = 0; k < 24; k++) mk.Box(darkConcrete, at + sd * (-W / 2f + .5f + k) + up * H / 2f + face * (D / 2f + .02f), new Vector3(.08f, H, .05f), rot);
@@ -657,7 +719,7 @@ namespace EverythingWorld.World
         /// The Sprawl lights), balconies, a roof edge.
         void GridBuilding(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 face, float W, float D, int floors, Material m)
         {
-            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face); const float FH = 3f; var H = floors * FH; at.y -= .4f;
+            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face); const float FH = 3f; var H = floors * FH; at.y -= .4f; Footing(ctx, mk, solid, at, rot, W, D);
             mk.Box(m, at + up * H / 2f, new Vector3(W, H, D), rot); solid.Box(m, at + up * H / 2f, new Vector3(W, H, D), rot);
             mk.Box(darkConcrete, at + up * (H + .35f), new Vector3(W + .4f, .7f, D + .4f), rot);
             var bays = Mathf.FloorToInt(W / 2.6f);
@@ -679,7 +741,7 @@ namespace EverythingWorld.World
         /// A brick terrace row along one side of a block, square to the grid, a lit window or two.
         void GridTerrace(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 face)
         {
-            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face); const float w = 5f, D = 8f, H = 6f; const int n = 6; var W = n * w; at.y -= .4f;
+            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face); const float w = 5f, D = 8f, H = 6f; const int n = 6; var W = n * w; at.y -= .4f; Footing(ctx, mk, solid, at, rot, W, D);
             mk.Box(brick, at + up * H / 2f, new Vector3(W, H, D), rot); solid.Box(brick, at + up * H / 2f, new Vector3(W, H, D), rot);
             mk.GableRoof(darkConcrete, at + up * H, new Vector3(D + .5f, 0, W + .3f), 2.4f, Quaternion.LookRotation(sd));
             for (var k = 0; k < n; k++)
@@ -731,7 +793,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var face = Quaternion.Euler(0, ctx.Range(0, 4) * 90f + ctx.Range(-10f, 10f), 0) * Vector3.forward; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face);
             var floors = ctx.Rng.Next(3, 7); var W = ctx.Range(12f, 18f); const float D = 9f, FH = 3f; var H = floors * FH; at.y -= .6f;
-            var m = ctx.Chance(.6f) ? concrete : darkConcrete;
+            var m = ctx.Chance(.6f) ? concrete : darkConcrete; Footing(ctx, mk, solid, at, rot, W, D);
             mk.Box(m, at + up * H / 2f, new Vector3(W, H, D), rot); solid.Box(m, at + up * H / 2f, new Vector3(W, H, D), rot);
             mk.Box(darkConcrete, at + up * (H + .3f), new Vector3(W + .3f, .6f, D + .3f), rot);
             var bays = Mathf.FloorToInt(W / 2.6f);
@@ -747,7 +809,7 @@ namespace EverythingWorld.World
         void Terrace(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
             var up = Vector3.up; var face = new Vector3(center.x - at.x, 0, center.z - at.z).normalized; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face);
-            var n = ctx.Rng.Next(3, 6); const float w = 5f, D = 8f, H = 6f; var W = n * w; at.y -= .4f;
+            var n = ctx.Rng.Next(3, 6); const float w = 5f, D = 8f, H = 6f; var W = n * w; at.y -= .4f; Footing(ctx, mk, solid, at, rot, W, D);
             mk.Box(brick, at + up * H / 2f, new Vector3(W, H, D), rot); solid.Box(brick, at + up * H / 2f, new Vector3(W, H, D), rot);
             mk.GableRoof(darkConcrete, at + up * H, new Vector3(D + .5f, 0, W + .3f), 2.4f, Quaternion.LookRotation(sd));
             for (var k = 0; k < n; k++)
@@ -764,15 +826,24 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var d = Quaternion.Euler(0, ctx.Range(0, 180f), 0) * Vector3.forward; var len = ctx.Range(8f, 16f); var rot = Quaternion.LookRotation(d);
             var mesh = WorldMaterials.Solid(new Color(.45f, .47f, .5f), .6f);
-            for (var t = 0f; t <= len; t += 2.5f) { var p = at + d * (t - len / 2f); p.y = ctx.Ground(p.x, p.z); mk.Prism(steel, p - up * .2f, up, .05f, 2.6f, 6); }
-            for (var k = 0; k < 4; k++) mk.Box(mesh, at + up * (.3f + k * .6f), new Vector3(.03f, .03f, len), rot);
-            for (var k = 0; k < 3; k++) mk.Box(steel, at + up * (2.45f + k * .12f) + Vector3.Cross(up, d) * (k * .08f), new Vector3(.02f, .02f, len), rot);   // barbed wire along the top
-            solid.Box(mesh, at + up * 1.2f, new Vector3(.2f, 2.4f, len), rot);
+            // the whole fence stays off the paths and artist areas (only its middle was kept clear, so long ones crossed streets)
+            for (var t = 0f; t <= len; t += 2f) { var q = at + d * (t - len / 2f); if (NearPath(q.x, q.z, 3f) || InFootprint(ctx, q.x, q.z, 2f) || !ctx.IsLand(q.x, q.z, 1f)) return; }
+            var posts = new List<Vector3>(); var nSeg = Mathf.Max(1, Mathf.RoundToInt(len / 2.5f));
+            for (var i = 0; i <= nSeg; i++) { var p = at + d * (i * len / nSeg - len / 2f); p.y = ctx.Ground(p.x, p.z); posts.Add(p); mk.Prism(steel, p - up * .2f, up, .05f, 2.6f, 6); }
+            // the mesh and the wire run post to post, following the ground (one straight run hung in the air on slopes)
+            for (var i = 0; i + 1 < posts.Count; i++)
+            {
+                Vector3 a = posts[i], b = posts[i + 1], mid = (a + b) / 2f; var srot = Quaternion.LookRotation(b - a); var sl = (b - a).magnitude;
+                for (var k = 0; k < 4; k++) mk.Box(mesh, mid + up * (.3f + k * .6f), new Vector3(.03f, .03f, sl), srot);
+                for (var k = 0; k < 3; k++) mk.Box(steel, mid + up * (2.45f + k * .12f) + Vector3.Cross(up, d) * (k * .08f), new Vector3(.02f, .02f, sl), srot);   // barbed wire along the top
+                solid.Box(mesh, mid + up * 1.2f, new Vector3(.2f, 2.4f, sl), srot);
+            }
         }
 
         void Skip(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
             var up = Vector3.up; var rot = Quaternion.Euler(0, ctx.Range(0, 180f), 0); var m = WorldMaterials.Solid(ctx.Chance(.5f) ? new Color(.65f, .5f, .1f) : new Color(.2f, .32f, .25f), .3f);
+            at.y = LowUnder(ctx, at, rot, 2f, 3.6f) + .02f;   // on a slope it sits on its lowest corner, the uphill end in the ground
             mk.Box(m, at + up * .7f, new Vector3(2f, 1.4f, 3.6f), rot); mk.Blob(dark, at + up * 1.4f, new Vector3(.9f, .3f, 1.6f), ctx.Rng, .5f);
             solid.Box(m, at + up * .75f, new Vector3(2.1f, 1.6f, 3.7f), rot);
         }
@@ -817,6 +888,7 @@ namespace EverythingWorld.World
             var up = Vector3.up; var face = new Vector3(center.x - at.x, 0, center.z - at.z).normalized; var rot = Quaternion.LookRotation(face);
             var m = ctx.Chance(.5f) ? brick : concrete; var W = ctx.Range(5f, 9f);
             mk.Box(m, at + up * 1.4f, new Vector3(W, 2.8f, .5f), rot); solid.Box(m, at + up * 1.4f, new Vector3(W, 2.8f, .5f), rot);
+            var flo = LowUnder(ctx, at, rot, W, .5f) - .2f; if (at.y - flo > .2f) mk.Box(m, new Vector3(at.x, (flo + at.y) / 2f, at.z), new Vector3(W, at.y - flo, .5f), rot);   // down to its lowest ground on a slope
             Flyers(mk, at + up * 1.4f + face * .26f, face, W - .4f, 2.2f, ctx.Rng);
             if (ctx.Chance(.5f)) { var l = at + up * 3f + face * .5f; mk.Box(dark, l, new Vector3(.4f, .2f, .5f), rot); mk.Box(sodium, l - up * .1f, new Vector3(.3f, .04f, .4f), rot); lampHalos.Add(l - up * .3f, 1.6f, Sodium, .6f); life.lamps.Add(l); }
         }
@@ -824,8 +896,10 @@ namespace EverythingWorld.World
         void Bench(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
             var up = Vector3.up; var d = Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward; var rot = Quaternion.LookRotation(d); var sd = Vector3.Cross(up, d);
-            mk.Box(concrete, at + up * .25f, new Vector3(2.2f, .5f, .6f), rot); solid.Box(concrete, at + up * .25f, new Vector3(2.2f, .5f, .6f), rot); if (plife != null) Interact.Bench(plife.transform, at + up * .56f - sd * .6f, at + up * .56f + sd * .6f, d);
-            SodiumLamp(ctx, mk, at + sd * 1.8f - d * .5f, -sd);
+            mk.Box(concrete, at + up * .25f, new Vector3(2.2f, .5f, .6f), rot); solid.Box(concrete, at + up * .25f, new Vector3(2.2f, .5f, .6f), rot);
+            var blo = LowUnder(ctx, at, rot, 2.2f, .6f) - .1f; if (at.y - blo > .05f) mk.Box(concrete, new Vector3(at.x, (blo + at.y) / 2f, at.z), new Vector3(2.2f, at.y - blo, .6f), rot);   // down to its lowest ground
+            if (plife != null) Interact.Bench(plife.transform, at + up * .56f - sd * .6f, at + up * .56f + sd * .6f, d);
+            var lpb = at + sd * 1.8f - d * .5f; SodiumLamp(ctx, mk, ctx.OnGround(lpb.x, lpb.z), -sd);
         }
 
         void Weeds(LandContext ctx)
