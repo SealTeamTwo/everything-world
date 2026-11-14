@@ -62,7 +62,7 @@ namespace EverythingWorld.World
             }
 
             // ---------------------------------------------------------------- read what was built
-            var surf = new float[N]; var low = new float[N]; var body = new int[N]; var roof = new bool[N];   // roof: something built 2.2-9 m over the ground (a roof, a canopy)
+            var surf = new float[N]; var low = new float[N]; var body = new int[N]; var roof = new bool[N]; var over = new bool[N];   // roof: something built 2.2-9 m over the ground (a roof, a canopy)
             for (var k = 0; k < N; k++) { surf[k] = float.NegativeInfinity; low[k] = float.PositiveInfinity; body[k] = -1; }
             var names = new List<string>(); var nameIx = new Dictionary<string, int>();
             int Name(string s) { if (!nameIx.TryGetValue(s, out var i)) { i = names.Count; names.Add(s); nameIx[s] = i; } return i; }
@@ -116,7 +116,7 @@ namespace EverythingWorld.World
             void Mark(int k, float y, bool glowing)
             {
                 var g = Mathf.Max(gnd[k], wet[k]);
-                low[k] = Mathf.Min(low[k], y - g); if (y - gnd[k] > 2.2f && y - gnd[k] < 9f) roof[k] = true;
+                low[k] = Mathf.Min(low[k], y - g); if (y - gnd[k] > 2.2f && y - gnd[k] < 9f) roof[k] = true; if (y - gnd[k] > 1.9f && y - gnd[k] < 30f) over[k] = true;
                 var h = y - gnd[k];
                 if (!glowing && h >= WalkLow && h <= WalkHigh && y > wet[k] + .05f) surf[k] = Mathf.Max(surf[k], y);
             }
@@ -130,7 +130,7 @@ namespace EverythingWorld.World
                 {
                     var p = a + (b - a) * ((float)u / m) + (c - a) * ((float)v / m);
                     var k = Cell(p.x, p.z); if (k < 0) continue;
-                    low[k] = Mathf.Min(low[k], p.y - Mathf.Max(gnd[k], wet[k])); { var hr = p.y - gnd[k]; if (hr > 2.2f && hr < 9f) roof[k] = true; }
+                    low[k] = Mathf.Min(low[k], p.y - Mathf.Max(gnd[k], wet[k])); { var hr = p.y - gnd[k]; if (hr > 2.2f && hr < 9f) roof[k] = true; if (hr > 1.9f && hr < 30f) over[k] = true; }
                     var h = p.y - gnd[k];
                     if (h >= BodyLow && h <= BodyHigh) body[k] = what;
                 }
@@ -304,7 +304,7 @@ namespace EverythingWorld.World
                             var stand = walk[k] ? surf[k] : gnd[k];
                             var eye = new Vector3(q.x, stand + 1.6f, q.z); var to = aim - eye;
                             if (Physics.CheckSphere(eye, .3f, ~0, QueryTriggerInteraction.Ignore) || Physics.Raycast(eye, Vector3.up, 6f, ~0, QueryTriggerInteraction.Ignore)) continue;
-                            if ((low[k] < 1.9f && low[k] > .3f) || roof[k]) continue;     // something built over where you'd stand
+                            if ((low[k] < 1.9f && low[k] > .3f) || roof[k] || over[k]) continue;     // something built over where you'd stand
                             if (Physics.Linecast(eye, aim - to.normalized * Mathf.Min(2.5f, to.magnitude * .4f), ~0, QueryTriggerInteraction.Ignore)) continue;
                             feet = new Vector3(q.x, stand + .95f, q.z); look = to; return true;
                         }
