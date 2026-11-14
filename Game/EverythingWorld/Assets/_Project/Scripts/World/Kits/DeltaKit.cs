@@ -28,6 +28,10 @@ namespace EverythingWorld.World
         readonly Dictionary<string, Vector3> facing = new Dictionary<string, Vector3>();
         // x, radius, z
         readonly List<Vector3> noGrass = new List<Vector3>();
+        // x, radius, z: poles, posts and lamps (telegraph poles, the signpost, crossbucks, the checkers barrel...), which a lane must not start through
+        readonly List<Vector3> fixtures = new List<Vector3>();
+        // x, radius, z: the crossroads, the graveyard, the store, the water tower, the windpump, the bales on the landing, which a lane bends round
+        readonly List<Vector3> keepOut = new List<Vector3>();
         Vector2 heart2, U2 = new Vector2(0, 1), R2 = new Vector2(1, 0), landing2, grave2, store2; float plainY, waterY, northL, southL, westL, eastL, railW, railE;
 
         void MakeMaterials()
@@ -136,7 +140,7 @@ namespace EverythingWorld.World
         {
             MakeMaterials();
             halos = new GlowHalos();
-            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear();
+            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear(); fixtures.Clear(); keepOut.Clear();
             center = ctx.Plaza; U = new Vector3(0, 0, 1); R = new Vector3(1, 0, 0);
             life = new GameObject("Delta life").AddComponent<DeltaLife>();
             life.transform.SetParent(ctx.Root, false);
@@ -197,7 +201,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -205,11 +211,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A bare bulb on a leaning pole with a tin shade: the Delta's only kind of lamp.
@@ -226,11 +232,14 @@ namespace EverythingWorld.World
         PlaceFrame Shack(LandContext ctx, MeshKit mk, MeshKit solid, PlaceFrame f, float W, float D, int i, bool rusty = false, bool lit = false)
         {
             var up = Vector3.up; const float H = 2.7f, lift = .5f; var wall = WorldMaterials.Solid(Planks[i % Planks.Length]); var roof = rusty ? rustM : tin; var fz = D / 2f;
-            foreach (var (x, zz) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) mk.Box(plankDark, f.P(x * (W / 2f - .3f), lift / 2f, zz * (D / 2f - .3f)), new Vector3(.4f, lift + .6f, .4f), f.r);
+            // piers (and posts under the porch's front) each reach down to their own ground
+            void Pier(float x, float zz) { var q = f.P(x, 0, zz); var b = Mathf.Min(f.o.y - .3f, ctx.Ground(q.x, q.z) - .3f); var t = f.o.y + lift; mk.Box(plankDark, new Vector3(q.x, (b + t) / 2f, q.z), new Vector3(.4f, t - b, .4f), f.r); }
+            foreach (var (x, zz) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) Pier(x * (W / 2f - .3f), zz * (D / 2f - .3f));
+            foreach (var x in new[] { -1f, 1f }) Pier(x * (W / 2f - .3f), D / 2f + 2.2f - .25f);
             mk.Box(wall, f.P(0, lift + H / 2f, 0), new Vector3(W, H, D), f.r); solid.Box(wall, f.P(0, lift / 2f + H / 2f, 0), new Vector3(W, H + lift, D), f.r);
             mk.GableRoof(roof, f.P(0, lift + H, 0), new Vector3(D + .8f, 0, W + .7f), 1.3f, Quaternion.LookRotation(f.Right)); mk.Box(wall, f.P(-W / 2f + .02f, lift + H + .4f, 0), new Vector3(.04f, .8f, D * .5f), f.r); mk.Box(wall, f.P(W / 2f - .02f, lift + H + .4f, 0), new Vector3(.04f, .8f, D * .5f), f.r);
             // the porch
-            const float pd = 2.2f; mk.Box(plankDark, f.P(0, lift - .06f, fz + pd / 2f), new Vector3(W, .12f, pd), f.r); solid.Box(plankDark, f.P(0, lift / 2f, fz + pd / 2f), new Vector3(W, lift, pd), f.r); mk.Box(plankDark, f.P(0, lift / 2f - .06f, fz + pd + .3f), new Vector3(1.6f, lift / 2f, .6f), f.r); solid.Box(plankDark, f.P(0, lift / 4f, fz + pd + .3f), new Vector3(1.6f, lift / 2f, .6f), f.r);
+            const float pd = 2.2f; mk.Box(plankDark, f.P(0, lift - .06f, fz + pd / 2f), new Vector3(W, .12f, pd), f.r); solid.Box(plankDark, f.P(0, lift / 2f, fz + pd / 2f), new Vector3(W, lift, pd), f.r); { var sq = f.P(0, 0, fz + pd + .3f); var sb = Mathf.Min(f.o.y + .06f, ctx.Ground(sq.x, sq.z) - .1f); var stp = f.o.y + lift * .75f - .06f; mk.Box(plankDark, new Vector3(sq.x, (sb + stp) / 2f, sq.z), new Vector3(1.6f, stp - sb, .6f), f.r); }   // the step reaches down to the ground in front solid.Box(plankDark, f.P(0, lift / 4f, fz + pd + .3f), new Vector3(1.6f, lift / 2f, .6f), f.r);
             mk.Box(roof, f.P(0, lift + H - .28f, fz + pd / 2f + .1f), new Vector3(W + .5f, .06f, pd + .5f), f.r * Quaternion.Euler(9f, 0, 0)); foreach (var e in new[] { -1f, 1f }) { mk.Prism(plankDark, f.P(e * (W / 2f - .2f), lift, fz + pd - .2f), up, .07f, H - .5f, 4); ArtistBits.PostCollider(ctx.Root, f.P(e * (W / 2f - .2f), lift, fz + pd - .2f), H - .5f, .1f); }
             var dx = (i % 2 == 0 ? -1f : 1f) * W * .2f; mk.Box(dark, f.P(dx, lift + 1.05f, fz + .02f), new Vector3(.95f, 2.1f, .05f), f.r);
             mk.Box(lit ? (Material)bulbM : WorldMaterials.Solid(new Color(.16f, .17f, .2f), .8f), f.P(-dx * 1.3f, lift + 1.5f, fz + .02f), new Vector3(.9f, .9f, .05f), f.r); mk.Box(plankDark, f.P(-dx * 1.3f, lift + 1.5f, fz + .04f), new Vector3(.06f, .9f, .05f), f.r); mk.Box(plankDark, f.P(-dx * 1.3f, lift + 1.5f, fz + .04f), new Vector3(.9f, .06f, .05f), f.r);
@@ -288,34 +297,86 @@ namespace EverythingWorld.World
                 var pts = new List<Vector3>();
                 for (var d = PathW / 2f + .1f; ; d += 1.5f)
                 {
-                    var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 14f) * Mathf.Min(2f, end * .04f);
+                    // the wiggle fades out at both ends, so a lane leaves the road straight and comes in straight
+                    var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 14f) * Mathf.Min(2f, end * .04f) * Ease(0f, 8f, dd) * Ease(0f, 8f, end - dd);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area, the crossroads, the graveyard, the store and the rest instead of
+                    // running across them: an arc on the side the straight line passes
+                    void Round(Vector3 ov, float r)
+                    {
+                        var rel = q - ov; rel.y = 0; if (rel.sqrMagnitude >= r * r) return;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along)); q.y = 0;
+                    }
+                    foreach (var o in ctx.Artists) if (o.name != artist) Round(new Vector3(o.x, 0, o.z), Foot(o) * 1.06f + 3f);
+                    foreach (var k in keepOut) Round(new Vector3(k.x, 0, k.z), k.y + PathW / 2f);
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, dustM, PathW, .12f, ctx);
-                foreach (var p in pts) Remember(p, walk);
                 for (var i = 9; i < pts.Count; i += 16)
                 {
                     var s = (i / 16) % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .9f);
                     var near = false; foreach (var o in lamps) if ((o - lp).sqrMagnitude < 20f * 20f) near = true;
-                    if (near || InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || OnRail(lp.x, lp.z, 1f)) continue;
+                    // never on a road, the railroad or another lane
+                    if (near || InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || OnRail(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, RoadW / 2f + .4f)) continue;
                     lamps.Add(lp); BulbPole(ctx, mk, ctx.OnGround(lp.x, lp.z), -side * s, true);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
+            }
+            // would a lane leaving p toward a run into a pole, a post or a lamp in its first stretch?
+            bool Blocked(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector2(a.x - p.x, a.z - p.z); var len = Mathf.Min(12f, d.magnitude); if (len < .1f) return false; d /= d.magnitude;
+                foreach (var f in fixtures)
+                {
+                    var rel = new Vector2(f.x - p.x, f.z - p.z); var t = Mathf.Clamp(Vector2.Dot(rel, d), 0f, len);
+                    if ((rel - d * t).sqrMagnitude < (f.y + PathW / 2f + .2f) * (f.y + PathW / 2f + .2f)) return true;
+                }
+                return false;
+            }
+            // does the straight line from p to a clear every other artist's area?
+            bool Clear(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector2(a.x - p.x, a.z - p.z); var len = d.magnitude; if (len < .1f) return true; d /= len;
+                foreach (var o in ctx.Artists)
+                {
+                    if (o == a) continue; var r = Foot(o) * 1.06f + 3f + PathW / 2f;
+                    var rel = new Vector2(o.x - p.x, o.z - p.z); var t = Mathf.Clamp(Vector2.Dot(rel, d), 0f, len);
+                    if ((rel - d * t).sqrMagnitude < r * r) return false;
+                }
+                return true;
             }
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
+                // a start whose straight line clears every other artist's area is preferred; otherwise the nearest start
+                // that doesn't run through a pole or lamp; failing all that, the nearest start at all
+                IslandWorldData.Artist nextC = null; Vector3 joinC = default; var bestC = float.MaxValue;
+                IslandWorldData.Artist nextA = null; Vector3 joinA = default; var bestA = float.MaxValue;
                 foreach (var a in todo)
                     foreach (var (p, w) in walkPoints)
                     {
-                        if (w == 5) continue;
+                        if (w == 5 || w == 0) continue;
                         // a lane never crosses the railroad: it joins from its own side (Howlin' Wolf sits on the line itself)
                         var sideA = a.z > center.z + RailOff + 4f; var sideP = p.z > center.z + RailOff + 4f; if (sideA != sideP && Mathf.Abs(a.z - (center.z + RailOff)) > 4f) continue;
-                        var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; }
+                        // never from the jetty over the water, from inside another artist's area, or from inside the
+                        // crossroads, the graveyard, the store's yard and the rest
+                        if (!ctx.IsLand(p.x, p.z, 0f)) continue;
+                        if (w >= 10 && InFootprint(ctx, p.x, p.z, 2f)) continue;
+                        var inside = false; foreach (var k in keepOut) { float dx = p.x - k.x, dz = p.z - k.z; if (dx * dx + dz * dz < (k.y + 1f) * (k.y + 1f)) inside = true; }
+                        if (inside) continue;
+                        var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
+                        if (d < bestA) { bestA = d; nextA = a; joinA = p; }
+                        if (Blocked(p, a)) continue;
+                        if (d < best) { best = d; next = a; join = p; }
+                        if (d < bestC && Clear(p, a)) { bestC = d; nextC = a; joinC = p; }
                     }
+                // the clear start wins unless it is much farther than the nearest
+                if (nextC != null && bestC < best + 40f) { next = nextC; join = joinC; }
+                if (next == null) { next = nextA; join = joinA; }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
@@ -334,15 +395,29 @@ namespace EverythingWorld.World
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 4f)) continue;
                 var p = ctx.OnGround(px, pz); var low = p.y < plainY - 5f; var field = Field(px, pz);
+                // the lowest and highest ground round a ring of radius r round 'at' (big things skip steep spots, or spots
+                // where their whole width would reach a road or lane, drawing the same random numbers, so the rest of the
+                // layout stays put)
+                float Lo(Vector3 at, float r) { var lo = at.y; for (var k = 0; k < 8; k++) lo = Mathf.Min(lo, ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r)); return lo; }
+                float Hi(Vector3 at, float r) { var hi = at.y; for (var k = 0; k < 8; k++) hi = Mathf.Max(hi, ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r)); return hi; }
                 if (field)
                 {
                     if (roll < .12f) { Scarecrow(ctx, mk, p, Quaternion.Euler(0, s * 360f, 0) * Vector3.forward, rng); crows++; }
-                    else if (roll < .15f) { if (wagons < 5) { Wagon(ctx, mk, p, Quaternion.Euler(0, s * 360f, 0) * Vector3.forward, rng); wagons++; } }
+                    else if (roll < .15f) { if (wagons < 5) { if (Hi(p, 1.9f) - Lo(p, 1.9f) > .4f || NearPath(px, pz, RoadW / 2f + 3.6f)) { for (var k = 0; k < 12; k++) rng.NextDouble(); wagons++; continue; } Wagon(ctx, mk, p, Quaternion.Euler(0, s * 360f, 0) * Vector3.forward, rng); wagons++; } }
                 }
                 else if (roll < .1f) { BottleTree(ctx, mk, p, .9f + s * .5f, rng); bottles++; }
                 else if (roll < .2f) { DeadTree(ctx, mk, p, .9f + s * .8f, rng); dead++; }
                 else if (roll < (low ? .5f : .27f)) { Oak(ctx, mk, p, 1f + s * .6f, rng); oaks++; }
-                else if (roll < .3f) { if (shacks < 7) { EmptyShack(ctx, mk, solid, p, FaceTo(p, NearestWalk(p)), shacks, rng); shacks++; } }
+                else if (roll < .3f)
+                {
+                    if (shacks < 7)
+                    {
+                        // a shack with its porch reaches about 5 m from its middle: keep all of it off roads and lanes, and
+                        // off steep ground; it stands level with the highest ground under it, its piers reaching down
+                        if (Hi(p, 4f) - Lo(p, 4f) > 1.4f || NearPath(px, pz, RoadW / 2f + 5.6f)) { if (shacks % 3 == 1) for (var k = 0; k < 24; k++) rng.NextDouble(); shacks++; continue; }
+                        var sg = p; sg.y = Hi(p, 3.4f); EmptyShack(ctx, mk, solid, sg, FaceTo(p, NearestWalk(p)), shacks, rng); shacks++;
+                    }
+                }
             }
             Debug.Log($"The Delta Crossroads: Highway {northL + southL:0} m, cross road {westL + eastL:0} m, railroad {railW + railE:0} m, {crows} scarecrows, {bottles} bottle trees, {dead} dead trees, {oaks} oaks, {shacks} empty shacks, {wagons} wagons");
         }
