@@ -244,6 +244,19 @@ namespace EverythingWorld.World
             return false;
         }
 
+        /// Whether (x, z) is within pad of another path's edge (the street, another trail, the jar trails and lanes),
+        /// by each path's real width.
+        bool OtherPathNear(float x, float z, int walk, float pad)
+        {
+            foreach (var (p, w) in walkPoints)
+            {
+                if (w == walk || w == RimWalk || w == 402 || w == 403) continue;
+                var r = (w == 0 ? 3f : w == 700 ? 1.4f : w == 900 ? 1f : TrailW / 2f) + pad;
+                float dx = p.x - x, dz = p.z - z; if (dx * dx + dz * dz < r * r) return true;
+            }
+            return false;
+        }
+
         bool InNoGrass(float x, float z, float pad)
         {
             foreach (var c in noGrass) { float dx = x - c.x, dz = z - c.z, r = c.y + pad; if (dx * dx + dz * dz < r * r) return true; }
@@ -262,7 +275,10 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground = null)
         {
-            var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground, so on a side slope it follows
+            // the ground instead of burying one edge and lifting the other; where the line is raised well above the
+            // ground (a bridge deck) it stays level across at the line's height.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -270,14 +286,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] + Vector3.up * lift - side * (w / 2f * miter); R[i] = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
-                if (ground != null)
-                {
-                    float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(R[i].x, R[i].z), top = Mathf.Max(pts[i].y, Mathf.Max(gl, gr) - .05f);
-                    L[i].y = Mathf.Max(gl, top - .15f) + lift; R[i].y = Mathf.Max(gr, top - .15f) + lift;
-                }
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var raised = ground == null || pts[i].y - ground.Ground(pts[i].x, pts[i].z) > .25f;
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = (raised ? pts[i].y : ground.Ground(q.x, q.z)) + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A post with a mason jar lantern hanging from an arm.
@@ -405,7 +418,13 @@ namespace EverythingWorld.World
             var mark = new GameObject("Shot: the picking circle").transform; mark.SetParent(ctx.Root, false);
             var cam = pc + toCreek * 13f + side * 4f; mark.SetPositionAndRotation(ctx.OnGround(cam.x, cam.z), Quaternion.LookRotation((pc - cam).normalized * 1f + up * .05f));
             Remember(ctx.OnGround(center.x, center.z), 0);
+            // the picking circle's rim, where trails may leave the arrival (never from its middle, across the rockers),
+            // except behind the barn or on the porch stage
+            circleAt = pc; barnAt = c; stageAt = st;
+            for (var rk = 0; rk < 16; rk++) { var d = Quaternion.Euler(0, rk * 22.5f, 0) * Vector3.forward; var q = pc + d * CircleRim; if (Vector2.Distance(new Vector2(q.x, q.z), new Vector2(c.x, c.z)) > BarnClear && Vector2.Distance(new Vector2(q.x, q.z), new Vector2(st.x, st.z)) > StageClear) Remember(ctx.OnGround(q.x, q.z), RimWalk); }
         }
+        const int RimWalk = 300; const float CircleRim = 10f, BarnClear = 12.5f, StageClear = 8f;
+        Vector3 circleAt, barnAt, stageAt;
 
         Transform Floating(System.Action<MeshKit> build, string name)
         {
@@ -572,7 +591,14 @@ namespace EverythingWorld.World
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue; var joinW = 0;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { if (w >= 400) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; joinW = w; } }
+                    foreach (var (p, w) in walkPoints)
+                    {
+                        // never from the middle of the arrival (across the picking circle's rockers): its rim is remembered
+                        // for that; nor from inside another artist's area
+                        if (w >= 400) continue;
+                        if (w == 0 && Vector2.Distance(new Vector2(p.x, p.z), new Vector2(center.x, center.z)) < 1f) continue;
+                        if (w >= 1 && w < RimWalk && InFootprint(ctx, p.x, p.z, 2f)) continue;
+                        var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; joinW = w; } }
                 if (next == null) break;
                 todo.Remove(next);
                 var from = new Vector3(join.x, 0, join.z); var to = new Vector3(next.x, 0, next.z);
@@ -583,8 +609,18 @@ namespace EverythingWorld.World
                 var atHeart = Vector2.Distance(new Vector2(join.x, join.z), new Vector2(center.x, center.z)) < 1f;
                 for (var d = atHeart ? 8f : joinW == 0 ? 3.1f : TrailW / 2f + .1f; ; d += 1.5f)
                 {
-                    var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 18f) * Mathf.Min(3f, end * .05f);
+                    var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 18f) * Mathf.Min(3f, end * .05f) * Mathf.Clamp01((end - dd) / 10f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round other artists' areas, the barn, its porch stage and the picking circle in an arc on
+                    // whichever side the straight line passes, instead of running across them
+                    void Round(Vector3 ov, float r)
+                    {
+                        var rel = q - ov; rel.y = 0; if (rel.sqrMagnitude >= r * r) return;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along)); q.y = 0;
+                    }
+                    foreach (var o in ctx.Artists) if (o.name != next.name) Round(new Vector3(o.x, 0, o.z), Foot(o) * 1.06f + 3f);
+                    Round(new Vector3(barnAt.x, 0, barnAt.z), BarnClear - 1f); Round(new Vector3(stageAt.x, 0, stageAt.z), StageClear - 1f); Round(new Vector3(circleAt.x, 0, circleAt.z), CircleRim - 1f);
                     pts.Add(ctx.OnGround(q.x, q.z)); wet.Add(InCreek(q.x, q.z, 2.5f)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) continue;
@@ -614,11 +650,17 @@ namespace EverythingWorld.World
                 {
                     var lp = pts[i] + side * ((i / 14) % 2 == 0 ? 1f : -1f) * (TrailW / 2f + .6f);
                     var near = false; foreach (var o in lamps) if ((o - lp).sqrMagnitude < 20f * 20f) near = true;
-                    if (near || InCreek(lp.x, lp.z, 2f)) continue;
+                    // never on another trail or the street, nor in an artist's area or the arrival
+                    if (near || InCreek(lp.x, lp.z, 2f) || OtherPathNear(lp.x, lp.z, walk, .5f) || InFootprint(ctx, lp.x, lp.z, .5f) || InNoGrass(lp.x, lp.z, .5f)) continue;
                     lamps.Add(lp); JarLamp(ctx, mk, ctx.OnGround(lp.x, lp.z));
                 }
-                // a split-rail fence along part of some trails
-                if (walk % 3 == 1 && pts.Count > 16) { var fs = pts[4] + side * (TrailW / 2f + 2f); var fe = pts[Mathf.Min(pts.Count - 5, 4 + 22)] + side * (TrailW / 2f + 2f); if (!InCreek(fs.x, fs.z, 3f) && !InCreek(fe.x, fe.z, 3f)) Fence(ctx, mk, solid, fs, fe); }
+                // a split-rail fence along part of some trails (only where the whole run stays off other paths and areas)
+                if (walk % 3 == 1 && pts.Count > 16)
+                {
+                    var fs = pts[4] + side * (TrailW / 2f + 2f); var fe = pts[Mathf.Min(pts.Count - 5, 4 + 22)] + side * (TrailW / 2f + 2f); var clear = !InCreek(fs.x, fs.z, 3f) && !InCreek(fe.x, fe.z, 3f);
+                    for (var t = 0f; t <= 1f && clear; t += .05f) { var q = Vector3.Lerp(fs, fe, t); if (OtherPathNear(q.x, q.z, walk, 1f) || NearPath(q.x, q.z, TrailW / 2f + .6f) || InFootprint(ctx, q.x, q.z, .5f) || InNoGrass(q.x, q.z, .5f) || InCreek(q.x, q.z, 2f)) clear = false; }
+                    if (clear) Fence(ctx, mk, solid, fs, fe);
+                }
                 walk++;
             }
             life.route = longest.ToArray();
@@ -639,13 +681,14 @@ namespace EverythingWorld.World
                 var p = ctx.OnGround(px, pz); var roll = ctx.Range(0f, 1f);
                 // meadows in the open (Perlin), woods elsewhere
                 var meadow = Mathf.PerlinNoise(px * .006f + 11f, pz * .006f + 7f) > .55f;
-                if (roll < .035f && cabins < 8 && NearPath(px, pz, 22f)) { Cabin(ctx, mk, solid, p); cabins++; }
+                // a cabin (with its porch) keeps its whole width off the paths; hay, hives and the pickup skip steep spots
+                if (roll < .035f && cabins < 8 && NearPath(px, pz, 22f) && !NearPath(px, pz, 9.5f) && !InNoGrass(px, pz, 7f)) { Cabin(ctx, mk, solid, p); cabins++; }
                 else if (meadow)
                 {
-                    if (roll < .12f) { HayBale(mk, solid, p, ctx.Range(0f, 360f)); bales++; }
-                    else if (roll < .15f) { Beehives(ctx, mk, solid, p); other++; }
+                    if (roll < .12f) { var yaw = ctx.Range(0f, 360f); if (Fall(ctx, p, 1f) < .5f) { HayBale(mk, solid, p, yaw); bales++; } }
+                    else if (roll < .15f) { if (Fall(ctx, p, 2.2f) < .6f) { Beehives(ctx, mk, solid, p); other++; } }
                     else if (roll < .17f) { Corn(ctx, mk, p); other++; }
-                    else if (roll < .19f) { Pickup(ctx, mk, solid, p); other++; }
+                    else if (roll < .19f) { if (Fall(ctx, p, 2.4f) < .6f && !NearPath(px, pz, 6f)) { Pickup(ctx, mk, solid, p); other++; } else ctx.Range(0f, 360f); }
                     else if (roll < .3f) { Hardwood(ctx, mk, p, ctx.Range(1.1f, 1.6f)); trees++; }
                     else if (roll < .36f) { Rhododendron(ctx, p); other++; }
                 }
@@ -659,6 +702,9 @@ namespace EverythingWorld.World
             }
             Debug.Log($"The Bluegrass Hollows: creek {creek.Count * 4} m, {trees} hardwoods, {cabins} cabins, {bales} hay bales, {stills} stills, {other} other things, street {street.Count * 6} m");
         }
+
+        /// How much the ground falls across a round of radius r round 'at'.
+        float Fall(LandContext ctx, Vector3 at, float r) { float lo = float.MaxValue, hi = float.MinValue; for (var k = 0; k < 8; k++) { var h = ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
 
         void HayBale(MeshKit mk, MeshKit solid, Vector3 at, float yaw)
         {
@@ -706,6 +752,21 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var face = new Vector3(center.x - at.x, 0, center.z - at.z).normalized; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
             var logs = WorldMaterials.Solid(new Color(.5f, .38f, .27f));
+            // it stands at the highest ground under it and its porch (so nothing is buried), on a fieldstone footing down
+            // to the lowest ground, with stone steps down to the ground in front of the porch, so on a hillside nothing
+            // hangs in the air
+            {
+                float hi = at.y, lo = at.y;
+                for (var ix = -2; ix <= 2; ix++) for (var iz = 0; iz <= 4; iz++) { var q = at + side * (ix * 1.5f) + face * Mathf.Lerp(-2.5f, 4.9f, iz / 4f); var g = ctx.Ground(q.x, q.z); hi = Mathf.Max(hi, g); lo = Mathf.Min(lo, g); }
+                at.y = hi;
+                if (hi - lo > .08f)
+                {
+                    var fc = at + face * 1.2f + up * ((lo - .3f - hi) / 2f + .1f); var fsz = new Vector3(6.1f, hi - lo + .5f, 7.5f);
+                    mk.Box(stone, fc, fsz, rot); solid.Box(stone, fc, fsz, rot);
+                }
+                var sp = at + face * 5.25f; var drop = hi - ctx.Ground(sp.x, sp.z);
+                if (drop > .15f) { var sc = sp + up * ((-drop + .3f) / 2f - .05f); var ssz = new Vector3(1.8f, drop + .2f, .7f); mk.Box(stone, sc, ssz, rot); solid.Box(stone, sc, ssz, rot); }
+            }
             mk.Box(logs, at + up * 1.5f, new Vector3(6f, 3f, 5f), rot); solid.Box(logs, at + up * 1.5f, new Vector3(6f, 3f, 5f), rot);
             for (var k = 1; k < 6; k++) mk.Box(WorldMaterials.Solid(new Color(.4f, .3f, .22f)), at + up * (.25f + k * .5f) + face * 2.52f, new Vector3(6.05f, .08f, .04f), rot);
             mk.GableRoof(roofM, at + up * 3f, new Vector3(6.8f, 0, 6.6f), 1.8f, Quaternion.LookRotation(side));

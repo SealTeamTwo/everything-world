@@ -64,12 +64,12 @@ namespace EverythingWorld.World
 
         void JarTrail(LandContext ctx, MeshKit mk, Vector2[] way)
         {
-            Vector2 near = way[0]; var bd = 150f * 150f; foreach (var (p, _) in walkPoints) { var d = (p.x - way[0].x) * (p.x - way[0].x) + (p.z - way[0].y) * (p.z - way[0].y); if (d < bd && !CreekBetween(new Vector2(p.x, p.z), way[0])) { bd = d; near = new Vector2(p.x, p.z); } }
+            Vector2 near = way[0]; var bd = 150f * 150f; foreach (var (p, w) in walkPoints) { if (w >= RimWalk && w < 700 || w == 0 && Vector2.Distance(new Vector2(p.x, p.z), new Vector2(center.x, center.z)) < 1f || w >= 1 && InFootprint(ctx, p.x, p.z, 2f)) continue; var d = (p.x - way[0].x) * (p.x - way[0].x) + (p.z - way[0].y) * (p.z - way[0].y); if (d < bd && !CreekBetween(new Vector2(p.x, p.z), way[0])) { bd = d; near = new Vector2(p.x, p.z); } }
             var full = new List<Vector2> { near }; full.AddRange(way);
             var pts = Smooth(ctx, full, false, 2f); Bend(ctx, pts); pts.RemoveAll(p => InCreek(p.x, p.z, 3f)); if (pts.Count < 2) return;
             Strip(mk, pts, WorldMaterials.Solid(new Color(.66f, .55f, .38f)), 2.8f, .05f, ctx);
             var up = Vector3.up; var n = 0;
-            for (var i = 7; i < pts.Count; i += 14) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (n++ % 2 == 0 ? 2.1f : -2.1f); if (ctx.IsLand(lp.x, lp.z, 2f) && !InCreek(lp.x, lp.z, 2f)) JarLamp(ctx, mk, ctx.OnGround(lp.x, lp.z)); }
+            for (var i = 7; i < pts.Count; i += 14) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (n++ % 2 == 0 ? 2.1f : -2.1f); if (ctx.IsLand(lp.x, lp.z, 2f) && !InCreek(lp.x, lp.z, 2f) && !OtherPathNear(lp.x, lp.z, 700, .5f) && !InFootprint(ctx, lp.x, lp.z, .5f)) JarLamp(ctx, mk, ctx.OnGround(lp.x, lp.z)); }
             foreach (var p in pts) Remember(p, 700);
             roadPts.AddRange(pts);
         }
