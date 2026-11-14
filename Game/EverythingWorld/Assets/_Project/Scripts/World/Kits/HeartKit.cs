@@ -175,7 +175,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the hill instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -183,24 +185,41 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        /// The lowest ground in a ring of the given radius round a point (for footings that reach down to it).
+        float Lowest(Vector3 at, float r)
+        {
+            var lo = ctx0.Ground(at.x, at.z);
+            for (var k = 0; k < 8; k++) { var a = k * Mathf.PI / 4f; lo = Mathf.Min(lo, ctx0.Ground(at.x + Mathf.Cos(a) * r, at.z + Mathf.Sin(a) * r)); }
+            return lo;
+        }
+
+        /// The highest and lowest ground under a rectangle in a frame (half width, back and front depth), sampled every metre or so.
+        (float lo, float hi) Under(PlaceFrame f, float halfW, float back, float front)
+        {
+            float lo = float.MaxValue, hi = float.MinValue; int nx = Mathf.Max(2, Mathf.CeilToInt(halfW * 2f / 1.5f)), nz = Mathf.Max(2, Mathf.CeilToInt((back + front) / 1.5f));
+            for (var i = 0; i <= nx; i++) for (var j = 0; j <= nz; j++) { var q = f.P(-halfW + 2f * halfW * i / nx, 0, -back + (back + front) * j / nz); var g = ctx0.Ground(q.x, q.z); lo = Mathf.Min(lo, g); hi = Mathf.Max(hi, g); }
+            return (lo, hi);
         }
 
         /// A globe lamp on a curly iron post.
         void GlobeLamp(LandContext ctx, MeshKit mk, Vector3 g, bool light = false)
         {
-            var up = Vector3.up; mk.Prism(iron, g - up * .2f, up, .07f, 3.8f, 6, .6f); mk.Prism(iron, g, up, .16f, .3f, 6); mk.Blob(lampM, g + up * 3.8f, Vector3.one * .24f, new System.Random(1), 0f); mk.Prism(iron, g + up * 3.55f, up, .1f, .08f, 6);
+            var up = Vector3.up; var lo = Mathf.Min(g.y - .2f, Lowest(g, .2f) - .1f); mk.Prism(iron, new Vector3(g.x, lo, g.z), up, .07f, g.y + 3.6f - lo, 6, .6f); mk.Prism(iron, g, up, .16f, .3f, 6); mk.Blob(lampM, g + up * 3.8f, Vector3.one * .24f, new System.Random(1), 0f); mk.Prism(iron, g + up * 3.55f, up, .1f, .08f, 6);
             halos.Add(g + up * 3.8f, 1.8f, new Color(1f, .86f, .64f), .5f); ArtistBits.PostCollider(ctx.Root, g, 3.6f, .09f); if (light) ArtistBits.PointLight(ctx.Root, g + up * 3.3f, new Color(1f, .82f, .6f), 14f, 2f);
         }
 
         /// A palm tree, leaning toward the sea.
         void Palm(LandContext ctx, MeshKit mk, Vector3 g, float s, System.Random rng)
         {
-            var up = Vector3.up; var lean = (D * .3f + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * .3f); var prev = g; var dir = up;
+            var up = Vector3.up; var tl = Lowest(g, .25f * s); if (g.y - tl > .1f) mk.Prism(trunkM, new Vector3(g.x, tl - .2f, g.z), up, .21f * s, g.y - tl + .4f, 6);   // the trunk's foot in the ground on a slope
+            var lean = (D * .3f + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * .3f); var prev = g; var dir = up;
             for (var k = 0; k < 6; k++) { dir = (up + lean * (k / 5f)).normalized; mk.Prism(trunkM, prev, dir, (.2f - k * .02f) * s, 1.2f * s, 6); prev += dir * 1.2f * s; }
             for (var k = 0; k < 8; k++) { var fd = Quaternion.Euler(0, k * 45f + (float)rng.NextDouble() * 20f, 0) * Vector3.forward; var tip = prev + fd * 2.2f * s - up * .9f * s; var mid = prev + fd * 1.1f * s + up * .3f * s; var side = Vector3.Cross(up, fd) * .3f * s; mk.Tri(k % 2 == 0 ? leafM : leafDark, prev, mid + side, tip, prev + up); mk.Tri(k % 2 == 0 ? leafM : leafDark, prev, mid - side, tip, prev + up); mk.Tri(k % 2 == 0 ? leafM : leafDark, prev, mid + side, tip, prev - up * 3f); mk.Tri(k % 2 == 0 ? leafM : leafDark, prev, mid - side, tip, prev - up * 3f); }
             ArtistBits.PostCollider(ctx.Root, g, 3f * s, .22f * s); noGrass.Add(new Vector3(g.x, .8f, g.z));
@@ -209,7 +228,7 @@ namespace EverythingWorld.World
         /// A bench to sit on.
         void Bench(Transform parent, MeshKit mk, Vector3 g, Vector3 face, float len = 2f)
         {
-            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face); for (var k = 0; k < 3; k++) mk.Box(woodM, g + up * .46f + face * (-.16f + k * .16f), new Vector3(len, .05f, .13f), rot); for (var k = 0; k < 2; k++) mk.Box(woodM, g + up * (.7f + k * .2f) - face * .26f, new Vector3(len, .13f, .05f), rot); foreach (var e in new[] { -1f, 1f }) mk.Box(iron, g + up * .3f + side * e * (len / 2f - .15f), new Vector3(.06f, .6f, .5f), rot);
+            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face); for (var k = 0; k < 3; k++) mk.Box(woodM, g + up * .46f + face * (-.16f + k * .16f), new Vector3(len, .05f, .13f), rot); for (var k = 0; k < 2; k++) mk.Box(woodM, g + up * (.7f + k * .2f) - face * .26f, new Vector3(len, .13f, .05f), rot); foreach (var e in new[] { -1f, 1f }) { var lp = g + side * e * (len / 2f - .15f); var gl = Lowest(lp, .25f); var lo = (g.y - gl < 2f ? Mathf.Min(g.y, gl) : g.y) - .05f; var top = g.y + .6f; mk.Box(iron, new Vector3(lp.x, (lo + top) / 2f, lp.z), new Vector3(.06f, top - lo, .5f), rot); }   // each leg reaches down to its own ground
             BoxCol(parent, g + up * .45f, new Vector3(len, .9f, .5f), rot); Interact.Bench(tlife.transform, g + up * .52f - side * (len / 2f - .5f), g + up * .52f + side * (len / 2f - .5f), face);
         }
 
@@ -224,6 +243,7 @@ namespace EverythingWorld.World
         void Stall(LandContext ctx, MeshKit mk, PlaceFrame f, int i)
         {
             var up = Vector3.up; string[] signs = { "SALTWATER TAFFY", "FORTUNES", "HOT DOGS", "PRIZES", "SNOW CONES", "PHOTOS 50¢", "ARCADE", "COTTON CANDY" };
+            var (slo, _) = Under(f, 1.4f, 1.1f, 1.1f); if (f.o.y - slo > .05f) mk.Box(boardsDark, f.P(0, (slo - f.o.y) / 2f - .1f, 0), new Vector3(2.8f, f.o.y - slo + .2f, 2.2f), f.r);   // a footing down to its lowest ground on a slope
             mk.Box(Paint(Faded[i % Faded.Length]), f.P(0, 1.3f, 0), new Vector3(2.8f, 2.6f, 2.2f), f.r); Col(f.P(0, 1.3f, 0), new Vector3(2.8f, 2.6f, 2.2f), f.r); mk.Box(Paint(new Color(.5f, .5f, .54f)), f.P(0, 1.3f, 1.12f), new Vector3(2.2f, 1.2f, .04f), f.r); for (var k = 0; k < 6; k++) mk.Box(dark, f.P(0, .8f + k * .2f, 1.15f), new Vector3(2.2f, .02f, .02f), f.r);
             for (var k = 0; k < 6; k++) mk.Box(k % 2 == 0 ? stripeA : stripeB, f.P(-1.25f + k * .5f, 2.75f + (k % 2) * .01f, .3f), new Vector3(.5f, .06f, 2.8f), f.r * Quaternion.Euler(12f, 0, 0));
             mk.Box(Paint(Cream), f.P(0, 2.2f, 1.14f), new Vector3(2.4f, .34f, .03f), f.r); Sign(f.P(0, 2.2f, 1.17f), f.Fwd, signs[i % signs.Length], .14f, Ink);
@@ -281,11 +301,11 @@ namespace EverythingWorld.World
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 4f)) continue;
                 var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p));
-                if (roll < .14f) { if (!Open(ctx, px, pz, 7f) || !ctx.IsLand(px, pz, 8f) || Mathf.Abs(ctx.Ground(px + 4f, pz) - ctx.Ground(px - 4f, pz)) > 2f || Mathf.Abs(ctx.Ground(px, pz + 4f) - ctx.Ground(px, pz - 4f)) > 2f) continue; BeachHouse(ctx, mk, solid, new PlaceFrame(p, f), huts + 30, rng); huts++; }
+                if (roll < .14f) { if (!Open(ctx, px, pz, 7f) || !ctx.IsLand(px, pz, 8f) || Mathf.Abs(ctx.Ground(px + 4f, pz) - ctx.Ground(px - 4f, pz)) > 2f || Mathf.Abs(ctx.Ground(px, pz + 4f) - ctx.Ground(px, pz - 4f)) > 2f || !HouseFits(new PlaceFrame(p, f))) continue; BeachHouse(ctx, mk, solid, new PlaceFrame(p, f), huts + 30, rng); huts++; }
                 else if (roll < .44f) { Palm(ctx, mk, p, .9f + s * .6f, rng); palms++; }
-                else if (roll < .52f) { Bench(ctx.Root, mk, p, f); GlobeLamp(ctx, mk, p - f * 1f + Vector3.Cross(Vector3.up, f) * 1.4f, benches % 2 == 0); noGrass.Add(new Vector3(p.x, 2f, p.z)); benches++; }
+                else if (roll < .52f) { Bench(ctx.Root, mk, p, f); var bl = p - f * 1f + Vector3.Cross(Vector3.up, f) * 1.4f; GlobeLamp(ctx, mk, ctx.OnGround(bl.x, bl.z), benches % 2 == 0); noGrass.Add(new Vector3(p.x, 2f, p.z)); benches++; }
                 else if (roll < .57f) { Stall(ctx, mk, new PlaceFrame(p, f), stalls + 2); Mark(p, 2.4f); stalls++; }
-                else if (roll < .66f) { var a = p - Vector3.Cross(Vector3.up, f) * 3f; for (var k = 0; k < 9; k++) { var q = ctx.OnGround(a.x + Vector3.Cross(Vector3.up, f).x * k * .75f, a.z + Vector3.Cross(Vector3.up, f).z * k * .75f); mk.Box(woodM, q + Vector3.up * (.4f + (k % 2) * .08f), new Vector3(.1f, .9f, .05f), Quaternion.LookRotation(f) * Quaternion.Euler(0, 0, (k % 3 - 1) * 5f)); } fences++; }
+                else if (roll < .66f) { var a = p - Vector3.Cross(Vector3.up, f) * 3f; var clear = true; for (var k = 0; k < 9 && clear; k++) { float fx = a.x + Vector3.Cross(Vector3.up, f).x * k * .75f, fz = a.z + Vector3.Cross(Vector3.up, f).z * k * .75f; if (NearPath(fx, fz, 3f) || InFootprint(ctx, fx, fz, 2f) || InNoGrass(fx, fz, .5f) || !ctx.IsLand(fx, fz, 1f)) clear = false; } if (!clear) continue;   /* the whole fence stays off the paths, not just its middle */ for (var k = 0; k < 9; k++) { var q = ctx.OnGround(a.x + Vector3.Cross(Vector3.up, f).x * k * .75f, a.z + Vector3.Cross(Vector3.up, f).z * k * .75f); mk.Box(woodM, q + Vector3.up * (.4f + (k % 2) * .08f), new Vector3(.1f, .9f, .05f), Quaternion.LookRotation(f) * Quaternion.Euler(0, 0, (k % 3 - 1) * 5f)); } fences++; }
             }
             Debug.Log($"The Heartbreak Boardwalk: Boardwalk {streetL:0} m{(toSea ? ", pier out to sea" : ", no sea close enough for a pier")}, {huts} beach houses, {palms} palms, {benches} benches, {stalls} shut stalls, {fences} dune fences");
         }

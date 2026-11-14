@@ -11,7 +11,14 @@ namespace EverythingWorld.World
     /// an empty pool, doors along a balcony); and faded beach houses.
     public partial class HeartKit
     {
-        HeartTownLife tlife; System.Random prng; Transform rootT; LandContext ctx0;
+        HeartTownLife tlife; System.Random prng; Transform rootT; LandContext ctx0; Vector3 coaster; bool hasCoaster;
+
+        /// Inside the rollercoaster's long footprint (44 m along the Boardwalk, its legs 1.2 m each side), with a margin.
+        bool InCoaster(Vector3 p, float pad) { if (!hasCoaster) return false; var d = p - coaster; d.y = 0; return Mathf.Abs(Vector3.Dot(d, D)) < 22f + pad && Mathf.Abs(Vector3.Dot(d, S)) < 1.6f + pad; }
+
+        /// A beach house (with its porch and steps) only goes where the ground under it drops less than 2.4 m, so its
+        /// stilts stay short; and never under the rollercoaster.
+        bool HouseFits(PlaceFrame f) { var (lo, hi) = Under(f, 3.6f, 3.1f, 5.2f); return hi - lo < 2.4f && !InCoaster(f.o, 6f); }
 
         static readonly Color[] Tops = { new Color(.94f, .9f, .84f), new Color(.86f, .6f, .66f), new Color(.5f, .6f, .74f), new Color(.2f, .18f, .22f), new Color(.92f, .8f, .5f), new Color(.6f, .5f, .7f), new Color(.7f, .24f, .3f) };
         static readonly Color[] Bottoms = { new Color(.26f, .3f, .44f), new Color(.86f, .82f, .76f), new Color(.2f, .18f, .22f), new Color(.5f, .4f, .36f) };
@@ -23,7 +30,7 @@ namespace EverythingWorld.World
 
         void TownStart(LandContext ctx)
         {
-            rootT = ctx.Root; ctx0 = ctx; prng = new System.Random(2012);
+            rootT = ctx.Root; ctx0 = ctx; hasCoaster = false; prng = new System.Random(2012);
             tlife = new GameObject("Heartbreak town life").AddComponent<HeartTownLife>(); tlife.transform.SetParent(life.transform, false);
         }
 
@@ -83,7 +90,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var pts = new List<Vector3>(); for (var d = 17f; d <= streetL + .01f; d += 2f) pts.Add(G(ctx, d, 0) + up * .3f); if (pts.Count < 2) return;
             Strip(mk, pts, boards, WalkW, .25f, ctx); foreach (var p in pts) Remember(p, 1);
-            for (var i = 0; i + 1 < pts.Count; i += 2) mk.Box(boardsDark, pts[i] + up * .29f, new Vector3(WalkW, .01f, .06f), Quaternion.LookRotation((pts[i + 1] - pts[i]).normalized));
+            for (var i = 0; i + 1 < pts.Count; i += 2) { var fw = (pts[i + 1] - pts[i]); fw.y = 0; fw.Normalize(); var sd = Vector3.Cross(Vector3.up, fw); var bulge = Mathf.Clamp(pts[i].y - (ctx.Ground((pts[i] - sd * WalkW / 2f).x, (pts[i] - sd * WalkW / 2f).z) + ctx.Ground((pts[i] + sd * WalkW / 2f).x, (pts[i] + sd * WalkW / 2f).z)) / 2f, 0f, .3f); for (var k = 0; k < 6; k++) { var q = pts[i] + sd * (-WalkW / 2f + (k + .5f) * WalkW / 6f); q.y = ctx.Ground(q.x, q.z) + bulge + .26f; mk.Box(boardsDark, q, new Vector3(WalkW / 6f, .01f, .06f), Quaternion.LookRotation(fw)); } }   // the board joints follow the boards across their width
             var n = 0; for (var d = 24f; d <= streetL - 4f; d += 10f, n++) { foreach (var e in new[] { -1f, 1f }) GlobeLamp(ctx, mk, G(ctx, d + (e > 0 ? 0f : 5f), e * (WalkW / 2f + .6f)), n % 2 == 0 && e > 0); }
             // shuttered stalls down one side; the carousel and the coaster down the other
             var i0 = 0; for (var d = 30f; d <= streetL - 10f; d += 9f, i0++) { var p = Wp(d, -(WalkW / 2f + 2.6f)); if (!ctx.IsLand(p.x, p.z, 3f) || InFootprint(ctx, p.x, p.z, 3f) || LaneNear(p.x, p.z, 3f)) continue; Stall(ctx, mk, new PlaceFrame(ctx.OnGround(p.x, p.z), S), i0); Mark(p, 2.4f); }
@@ -117,7 +124,7 @@ namespace EverythingWorld.World
                 if (k % 3 == 0) mk.Blob(k % 6 == 0 ? lampM : neonM, p + up * .1f + side * .7f, Vector3.one * .08f, new System.Random(k), 0f);
                 prev = p; have = true;
             }
-            mk.Box(Paint(Rose), top + up * .4f, new Vector3(1.4f, .6f, 1.8f), Quaternion.LookRotation(dir)); halos.Add(top + up * .6f, 2f, Neon, .2f); Mark(g, 14f);
+            mk.Box(Paint(Rose), top + up * .4f, new Vector3(1.4f, .6f, 1.8f), Quaternion.LookRotation(dir)); halos.Add(top + up * .6f, 2f, Neon, .2f); Mark(g, 14f); coaster = g; hasCoaster = true;
             Shot(ctx, "the rollercoaster", g - dir * 26f + side * 14f + up * 2f, g + up * 8f);
         }
 
@@ -154,15 +161,19 @@ namespace EverythingWorld.World
             foreach (var (dd, ss) in new[] { (30f, 30f), (-30f, -30f), (-30f, 32f), (40f, -34f), (10f, 40f) }) { var p = Wp(dd, ss); if (ctx.IsLand(p.x, p.z, 16f) && !InFootprint(ctx, p.x, p.z, 16f) && !LaneNear(p.x, p.z, 13f) && !InNoGrass(p.x, p.z, 4f)) { at = ctx.OnGround(p.x, p.z); ok = true; break; } }
             if (!ok) return;
             var face = (center - at); face.y = 0; var f = new PlaceFrame(at, face.normalized); const float W = 20f, Dp = 6f;
+            // a footing under the block and its walkway, down to the lowest ground (it stood off the slope)
+            var (mlo, _) = Under(f, W / 2f, Dp / 2f + 1f, Dp / 2f + 1.4f); if (at.y - mlo > .05f) { mk.Box(Paint(new Color(.5f, .44f, .46f)), f.P(0, (mlo - at.y) / 2f - .15f, .2f), new Vector3(W + .2f, at.y - mlo + .3f, Dp + 2.6f), f.r); solid.Box(white, f.P(0, (mlo - at.y) / 2f - .15f, .2f), new Vector3(W + .2f, at.y - mlo + .3f, Dp + 2.6f), f.r); }
             mk.Box(Paint(Faded[0]), f.P(0, 2.8f, -1f), new Vector3(W, 5.6f, Dp), f.r); solid.Box(Paint(Faded[0]), f.P(0, 2.8f, -1f), new Vector3(W, 5.6f, Dp), f.r); mk.Box(white, f.P(0, 5.7f, -1f), new Vector3(W + .4f, .2f, Dp + .4f), f.r);
-            mk.Box(boards, f.P(0, 2.9f, 2.6f), new Vector3(W, .16f, 1.4f), f.r); for (var k = 0; k <= 10; k++) { mk.Prism(white, f.P(-W / 2f + k * W / 10f, 0, 3.2f), Vector3.up, .06f, 3.8f, 4); } mk.Box(white, f.P(0, 3.8f, 3.25f), new Vector3(W, .06f, .06f), f.r); ArtistBits.PostCollider(rootT, f.P(-W / 2f, 0, 3.2f), 3.6f, .08f); ArtistBits.PostCollider(rootT, f.P(W / 2f, 0, 3.2f), 3.6f, .08f);
+            mk.Box(boards, f.P(0, 2.9f, 2.6f), new Vector3(W, .16f, 1.4f), f.r); for (var k = 0; k <= 10; k++) { var bp = f.P(-W / 2f + k * W / 10f, 0, 3.2f); var lo = Mathf.Min(at.y, Lowest(bp, .1f)) - .1f; mk.Prism(white, new Vector3(bp.x, lo, bp.z), Vector3.up, .06f, at.y + 3.8f - lo, 4); } mk.Box(white, f.P(0, 3.8f, 3.25f), new Vector3(W, .06f, .06f), f.r); ArtistBits.PostCollider(rootT, f.P(-W / 2f, 0, 3.2f), 3.6f, .08f); ArtistBits.PostCollider(rootT, f.P(W / 2f, 0, 3.2f), 3.6f, .08f);
             for (var fl = 0; fl < 2; fl++) for (var k = 0; k < 6; k++) { var x = -W / 2f + 1.7f + k * 3.3f; mk.Box(Paint(Faded[(k + 2) % Faded.Length]), f.P(x, 1.1f + fl * 2.9f, 2.01f), new Vector3(1f, 2f, .04f), f.r); mk.Box(k % 3 == 1 ? windowM : Paint(new Color(.3f, .32f, .4f)), f.P(x + 1.2f, 1.5f + fl * 2.9f, 2.01f), new Vector3(1f, .9f, .04f), f.r); ArtistBits.Label(rootT, (fl * 100 + k + 1).ToString(), f.P(x, 1.9f + fl * 2.9f, 2.05f), f.Fwd, .07f, Ink, TextAnchor.MiddleCenter); }
             // the sign on its pole: HEARTBREAK MOTEL, half the letters out; VACANCY lit
-            var sp = f.P(W / 2f + 3f, 0, 4f); mk.Prism(iron, sp - up * .2f, up, .14f, 8f, 6); ArtistBits.PostCollider(rootT, sp, 7.6f, .16f); mk.Box(Paint(Violet), sp + up * 7.6f, new Vector3(.4f, 2.8f, 4.6f), f.r * Quaternion.Euler(0, 90f, 0)); Sign(sp + up * 8.2f + f.Fwd * .0f + f.Right * .22f, f.Right, "HEARTBRE K", .4f, Neon); Sign(sp + up * 7.5f + f.Right * .22f, f.Right, "M TEL", .4f, Neon); mk.Box(neonM, sp + up * 6.6f + f.Right * .22f, new Vector3(.04f, .4f, 3f), f.r * Quaternion.Euler(0, 90f, 0)); Sign(sp + up * 6.6f + f.Right * .25f, f.Right, "VACANCY", .2f, Ink); halos.Add(sp + up * 7.6f, 3f, Neon, .3f);
+            var sp = f.P(W / 2f + 3f, 0, 4f); var spl = Mathf.Min(sp.y, Lowest(sp, .2f)) - .2f; mk.Prism(iron, new Vector3(sp.x, spl, sp.z), up, .14f, sp.y + 7.8f - spl, 6); ArtistBits.PostCollider(rootT, sp, 7.6f, .16f); mk.Box(Paint(Violet), sp + up * 7.6f, new Vector3(.4f, 2.8f, 4.6f), f.r * Quaternion.Euler(0, 90f, 0)); Sign(sp + up * 8.2f + f.Fwd * .0f + f.Right * .22f, f.Right, "HEARTBRE K", .4f, Neon); Sign(sp + up * 7.5f + f.Right * .22f, f.Right, "M TEL", .4f, Neon); mk.Box(neonM, sp + up * 6.6f + f.Right * .22f, new Vector3(.04f, .4f, 3f), f.r * Quaternion.Euler(0, 90f, 0)); Sign(sp + up * 6.6f + f.Right * .25f, f.Right, "VACANCY", .2f, Ink); halos.Add(sp + up * 7.6f, 3f, Neon, .3f);
             // the empty pool, a deck chair, an inflatable left in the deep end
-            var pl = f.P(0, 0, 8.4f); mk.Box(white, pl - up * .1f, new Vector3(10f, .3f, 5f), f.r); mk.Box(Paint(new Color(.56f, .76f, .82f)), pl - up * .05f, new Vector3(9f, .3f, 4f), f.r); BoxCol(rootT, pl + up * .1f, new Vector3(10f, .4f, 5f), f.r); mk.Prism(Paint(Rose), pl + up * .15f + f.Right * 2f, Vector3.up, .5f, .2f, 12); mk.Prism(Paint(new Color(.56f, .76f, .82f)), pl + up * .15f + f.Right * 2f, Vector3.up, .25f, .22f, 10);
-            foreach (var e in new[] { -4f, 4.6f }) { var dc = pl + f.Right * e + f.Fwd * 3.4f; mk.Box(stripeA, dc + up * .3f, new Vector3(.7f, .06f, 1.6f), f.r * Quaternion.Euler(-10f, 0, 0)); mk.Box(stripeB, dc + up * .7f - f.Fwd * .7f, new Vector3(.7f, .06f, .8f), f.r * Quaternion.Euler(-55f, 0, 0)); Interact.Seat(tlife.transform, dc + up * .4f, f.Fwd, "Lie back").seatHeight = .3f; }
-            Folk(f.P(-3f, 0, 4.4f), f.Fwd, Resident.Pose.Lean, new[] { "Room 7's free. Room 7's always free. Don't ask about room 7.", "The pool's been empty since the summer someone cried in it. Kidding. Mostly.", "Check-out's at noon. Nobody checks out." }, Local(Residents.Tool.Broom, true));
+            // the pool sits level at the highest ground under it, its rim reaching down to the lowest (it lay tilted into the slope)
+            var pf = new PlaceFrame(f.P(0, 0, 8.4f), f.Fwd); var (plo, phi) = Under(pf, 5f, 2.5f, 2.5f); var pl = new Vector3(pf.o.x, phi, pf.o.z); if (phi - plo > .05f) mk.Box(white, pl - up * ((phi - plo) / 2f + .25f), new Vector3(10f, phi - plo + .3f, 5f), f.r);
+            mk.Box(white, pl - up * .1f, new Vector3(10f, .3f, 5f), f.r); mk.Box(Paint(new Color(.56f, .76f, .82f)), pl - up * .05f, new Vector3(9f, .3f, 4f), f.r); BoxCol(rootT, pl + up * .1f, new Vector3(10f, .4f, 5f), f.r); mk.Prism(Paint(Rose), pl + up * .15f + f.Right * 2f, Vector3.up, .5f, .2f, 12); mk.Prism(Paint(new Color(.56f, .76f, .82f)), pl + up * .15f + f.Right * 2f, Vector3.up, .25f, .22f, 10);
+            foreach (var e in new[] { -4f, 4.6f }) { var dc = pl + f.Right * e + f.Fwd * 3.4f; dc = ctx.OnGround(dc.x, dc.z); mk.Box(stripeA, dc + up * .3f, new Vector3(.7f, .06f, 1.6f), f.r * Quaternion.Euler(-10f, 0, 0)); mk.Box(stripeB, dc + up * .7f - f.Fwd * .7f, new Vector3(.7f, .06f, .8f), f.r * Quaternion.Euler(-55f, 0, 0)); Interact.Seat(tlife.transform, dc + up * .4f, f.Fwd, "Lie back").seatHeight = .3f; }
+            Folk(ctx.OnGround(f.P(-3f, 0, 4.4f).x, f.P(-3f, 0, 4.4f).z), f.Fwd, Resident.Pose.Lean, new[] { "Room 7's free. Room 7's always free. Don't ask about room 7.", "The pool's been empty since the summer someone cried in it. Kidding. Mostly.", "Check-out's at noon. Nobody checks out." }, Local(Residents.Tool.Broom, true));
             ArtistBits.PointLight(rootT, f.P(0, 3f, 6f), new Color(1f, .5f, .7f), 18f, 1.6f); Mark(at, 15f);
             Shot(ctx, "the heartbreak motel", f.P(-6f, 2f, 16f), f.P(2f, 4f, 0));
         }
@@ -173,8 +184,9 @@ namespace EverythingWorld.World
             var i = 0; var built = 0; var rng = new System.Random(12);
             for (var d = 32f; d <= streetL - 8f; d += 11f, i++)
             {
-                var p = Wp(d, WalkW / 2f + 7f); if (!ctx.IsLand(p.x, p.z, 6f) || InFootprint(ctx, p.x, p.z, 6f) || LaneNear(p.x, p.z, 6f) || InNoGrass(p.x, p.z, 4.5f)) continue;
-                BeachHouse(ctx, mk, solid, new PlaceFrame(ctx.OnGround(p.x, p.z), -S), i, rng); built++;
+                var p = Wp(d, WalkW / 2f + 7f); if (!ctx.IsLand(p.x, p.z, 6f) || InFootprint(ctx, p.x, p.z, 6f) || LaneNear(p.x, p.z, 6f) || InNoGrass(p.x, p.z, 4.5f) || InCoaster(p, 6f)) continue;
+                var hf = new PlaceFrame(ctx.OnGround(p.x, p.z), -S); if (!HouseFits(hf)) continue;
+                BeachHouse(ctx, mk, solid, hf, i, rng); built++;
             }
             Debug.Log($"The Heartbreak Boardwalk: {built} beach houses on the Boardwalk");
         }
@@ -183,10 +195,12 @@ namespace EverythingWorld.World
         void BeachHouse(LandContext ctx, MeshKit mk, MeshKit solid, PlaceFrame f, int i, System.Random rng)
         {
             var up = Vector3.up; float W = 6.4f, Dp = 5.4f, H = 3.4f; var wall = Paint(Faded[i % Faded.Length]);
-            foreach (var (x, zz) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) mk.Prism(woodM, f.P(x * (W / 2f - .3f), -.4f, zz * (Dp / 2f - .3f)), up, .12f, 1.2f, 5);
+            // stilts all round, every one down to its own ground (on a slope the downhill ones are longer)
+            foreach (var (x, zz) in new[] { (-1f, -1f), (0f, -1f), (1f, -1f), (1f, 0f), (1f, 1f), (0f, 1f), (-1f, 1f), (-1f, 0f) }) { var sp = f.P(x * (W / 2f - .3f), 0, zz * (Dp / 2f - .3f)); var lo = Mathf.Min(f.o.y, Lowest(sp, .15f)) - .3f; mk.Prism(woodM, new Vector3(sp.x, lo, sp.z), up, .14f, f.o.y + .85f - lo, 5); }
+            foreach (var x in new[] { -1f, 1f }) { var sp = f.P(x * (W / 2f - .3f), 0, Dp / 2f + 1.7f); var lo = Mathf.Min(f.o.y, Lowest(sp, .12f)) - .3f; mk.Prism(woodM, new Vector3(sp.x, lo, sp.z), up, .1f, f.o.y + .8f - lo, 5); }   // the porch's own posts
             mk.Box(wall, f.P(0, .8f + H / 2f, 0), new Vector3(W, H, Dp), f.r); solid.Box(wall, f.P(0, .2f + H / 2f, 0), new Vector3(W, H + 1.2f, Dp), f.r); for (var k = 0; k < 8; k++) mk.Box(Paint(Faded[i % Faded.Length] * .9f), f.P(0, 1f + k * .42f, Dp / 2f + .01f), new Vector3(W, .04f, .02f), f.r);
             mk.GableRoof(Paint(new Color(.5f, .44f, .5f)), f.P(0, .8f + H, 0), new Vector3(Dp + .8f, 0, W + .8f), 1.6f, Quaternion.LookRotation(f.Right));
-            mk.Box(boards, f.P(0, .8f, Dp / 2f + .9f), new Vector3(W, .12f, 1.8f), f.r); solid.Box(boards, f.P(0, .4f, Dp / 2f + .9f), new Vector3(W, .8f, 1.8f), f.r); for (var k = 0; k < 2; k++) { mk.Box(boards, f.P(-W * .25f, .2f + k * .3f, Dp / 2f + 1.9f + (1 - k) * .3f), new Vector3(1.4f, .1f, .34f), f.r); }
+            mk.Box(boards, f.P(0, .8f, Dp / 2f + .9f), new Vector3(W, .12f, 1.8f), f.r); solid.Box(boards, f.P(0, .4f, Dp / 2f + .9f), new Vector3(W, .8f, 1.8f), f.r); for (var k = 0; k < 2; k++) { mk.Box(boards, f.P(-W * .25f, .2f + k * .3f, Dp / 2f + 1.9f + (1 - k) * .3f), new Vector3(1.4f, .1f, .34f), f.r); } { var st = f.P(-W * .25f, 0, Dp / 2f + 2.05f); var sl = Lowest(st, .7f); if (f.o.y - sl > .1f) mk.Box(boardsDark, f.P(-W * .25f, (sl - f.o.y) / 2f + .05f, Dp / 2f + 2.05f), new Vector3(1.3f, f.o.y - sl + .3f, .6f), f.r); }   // the steps reach down to the ground
             mk.Box(woodM, f.P(-W * .25f, 1.85f, Dp / 2f + .06f), new Vector3(.9f, 2f, .04f), f.r); mk.Box(i % 2 == 0 ? windowM : Paint(new Color(.32f, .34f, .44f)), f.P(W * .22f, 2.2f, Dp / 2f + .06f), new Vector3(1.4f, 1f, .04f), f.r); if (i % 2 == 0) halos.Add(f.P(W * .22f, 2.2f, Dp / 2f + .5f), 1.2f, new Color(1f, .78f, .5f), .3f);
             // the porch swing
             var sw = f.P(W * .22f, .9f, Dp / 2f + 1.2f); mk.Box(woodM, sw + up * .5f, new Vector3(1.6f, .06f, .5f), f.r); mk.Box(woodM, sw + up * .8f - f.Fwd * .24f, new Vector3(1.6f, .5f, .05f), f.r); foreach (var e in new[] { -.75f, .75f }) mk.Prism(dark, sw + up * .5f + f.Right * e, up, .01f, 1.8f, 3); Interact.Seat(tlife.transform, sw + up * .55f, f.Fwd, "Sit on the swing").seatHeight = .5f;
