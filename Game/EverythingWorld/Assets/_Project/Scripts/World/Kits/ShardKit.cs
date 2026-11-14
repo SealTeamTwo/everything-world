@@ -154,7 +154,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -162,17 +164,25 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+        }
+
+        /// The lowest ground under a rectangle (half width along side, half depth along face) round a point.
+        float LowUnder(Vector3 at, Vector3 face, float halfW, float halfD)
+        {
+            if (ctx0 == null) return at.y; var side = Vector3.Cross(Vector3.up, face); var lo = ctx0.Ground(at.x, at.z);
+            for (var i = -2; i <= 2; i++) for (var j = -2; j <= 2; j++) { var q = at + side * (halfW * i / 2f) + face * (halfD * j / 2f); lo = Mathf.Min(lo, ctx0.Ground(q.x, q.z)); }
+            return lo;
         }
 
         /// A slab of black rock to sit on.
         void Bench(Transform parent, MeshKit mk, Vector3 g, Vector3 face, float len = 2f)
         {
-            var up = Vector3.up; var rot = Quaternion.LookRotation(face); mk.Box(rock, g + up * .25f, new Vector3(len, .5f, .7f), rot * Quaternion.Euler(0, 0, 3f)); mk.Box(shardM, g + up * .51f + face * .36f, new Vector3(len * .8f, .02f, .02f), rot);
+            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var drop = g.y - LowUnder(g, face, len / 2f, .35f); if (drop > .02f) mk.Box(rockD, g - up * (drop / 2f - .02f), new Vector3(len - .04f, drop + .04f, .68f), rot); mk.Box(rock, g + up * .25f, new Vector3(len, .5f, .7f), rot * Quaternion.Euler(0, 0, 3f)); mk.Box(shardM, g + up * .51f + face * .36f, new Vector3(len * .8f, .02f, .02f), rot);
             BoxCol(parent, g + up * .25f, new Vector3(len, .5f, .7f), rot); var side = Vector3.Cross(up, face); Interact.Bench(tlife.transform, g + up * .5f - side * (len / 2f - .5f), g + up * .5f + side * (len / 2f - .5f), face);
         }
 
@@ -185,7 +195,7 @@ namespace EverythingWorld.World
         /// A great shard of crystal jutting from the ground at a lean.
         void Shard(Transform parent, MeshKit mk, Vector3 g, float h, float r, Vector3 lean, Material m, MeshKit solid)
         {
-            var dir = (Vector3.up + lean).normalized; mk.Prism(m, g - Vector3.up * .5f, dir, r, h, 5, .05f, (g.x * 7f) % 72f); mk.Prism(rockD, g - Vector3.up * .5f, dir, r * 1.1f, h * .25f, 5, .7f);
+            var dir = (Vector3.up + lean).normalized; var sink = .5f + (g.y - LowUnder(g, Vector3.forward, r * 1.1f, r * 1.1f)); mk.Prism(m, g - Vector3.up * sink, dir, r, h + sink - .5f, 5, .05f, (g.x * 7f) % 72f); mk.Prism(rockD, g - Vector3.up * sink, dir, r * 1.1f, h * .25f + sink - .5f, 5, .7f);
             ArtistBits.PostCollider(parent, g, Mathf.Min(h, 4f), r * .9f);
         }
 
@@ -242,10 +252,10 @@ namespace EverythingWorld.World
                 if (!Open(ctx, px, pz, 3f)) continue;
                 var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var rot = Quaternion.LookRotation(f); var side = Vector3.Cross(Vector3.up, f); var up = Vector3.up;
                 if (roll < .34f) { var n = 2 + (int)(s * 4f); for (var k = 0; k < n; k++) { var sp = p + Quaternion.Euler(0, k * 360f / n + s * 50f, 0) * f * (k == 0 ? 0f : 1.4f); Shard(ctx.Root, mk, ctx.OnGround(sp.x, sp.z), (k == 0 ? 6f : 2.5f) + s * 6f, (k == 0 ? .9f : .5f) + s * .4f, new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * .7f, (k + (int)(s * 3f)) % 2 == 0 ? shardM : shardM2, solid); } Mark(p, 3f); shards++; }
-                else if (roll < .52f) { var h = 8f + s * 10f; mk.Prism(rock, p - up * .5f, (up + side * (s - .5f) * .3f).normalized, 1.6f + s, h, 5, .15f, s * 60f); for (var k = 0; k < 3; k++) mk.Box(k % 2 == 0 ? shardM : shardM2, p + up * (1.5f + k * h * .22f) + f * (1.2f + s) * (1f - k * .2f), new Vector3(.12f, h * .2f, .05f), rot * Quaternion.Euler(0, 0, 20f - k * 25f)); ArtistBits.PostCollider(ctx.Root, p, 5f, 1.6f + s); Mark(p, 2.4f); spires++; }
+                else if (roll < .52f) { var h = 8f + s * 10f; var sink = .5f + (p.y - LowUnder(p, f, 1.6f + s, 1.6f + s)); mk.Prism(rock, p - up * sink, (up + side * (s - .5f) * .3f).normalized, 1.6f + s, h + sink - .5f, 5, .15f, s * 60f); for (var k = 0; k < 3; k++) mk.Box(k % 2 == 0 ? shardM : shardM2, p + up * (1.5f + k * h * .22f) + f * (1.2f + s) * (1f - k * .2f), new Vector3(.12f, h * .2f, .05f), rot * Quaternion.Euler(0, 0, 20f - k * 25f)); ArtistBits.PostCollider(ctx.Root, p, 5f, 1.6f + s); Mark(p, 2.4f); spires++; }
                 else if (roll < .62f) { for (var k = 0; k < 6; k++) { var a = p + side * (k - 2.5f) * 1.1f + f * Mathf.Sin(k * 1.7f) * .8f; var b = a + side * 1.1f + f * Mathf.Sin(k * 2.3f) * .6f; a = ctx.OnGround(a.x, a.z); b = ctx.OnGround(b.x, b.z); mk.Box(k % 2 == 0 ? shardM : shardM2, (a + b) / 2f + up * .03f, new Vector3(.1f, .02f, (b - a).magnitude), Quaternion.LookRotation(b - a)); } cracks++; }
-                else if (roll < .7f) { for (var k = 0; k < 3; k++) { var sp = p + up * (k * 1.1f + .55f); mk.Box(dark, sp, new Vector3(1.6f, 1f, 1f), rot); foreach (var e in new[] { -.4f, .4f }) mk.Prism(coneM, sp + side * e + f * .51f, f, .34f, .02f, 12); } BoxCol(ctx.Root, p + up * 1.65f, new Vector3(1.6f, 3.3f, 1f), rot); Mark(p, 1.4f); stacks++; }
-                else if (roll < .77f) { Bench(ctx.Root, mk, p, f); Lamp(ctx, mk, p - f * .8f + side * 1.6f, benches % 2 == 0); Mark(p, 2.2f); benches++; }
+                else if (roll < .7f) { var sdrop = p.y - LowUnder(p, f, .8f, .5f); if (sdrop > .02f) mk.Box(dark, p - up * (sdrop / 2f - .02f), new Vector3(1.58f, sdrop + .04f, .98f), rot); for (var k = 0; k < 3; k++) { var sp = p + up * (k * 1.1f + .55f); mk.Box(dark, sp, new Vector3(1.6f, 1f, 1f), rot); foreach (var e in new[] { -.4f, .4f }) mk.Prism(coneM, sp + side * e + f * .51f, f, .34f, .02f, 12); } BoxCol(ctx.Root, p + up * 1.65f, new Vector3(1.6f, 3.3f, 1f), rot); Mark(p, 1.4f); stacks++; }
+                else if (roll < .77f) { Bench(ctx.Root, mk, p, f); var lq = p - f * .8f + side * 1.6f; Lamp(ctx, mk, ctx.OnGround(lq.x, lq.z), benches % 2 == 0); Mark(p, 2.2f); benches++; }
             }
             Debug.Log($"The Dubstep Shards: the Rift {streetL:0} m, {shards} shard clusters, {spires} rock spires, {cracks} glowing cracks, {stacks} speaker stacks, {benches} rock seats");
         }
