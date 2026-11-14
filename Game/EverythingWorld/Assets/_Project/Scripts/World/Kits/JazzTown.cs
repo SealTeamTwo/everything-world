@@ -154,7 +154,7 @@ namespace EverythingWorld.World
             {
                 var pts = new List<Vector3>(); for (var d = a; ; d += 2f) { var dd = Mathf.Min(d, b); pts.Add(ctx.OnGround(c.x + U.x * dd, c.z + U.z * dd)); if (dd >= b) break; }
                 Strip(mk, pts, cobble, StreetW, .15f, ctx); foreach (var p in pts) Remember(p, 1);
-                for (var i = 3; i < pts.Count; i += 8, n++) { var e = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + R * e * (StreetW / 2f + .9f); if (InRiver(lp.x, lp.z, 2f)) continue; StreetLamp(ctx, mk, ctx.OnGround(lp.x, lp.z), -R * e, n % 2 == 0); }
+                for (var i = 3; i < pts.Count; i += 8, n++) { var e = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + R * e * (StreetW / 2f + .9f); if (InRiver(lp.x, lp.z, 2f)) continue; fixtures.Add(new Vector3(lp.x, .3f, lp.z)); StreetLamp(ctx, mk, ctx.OnGround(lp.x, lp.z), -R * e, n % 2 == 0); }
             }
             Shot(ctx, "up lamp street", ctx.OnGround(c.x + U.x * 24f, c.z + U.z * 24f) + Vector3.up * 2f, ctx.OnGround(c.x + U.x * 110f, c.z + U.z * 110f) + Vector3.up * 6f);
             var hi = ctx.OnGround(c.x + U.x * (top - 6f), c.z + U.z * (top - 6f)); Shot(ctx, "the town from the hill", hi + Vector3.up * 4f - R * 3f, ctx.OnGround(c.x, c.z) + Vector3.up * 4f);
@@ -190,12 +190,20 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; const float W = HouseW, D = HouseD; var st = 2 + (i * 7 + 1) % 3; var H = st * 3.1f + .5f; var wall = WorldMaterials.Solid(Walls[i % Walls.Length]); var rng = new System.Random(i * 17 + 3);
             var glass = WorldMaterials.Solid(new Color(.09f, .1f, .13f), .9f); var fz = D / 2f;
-            mk.Box(wall, f.P(0, (H - 3f) / 2f, 0), new Vector3(W, H + 3f, D), f.r); solid.Box(wall, f.P(0, (H - 3f) / 2f, 0), new Vector3(W, H + 3f, D), f.r); mk.Box(grey, f.P(0, H + .1f, 0), new Vector3(W + .3f, .24f, D + .3f), f.r);
+            // it stands with its front level with the highest ground along it (so no door is buried), and its walls go
+            // down past the lowest ground under it (on a slope the low side would otherwise hang in the air)
+            float lo = f.o.y, hi = f.o.y;
+            foreach (var (cx, cz) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f), (0f, 1f), (0f, -1f), (-1f, 0f), (1f, 0f) })
+            {
+                var q = f.P(cx * W / 2f, 0, cz * D / 2f); var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); if (cz > 0) hi = Mathf.Max(hi, h);
+            }
+            f = new PlaceFrame(new Vector3(f.o.x, hi, f.o.z), f.Fwd); var sink = Mathf.Max(3f, hi - lo + .8f);
+            mk.Box(wall, f.P(0, (H - sink) / 2f, 0), new Vector3(W, H + sink, D), f.r); solid.Box(wall, f.P(0, (H - sink) / 2f, 0), new Vector3(W, H + sink, D), f.r); mk.Box(grey, f.P(0, H + .1f, 0), new Vector3(W + .3f, .24f, D + .3f), f.r);
             if (i % 3 == 0) mk.Box(dark, f.P(0, H + .9f, 0), new Vector3(W - 1.2f, 1.4f, D - 1.2f), f.r); mk.Box(wall, f.P(W / 2f - 1.5f, H + 1.2f, -1.4f), new Vector3(.8f, 2f, .8f), f.r);
             if (i % 5 == 2) { var tk = f.P(-W / 2f + 2.4f, H + .2f, -1f); foreach (var (x, zz) in new[] { (-.7f, -.7f), (.7f, -.7f), (.7f, .7f), (-.7f, .7f) }) mk.Prism(iron, tk + f.Right * x + f.Fwd * zz, up, .05f, 1.5f, 4); mk.Prism(grey, tk + up * 1.5f, up, 1.1f, 1.7f, 10); mk.Cone(dark, tk + up * 3.2f, 1.25f, .7f, 10); }
             // the door (a lamp over it, a step), the ground-floor window behind its blind
             var dx = (i % 2 == 0 ? -1f : 1f) * (W / 2f - 1.9f);
-            mk.Box(dark, f.P(dx, 1.1f, fz + .02f), new Vector3(1.05f, 2.2f, .06f), f.r); mk.Box(grey, f.P(dx, 2.3f, fz + .03f), new Vector3(1.4f, .16f, .12f), f.r); mk.Box(stoneM, f.P(dx, .06f, fz + .4f), new Vector3(1.7f, .2f, .8f), f.r);
+            mk.Box(dark, f.P(dx, 1.1f, fz + .02f), new Vector3(1.05f, 2.2f, .06f), f.r); mk.Box(grey, f.P(dx, 2.3f, fz + .03f), new Vector3(1.4f, .16f, .12f), f.r); var sq = f.P(dx, 0, fz + .4f); var stepH = Mathf.Max(.2f, hi - ctx.Ground(sq.x, sq.z) + .3f); mk.Box(stoneM, f.P(dx, .16f - stepH / 2f, fz + .4f), new Vector3(1.7f, stepH, .8f), f.r);
             mk.Blob(lampM, f.P(dx, 2.62f, fz + .16f), new Vector3(.1f, .12f, .1f), rng, 0f); halos.Add(f.P(dx, 2.6f, fz + .5f), 1.2f, Brass, .5f);
             Blind(mk, f, -dx * .5f, 1.75f, fz, 3f, 1.7f, (i * 5) % 3 != 0, glass);
             for (var s = 1; s < st; s++) for (var k = 0; k < 3; k++) Blind(mk, f, -W / 2f + 2f + k * 3f, s * 3.1f + 1.8f, fz, 1.3f, 1.7f, (i * 3 + k * 5 + s * 7) % 4 == 0, glass);
@@ -210,7 +218,7 @@ namespace EverythingWorld.World
                 var sp = f.P(W / 2f - .5f, sy, fz + .5f); mk.Box(dark, sp, new Vector3(.7f, lines * .62f + .4f, .16f), f.r); mk.Box(iron, sp - f.Fwd * .28f, new Vector3(.06f, .06f, .5f), f.r); foreach (var e in new[] { -1f, 1f }) mk.Box(WorldMaterials.Glow(Silver, 1.1f), sp + f.Right * e * .32f + f.Fwd * .09f, new Vector3(.03f, lines * .62f + .2f, .02f), f.r);
                 ArtistBits.Label(rootT, w, sp + f.Fwd * .1f, f.Fwd, .44f, Silver, TextAnchor.MiddleCenter); halos.Add(sp + f.Fwd * .6f, 1.6f, Silver, .35f);
             }
-            if (i % 6 == 3) { Folk(f.P(-dx, .02f, fz + .7f), f.Fwd, Resident.Pose.Lean, new[] { "Waiting for somebody. Not saying who. Not sure they're coming.", "You hear that horn? Third floor. He's been on the same eight bars since autumn.", "Stand under the lamp if you want to be seen. Stand next to it if you don't." }); }
+            if (i % 6 == 3) { var fp = f.P(-dx, 0, fz + .7f); Folk(ctx.OnGround(fp.x, fp.z) + Vector3.up * .02f, f.Fwd, Resident.Pose.Lean, new[] { "Waiting for somebody. Not saying who. Not sure they're coming.", "You hear that horn? Third floor. He's been on the same eight bars since autumn.", "Stand under the lamp if you want to be seen. Stand next to it if you don't." }); }
             Mark(f.o, 6.6f);
         }
 

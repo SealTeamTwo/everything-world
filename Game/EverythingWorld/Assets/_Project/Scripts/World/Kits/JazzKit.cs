@@ -31,6 +31,8 @@ namespace EverythingWorld.World
         readonly Dictionary<string, Vector3> facing = new Dictionary<string, Vector3>();
         // x, radius, z
         readonly List<Vector3> noGrass = new List<Vector3>();
+        // x, radius, z: the lamps along Lamp Street and the lanes, which a lane must not start through
+        readonly List<Vector3> fixtures = new List<Vector3>();
         Vector2 heart2, U2, R2, stream2; float streamL, quayY, waterY, hillD;
 
         void MakeMaterials()
@@ -176,7 +178,7 @@ namespace EverythingWorld.World
         {
             MakeMaterials();
             halos = new GlowHalos();
-            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear();
+            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear(); fixtures.Clear();
             center = ctx.Plaza; U = new Vector3(U2.x, 0, U2.y); R = new Vector3(R2.x, 0, R2.y); streamC = new Vector3(stream2.x, quayY, stream2.y);
             life = new GameObject("Jazz life").AddComponent<JazzLife>();
             life.transform.SetParent(ctx.Root, false);
@@ -238,7 +240,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -246,11 +250,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A street lamp: a tall iron post, a hooked arm, a shade, and a pool of light on the wet ground under it.
@@ -364,35 +368,64 @@ namespace EverythingWorld.World
                 var dir = to - from; var total = dir.magnitude; if (total < 2f) return; dir /= total;
                 if (artist != null) facing[artist] = -dir;
                 var side = Vector3.Cross(Vector3.up, dir); var end = total - stopShort;
-                var pts = new List<Vector3>();
+                var pts = new List<Vector3>(); var fromSquare = new Vector2(join.x - center.x, join.z - center.z).magnitude < 21f;
                 for (var d = PathW / 2f + .1f; ; d += 1.5f)
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 14f) * Mathf.Min(2.5f, end * .04f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area (and the square, unless the lane starts on it) instead of
+                    // running across it: an arc on whichever side the straight line passes, so the lane never flips across
+                    void Round(Vector3 ov, float r)
+                    {
+                        var rel = q - ov; if (rel.sqrMagnitude >= r * r) return;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+                    }
+                    foreach (var o in ctx.Artists) if (o.name != artist) Round(new Vector3(o.x, 0, o.z), Foot(o) * 1.06f + 3f);
+                    if (!fromSquare) Round(new Vector3(center.x, 0, center.z), 20f + PathW / 2f);
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, cobble, PathW, .14f, ctx);
-                foreach (var p in pts) Remember(p, walk);
+                // a lamp now and then (never on another lane or the street)
                 for (var i = 8; i < pts.Count; i += 13)
                 {
                     var s = (i / 13) % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .8f);
                     var near = false; foreach (var o in lamps) if ((o - lp).sqrMagnitude < 17f * 17f) near = true;
-                    if (near || InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || InRiver(lp.x, lp.z, 1f)) continue;
-                    lamps.Add(lp); StreetLamp(ctx, mk, ctx.OnGround(lp.x, lp.z), -side * s, true);
+                    if (near || InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || InRiver(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, PathW / 2f + .4f)) continue;
+                    lamps.Add(lp); fixtures.Add(new Vector3(lp.x, .3f, lp.z)); StreetLamp(ctx, mk, ctx.OnGround(lp.x, lp.z), -side * s, true);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
+            }
+            // would a lane leaving p toward a run into a lamp along Lamp Street or another lane in its first stretch?
+            bool Blocked(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector2(a.x - p.x, a.z - p.z); var len = Mathf.Min(12f, d.magnitude); if (len < .1f) return false; d /= d.magnitude;
+                foreach (var f in fixtures)
+                {
+                    var rel = new Vector2(f.x - p.x, f.z - p.z); var t = Mathf.Clamp(Vector2.Dot(rel, d), 0f, len);
+                    if ((rel - d * t).sqrMagnitude < (f.y + PathW / 2f + .2f) * (f.y + PathW / 2f + .2f)) return true;
+                }
+                return false;
             }
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints)
+                    foreach (var (p0, w) in walkPoints)
                     {
-                        // a lane never crosses the river: it joins from its own side
-                        var sideA = Vector2.Dot(new Vector2(a.x, a.z) - stream2, U2) > 0f; var sideP = Vector2.Dot(new Vector2(p.x, p.z) - stream2, U2) > 0f; if (sideA != sideP) continue;
-                        var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; }
+                        // a lane never crosses the river: it joins from its own side, and never from the bridge's deck
+                        var sideA = Vector2.Dot(new Vector2(a.x, a.z) - stream2, U2) > 0f; var sideP = Vector2.Dot(new Vector2(p0.x, p0.z) - stream2, U2) > 0f; if (sideA != sideP) continue;
+                        if (InRiver(p0.x, p0.z, 1f)) continue;
+                        // never branch from inside another artist's area; from the square, start at the edge of its
+                        // cobbles (not across the middle, past the clock, the benches, the news stand or the car)
+                        if (w >= 10 && InFootprint(ctx, p0.x, p0.z, 2f)) continue;
+                        var p = p0;
+                        if (w == 0) { var o = new Vector3(a.x - center.x, 0, a.z - center.z); if (o.sqrMagnitude < 1f) continue; p = ctx.OnGround(center.x + o.normalized.x * 19.6f, center.z + o.normalized.z * 19.6f); }
+                        var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
+                        if (d < best && !Blocked(p, a)) { best = d; next = a; join = p; }
                     }
                 if (next == null) break;
                 todo.Remove(next);
@@ -412,14 +445,20 @@ namespace EverythingWorld.World
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 4f)) continue;
                 var p = ctx.OnGround(px, pz);
+                // how much the ground falls across a round of radius r round 'at'; steep spots are skipped without using
+                // up a different count of random numbers, so the rest of the layout stays put
+                float Fall(Vector3 at, float r) { float lo = at.y, hi = at.y; for (var k = 0; k < 8; k++) { var h = ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
                 if (roll < .2f) { BareTree(ctx, mk, p, .9f + s * .7f, rng); trees++; }
-                else if (roll < .3f) { Puddle(mk, p, 1.2f + s * 1.6f, rng); puddles++; }
+                else if (roll < .3f) { if (Fall(p, 1.2f + s * 1.6f) < .2f) { Puddle(mk, p, 1.2f + s * 1.6f, rng); puddles++; } else { rng.NextDouble(); rng.NextDouble(); } }
                 else if (roll < .335f)
                 {
-                    var f = FaceTo(p, NearestWalk(p)); StreetLamp(ctx, mk, p, f, lampsN % 3 == 0); Bench(mk, p + f * 1.3f + Vector3.Cross(Vector3.up, f) * .2f, f); lampsN++;
+                    // the bench stands on its own ground, and only where that is flat
+                    var f = FaceTo(p, NearestWalk(p)); var bq = p + f * 1.3f + Vector3.Cross(Vector3.up, f) * .2f; var bp = ctx.OnGround(bq.x, bq.z);
+                    if (Fall(bp, 1.2f) > .35f) continue;
+                    StreetLamp(ctx, mk, p, f, lampsN % 3 == 0); Bench(mk, bp, f); lampsN++;
                 }
-                else if (roll < .38f) { if (boxes < 5 && NearPath(px, pz, 26f)) { PhoneBox(ctx, mk, p, FaceTo(p, NearestWalk(p)), boxes); boxes++; } }
-                else if (roll < .42f) { if (cars < 4 && NearPath(px, pz, 24f)) { Sedan(ctx, mk, p, Quaternion.Euler(0, 90f, 0) * FaceTo(p, NearestWalk(p)), cars); cars++; } }
+                else if (roll < .38f) { if (boxes < 5 && NearPath(px, pz, 26f) && Fall(p, .8f) < .3f) { PhoneBox(ctx, mk, p, FaceTo(p, NearestWalk(p)), boxes); boxes++; } }
+                else if (roll < .42f) { if (cars < 4 && NearPath(px, pz, 24f) && Fall(p, 2.5f) < .45f) { Sedan(ctx, mk, p, Quaternion.Euler(0, 90f, 0) * FaceTo(p, NearestWalk(p)), cars); cars++; } }
             }
             Debug.Log($"The Old Jazz Quarter: river {streamL * 2f:0} m long, hill {hillD:0} m up, {trees} bare trees, {puddles} puddles, {lampsN} lamps with benches, {boxes} phone boxes, {cars} parked cars");
         }
