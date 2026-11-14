@@ -52,7 +52,7 @@ namespace EverythingWorld.World
         void Kernel(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = ctx.OnGround(center.x, center.z); var rot = Quaternion.LookRotation(D); var rng = new System.Random(3);
-            mk.Box(tile, c - up * .2f, new Vector3(34f, .5f, 34f), rot); for (var i = -8; i <= 8; i++) { mk.Box(gridM, c + up * .06f + S * i * 2f, new Vector3(.05f, .02f, 34f), rot); mk.Box(gridM, c + up * .06f + D * i * 2f, new Vector3(34f, .02f, .05f), rot); }
+            mk.Box(tile, c - up * 1.45f, new Vector3(34f, 3f, 34f), rot); for (var i = -8; i <= 8; i++) { mk.Box(gridM, c + up * .06f + S * i * 2f, new Vector3(.05f, .02f, 34f), rot); mk.Box(gridM, c + up * .06f + D * i * 2f, new Vector3(34f, .02f, .05f), rot); }
             for (var k = -2; k <= 2; k++) { Remember(c + D * 16f + S * k * 6f, 0); Remember(c + S * 16f + D * k * 6f, 0); Remember(c - S * 16f + D * k * 6f, 0); }
             // the monolith, pixel-sorted
             var mf = new PlaceFrame(c - D * 10f, D); mk.Box(dark, mf.P(0, 8f, 0), new Vector3(7f, 16f, 1.4f), mf.r); solid.Box(dark, mf.P(0, 8f, 0), new Vector3(7f, 16f, 1.4f), mf.r);
@@ -89,7 +89,7 @@ namespace EverythingWorld.World
         void Stack(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var sc = G(ctx, streetL + 14f, 0);
-            mk.Box(tile, sc - up * .2f, new Vector3(18f, .5f, 18f), Quaternion.LookRotation(D)); for (var i = -4; i <= 4; i++) { mk.Box(gridM, sc + up * .06f + S * i * 2f, new Vector3(.05f, .02f, 18f), Quaternion.LookRotation(D)); mk.Box(gridM, sc + up * .06f + D * i * 2f, new Vector3(18f, .02f, .05f), Quaternion.LookRotation(D)); } for (var k = 0; k < 8; k++) Remember(sc + Quaternion.Euler(0, k * 45f, 0) * D * 10f, 1);
+            mk.Box(tile, sc - up * 1.45f, new Vector3(18f, 3f, 18f), Quaternion.LookRotation(D)); for (var i = -4; i <= 4; i++) { mk.Box(gridM, sc + up * .06f + S * i * 2f, new Vector3(.05f, .02f, 18f), Quaternion.LookRotation(D)); mk.Box(gridM, sc + up * .06f + D * i * 2f, new Vector3(18f, .02f, .05f), Quaternion.LookRotation(D)); } for (var k = 0; k < 8; k++) Remember(sc + Quaternion.Euler(0, k * 45f, 0) * D * 10f, 1);
             mk.Box(dark, sc + up * 1.5f, new Vector3(4f, 3f, 4f), Quaternion.LookRotation(D)); solid.Box(dark, sc + up * 1.5f, new Vector3(4f, 3f, 4f), Quaternion.LookRotation(D));
             for (var k = 0; k < 14; k++) { var bm = new MeshKit(); var w = 3.6f - k * .14f; bm.Box(k % 4 == 3 ? blockM : k % 4 == 1 ? GlowM(Sort[k % Sort.Length], .8f) : tile, Vector3.zero, new Vector3(w, 1.9f, w), Quaternion.identity); WireCube(bm, gridM, Vector3.zero, w + .02f, Quaternion.identity); var bg = bm.BuildSingle("Stack block", ctx.Root, false); var home = sc + up * (4f + k * 2f); bg.transform.SetPositionAndRotation(home, Quaternion.Euler(0, k * 7f, 0)); life.stack.Add((bg.transform, home, k)); }
             halos.Add(sc + up * 18f, 10f, Cyan, .15f); ArtistBits.PointLight(ctx.Root, sc + up * 6f + D * -6f, Cyan, 26f, 1.8f);

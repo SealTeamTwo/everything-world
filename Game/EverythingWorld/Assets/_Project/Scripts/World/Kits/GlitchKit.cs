@@ -156,7 +156,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -164,11 +166,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A block bench to sit on.
@@ -214,6 +216,15 @@ namespace EverythingWorld.World
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd;
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area (or the Stack's floor) in the way instead of running across it
+                    // (an arc on whichever side the straight line passes, so the lane never flips across the area)
+                    foreach (var o in ctx.Artists)
+                    {
+                        if (o.name == artist) continue; var r = Foot(o) * 1.06f + 3f; var ov = new Vector3(o.x, 0, o.z); var rel = q - ov;
+                        if (rel.sqrMagnitude >= r * r) continue;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+                    }
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
@@ -222,7 +233,7 @@ namespace EverythingWorld.World
                 for (var i = 6; i < pts.Count; i += 10, n++)
                 {
                     var s = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .8f);
-                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue;
+                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, 1.8f)) continue;
                     Lamp(ctx, mk, ctx.OnGround(lp.x, lp.z), n % 3 == 0);
                 }
                 walk++;
@@ -232,7 +243,7 @@ namespace EverythingWorld.World
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p, w) in walkPoints) { if (w > 0 && InFootprint(ctx, p.x, p.z, 2f)) continue; var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
@@ -251,13 +262,17 @@ namespace EverythingWorld.World
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 3f)) continue;
                 var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var rot = Quaternion.LookRotation(f); var side = Vector3.Cross(Vector3.up, f); var up = Vector3.up;
-                if (roll < .16f) { var sz = 2f + s * 3f; var cc = p + up * (sz / 2f + .2f); var m = s > .5f ? gridM : GlowM(Cyan, 1.2f); WireCube(mk, m, cc, sz, rot); BoxCol(ctx.Root, cc, Vector3.one * (sz + .1f), rot); Mark(p, sz * .7f); wires++; }
+                // how much the ground falls across a footprint (half-width hw, half-depth hd) round p; steep spots are
+                // skipped after the random numbers are drawn, so the rest of the layout stays put
+                float Fall(float hw, float hd) { float lo = p.y, hi = p.y; foreach (var (a, b) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) { var q = p + side * a * hw + f * b * hd; var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
+                float Low(float hw, float hd) { var lo = p.y; foreach (var (a, b) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) { var q = p + side * a * hw + f * b * hd; lo = Mathf.Min(lo, ctx.Ground(q.x, q.z)); } return lo; }
+                if (roll < .16f) { var sz = 2f + s * 3f; if (NearPath(px, pz, sz * .75f + 3.5f) || Fall(sz / 2f, sz / 2f) > 1f) continue; var cc = p + up * (sz / 2f + .2f); var m = s > .5f ? gridM : GlowM(Cyan, 1.2f); WireCube(mk, m, cc, sz, rot); BoxCol(ctx.Root, cc, Vector3.one * (sz + .1f), rot); Mark(p, sz * .7f); wires++; }
                 else if (roll < .32f) { for (var k = 0; k < 3 + (int)(s * 4f); k++) Jumper(ctx.Root, p + up * (2f + k * .8f + s * 3f) + side * (k - 2f) * 1.2f, .4f + (k % 3) * .3f, k % 3 == 0 ? blockM : GlowM(Sort[k % Sort.Length], 1f)); jumps++; }
-                else if (roll < .44f) { var h = 2f + s * 4f; for (var k = 0; k < 10; k++) mk.Box(GlowM(Sort[(k + (int)(s * 9f)) % Sort.Length], .6f + (k % 3) * .3f), p + up * (h / 2f) + side * (k - 4.5f) * .3f + f * ((k * 7 % 3) - 1f) * .1f, new Vector3(.3f, h * (.5f + (k * 13 % 7) * .08f), .3f), rot); BoxCol(ctx.Root, p + up * h / 2f, new Vector3(3.2f, h, .6f), rot); Mark(p, 2f); corrupt++; }
-                else if (roll < .52f) { for (var i = -3; i <= 3; i++) { mk.Box(gridM, p + up * .06f + side * i * 1f, new Vector3(.04f, .02f, 6f), rot); mk.Box(gridM, p + up * .06f + f * i * 1f, new Vector3(6f, .02f, .04f), rot); } grids++; }
-                else if (roll < .57f) { var cp = p + up * .1f; var cm = s > .5f ? white : GlowM(White, 1f); var pts = new[] { new Vector3(0, 0, 0), new Vector3(0, 3.6f, 0), new Vector3(1f, 2.6f, 0), new Vector3(1.9f, 3.9f, 0), new Vector3(2.3f, 3.6f, 0), new Vector3(1.5f, 2.4f, 0), new Vector3(2.6f, 2.4f, 0) }; for (var k = 0; k < pts.Length - 1; k++) { var a = cp + rot * pts[k] * .8f + up * 0f; var b = cp + rot * pts[k + 1] * .8f; mk.Box(cm, (a + b) / 2f, new Vector3(.12f, .12f, (b - a).magnitude), Quaternion.LookRotation(b - a == Vector3.zero ? f : b - a)); } mk.Tri(cm, cp, cp + rot * new Vector3(0, 3.6f, 0) * .8f, cp + rot * new Vector3(2.6f, 2.4f, 0) * .8f, cp - f); mk.Tri(cm, cp, cp + rot * new Vector3(0, 3.6f, 0) * .8f, cp + rot * new Vector3(2.6f, 2.4f, 0) * .8f, cp + f); BoxCol(ctx.Root, cp + up * 1.4f, new Vector3(2f, 2.8f, .3f), rot); cursors++; }
+                else if (roll < .44f) { if (Fall(1.6f, .3f) > 1.2f) continue; var h = 2f + s * 4f; var sink = p.y - Low(1.6f, .3f); p.y -= sink; h += sink; for (var k = 0; k < 10; k++) mk.Box(GlowM(Sort[(k + (int)(s * 9f)) % Sort.Length], .6f + (k % 3) * .3f), p + up * (h / 2f) + side * (k - 4.5f) * .3f + f * ((k * 7 % 3) - 1f) * .1f, new Vector3(.3f, h * (.5f + (k * 13 % 7) * .08f), .3f), rot); BoxCol(ctx.Root, p + up * h / 2f, new Vector3(3.2f, h, .6f), rot); Mark(p, 2f); corrupt++; }
+                else if (roll < .52f) { if (Fall(3f, 3f) > .3f || NearPath(px, pz, 6.5f)) continue; for (var i = -3; i <= 3; i++) { mk.Box(gridM, p + up * .06f + side * i * 1f, new Vector3(.04f, .02f, 6f), rot); mk.Box(gridM, p + up * .06f + f * i * 1f, new Vector3(6f, .02f, .04f), rot); } grids++; }
+                else if (roll < .57f) { if (Fall(1.1f, .3f) > 1f) continue; var cp = new Vector3(p.x, Low(1.1f, .3f) + .05f, p.z); var cm = s > .5f ? white : GlowM(White, 1f); var pts = new[] { new Vector3(0, 0, 0), new Vector3(0, 3.6f, 0), new Vector3(1f, 2.6f, 0), new Vector3(1.9f, 3.9f, 0), new Vector3(2.3f, 3.6f, 0), new Vector3(1.5f, 2.4f, 0), new Vector3(2.6f, 2.4f, 0) }; for (var k = 0; k < pts.Length - 1; k++) { var a = cp + rot * pts[k] * .8f + up * 0f; var b = cp + rot * pts[k + 1] * .8f; mk.Box(cm, (a + b) / 2f, new Vector3(.12f, .12f, (b - a).magnitude), Quaternion.LookRotation(b - a == Vector3.zero ? f : b - a)); } mk.Tri(cm, cp, cp + rot * new Vector3(0, 3.6f, 0) * .8f, cp + rot * new Vector3(2.6f, 2.4f, 0) * .8f, cp - f); mk.Tri(cm, cp, cp + rot * new Vector3(0, 3.6f, 0) * .8f, cp + rot * new Vector3(2.6f, 2.4f, 0) * .8f, cp + f); BoxCol(ctx.Root, cp + up * 1.4f, new Vector3(2f, 2.8f, .3f), rot); cursors++; }
                 else if (roll < .7f) { mk.Box(Paint(new Color(.3f, .24f, .2f)), p + up * 1.2f, new Vector3(.4f, 2.4f, .4f), Quaternion.identity); var lc = p + up * 3.2f; for (var k = 0; k < 7; k++) { var o = new Vector3((k * 37 % 5) - 2f, (k * 13 % 3), (k * 23 % 5) - 2f) * .5f; mk.Box(k % 3 == 0 ? GlowM(Term, .9f) : Paint(new Color(.2f, .5f, .3f)), lc + o, Vector3.one * (.7f - (k % 3) * .15f), Quaternion.identity); } ArtistBits.PostCollider(ctx.Root, p, 2.4f, .3f); Mark(p, 1.6f); trees++; }
-                else if (roll < .76f) { Bench(ctx.Root, mk, p, f); Lamp(ctx, mk, p - f * .8f + side * 1.6f, benches % 2 == 0); Mark(p, 2.2f); benches++; }
+                else if (roll < .76f) { if (Fall(1.1f, .4f) > .25f) continue; Bench(ctx.Root, mk, p, f); Lamp(ctx, mk, p - f * .8f + side * 1.6f, benches % 2 == 0); Mark(p, 2.2f); benches++; }
             }
             Debug.Log($"The IDM Glitchlands: the Bus {streetL:0} m, {wires} wireframe cubes, {jumps} floating block groups, {corrupt} corrupted slabs, {grids} grid patches, {cursors} giant cursors, {trees} half-loaded trees, {benches} benches");
         }
