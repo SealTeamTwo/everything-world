@@ -32,6 +32,8 @@ namespace EverythingWorld.World
         readonly Dictionary<string, Vector3> facing = new Dictionary<string, Vector3>();
         // x, radius, z
         readonly List<Vector3> noGrass = new List<Vector3>();
+        // x, radius, z: the small fixtures along the Esplanade and round the lighthouse and the Belvedere that a lane must not start through
+        readonly List<Vector3> fixtures = new List<Vector3>();
         Vector2 heart2, light2, belv2, dir2, side2; float waterY, lightDist;
 
         void MakeMaterials()
@@ -148,7 +150,7 @@ namespace EverythingWorld.World
         {
             MakeMaterials();
             halos = new GlowHalos();
-            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear();
+            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear(); fixtures.Clear();
             center = ctx.Plaza; toLight = new Vector3(dir2.x, 0, dir2.y); sideways = new Vector3(side2.x, 0, side2.y);
             life = new GameObject("Disco life").AddComponent<DiscoLife>();
             life.transform.SetParent(ctx.Root, false);
@@ -203,7 +205,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var R = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -211,11 +215,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); R[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(R[i].x, R[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; R[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], R[i], R[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A white post with a silver globe: the town's lamp. (All the globes are one material.)
@@ -281,32 +285,67 @@ namespace EverythingWorld.World
                 if (artist != null) facing[artist] = -dir;
                 var side = Vector3.Cross(Vector3.up, dir); var end = total - stopShort;
                 var pts = new List<Vector3>();
+                // the big round places a lane goes round rather than across (the Floor, the lighthouse's plinth, the
+                // Belvedere), unless it starts inside one
+                var rounds = new List<Vector3> { new Vector3(center.x, 28.5f, center.z), new Vector3(light2.x, 13.6f, light2.y), new Vector3(belv2.x, 14.5f, belv2.y) };
+                rounds.RemoveAll(o => (new Vector2(join.x - o.x, join.z - o.z)).sqrMagnitude < (o.y + PathW / 2f + .5f) * (o.y + PathW / 2f + .5f));
                 for (var d = PathW / 2f + .1f; ; d += 1.5f)
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 14f) * Mathf.Min(2.5f, end * .04f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area (and the big places) instead of running across it: an arc on
+                    // whichever side the straight line passes, so the lane never flips across
+                    void Round(Vector3 ov, float r)
+                    {
+                        var rel = q - ov; if (rel.sqrMagnitude >= r * r) return;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+                    }
+                    foreach (var o in ctx.Artists) if (o.name != artist) Round(new Vector3(o.x, 0, o.z), Foot(o) * 1.06f + 3f);
+                    foreach (var o in rounds) Round(new Vector3(o.x, 0, o.z), o.y + PathW / 2f);
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, stone, PathW, .14f, ctx);
-                foreach (var p in pts) Remember(p, walk);
-                // gold studs down the middle, a globe lamp now and then
+                // gold studs down the middle, a globe lamp now and then (never on another lane)
                 for (var i = 1; i < pts.Count; i += 3) mk.Blob(tileM[(i / 3 + walk) % 4], pts[i] + Vector3.up * .17f, new Vector3(.12f, .04f, .12f), new System.Random(i), 0f);
                 for (var i = 8; i < pts.Count; i += 13)
                 {
                     var s = (i / 13) % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .8f);
                     var near = false; foreach (var o in lamps) if ((o - lp).sqrMagnitude < 17f * 17f) near = true;
-                    if (near || InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue;
+                    if (near || InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, PathW / 2f + .4f)) continue;
                     lamps.Add(lp); GlobeLamp(ctx, mk, ctx.OnGround(lp.x, lp.z), lamps.Count % 2 == 0);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
+            }
+            // would a lane leaving p toward a run into one of the Esplanade's or the lighthouse's fixtures (bollards,
+            // lamps, benches, the photo booth, the cart) in its first stretch?
+            bool Blocked(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector2(a.x - p.x, a.z - p.z); var len = Mathf.Min(12f, d.magnitude); if (len < .1f) return false; d /= d.magnitude;
+                foreach (var f in fixtures)
+                {
+                    var rel = new Vector2(f.x - p.x, f.z - p.z); var t = Mathf.Clamp(Vector2.Dot(rel, d), 0f, len);
+                    if ((rel - d * t).sqrMagnitude < (f.y + PathW / 2f + .2f) * (f.y + PathW / 2f + .2f)) return true;
+                }
+                return false;
             }
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p0, w) in walkPoints)
+                    {
+                        // never branch from inside another artist's area; from the Floor, start at the edge of its paving
+                        // (not across the dance floor, past the DJ booth or through the limousine)
+                        if (w >= 10 && InFootprint(ctx, p0.x, p0.z, 2f)) continue;
+                        var p = p0;
+                        if (w == 0) { var o = new Vector3(a.x - center.x, 0, a.z - center.z); if (o.sqrMagnitude < 1f) continue; p = ctx.OnGround(center.x + o.normalized.x * 27.5f, center.z + o.normalized.z * 27.5f); }
+                        var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
+                        if (d < best && !Blocked(p, a)) { best = d; next = a; join = p; }
+                    }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
@@ -326,11 +365,14 @@ namespace EverythingWorld.World
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 4f)) continue;
                 var p = ctx.OnGround(px, pz);
+                // how much the ground falls across a round of radius r round p; steep spots are skipped after the random
+                // numbers are drawn, so the rest of the layout stays put
+                float Fall(float r) { float lo = p.y, hi = p.y; for (var k = 0; k < 8; k++) { var h = ctx.Ground(px + Mathf.Cos(k * Mathf.PI / 4f) * r, pz + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
                 if (roll < .34f) { GlitterTree(ctx, mk, p, .9f + s * .5f, rng); trees++; }
-                else if (roll < .46f) { if (villas < 20 && Open(ctx, px, pz, 9f)) { Villa(ctx, mk, solid, p, FaceTo(p, NearestWalk(p)), villas, rng); villas++; } }
-                else if (roll < .52f) { if (balls < 14) { BallPlinth(ctx, mk, p, rng); balls++; } }
-                else if (roll < .57f) { if (tables < 16) { ParasolTable(ctx, mk, p, rng, tables); tables++; noGrass.Add(new Vector3(p.x, 2f, p.z)); } }
-                else if (roll < .61f) { WhiteBench(mk, p, FaceTo(p, NearestWalk(p))); benches++; }
+                else if (roll < .46f) { if (villas < 20 && Open(ctx, px, pz, 9f) && Fall(7f) < 3f) { Villa(ctx, mk, solid, p, FaceTo(p, NearestWalk(p)), villas, rng); villas++; } }
+                else if (roll < .52f) { if (balls < 14 && Fall(.8f) < .3f) { BallPlinth(ctx, mk, p, rng); balls++; } }
+                else if (roll < .57f) { if (tables < 16 && Fall(1.3f) < .3f) { ParasolTable(ctx, mk, p, rng, tables); tables++; noGrass.Add(new Vector3(p.x, 2f, p.z)); } }
+                else if (roll < .61f) { if (Fall(1.4f) > .35f) continue; WhiteBench(mk, p, FaceTo(p, NearestWalk(p))); benches++; }
             }
             Debug.Log($"Discotopia: lighthouse {lightDist:0} m out, {trees} glitter trees, {villas} villas, {balls} mirror balls, {tables} parasol tables, {benches} benches");
         }
@@ -340,16 +382,30 @@ namespace EverythingWorld.World
         /// A white villa: two stacked blocks with flat roofs, gold windows, an arched door, lights along the roof edge.
         void Villa(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 g, Vector3 face, int i, System.Random rng)
         {
-            var up = Vector3.up; var f = new PlaceFrame(g + up * .2f, face); float W = 7f + (i % 3), D = 6f, H = 3.2f;
+            var up = Vector3.up; float W = 7f + (i % 3), D = 6f, H = 3.2f;
+            // the villa and its terrace stand level at the highest ground under them, on a white footing down to the
+            // lowest (on a slope the low side would otherwise hang in the air)
+            var rot0 = Quaternion.LookRotation(face); float lo = g.y, hi = g.y;
+            foreach (var (cx, cz) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f), (0f, 1f), (0f, -1f), (-1f, 0f), (1f, 0f) })
+            {
+                var q = g + rot0 * new Vector3(cx * (W / 2f + .2f), 0, cz < 0 ? -D / 2f - .2f : cz * (D / 2f + 3.2f)); var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h);
+            }
+            g.y = hi; var f = new PlaceFrame(g + up * .2f, face);
+            if (hi - lo > .15f)
+            {
+                var depth = hi - lo + .6f;
+                mk.Box(stone, f.P(0, -.2f - depth / 2f, 0), new Vector3(W, depth, D), f.r); solid.Box(stone, f.P(0, -.2f - depth / 2f, 0), new Vector3(W, depth, D), f.r);
+                mk.Box(marble, f.P(1f, -.15f - depth / 2f, D / 2f + 1.6f), new Vector3(W - 2f, depth, 3f), f.r); solid.Box(marble, f.P(1f, -.15f - depth / 2f, D / 2f + 1.6f), new Vector3(W - 2f, depth, 3f), f.r);
+            }
             mk.Box(stone, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, D), f.r); solid.Box(stone, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, D), f.r); mk.Box(marble, f.P(0, H + .12f, 0), new Vector3(W + .3f, .24f, D + .3f), f.r);
             var up2 = i % 2 == 0; if (up2) { mk.Box(stone, f.P(-W / 4f, H + 1.5f, -D / 6f), new Vector3(W / 2f, 2.6f, D * .66f), f.r); mk.Box(marble, f.P(-W / 4f, H + 2.9f, -D / 6f), new Vector3(W / 2f + .3f, .2f, D * .66f + .3f), f.r); mk.Box(windowM, f.P(-W / 4f, H + 1.5f, D / 6f + .01f), new Vector3(1.4f, 1.3f, .05f), f.r); }
             mk.Box(dark, f.P(-W / 2f + 1.3f, 1.05f, D / 2f + .02f), new Vector3(1f, 2.1f, .05f), f.r); mk.Prism(dark, f.P(-W / 2f + 1.3f, 2.1f, D / 2f - .02f), f.Fwd, .5f, .06f, 8);
             for (var k = 0; k < 2; k++) { mk.Box(windowM, f.P(.2f + k * 2.2f, 1.7f, D / 2f + .02f), new Vector3(1.3f, 1.3f, .05f), f.r); halos.Add(f.P(.2f + k * 2.2f, 1.7f, D / 2f + .7f), 1.4f, Gold, .32f); }
             for (var k = 0; k < Mathf.RoundToInt(W / .7f); k++) mk.Blob(tileM[k % 4], f.P(-W / 2f + .3f + k * .7f, H + .3f, D / 2f + .1f), Vector3.one * .07f, rng, 0f);
             // a terrace in front with a bench facing out
-            mk.Box(marble, f.P(1f, -.05f, D / 2f + 1.6f), new Vector3(W - 2f, .3f, 3f), f.r); WhiteBench(mk, G0(f.P(1.6f, 0, D / 2f + 1.5f)) + up * .12f, f.Fwd, 2f);
+            mk.Box(marble, f.P(1f, -.05f, D / 2f + 1.6f), new Vector3(W - 2f, .3f, 3f), f.r); WhiteBench(mk, f.P(1.6f, .1f, D / 2f + 1.5f), f.Fwd, 2f);
             noGrass.Add(new Vector3(g.x, 6.5f, g.z));
-            if (i % 3 == 0) Folk(G0(f.P(-W / 2f + 1.3f, 0, D / 2f + 2f)) + up * .12f, f.Fwd, Resident.Pose.Wave, VillaTalk);
+            if (i % 3 == 0) Folk(f.P(-W / 2f + 1.3f, .1f, D / 2f + 2f), f.Fwd, Resident.Pose.Wave, VillaTalk);
         }
 
         Vector3 G0(Vector3 p) => ctx0.OnGround(p.x, p.z);

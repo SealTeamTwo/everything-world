@@ -37,6 +37,7 @@ namespace EverythingWorld.World
             => Residents.Make(tlife.transform, feet, face, look ?? Glam(), pose, prng, lines ?? TownTalk, route, seatH);
         void Col(Vector3 c, Vector3 size, Quaternion rot) => BoxCol(rootT, c, size, rot);
         void Mark(Vector3 at, float r) => noGrass.Add(new Vector3(at.x, r, at.z));
+        void Fixture(Vector3 at, float r) => fixtures.Add(new Vector3(at.x, r, at.z));
         void Sign(Vector3 at, Vector3 face, string text, float size, Color c) => ArtistBits.Label(rootT, text, at, face, size, c, TextAnchor.MiddleCenter);
 
         Carryable Thing(MeshKit m, string name, string label, Vector3 at, Quaternion rot, Vector3 size, float mass, bool still = true)
@@ -120,24 +121,24 @@ namespace EverythingWorld.World
             for (var i = 0; i < pts.Count; i++)
             {
                 if (i % 2 == 0) mk.Box(tileM[(i / 2) % 4], pts[i] + up * .19f, new Vector3(.7f, .03f, .7f), Quaternion.LookRotation(toLight) * Quaternion.Euler(0, 45f, 0));
-                if (i % 4 == 2) foreach (var e in new[] { -1f, 1f }) { var bp = pts[i] + sideways * e * 3.4f; bp.y = ctx.Ground(bp.x, bp.z); mk.Prism(marble, bp - up * .1f, up, .14f, .8f, 8); mk.Blob(goldM, bp + up * .78f, Vector3.one * .16f, prng, 0f); ArtistBits.PostCollider(ctx.Root, bp, .8f, .16f); }
+                if (i % 4 == 2) foreach (var e in new[] { -1f, 1f }) { var bp = pts[i] + sideways * e * 3.4f; bp.y = ctx.Ground(bp.x, bp.z); mk.Prism(marble, bp - up * .1f, up, .14f, .8f, 8); mk.Blob(goldM, bp + up * .78f, Vector3.one * .16f, prng, 0f); ArtistBits.PostCollider(ctx.Root, bp, .8f, .16f); Fixture(bp, .2f); }
             }
             Vector3? prevL = null, prevR = null; var n = 0;
             for (var d = 36f; d < end - 6f; d += 20f, n++) foreach (var e in new[] { -1f, 1f })
             {
-                var lp = ctx.OnGround(c.x + toLight.x * d + sideways.x * e * 4.2f, c.z + toLight.z * d + sideways.z * e * 4.2f); GlobeLamp(ctx, mk, lp, (n + (e > 0 ? 0 : 1)) % 2 == 0); var top = lp + up * 4f;
+                var lp = ctx.OnGround(c.x + toLight.x * d + sideways.x * e * 4.2f, c.z + toLight.z * d + sideways.z * e * 4.2f); GlobeLamp(ctx, mk, lp, (n + (e > 0 ? 0 : 1)) % 2 == 0); Fixture(lp, .3f); var top = lp + up * 4f;
                 if (e < 0) { if (prevL.HasValue) LightString(mk, prevL.Value, top, n); prevL = top; } else { if (prevR.HasValue) LightString(mk, prevR.Value, top, n + 2); prevR = top; }
             }
-            n = 0; for (var d = 46f; d < end - 10f; d += 40f, n++) { var e = n % 2 == 0 ? 1f : -1f; WhiteBench(mk, ctx.OnGround(c.x + toLight.x * d + sideways.x * e * 5f, c.z + toLight.z * d + sideways.z * e * 5f), -sideways * e); }
+            n = 0; for (var d = 46f; d < end - 10f; d += 40f, n++) { var e = n % 2 == 0 ? 1f : -1f; var bq = ctx.OnGround(c.x + toLight.x * d + sideways.x * e * 5f, c.z + toLight.z * d + sideways.z * e * 5f); WhiteBench(mk, bq, -sideways * e); Fixture(bq, 1.2f); }
             // the photo booth, a third of the way along
             var pb = new PlaceFrame(ctx.OnGround(c.x + toLight.x * 66f + sideways.x * 6.4f, c.z + toLight.z * 66f + sideways.z * 6.4f), -sideways);
-            mk.Box(marble, pb.P(0, 1.2f, -.4f), new Vector3(1.6f, 2.4f, 1.2f), pb.r); mk.Box(goldM, pb.P(0, 2.46f, -.4f), new Vector3(1.8f, .1f, 1.4f), pb.r); mk.Box(navy, pb.P(0, 1.1f, .21f), new Vector3(.9f, 1.8f, .04f), pb.r); Col(pb.P(0, 1.2f, -.4f), new Vector3(1.6f, 2.4f, 1.2f), pb.r); Sign(pb.P(0, 2.2f, .22f), pb.Fwd, "PHOTOS", .16f, Ink);
+            mk.Box(marble, pb.P(0, 1.2f, -.4f), new Vector3(1.6f, 2.4f, 1.2f), pb.r); mk.Box(goldM, pb.P(0, 2.46f, -.4f), new Vector3(1.8f, .1f, 1.4f), pb.r); mk.Box(navy, pb.P(0, 1.1f, .21f), new Vector3(.9f, 1.8f, .04f), pb.r); Col(pb.P(0, 1.2f, -.4f), new Vector3(1.6f, 2.4f, 1.2f), pb.r); Sign(pb.P(0, 2.2f, .22f), pb.Fwd, "PHOTOS", .16f, Ink); Fixture(pb.P(0, 0, -.2f), 1.4f);
             var flashM = new Material(GlowM(Pale, .4f)) { name = "Photo flash" }; mk.Box(flashM, pb.P(0, 2.02f, .21f), new Vector3(.9f, .12f, .03f), pb.r); tlife.flashM = flashM; tlife.flashLight = ArtistBits.PointLight(ctx.Root, pb.P(0, 1.8f, 1.2f), Color.white, 14f, 0f);
             var pgo = new GameObject("Photo booth"); pgo.transform.SetParent(tlife.transform, false); pgo.transform.position = pb.P(0, 1.2f, .6f); string[] snap = { "FLASH. Four pictures: surprised, laughing, blinking, perfect.", "FLASH. You look like an album cover.", "FLASH. Someone photobombs you. They look great too." }; var sn = 0;
             Interact.Toy(pgo, Toy.Kind.Custom, "Strike a pose", new Vector3(1.4f, 2f, 1.2f)).onUse = _ => { tlife.flash = Time.time; Say(tlife.transform, pb.P(0, 3.1f, 0), snap[sn++ % snap.Length], 4f); };
             // the ice-cream cart, two thirds of the way along
             var ic = new PlaceFrame(ctx.OnGround(c.x + toLight.x * Mathf.Min(end - 30f, 150f) - sideways.x * 6.4f, c.z + toLight.z * Mathf.Min(end - 30f, 150f) - sideways.z * 6.4f), sideways);
-            mk.Box(marble, ic.P(0, .7f, 0), new Vector3(1.8f, .9f, 1f), ic.r); foreach (var e in new[] { -1f, 1f }) mk.Prism(goldM, ic.P(e * .95f, .4f, 0) - ic.Right * e * .04f, ic.Right * e, .4f, .08f, 12); mk.Prism(chrome, ic.P(0, 1.15f, 0), up, .03f, 1.5f, 5); for (var k = 0; k < 8; k++) mk.Prism(k % 2 == 0 ? goldM : marble, ic.P(0, 2.5f, 0), Quaternion.Euler(0, k * 45f, 0) * new Vector3(.55f, -.28f, 0), .5f, 1.1f, 3, .05f); Col(ic.P(0, .7f, 0), new Vector3(1.9f, 1.4f, 1.1f), ic.r);
+            mk.Box(marble, ic.P(0, .7f, 0), new Vector3(1.8f, .9f, 1f), ic.r); foreach (var e in new[] { -1f, 1f }) mk.Prism(goldM, ic.P(e * .95f, .4f, 0) - ic.Right * e * .04f, ic.Right * e, .4f, .08f, 12); mk.Prism(chrome, ic.P(0, 1.15f, 0), up, .03f, 1.5f, 5); for (var k = 0; k < 8; k++) mk.Prism(k % 2 == 0 ? goldM : marble, ic.P(0, 2.5f, 0), Quaternion.Euler(0, k * 45f, 0) * new Vector3(.55f, -.28f, 0), .5f, 1.1f, 3, .05f); Col(ic.P(0, .7f, 0), new Vector3(1.9f, 1.4f, 1.1f), ic.r); Fixture(ic.P(0, 0, -.3f), 1.6f);
             var vendor = Glam(Residents.Tool.None, true); Folk(ic.P(0, 0, -.9f), ic.Fwd, Resident.Pose.Stand, new[] { "Vanilla, lemon or glitter. The glitter's just vanilla, but it believes in itself.", "Eat it before the light gets to it. The light makes everything melt a little.", "Two scoops for the dancers. You're a dancer. I can tell by the shoes." }, vendor);
             Color[] scoops = { new Color(1f, .97f, .85f), new Color(1f, .9f, .4f), new Color(.95f, .6f, .75f) }; string[] flav = { "a vanilla cone", "a lemon cone", "a glitter cone" };
             for (var k = 0; k < 3; k++) { var cm = new MeshKit(); cm.Cone(WorldMaterials.Solid(new Color(.85f, .65f, .35f)), new Vector3(0, .16f, 0), .05f, -.16f, 8); cm.Blob(WorldMaterials.Glow(scoops[k], .3f), new Vector3(0, .2f, 0), Vector3.one * .065f, prng, .1f); Thing(cm, "Ice cream", flav[k], ic.P(-.5f + k * .5f, 1.16f, .2f), ic.r, new Vector3(.14f, .28f, .14f), .12f); }
@@ -170,9 +171,9 @@ namespace EverythingWorld.World
             var tgo = new GameObject("Telescope"); tgo.transform.SetParent(tlife.transform, false); tgo.transform.position = ts + up * 1.3f; string[] look = { "A liner out at sea with every porthole lit. They've strung lights from the funnels. They're dancing too.", "The moon's reflection, cut into a thousand pieces by the mirror ball's light.", "On the far shore: a jungle, glowing purple. Something large and round is parked in it." }; var ln = 0;
             Interact.Toy(tgo, Toy.Kind.Custom, "Look through the telescope", new Vector3(1f, 1f, 1.4f)).onUse = _ => Say(tlife.transform, ts + up * 2.6f, look[ln++ % look.Length], 5.5f);
             var keeper = Glam(); keeper.top = new Color(.2f, .22f, .4f); keeper.hat = Residents.Hat.Cap; keeper.hatColor = Pale; Folk(f.P(-2.4f, .7f, 3.3f), f.Fwd, Resident.Pose.Lean, new[] { "I polish her every day. Four thousand little mirrors. I've named most of them.", "A normal lighthouse says 'keep away'. Ours says 'come on in, the music's lovely'.", "Throw the lever if you want. Everybody should, once." }, keeper);
-            for (var k = 0; k < 3; k++) { var d = Quaternion.Euler(0, k * 70f + 110f, 0) * f.Fwd; WhiteBench(mk, g + d * 10f + up * .13f, d); }
-            for (var k = 0; k < 6; k++) { var d = Quaternion.Euler(0, k * 60f + 30f, 0) * f.Fwd; GlobeLamp(ctx, mk, g + d * 12f + up * .13f, k % 2 == 0); }
-            Mark(g, 14f); Remember(g + f.Fwd * 11f, 1);
+            for (var k = 0; k < 3; k++) { var d = Quaternion.Euler(0, k * 70f + 110f, 0) * f.Fwd; WhiteBench(mk, g + d * 10f + up * .13f, d); Fixture(g + d * 10f, 1.2f); }
+            for (var k = 0; k < 6; k++) { var d = Quaternion.Euler(0, k * 60f + 30f, 0) * f.Fwd; GlobeLamp(ctx, mk, g + d * 12f + up * .13f, k % 2 == 0); Fixture(g + d * 12f, .3f); }
+            Mark(g, 14f); Remember(ctx.OnGround(g.x + f.Fwd.x * 14f, g.z + f.Fwd.z * 14f), 1);
             Shot(ctx, "the lighthouse", g - toLight * 26f + sideways * 9f + up * 3f, g + up * 16f);
         }
 
@@ -209,8 +210,8 @@ namespace EverythingWorld.World
             var waiter = Glam(Residents.Tool.Mug); waiter.top = new Color(.95f, .95f, 1f); waiter.bottom = new Color(.12f, .12f, .2f); waiter.hat = Residents.Hat.None; Folk(to.P(2.2f, 0, 2.6f), -to.Right, Resident.Pose.Stand, new[] { "Champagne? It's included. Everything's included. It's that sort of night.", "The tower's been running since the seventies. We top it up between songs.", "Table for one, table for two or the whole terrace: all the same price, which is nothing." }, waiter);
             Folk(to.P(-5f, 0, D / 2f - .9f), to.Fwd, Resident.Pose.Lean, new[] { "I come up here to watch the lighthouse turn. Then I go down and turn a bit myself.", "Listen: you can hear the strings from here before you can hear the drums." });
             // glitter trees either side of the stair, a sign, the path from the Floor
-            var trng = new System.Random(5); foreach (var e in new[] { -1f, 1f }) GlitterTree(ctx, mk, G0(f.P(e * (sw / 2f + 3f), 0, D / 2f + 3.4f)), 1.1f, trng);
-            WhiteSign(mk, G0(f.P(sw / 2f + 6.5f, 0, D / 2f + steps * run + 2f)) + up * 2.2f, face, 4.2f, 1.3f, "THE BELVEDERE", .34f, "champagne  ·  the view"); foreach (var e in new[] { -1.6f, 1.6f }) mk.Prism(marble, G0(f.P(sw / 2f + 6.5f + e, 0, D / 2f + steps * run + 2f)) - up * .2f, up, .08f, 2f, 5);
+            var trng = new System.Random(5); foreach (var e in new[] { -1f, 1f }) { GlitterTree(ctx, mk, G0(f.P(e * (sw / 2f + 3f), 0, D / 2f + 3.4f)), 1.1f, trng); Fixture(f.P(e * (sw / 2f + 3f), 0, D / 2f + 3.4f), 2.2f); }
+            Fixture(f.P(sw / 2f + 6.5f, 0, D / 2f + steps * run + 2f), 2.3f); WhiteSign(mk, G0(f.P(sw / 2f + 6.5f, 0, D / 2f + steps * run + 2f)) + up * 2.2f, face, 4.2f, 1.3f, "THE BELVEDERE", .34f, "champagne  ·  the view"); foreach (var e in new[] { -1.6f, 1.6f }) mk.Prism(marble, G0(f.P(sw / 2f + 6.5f + e, 0, D / 2f + steps * run + 2f)) - up * .2f, up, .08f, 2f, 5);
             var way = PlaceTools.Smooth(ctx, new[] { new Vector2(center.x, center.z) + new Vector2(-face.x, -face.z) * 28f, new Vector2(g.x, g.z) + new Vector2(face.x, face.z) * (D / 2f + steps * run + .5f) }, false, 2f, 1f);
             if (way.Count > 1) { Strip(mk, way, marble, 4.2f, .15f, ctx); foreach (var p in way) Remember(p, 2); }
             Mark(g, 19f);
