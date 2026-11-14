@@ -25,6 +25,11 @@ namespace EverythingWorld.World
         readonly Dictionary<string, Vector3> facing = new Dictionary<string, Vector3>();
         // x, radius, z
         readonly List<Vector3> noGrass = new List<Vector3>();
+        // x, radius, z: lamps, benches and the swing tree by the Falls and the River Walk, which a lane must not start through
+        readonly List<Vector3> fixtures = new List<Vector3>();
+        // x, radius, z: the pool, the rock face, the weir and the mill, which a lane bends round
+        readonly List<Vector3> keepOut = new List<Vector3>();
+        static float RiverS(float d) => 7.4f + Mathf.Sin(d * .06f) * 1.6f;
         Vector2 heart2, D2 = new Vector2(0, -1), S2 = new Vector2(1, 0); float plazaY, waterY, streetL;
 
         void MakeMaterials()
@@ -95,7 +100,7 @@ namespace EverythingWorld.World
         {
             MakeMaterials();
             halos = new GlowHalos();
-            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear();
+            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear(); fixtures.Clear(); keepOut.Clear();
             center = ctx.Plaza; D = new Vector3(D2.x, 0, D2.y); S = new Vector3(S2.x, 0, S2.y);
             life = new GameObject("Rapids life").AddComponent<RapidsLife>();
             life.transform.SetParent(ctx.Root, false);
@@ -150,7 +155,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -158,11 +165,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A picnic bench of planks.
@@ -179,14 +186,15 @@ namespace EverythingWorld.World
         }
 
         /// A rock pool: a ring of mossy boulders round a small glowing pool, a spring bubbling up in it (spray).
-        void Cascade(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 g, Vector3 face, float s, System.Random rng)
+        void Cascade(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 g, Vector3 face, float s, System.Random rng, float low)
         {
             var up = Vector3.up; var r = 1.3f * s; var side = Vector3.Cross(up, face);
-            mk.Prism(stoneD, g - up * .15f, up, r, .4f, 16); mk.Prism(waterM, g + up * .26f, up, r * .82f, .02f, 16); mk.Prism(foamM, g + up * .285f, up, r * .18f, .01f, 10);
+            // the basin's stone wall reaches down to the lowest ground round it (on a slope it stands up out of the hill)
+            var b0 = Mathf.Min(g.y - .15f, low - .2f); mk.Prism(stoneD, new Vector3(g.x, b0, g.z), up, r, g.y + .25f - b0, 16); mk.Prism(waterM, g + up * .26f, up, r * .82f, .02f, 16); mk.Prism(foamM, g + up * .285f, up, r * .18f, .01f, 10);
             for (var k = 0; k < 8; k++)
             {
                 var a = k * 45f + (float)rng.NextDouble() * 20f; var d = Quaternion.Euler(0, a, 0) * face; var big = k == 0 || k == 3 ? 1.6f : 1f;
-                var bp = g + d * (r + .15f) + up * (.15f * big); var sz = new Vector3(.45f, .35f, .4f) * s * big * (.8f + (float)rng.NextDouble() * .4f);
+                var bp = g + d * (r + .15f) + up * (.15f * big); var bg0 = ctx.Ground(bp.x, bp.z); if (bg0 < g.y - .3f) bp.y = bg0 + .15f * big + .1f; var sz = new Vector3(.45f, .35f, .4f) * s * big * (.8f + (float)rng.NextDouble() * .4f);
                 mk.Blob(k % 3 == 0 ? stoneD : stone, bp, sz, rng, .3f);
                 if (k % 2 == 0) mk.Blob(leafM, bp + up * sz.y * .8f, new Vector3(sz.x * .8f, sz.y * .25f, sz.z * .8f), rng, .3f);   // moss
                 if (big > 1f) ArtistBits.PostCollider(ctx.Root, bp, sz.y * 2f, sz.x);
@@ -206,29 +214,115 @@ namespace EverythingWorld.World
                 if (artist != null) facing[artist] = -dir;
                 var side = Vector3.Cross(Vector3.up, dir); var end = total - stopShort; if (end < PathW) return;
                 var pts = new List<Vector3>();
+                var fromFalls = new Vector2(join.x - center.x, join.z - center.z).magnitude < 12f;
                 for (var d = PathW / 2f + .1f; ; d += 1.5f)
                 {
-                    var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 14f) * Mathf.Min(1.6f, end * .04f);
+                    // the wiggle fades out at both ends, so a lane leaves straight and comes in straight
+                    var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 14f) * Mathf.Min(1.6f, end * .04f) * Ease(0f, 8f, dd) * Ease(0f, 8f, end - dd);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    // bend round any other artist's area, the Falls terrace (unless the lane starts there), the pool, the
+                    // rock face, the weir and the mill instead of running across them: an arc on the side the line passes
+                    void Round(Vector3 ov, float r)
+                    {
+                        var rel = q - ov; rel.y = 0; if (rel.sqrMagnitude >= r * r) return;
+                        var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(from - ov, side) >= 0f ? 1f : -1f;
+                        q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along)); q.y = 0;
+                    }
+                    foreach (var o in ctx.Artists) if (o.name != artist) Round(new Vector3(o.x, 0, o.z), Foot(o) * 1.06f + 3f);
+                    if (!fromFalls) Round(new Vector3(center.x, 0, center.z), 11f + PathW / 2f);
+                    foreach (var k in keepOut) Round(new Vector3(k.x, 0, k.z), k.y + PathW / 2f);
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, path, PathW, .1f, ctx);
-                foreach (var p in pts) Remember(p, walk);
                 for (var i = 6; i < pts.Count; i += 10, n++)
                 {
                     var s = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .8f);
-                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue;
+                    // never on another lane, the River Walk or the terrace
+                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, PathW / 2f + .4f)) continue;
                     Lamp(ctx, mk, ctx.OnGround(lp.x, lp.z), n % 3 == 0);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
+            }
+            // would a lane leaving p toward a run into a lamp, a bench or the swing tree in its first stretch?
+            bool Blocked(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector2(a.x - p.x, a.z - p.z); var len = Mathf.Min(12f, d.magnitude); if (len < .1f) return false; d /= d.magnitude;
+                foreach (var f in fixtures)
+                {
+                    var rel = new Vector2(f.x - p.x, f.z - p.z); var t = Mathf.Clamp(Vector2.Dot(rel, d), 0f, len);
+                    if ((rel - d * t).sqrMagnitude < (f.y + PathW / 2f + .2f) * (f.y + PathW / 2f + .2f)) return true;
+                }
+                return false;
+            }
+            // would a lane leaving p toward a wade across the river? (the river is crossed only on its footbridges)
+            bool Wades(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector3(a.x - p.x, 0, a.z - p.z); var len = d.magnitude - Foot(a); if (len < .1f) return false; d /= d.magnitude;
+                for (var t = PathW / 2f + .1f; t <= len; t += 1f)
+                {
+                    var q = p + d * t - center; q.y = 0; float qd = Vector3.Dot(q, D), qs = Vector3.Dot(q, S);
+                    if (qd >= 11f && qd <= streetL + 14f && Mathf.Abs(qs - RiverS(qd)) < 3.5f + PathW / 2f) return true;
+                }
+                return false;
+            }
+            // from the Falls a lane leaves from the terrace's rim, heading outward: never across the terrace, from the mouth
+            // of the River Walk, or from the back by the pool and the rock face
+            var gaps = new List<Vector3>();
+            for (var k = 0; k < 20; k++)
+            {
+                var gd = Quaternion.Euler(0, k * 18f + 9f, 0) * D; var ang = Vector3.Angle(gd, D); if (ang < 25f || ang > 105f) continue;
+                gaps.Add(gd);
             }
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
+                // a start whose straight line to the artist clears every other artist's area is preferred; otherwise the
+                // nearest start that doesn't wade the river; failing all that, the nearest start at all
+                IslandWorldData.Artist nextC = null; Vector3 joinC = default; var bestC = float.MaxValue;
+                IslandWorldData.Artist nextA = null; Vector3 joinA = default; var bestA = float.MaxValue;
+                bool Clear(Vector3 p, IslandWorldData.Artist a)
+                {
+                    var d = new Vector2(a.x - p.x, a.z - p.z); var len = d.magnitude; if (len < .1f) return true; d /= len;
+                    foreach (var o in ctx.Artists)
+                    {
+                        if (o == a) continue; var r = Foot(o) * 1.06f + 3f + PathW / 2f;
+                        var rel = new Vector2(o.x - p.x, o.z - p.z); var t = Mathf.Clamp(Vector2.Dot(rel, d), 0f, len);
+                        if ((rel - d * t).sqrMagnitude < r * r) return false;
+                    }
+                    return true;
+                }
+                void Consider(IslandWorldData.Artist a, Vector3 p)
+                {
+                    var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
+                    if (d < bestA) { bestA = d; nextA = a; joinA = p; }
+                    if (Blocked(p, a) || Wades(p, a)) return;
+                    if (d < best) { best = d; next = a; join = p; }
+                    if (d < bestC && Clear(p, a)) { bestC = d; nextC = a; joinC = p; }
+                }
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                {
+                    foreach (var (p, w) in walkPoints)
+                    {
+                        // never from the terrace's own points or the stretch of the walk on the terrace, or from inside
+                        // another artist's area
+                        if (w == 0) continue;
+                        if (new Vector2(p.x - center.x, p.z - center.z).magnitude < 12f) continue;
+                        if (w >= 10 && InFootprint(ctx, p.x, p.z, 2f)) continue;
+                        Consider(a, p);
+                    }
+                    foreach (var gd in gaps)
+                    {
+                        var p = ctx.OnGround(center.x + gd.x * 9.6f, center.z + gd.z * 9.6f); var to = new Vector3(a.x - p.x, 0, a.z - p.z);
+                        if (to.sqrMagnitude < 1f || Vector3.Dot(to.normalized, gd) < .6f) continue;
+                        Consider(a, p);
+                    }
+                }
+                // the clear start wins unless it is much farther than the nearest
+                if (nextC != null && bestC < best + 40f) { next = nextC; join = joinC; }
+                if (next == null) { next = nextA; join = joinA; }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
@@ -247,12 +341,16 @@ namespace EverythingWorld.World
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 3f)) continue;
                 var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var rot = Quaternion.LookRotation(f); var side = Vector3.Cross(Vector3.up, f); var up = Vector3.up;
+                // the lowest and highest ground round a ring of radius r round 'at' (steep spots are skipped or built up
+                // without drawing a different count of random numbers, so the rest of the layout stays put)
+                float Lo(Vector3 at, float r) { var lo = at.y; for (var k = 0; k < 8; k++) lo = Mathf.Min(lo, ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r)); return lo; }
+                float Hi(Vector3 at, float r) { var hi = at.y; for (var k = 0; k < 8; k++) hi = Mathf.Max(hi, ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r)); return hi; }
                 if (roll < .22f) { var h = 4f + s * 2f; mk.Prism(trunkM, p, (up + side * (s - .5f) * .2f).normalized, .34f, h, 7, .6f); var top = p + up * h; for (var k = 0; k < 10; k++) { var d = Quaternion.Euler(0, k * 36f + s * 30f, 0) * f; mk.Box(willowM, top + d * 1.4f - up * 1.2f, new Vector3(.5f, 2.6f + (k % 3) * .6f, .14f), Quaternion.LookRotation(d) * Quaternion.Euler(-10f, 0, 0)); } mk.Blob(willowM, top + up * .4f, new Vector3(2f, 1f, 2f), rng, .3f); ArtistBits.PostCollider(ctx.Root, p, h, .4f); Mark(p, 2.6f); willows++; }
                 else if (roll < .34f) { for (var k = 0; k < 14; k++) { var rp = p + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * 3f; rp = ctx.OnGround(rp.x, rp.z); var h = 1f + (float)rng.NextDouble() * .8f; mk.Prism(Paint(new Color(.5f, .56f, .3f)), rp, (up + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * .2f).normalized, .02f, h, 3); if (k % 3 == 0) mk.Prism(Paint(new Color(.4f, .28f, .18f)), rp + up * h, up, .05f, .3f, 5); } reeds++; }
-                else if (roll < .44f) { if (!Open(ctx, px, pz, 5f)) continue; Cascade(ctx, mk, solid, p, f, .8f + s * .5f, rng); Mark(p, 3.6f); cascades++; }
-                else if (roll < .54f) { for (var k = 0; k < 5; k++) mk.Blob(k % 2 == 0 ? stone : stoneD, p + Quaternion.Euler(0, k * 72f + s * 50f, 0) * f * (k == 0 ? 0f : 1.2f) + up * .2f, new Vector3(.8f, .5f, .7f) * (1f - k * .1f), rng, .3f); ArtistBits.PostCollider(ctx.Root, p, .8f, 1.6f); stones++; }
-                else if (roll < .6f) { var cr = Quaternion.LookRotation(side); var col = Paint(s > .5f ? new Color(.8f, .3f, .2f) : new Color(.2f, .5f, .7f)); mk.Blob(col, p + up * .25f, new Vector3(.4f, .25f, 2f), rng, 0f); mk.Blob(dark, p + up * .38f, new Vector3(.3f, .08f, 1.7f), rng, 0f); mk.Box(woodD, p + up * .5f + side * .2f, new Vector3(.06f, .06f, 1.6f), cr * Quaternion.Euler(0, 30f, 0)); BoxCol(ctx.Root, p + up * .25f, new Vector3(.8f, .5f, 4f), cr); canoes++; }
-                else if (roll < .68f) { Bench(ctx.Root, mk, p, f); Lamp(ctx, mk, p - f * .8f + side * 1.6f, benches % 2 == 0); Mark(p, 2.2f); benches++; }
+                else if (roll < .44f) { if (!Open(ctx, px, pz, 5f)) continue; var cs = .8f + s * .5f; var cg = p; cg.y = Hi(p, 1.3f * cs + .2f); Cascade(ctx, mk, solid, cg, f, cs, rng, Lo(p, 1.3f * cs + .2f)); Mark(p, 3.6f); cascades++; }
+                else if (roll < .54f) { for (var k = 0; k < 5; k++) { var sp0 = p + Quaternion.Euler(0, k * 72f + s * 50f, 0) * f * (k == 0 ? 0f : 1.2f); mk.Blob(k % 2 == 0 ? stone : stoneD, ctx.OnGround(sp0.x, sp0.z) + up * .2f, new Vector3(.8f, .5f, .7f) * (1f - k * .1f), rng, .3f); } ArtistBits.PostCollider(ctx.Root, p, .8f, 1.6f); stones++; }
+                else if (roll < .6f) { float h1 = ctx.Ground(p.x, p.z + 1.9f), h2 = ctx.Ground(p.x, p.z - 1.9f), hs1 = ctx.Ground(p.x + .4f, p.z), hs2 = ctx.Ground(p.x - .4f, p.z); if (Mathf.Abs(h1 - h2) > .45f || Mathf.Abs(hs1 - hs2) > .2f) { for (var k = 0; k < 24; k++) rng.NextDouble(); continue; } var cp = p; cp.y = Mathf.Min(p.y, Mathf.Min(h1, h2)) + .05f; var cr = Quaternion.identity; var col = Paint(s > .5f ? new Color(.8f, .3f, .2f) : new Color(.2f, .5f, .7f)); mk.Blob(col, cp + up * .25f, new Vector3(.4f, .25f, 2f), rng, 0f); mk.Blob(dark, cp + up * .38f, new Vector3(.3f, .08f, 1.7f), rng, 0f); mk.Box(woodD, cp + up * .5f + Vector3.right * .2f, new Vector3(.06f, .06f, 1.6f), cr * Quaternion.Euler(0, 30f, 0)); BoxCol(ctx.Root, cp + up * .25f, new Vector3(.8f, .5f, 4f), cr); canoes++; }
+                else if (roll < .68f) { if (Hi(p, 1.2f) - Lo(p, 1.2f) > .35f) continue; var lq = p - f * .8f + side * 1.6f; Bench(ctx.Root, mk, p, f); Lamp(ctx, mk, ctx.OnGround(lq.x, lq.z), benches % 2 == 0); Mark(p, 2.2f); benches++; }
                 else if (roll < .74f) { var cols = new[] { new Color(1f, .8f, .3f), new Color(.9f, .5f, .7f), new Color(.6f, .6f, 1f), Color.white }; for (var k = 0; k < 12; k++) { var fp = p + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * 4f; fp = ctx.OnGround(fp.x, fp.z); mk.Prism(leafM, fp, up, .015f, .4f, 3); mk.Blob(Paint(cols[k % 4]), fp + up * .42f, Vector3.one * .06f, rng, 0f); } flowers++; }
             }
             Debug.Log($"The Liquid Rapids: the River Walk {streetL:0} m, {willows} willows, {reeds} reed beds, {cascades} rock pools, {stones} river stones, {canoes} canoes, {benches} benches, {flowers} wildflower patches");
