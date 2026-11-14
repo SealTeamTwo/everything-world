@@ -86,14 +86,40 @@ namespace EverythingWorld.World
             }
             // the climb: a spiral from the foot (on the side facing where you arrive) to just under the top
             climb.Clear(); a0 = Mathf.Atan2(-D2.y, -D2.x); const float turns = 1.6f;
-            for (var t = 0f; t <= 1.0001f; t += .004f) { var a = a0 + t * turns * Mathf.PI * 2f; var rr = Mathf.Lerp(Rm - 6f, 11f, t); var p = peak2 + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * rr; climb.Add(new Vector3(p.x, Surface(rr), p.y)); }
+            // (its last stretch, inside the summit plateau, is level with the plateau, so the path doesn't end in a step)
+            for (var t = 0f; t <= 1.0001f; t += .004f) { var a = a0 + t * turns * Mathf.PI * 2f; var rr = Mathf.Lerp(Rm - 6f, 11f, t); var p = peak2 + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * rr; climb.Add(new Vector3(p.x, Surface(Mathf.Max(rr, 12f)), p.y)); }
             var ledgeT = new[] { .22f, .38f, .54f, .7f, .86f }; ledges.Clear();
             for (var k = 0; k < Shredders.Length; k++) { var ci = Mathf.RoundToInt(ledgeT[k] * (climb.Count - 1)); var cp = climb[ci]; var outw = new Vector3(cp.x - peak2.x, 0, cp.z - peak2.y).normalized; ledges[Shredders[k]] = (cp + outw * 11f, outw); }
             // cut the path as a shelf, the ledges as flat pads, the summit as a plateau
             void Flat(Vector2 c, float rad, float y) { for (var r = 0; r < data.Nz; r++) { var z = data.layout.depth - r * data.Step; if (Mathf.Abs(z - c.y) > rad) continue; for (var col = 0; col < data.Nx; col++) { var x = col * data.Step; if (Mathf.Abs(x - c.x) > rad) continue; var i = r * data.Nx + col; if (data.islandIds[i] != index) continue; if (Vector2.Distance(new Vector2(x, z), c) < rad) data.heights[i] = y; } } }
-            for (var k = 0; k < climb.Count; k += 2) Flat(new Vector2(climb[k].x, climb[k].z), 7f, climb[k].y);
-            foreach (var kv in ledges) { var (at, _) = kv.Value; var ci = 0; var bd = float.MaxValue; for (var k = 0; k < climb.Count; k++) { var dd = (climb[k] - at).sqrMagnitude; if (dd < bd) { bd = dd; ci = k; } } Flat(new Vector2(at.x, at.z), 12f, climb[ci].y); var mid = (at + climb[ci]) / 2f; Flat(new Vector2(mid.x, mid.z), 7f, climb[ci].y); }
-            Flat(peak2, 12f, Surface(11f));
+            // how far a spot is from the climb's line, and the climb's height there (between its points, so the shelf is a
+            // smooth ramp instead of a stair of flat discs)
+            (float d, float y) NearClimb(float x, float z)
+            {
+                var bi = 0; var bd = float.MaxValue; for (var k = 0; k < climb.Count; k++) { float dx = climb[k].x - x, dz = climb[k].z - z, dd = dx * dx + dz * dz; if (dd < bd) { bd = dd; bi = k; } }
+                var best = (Mathf.Sqrt(bd), climb[bi].y);
+                for (var k = Mathf.Max(0, bi - 1); k < Mathf.Min(climb.Count - 1, bi + 1); k++)
+                {
+                    var a = new Vector2(climb[k].x, climb[k].z); var b = new Vector2(climb[k + 1].x, climb[k + 1].z); var ab = b - a; var u = Mathf.Clamp01(Vector2.Dot(new Vector2(x, z) - a, ab) / Mathf.Max(1e-4f, ab.sqrMagnitude));
+                    var dd = Vector2.Distance(new Vector2(x, z), a + ab * u); if (dd < best.Item1) best = (dd, Mathf.Lerp(climb[k].y, climb[k + 1].y, u));
+                }
+                return best;
+            }
+            void Cells(Vector2 c, float rad, System.Action<int, float, float> act) { for (var r = 0; r < data.Nz; r++) { var z = data.layout.depth - r * data.Step; if (Mathf.Abs(z - c.y) > rad) continue; for (var col = 0; col < data.Nx; col++) { var x = col * data.Step; if (Mathf.Abs(x - c.x) > rad) continue; var i = r * data.Nx + col; if (data.islandIds[i] != index) continue; act(i, x, z); } } }
+            Cells(peak2, Rm + 4f, (i, x, z) => { var (d, y) = NearClimb(x, z); if (d < 7f) data.heights[i] = y; });
+            // each ledge's pad sits at the climb's height beside it; the path itself keeps its ramp, and the pad's edge
+            // beside it blends up or down to the path, so there's no step in or beside the path
+            foreach (var kv in ledges)
+            {
+                var (at, _) = kv.Value; var ci = 0; var bd = float.MaxValue; for (var k = 0; k < climb.Count; k++) { var dd = (climb[k] - at).sqrMagnitude; if (dd < bd) { bd = dd; ci = k; } }
+                var ly = climb[ci].y; var at2 = new Vector2(at.x, at.z); var mid = (at2 + new Vector2(climb[ci].x, climb[ci].z)) / 2f;
+                Cells(at2, 13f, (i, x, z) =>
+                {
+                    var q = new Vector2(x, z); if (Vector2.Distance(q, at2) >= 12f && Vector2.Distance(q, mid) >= 7f) return;
+                    var (d, y) = NearClimb(x, z); data.heights[i] = d < 3.5f ? y : d < 7f ? Mathf.Lerp(y, ly, Ease(3.5f, 7f, d)) : ly;
+                });
+            }
+            Flat(peak2, 12f, Surface(12f));
             // put the guitar heroes on their ledges; everyone else in the foothills
             var keep = new List<string>();
             foreach (var a in data.layout.artists) { if (a.sceneId != isl.sceneId) continue; if (ledges.TryGetValue(a.name, out var l)) { a.x = l.at.x; a.z = l.at.z; keep.Add(a.name); } }
@@ -186,7 +212,9 @@ namespace EverythingWorld.World
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
-            var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
+            // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
+            // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
+            var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)
             {
@@ -194,11 +222,11 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] - side * (w / 2f * miter); Rr[i] = pts[i] + side * (w / 2f * miter);
-                float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(Rr[i].x, Rr[i].z), bulge = Mathf.Clamp(pts[i].y - (gl + gr) / 2f, 0f, .3f);
-                L[i].y = gl + bulge + lift; Rr[i].y = gr + bulge + lift;
+                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                var bulge = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .3f);
+                for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ground.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }
             }
-            for (var i = 0; i + 1 < n; i++) mk.Quad(m, L[i], Rr[i], Rr[i + 1], L[i + 1], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
+            for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (pts[i] + pts[i + 1]) / 2f - Vector3.up);
         }
 
         /// A rough plank bench.
@@ -224,6 +252,20 @@ namespace EverythingWorld.World
             ArtistBits.PostCollider(root, g, 3f * s, .6f * s);
         }
 
+        /// A point of a lane running from `from` along `dir`, bent round any other artist's area in an arc (on whichever side
+        /// the straight line passes) instead of running across it.
+        Vector3 AroundArtists(LandContext ctx, Vector3 q, Vector3 from, Vector3 dir, Vector3 side, string artist)
+        {
+            foreach (var o in ctx.Artists)
+            {
+                if (o.name == artist) continue; var ov = new Vector3(o.x, 0, o.z); var r = Foot(o) * .85f + PathW / 2f + .6f;
+                var rel = q - ov; rel.y = 0; if (rel.sqrMagnitude >= r * r) continue;
+                var along = Vector3.Dot(rel, dir); var sgn = Vector3.Dot(new Vector3(from.x, 0, from.z) - ov, side) >= 0f ? 1f : -1f;
+                q = ov + dir * along + side * sgn * Mathf.Sqrt(Mathf.Max(0f, r * r - along * along));
+            }
+            return q;
+        }
+
         // ---------------------------------------------------------------- the lanes to the artists
         void Paths(LandContext ctx, MeshKit mk, MeshKit solid)
         {
@@ -239,18 +281,38 @@ namespace EverythingWorld.World
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 16f) * Mathf.Min(1.6f, end * .04f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    q = AroundArtists(ctx, q, from, dir, side, artist);
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
                 Strip(mk, pts, path, PathW, .1f, ctx);
-                foreach (var p in pts) Remember(p, walk);
+                // a lantern now and then (never on another lane or path, in an artist's area or on the terrace)
                 for (var i = 6; i < pts.Count; i += 10, n++)
                 {
                     var s = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .8f);
-                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue;
+                    if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f) || NearPath(lp.x, lp.z, PathW / 2f + .4f)) continue;
                     Lamp(ctx, mk, ctx.OnGround(lp.x, lp.z), n % 3 == 0);
                 }
+                foreach (var p in pts) Remember(p, walk);
                 walk++;
+            }
+            var c0 = ctx.OnGround(center.x, center.z); var peak = new Vector3(peak2.x, 0, peak2.y);
+            // the terrace (its piano, benches, cairn and signpost) and the mountain, which a foothill lane must not cross
+            bool InPlace(Vector3 q) { q.y = 0; return (q - new Vector3(c0.x, 0, c0.z)).sqrMagnitude < 10.6f * 10.6f || (q - peak).sqrMagnitude < (Rm - 12f) * (Rm - 12f); }
+            // where a lane may leave from: the terrace's rim (never its middle), the path to the climb and the climb's foot
+            // (never higher up the mountain), or another lane, and never from inside another artist's area
+            bool Start(Vector3 p, int w, IslandWorldData.Artist a)
+            {
+                if (w == 0 && (new Vector3(p.x - c0.x, 0, p.z - c0.z)).sqrMagnitude < 8f * 8f) return false;
+                if (w == 1 && (new Vector3(p.x, 0, p.z) - peak).sqrMagnitude < (Rm - 10f) * (Rm - 10f)) return false;
+                foreach (var o in ctx.Artists) { if (o == a) continue; float dx = p.x - o.x, dz = p.z - o.z, r = Foot(o) * .85f + 2f; if (dx * dx + dz * dz < r * r) return false; }
+                return true;
+            }
+            bool Crosses(Vector3 p, IslandWorldData.Artist a)
+            {
+                var d = new Vector3(a.x - p.x, 0, a.z - p.z); var len = d.magnitude - Foot(a) * .8f; if (len < 2.6f) return false; d /= d.magnitude; var sd = Vector3.Cross(Vector3.up, d);
+                for (var t = 2.6f; t < len; t += 1f) { var q = p + d * t; if (InPlace(q) || InPlace(q + sd * (PathW / 2f)) || InPlace(q - sd * (PathW / 2f))) return true; }
+                return false;
             }
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
             // the guitar heroes face their stretch of the climb
@@ -258,9 +320,15 @@ namespace EverythingWorld.World
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
-                foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
-                if (next == null) break;
+                for (var pass = 0; pass < 2 && next == null; pass++)
+                    foreach (var a in todo)
+                        foreach (var (p, w) in walkPoints)
+                        {
+                            if (!Start(p, w, a)) continue;
+                            var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
+                            if (d < best && (pass == 1 || !Crosses(p, a))) { best = d; next = a; join = p; }
+                        }
+                if (next == null) { foreach (var a in todo) Debug.LogWarning("Mount Virtuoso: no lane to " + a.name); break; }
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
             }
@@ -278,13 +346,17 @@ namespace EverythingWorld.World
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
                 if (!Open(ctx, px, pz, 3f)) continue;
                 var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var rot = Quaternion.LookRotation(f); var side = Vector3.Cross(Vector3.up, f); var up = Vector3.up;
+                // how much the ground falls within r of a spot: a cabin or a bench skips a steep spot (neither uses up random
+                // numbers, so the rest of the layout stays put); the lowest ground within r
+                float Fall(Vector3 at, float r) { float lo = at.y, hi = at.y; for (var k = 0; k < 8; k++) { var gh = ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, gh); hi = Mathf.Max(hi, gh); } return hi - lo; }
+                float Low(Vector3 at, float r) { var lo = at.y; for (var k = 0; k < 8; k++) lo = Mathf.Min(lo, ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r)); return lo; }
                 if (p.y > baseY + Hm * .35f) { if (roll < .4f) { mk.Blob(roll < .2f ? rock : rockD, p + up * .4f, new Vector3(1.4f + s, 1f + s * .6f, 1.2f + s), rng, .3f); if (p.y > snowLine) mk.Blob(snowM, p + up * (1.2f + s * .5f), new Vector3(1.1f + s * .6f, .3f, 1f + s * .6f), rng, .2f); ArtistBits.PostCollider(ctx.Root, p, 1.4f, 1.2f + s * .6f); crags++; } else if (roll < .5f) { var prev = p; for (var k = 0; k < 3; k++) { var dir = (up + new Vector3(Mathf.Sin(k + s * 5f), 0, Mathf.Cos(k * 2f)) * .4f).normalized; mk.Prism(trunkM, prev, dir, .12f - k * .03f, 1.2f, 5); prev += dir * 1.2f; } ArtistBits.PostCollider(ctx.Root, p, 2.4f, .2f); crags++; } continue; }
                 if (roll < .26f) { for (var k = 0; k < 3 + (int)(s * 4f); k++) { var bp = ctx.OnGround(p.x + ((k * 37) % 5 - 2f) * 1.4f, p.z + ((k * 23) % 5 - 2f) * 1.4f); var h = 4f + (k % 3) * 1.4f; mk.Prism(birchM, bp, up, .14f, h, 6, .7f); for (var j = 0; j < 4; j++) mk.Box(dark, bp + up * (1f + j * h * .2f), new Vector3(.3f, .04f, .02f), Quaternion.Euler(0, k * 40f + j * 70f, 0)); mk.Blob(leafM, bp + up * (h + .4f), new Vector3(1.1f, 1.4f, 1.1f), rng, .3f); ArtistBits.PostCollider(ctx.Root, bp, h, .2f); } Mark(p, 4f); birches++; }
                 else if (roll < .4f) { mk.Blob(rock, p + up * .5f, new Vector3(1.6f + s, 1.1f, 1.4f + s), rng, .25f); mk.Blob(GlowM(Moss, .3f), p + up * (1.2f + s * .2f), new Vector3(1.2f + s * .6f, .3f, 1f + s * .6f), rng, .2f); ArtistBits.PostCollider(ctx.Root, p, 1.4f, 1.4f + s * .5f); Mark(p, 2f); boulders++; }
-                else if (roll < .48f) { for (var k = 0; k < 5; k++) mk.Blob(k % 2 == 0 ? rock : rockD, p + up * (.2f + k * .36f), new Vector3(.6f - k * .08f, .22f, .5f - k * .07f), rng, .2f); ArtistBits.PostCollider(ctx.Root, p, 1.8f, .5f); cairns++; }
+                else if (roll < .48f) { var cb = new Vector3(p.x, Low(p, .6f), p.z); for (var k = 0; k < 5; k++) mk.Blob(k % 2 == 0 ? rock : rockD, cb + up * (.2f + k * .36f), new Vector3(.6f - k * .08f, .22f, .5f - k * .07f), rng, .2f); ArtistBits.PostCollider(ctx.Root, p, 1.8f, .5f); cairns++; }
                 else if (roll < .6f) { for (var k = 0; k < 10; k++) mk.Blob(Paint(k % 3 == 0 ? Heather * 1.15f : Heather), ctx.OnGround(p.x + ((float)rng.NextDouble() - .5f) * 6f, p.z + ((float)rng.NextDouble() - .5f) * 6f) + up * .2f, new Vector3(.5f, .3f, .5f), rng, .3f); heather++; }
-                else if (roll < .64f && cabins < 8) { if (!Open(ctx, px, pz, 5f)) continue; var cf = new PlaceFrame(p, f); var wl = Paint(new Color(.36f, .26f, .2f)); cf = new PlaceFrame(p, f); mk.Box(wl, cf.P(0, 1.3f, 0), new Vector3(4f, 2.6f, 3.4f), cf.r); solid.Box(wl, cf.P(0, 1.3f, 0), new Vector3(4f, 2.6f, 3.4f), cf.r); mk.Prism(GlowM(Moss, .2f), cf.P(0, 2.6f, 0), Vector3.up, 2.9f, 1.4f, 4, .05f, 45f); mk.Box(GlowM(Glow, 1.2f), cf.P(1f, 1.4f, 1.71f), new Vector3(.7f, .6f, .02f), cf.r); mk.Box(dark, cf.P(-.8f, 1f, 1.71f), new Vector3(.8f, 2f, .02f), cf.r); mk.Prism(rockD, cf.P(1.6f, 2.6f, -1f), Vector3.up, .3f, 1.4f, 6); life.chimneys.Add(cf.P(1.6f, 4.1f, -1f)); halos.Add(cf.P(1f, 1.4f, 2.2f), 1.2f, Glow, .4f); Mark(p, 3.4f); cabins++; }
-                else if (roll < .7f) { Bench(ctx.Root, mk, p, f); Lamp(ctx, mk, p - f * .8f + side * 1.6f, benches % 2 == 0); Mark(p, 2.2f); benches++; }
+                else if (roll < .64f && cabins < 8) { if (!Open(ctx, px, pz, 5f) || Fall(p, 2.7f) > 1.2f) continue; var cf = new PlaceFrame(p, f); var wl = Paint(new Color(.36f, .26f, .2f)); var cd = p.y - Low(p, 2.7f) + .1f; mk.Box(wl, cf.P(0, 1.3f - cd / 2f, 0), new Vector3(4f, 2.6f + cd, 3.4f), cf.r); solid.Box(wl, cf.P(0, 1.3f - cd / 2f, 0), new Vector3(4f, 2.6f + cd, 3.4f), cf.r); if (cd > .3f) mk.Box(rockD, cf.P(0, -cd / 2f + .05f, 0), new Vector3(4.2f, cd, 3.6f), cf.r); mk.Prism(GlowM(Moss, .2f), cf.P(0, 2.6f, 0), Vector3.up, 2.9f, 1.4f, 4, .05f, 45f); mk.Box(GlowM(Glow, 1.2f), cf.P(1f, 1.4f, 1.71f), new Vector3(.7f, .6f, .02f), cf.r); mk.Box(dark, cf.P(-.8f, 1f, 1.71f), new Vector3(.8f, 2f, .02f), cf.r); mk.Prism(rockD, cf.P(1.6f, 2.6f, -1f), Vector3.up, .3f, 1.4f, 6); life.chimneys.Add(cf.P(1.6f, 4.1f, -1f)); halos.Add(cf.P(1f, 1.4f, 2.2f), 1.2f, Glow, .4f); Mark(p, 3.4f); cabins++; }
+                else if (roll < .7f) { if (Fall(p, 1.2f) > .3f) continue; Bench(ctx.Root, mk, p, f); var bl = p - f * .8f + side * 1.6f; Lamp(ctx, mk, ctx.OnGround(bl.x, bl.z), benches % 2 == 0); Mark(p, 2.2f); benches++; }
             }
             Debug.Log($"Mount Virtuoso: the climb {climb.Count} steps, mountain {Hm:0} m high, {birches} birch groves, {boulders} mossy boulders, {cairns} cairns, {heather} heather patches, {cabins} cabins, {benches} benches, {crags} crags and dead trees");
         }

@@ -82,7 +82,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; if (climb.Count < 2) return;
             // a path from the terrace to the foot of the climb
-            var foot = climb[0]; var c = ctx.OnGround(center.x, center.z); var lead = new List<Vector3>(); var dir = new Vector3(foot.x - c.x, 0, foot.z - c.z); var len = dir.magnitude; dir /= Mathf.Max(.01f, len); for (var d = 9.5f; d < len; d += 2f) { var p = c + dir * d; lead.Add(ctx.OnGround(p.x, p.z)); } lead.Add(ctx.OnGround(foot.x, foot.z)); if (lead.Count > 1) { Strip(mk, lead, path, ClimbW, .1f, ctx); foreach (var p in lead) Remember(p, 1); }
+            var foot = climb[0]; var c = ctx.OnGround(center.x, center.z); var lead = new List<Vector3>(); var dir = new Vector3(foot.x - c.x, 0, foot.z - c.z); var len = dir.magnitude; dir /= Mathf.Max(.01f, len); var lside = Vector3.Cross(up, dir); for (var d = 9.5f; d < len; d += 2f) { var p = AroundArtists(ctx, c + dir * d, c, dir, lside, null); lead.Add(ctx.OnGround(p.x, p.z)); } lead.Add(ctx.OnGround(foot.x, foot.z)); if (lead.Count > 1) { Strip(mk, lead, path, ClimbW, .1f, ctx); foreach (var p in lead) Remember(p, 1); }
             var pts = new List<Vector3>(); for (var k = 0; k < climb.Count; k += 2) pts.Add(ctx.OnGround(climb[k].x, climb[k].z)); Strip(mk, pts, path, ClimbW, .12f, ctx); foreach (var p in pts) Remember(p, 1);
             // lanterns on the uphill side, a rope rail on the drop side
             var peak = new Vector3(peak2.x, 0, peak2.y);
