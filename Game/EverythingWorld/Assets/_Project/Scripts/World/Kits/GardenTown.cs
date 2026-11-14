@@ -10,7 +10,7 @@ namespace EverythingWorld.World
     /// stool to sit at), and the Crate Walk (a brick path under arches of climbing roses, crates and pots either side).
     public partial class GardenKit
     {
-        GardenTownLife tlife; System.Random prng; Transform rootT; LandContext ctx0;
+        GardenTownLife tlife; System.Random prng; Transform rootT; LandContext ctx0; Vector3 houseAt;
 
         static readonly Color[] Tops = { new Color(.5f, .6f, .4f), new Color(.86f, .8f, .66f), Terracotta, new Color(.4f, .5f, .6f), Gold };
         static readonly Color[] Bottoms = { new Color(.3f, .3f, .36f), new Color(.5f, .4f, .3f), new Color(.24f, .26f, .2f) };
@@ -54,7 +54,7 @@ namespace EverythingWorld.World
             mk.Prism(brickD, c - up * .3f, up, 12.4f, .34f, 32); mk.Prism(brick, c + up * .04f, up, 12f, .02f, 32); for (var k = 0; k < 24; k++) { var d = Quaternion.Euler(0, k * 15f, 0) * D; mk.Box(brickD, c + up * .055f + d * 6f, new Vector3(.06f, .01f, 12f), Quaternion.LookRotation(Quaternion.Euler(0, 90f, 0) * d)); }
             for (var k = -3; k <= 3; k++) Remember(c + Quaternion.Euler(0, k * 35f, 0) * D * 11f, 0);
             // the greenhouse
-            var g = new PlaceFrame(c - D * 17f, D); const float W = 14f, L = 9f, H = 3.6f;
+            var g = new PlaceFrame(c - D * 17f, D); const float W = 14f, L = 9f, H = 3.6f; houseAt = g.o;
             mk.Box(brick, g.P(0, .05f, 0), new Vector3(W, .3f, L), g.r);
             for (var x = -W / 2f; x <= W / 2f + .01f; x += 1.75f) foreach (var z in new[] { -L / 2f, L / 2f }) { if (z > 0 && Mathf.Abs(x) < 1.2f) continue; var pp = g.P(x, 0, z); mk.Box(iron, pp + up * H / 2f, new Vector3(.1f, H, .1f), g.r); ArtistBits.PostCollider(ctx.Root, pp, H, .1f); }
             for (var z = -L / 2f + 1.5f; z < L / 2f - .1f; z += 1.5f) foreach (var x in new[] { -W / 2f, W / 2f }) { var pp = g.P(x, 0, z); mk.Box(iron, pp + up * H / 2f, new Vector3(.1f, H, .1f), g.r); ArtistBits.PostCollider(ctx.Root, pp, H, .1f); }
@@ -88,10 +88,10 @@ namespace EverythingWorld.World
             Strip(mk, pts, brick, WalkW, .1f, ctx); foreach (var e in new[] { -1f, 1f }) { var edge = new List<Vector3>(); foreach (var p in pts) edge.Add(p + S * e * (WalkW / 2f - .1f)); Strip(mk, edge, brickD, .2f, .12f, ctx); } foreach (var p in pts) Remember(p, 1);
             var n = 0; for (var d = 18f; d <= streetL; d += 8f, n++)
             {
-                var a0 = G(ctx, d, -(WalkW / 2f + .2f)); var a1 = G(ctx, d, WalkW / 2f + .2f); foreach (var ap in new[] { a0, a1 }) { mk.Prism(iron, ap, up, .05f, 2.6f, 5); ArtistBits.PostCollider(ctx.Root, ap, 2.6f, .08f); }
+                var a0 = G(ctx, d, -(WalkW / 2f + .2f)); var a1 = G(ctx, d, WalkW / 2f + .2f); foreach (var ap in new[] { a0, a1 }) { mk.Prism(iron, ap, up, .05f, 2.6f, 5); ArtistBits.PostCollider(ctx.Root, ap, 2.6f, .08f); fixtures.Add(new Vector3(ap.x, .08f, ap.z)); }
                 for (var k = 0; k <= 10; k++) { var a = Mathf.PI * k / 10f; var p = (a0 + a1) / 2f + S * Mathf.Cos(a) * (WalkW / 2f + .2f) + up * (2.6f + Mathf.Sin(a) * 1.2f); mk.Box(iron, p, new Vector3(.08f, .08f, .4f), Quaternion.LookRotation(S) * Quaternion.Euler(-a * Mathf.Rad2Deg + 90f, 0, 0)); mk.Blob(leafD, p + D * .1f, new Vector3(.3f, .24f, .3f), rng, .3f); if (k % 2 == 0) mk.Blob(Paint(Rose), p + D * .2f + up * .1f, Vector3.one * .1f, rng, 0f); }
-                foreach (var e in new[] { -1f, 1f }) { var side = G(ctx, d + 4f, e * (WalkW / 2f + 1.2f)); if (n % 2 == 0) { for (var k = 0; k < 4; k++) Crate(ctx.Root, mk, side + D * (k % 2 - .5f) * .44f + up * (k / 2) * .42f, -S * e, rng); } else { mk.Prism(Paint(Terracotta), side, up, .4f, .5f, 8, 1.3f); mk.Blob(leafM, side + up * .9f, new Vector3(.6f, .6f, .6f), rng, .3f); ArtistBits.PostCollider(ctx.Root, side, 1f, .5f); } }
-                if (n % 2 == 1) Lamp(ctx, mk, G(ctx, d + 2f, (n % 4 == 1 ? 1f : -1f) * (WalkW / 2f + 2.4f)), n % 4 == 1);
+                foreach (var e in new[] { -1f, 1f }) { var side = G(ctx, d + 4f, e * (WalkW / 2f + 1.2f)); fixtures.Add(new Vector3(side.x, .5f, side.z)); if (n % 2 == 0) { for (var k = 0; k < 4; k++) Crate(ctx.Root, mk, side + D * (k % 2 - .5f) * .44f + up * (k / 2) * .42f, -S * e, rng); } else { mk.Prism(Paint(Terracotta), side, up, .4f, .5f, 8, 1.3f); mk.Blob(leafM, side + up * .9f, new Vector3(.6f, .6f, .6f), rng, .3f); ArtistBits.PostCollider(ctx.Root, side, 1f, .5f); } }
+                if (n % 2 == 1) { var lq = G(ctx, d + 2f, (n % 4 == 1 ? 1f : -1f) * (WalkW / 2f + 2.4f)); fixtures.Add(new Vector3(lq.x, .3f, lq.z)); Lamp(ctx, mk, lq, n % 4 == 1); }
             }
             Folk(G(ctx, 20f, 1f), D, Resident.Pose.Walk, new[] { "I come down here for the roses. And the crates. Mostly the crates.", "Hear that? The marble machine's going." }, Local(), new[] { G(ctx, 20f, 1f), G(ctx, streetL, 1f), G(ctx, streetL, -1f), G(ctx, 20f, -1f) }).speed = .9f;
             Shot(ctx, "along the crate walk", G(ctx, 13f, -.6f) + up * 1.8f, G(ctx, streetL + 14f, 0) + up * 3f);
