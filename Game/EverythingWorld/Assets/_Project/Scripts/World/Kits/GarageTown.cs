@@ -340,12 +340,15 @@ namespace EverythingWorld.World
         }
 
         // ---------------------------------------------------------------- weeds and grass
+        /// In patches with bare dirt between: short mown verges, dry worn grass going brown, and rank clumps of tall
+        /// weeds. Each patch has its own shade (cool sooty green to dry yellow-olive); every blade its own.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, 1f, new Color(.3f, .38f, .26f));
             var meshes = new Dictionary<(int, int), WindMesh>();
             var rng = new System.Random(505);
             const float step = 2f;
+            int mown = 0, dry = 0, rank = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
@@ -360,14 +363,24 @@ namespace EverythingWorld.World
                 if (OnSubRoad(px, pz, .2f)) continue;
                 var near = false; foreach (var a in ctx.Artists) if (Vector2.Distance(new Vector2(a.x, a.z), new Vector2(px, pz)) < 8f) near = true;
                 if (near) continue;
-                var n = Mathf.PerlinNoise(px * .03f, pz * .03f + 4f);
-                if (n < .32f) continue;
+                var n = WindMesh.Patch(px, pz, .03f, 1f);
+                if (n < .32f) continue;                                    // bare dirt between the patches
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.24f, .32f, .22f), new Color(.38f, .4f, .28f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .3f + (float)rng.NextDouble() * .5f, col, Color.Lerp(col, new Color(.6f, .55f, .4f), .3f), rng, 4, .07f);
+                var col = Color.Lerp(new Color(.22f, .32f, .26f), new Color(.4f, .4f, .27f), Mathf.Clamp01(WindMesh.Patch(px, pz, .025f, 2f) * .8f + (float)rng.NextDouble() * .2f));
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                var kind = WindMesh.Patch(px, pz, .018f, 3f);
+                if (kind < .34f) { wm.Tuft(at, .14f + (float)rng.NextDouble() * .14f, col * 1.05f, Color.Lerp(col, new Color(.55f, .58f, .38f), .25f), rng, 4, .05f, .14f); mown++; }
+                else if (kind < .66f)
+                {
+                    // dry, worn-out grass going brown
+                    var dc = Color.Lerp(col, new Color(.48f, .42f, .28f), .4f);
+                    wm.Tuft(at, .22f + (float)rng.NextDouble() * .3f, dc, Color.Lerp(dc, new Color(.66f, .58f, .4f), .35f), rng, 3, .07f, .14f); dry++;
+                }
+                else { wm.Tuft(at, .5f + (float)rng.NextDouble() * .5f, col * .95f, Color.Lerp(col, new Color(.6f, .55f, .4f), .3f), rng, 5, .07f, .14f); rank++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Weeds", ctx.Root, mat);
+            Debug.Log($"Garage Rock Row weeds: {mown} mown verge tufts, {dry} dry tufts, {rank} rank weed clumps");
         }
     }
 }
