@@ -383,24 +383,31 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Scrubby weeds in the cinders.
+        /// Scrubby weeds in the cinders, in patches: a low creeping scrub here, rank clumps of tall weeds there, and
+        /// plenty of bare cinder between. Each patch its own shade (sooty blue-grey to dry yellow-olive), some
+        /// glowing greener at the tips than others; every blade its own shade.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.2f, .8f, new Color(.26f, .3f, .24f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2016);
             const float st = 3.2f;
+            int scrub = 0, rank = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .05f + 9f, pz * .05f + 2f) < .5f) continue;
+                if (WindMesh.Patch(px, pz, .05f, 1f) < .52f) continue;     // bare cinder
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.24f, .28f, .22f), new Color(.34f, .34f, .26f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .24f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, Green, .3f), rng, 3, .08f);
+                var col = Color.Lerp(new Color(.22f, .27f, .25f), new Color(.36f, .35f, .25f), Mathf.Clamp01(WindMesh.Patch(px, pz, .025f, 2f) * .8f + (float)rng.NextDouble() * .2f));
+                var tip = Color.Lerp(col, Green, .18f + WindMesh.Patch(px, pz, .04f, 3f) * .24f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (WindMesh.Patch(px, pz, .03f, 4f) < .5f) { wm.Tuft(at, .14f + (float)rng.NextDouble() * .14f, col * .95f, Color.Lerp(col, tip, .7f), rng, 2, .09f, .12f); scrub++; }
+                else { wm.Tuft(at, .32f + (float)rng.NextDouble() * .36f, col, tip, rng, 5, .07f, .12f); rank++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Foundry weeds", ctx.Root, mat);
+            Debug.Log($"The Electro Foundry weeds: {scrub} low scrub, {rank} rank clumps");
         }
     }
 }
