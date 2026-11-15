@@ -380,26 +380,65 @@ namespace EverythingWorld.World
             mk.GableRoof(cloth, g + up * .1f, new Vector3(3.4f, 0, 3f), 1.7f, rot); foreach (var e in new[] { -1f, 1f }) mk.Prism(woodM, g + rot * Vector3.forward * e * 1.5f, up, .04f, 1.84f, 4); BoxCol(ctx.Root, g + up * .6f, new Vector3(2.4f, 1.2f, 2.6f), rot); noGrass.Add(new Vector3(g.x, 3f, g.z));
         }
 
-        /// The verges: lush grass and flowers on the green slope; a few dry tufts in the dunes; nothing on the sand.
+        /// The verges, grown in patches: on the green slope, short bright lawns with drifts of one flower, seaside
+        /// meadow with the odd bloom, and stands of tall sea grass with sandy tips, bare sandy ground between; in the
+        /// dunes, clumps of marram grass gathered where the sand holds still and a few low dry tufts; nothing on the
+        /// beach. Each patch has its own shade, from a cool blue-green to a warm yellow-green, and every blade its own.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .9f, new Color(.4f, .66f, .32f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1964);
             Color[] flowers = { Coral, Sun, new Color(.95f, .5f, .75f), Cream };
+            Color cool = new Color(.24f, .54f, .34f), warm = new Color(.5f, .7f, .3f), sandTip = new Color(.78f, .7f, .44f);
             const float st = 2.6f;
+            int lawn = 0, meadow = 0, tall = 0, marram = 0, dry = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 5f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 var gy = ctx.Ground(px, pz); if (gy < waterY + 3.6f) continue; var desert = gy > duneFrom + 1f;
-                if (Mathf.PerlinNoise(px * .04f + 2f, pz * .04f + 8f) < (desert ? .7f : .36f)) continue;
+                if (WindMesh.Patch(px, pz, .04f, 1f) < (desert ? .7f : .38f)) continue;   // bare sand between the patches
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = desert ? Color.Lerp(new Color(.7f, .62f, .36f), new Color(.6f, .6f, .34f), (float)rng.NextDouble()) : Color.Lerp(new Color(.3f, .6f, .28f), new Color(.46f, .7f, .32f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, gy - .04f, pz), .26f + (float)rng.NextDouble() * .34f, col, !desert && rng.NextDouble() < .16 ? flowers[rng.Next(flowers.Length)] : Color.Lerp(col, Cream, .3f), rng, 3, .06f);
+                var at = new Vector3(px, gy - .04f, pz);
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
+                var tone = WindMesh.Patch(px, pz, .022f, 2f);
+                if (desert)
+                {
+                    var dc = Color.Lerp(new Color(.6f, .6f, .36f), new Color(.72f, .62f, .36f), tone) * (.92f + r2 * .16f);
+                    if (WindMesh.Patch(px, pz, .09f, 3f) > .5f) { wm.Tuft(at, .5f + r1 * .35f, dc, Color.Lerp(dc, sandTip, .4f), rng, 5, .04f, .12f); marram++; }
+                    else { wm.Tuft(at, .2f + r1 * .16f, dc * .95f, Color.Lerp(dc, sandTip, .3f), rng, 2, .06f, .12f); dry++; }
+                    continue;
+                }
+                var col = Color.Lerp(cool, warm, Mathf.Clamp01((tone - .3f) * 2.2f)) * (.92f + r2 * .16f);
+                var kind = WindMesh.Patch(px, pz, .016f, 4f);
+                if (kind < .4f)
+                {
+                    // a lawn: short, fine and bright; some lawns carry a drift of one kind of flower
+                    var lc = Color.Lerp(col, warm, .2f);
+                    wm.Tuft(at, .16f + r1 * .14f, lc, Color.Lerp(lc, Cream, .22f), rng, 3, .05f, .14f); lawn++;
+                    if (WindMesh.Patch(px, pz, .06f, 5f) > .64f && rng.NextDouble() < .4)
+                    {
+                        var fl = flowers[WindMesh.Pick(WindMesh.Patch(px, pz, .015f, 6f), flowers.Length)];
+                        for (var k = 0; k < 2; k++) wm.Flower(at + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * 1.4f, .2f + (float)rng.NextDouble() * .1f, fl, rng);
+                        blooms += 2;
+                    }
+                }
+                else if (kind < .66f)
+                {
+                    // seaside meadow: mixed heights, a bloom-coloured tip here and there
+                    wm.Tuft(at, .3f + r1 * .3f, col, rng.NextDouble() < .14 ? flowers[rng.Next(flowers.Length)] : Color.Lerp(col, Cream, .3f), rng, 4, .06f, .14f); meadow++;
+                }
+                else
+                {
+                    // tall sea grass leaning in the breeze, sandy tips
+                    var tc = Color.Lerp(col, new Color(.5f, .6f, .34f), .3f);
+                    wm.Tuft(at, .6f + r1 * .35f, tc, Color.Lerp(tc, sandTip, .45f), rng, 4, .05f, .14f); tall++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Far Shores verge", ctx.Root, mat);
+            Debug.Log($"The Far Shores verge: {lawn} lawn tufts, {meadow} meadow tufts, {tall} sea-grass stands, {marram} marram clumps, {dry} dry tufts, {blooms} flowers");
         }
     }
 }
