@@ -585,24 +585,51 @@ namespace EverythingWorld.World
             ArtistBits.PostCollider(ctx.Root, at, 3f, .5f);
         }
 
+        /// Frost grass, laid out as precisely as everything else here: in hexagonal cells about 10 m across, like the
+        /// plaza's. Each cell is one kind (bare, a short rime of frosted tufts, or a dense stand of tall frost grass)
+        /// and one shade, from a cold ice-blue to a pale warm grey-gold, so the ground reads as a clean tiling of
+        /// patches. Blades vary only a little within a cell.
         void FrostGrass(LandContext ctx)
         {
             var mat = WindMesh.Material(.25f, 1f, new Color(.7f, .78f, .76f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(808);
-            const float st = 2.6f;
+            const float st = 2.6f, hexR = 5.5f;
+            Color iceC = new Color(.52f, .66f, .68f), warm = new Color(.74f, .76f, .66f);
+            int rime = 0, stands = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (hasSpire && Vector2.Distance(new Vector2(px, pz), spire2) < SpireR + 2f) continue;
-                if (Mathf.PerlinNoise(px * .035f + 7f, pz * .035f + 2f) < .45f) continue;
+                var cell = HexCell(px, pz, hexR);
+                var kind = WindMesh.Patch(cell.x, cell.y, .03f, 1f);               // bare, rime or a stand
+                if (kind < .32f) continue;
+                var tone = WindMesh.Patch(cell.x, cell.y, .04f, 2f);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.55f, .66f, .62f), new Color(.8f, .86f, .84f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .3f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, Pearl, .5f), rng, 4, .05f);
+                var col = Color.Lerp(iceC, warm, tone) * (.96f + (float)rng.NextDouble() * .08f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind > .6f)
+                {
+                    wm.Tuft(at, .45f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, Pearl, .5f), rng, 4, .05f, .07f); stands++;
+                    if (rng.NextDouble() < .3) wm.Tuft(at + new Vector3(.4f, 0, -.4f), .35f + (float)rng.NextDouble() * .25f, col, Color.Lerp(col, Pearl, .45f), rng, 3, .05f, .07f);
+                }
+                else { wm.Tuft(at, .2f + (float)rng.NextDouble() * .15f, col * 1.04f, Color.Lerp(col, Pearl, .55f), rng, 3, .05f, .07f); rime++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Frost grass", ctx.Root, mat);
+            Debug.Log($"The Djent Spires frost grass: {stands} tall stands, {rime} rime tufts, in hexagonal cells");
+        }
+
+        /// The centre of the hexagonal cell (pointy-topped, 'r' from centre to corner) that (x, z) falls in.
+        static Vector2 HexCell(float x, float z, float r)
+        {
+            var q = (Mathf.Sqrt(3f) / 3f * x - z / 3f) / r; var s = (2f / 3f * z) / r;
+            float cx = q, cz = s, cy = -q - s;
+            float rx = Mathf.Round(cx), rz = Mathf.Round(cz), ry = Mathf.Round(cy);
+            float dx = Mathf.Abs(rx - cx), dz = Mathf.Abs(rz - cz), dy = Mathf.Abs(ry - cy);
+            if (dx > dy && dx > dz) rx = -ry - rz; else if (dy <= dz) rz = -rx - ry;
+            return new Vector2(r * Mathf.Sqrt(3f) * (rx + rz / 2f), r * 1.5f * rz);
         }
     }
 }
