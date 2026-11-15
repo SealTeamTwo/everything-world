@@ -42,12 +42,12 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            wood = WorldMaterials.Solid(new Color(.5f, .38f, .28f));
-            metal = WorldMaterials.Solid(new Color(.55f, .56f, .6f), .5f);
+            wood = WorldMaterials.Surface(new Color(.5f, .38f, .28f), Surface.Wood);
+            metal = WorldMaterials.Surface(new Color(.55f, .56f, .6f), Surface.Metal);
             dark = WorldMaterials.Solid(new Color(.1f, .1f, .12f));
-            canvas = WorldMaterials.Solid(new Color(.94f, .92f, .86f));
-            straw = WorldMaterials.Solid(Straw);
-            rope = WorldMaterials.Solid(new Color(.3f, .3f, .32f));
+            canvas = WorldMaterials.Surface(new Color(.94f, .92f, .86f), Surface.Cloth);
+            straw = WorldMaterials.Surface(Straw, Surface.Foliage);
+            rope = WorldMaterials.Surface(new Color(.3f, .3f, .32f), Surface.Cloth);
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);       // kept low so colours stay saturated under the bloom
@@ -195,7 +195,7 @@ namespace EverythingWorld.World
                 for (var y = 1.2f; y < h; y += 1.6f) mk.Box(metal, foot + side * s * .45f + up * y, new Vector3(1f, .08f, 1f), Quaternion.LookRotation(face));
                 solid.Box(metal, foot + side * s * .45f + up * h / 2f, new Vector3(1.1f, h, 1.1f), Quaternion.LookRotation(face));
                 // flags wrapped round the towers
-                for (var k = 0; k < 5; k++) soft.Box(WorldMaterials.Solid(Bunting[(k + (s > 0 ? 2 : 0)) % Bunting.Length]), foot + side * s * .45f + up * (1.6f + k * 1.1f) - face * .58f, new Vector3(1.1f, .9f, .02f), Quaternion.LookRotation(face));
+                for (var k = 0; k < 5; k++) soft.Box(WorldMaterials.Surface(Bunting[(k + (s > 0 ? 2 : 0)) % Bunting.Length], Surface.Cloth), foot + side * s * .45f + up * (1.6f + k * 1.1f) - face * .58f, new Vector3(1.1f, .9f, .02f), Quaternion.LookRotation(face));
             }
             // the sign across the top
             var signC = c + up * (h + .8f);
@@ -217,7 +217,7 @@ namespace EverythingWorld.World
                 var g = ctx.OnGround(c.x + d.x * 15f, c.z + d.z * 15f); fixtures.Add(new Vector3(g.x, .4f, g.z));
                 mk.Prism(wood, g - up * .3f, up, .08f, 7.3f, 6);
                 ArtistBits.PostCollider(ctx.Root, g, 7f, .1f);
-                var fc = WorldMaterials.Solid(Bunting[k % Bunting.Length]); var along = Vector3.Cross(up, d);
+                var fc = WorldMaterials.Surface(Bunting[k % Bunting.Length], Surface.Cloth); var along = Vector3.Cross(up, d);
                 soft.Quad(fc, g + up * 7f, g + up * 7f + along * 1.6f, g + up * 4.6f + along * 1.6f, g + up * 4.6f, g + d);
                 soft.Quad(fc, g + up * 7f, g + up * 7f + along * 1.6f, g + up * 4.6f + along * 1.6f, g + up * 4.6f, g - d);
             }
@@ -225,7 +225,7 @@ namespace EverythingWorld.World
             for (var k = 0; k < 4; k++)
             {
                 var a0 = Quaternion.Euler(0, k * 90f + 45f, 0) * face * 3.2f; var a1 = Quaternion.Euler(0, k * 90f + 135f, 0) * face * 3.2f;
-                var m = WorldMaterials.Solid(k % 2 == 0 ? new Color(.95f, .3f, .4f) : Ink);
+                var m = WorldMaterials.Surface(k % 2 == 0 ? new Color(.95f, .3f, .4f) : Ink, Surface.Painted);
                 mk.Tri(m, merch + a0 + up * 2.2f, merch + a1 + up * 2.2f, merch + up * 4.6f, merch + up * 2f);
                 mk.Quad(m, merch + a0, merch + a1, merch + a1 + up * 2.2f, merch + a0 + up * 2.2f, merch + up);
             }
@@ -236,8 +236,8 @@ namespace EverythingWorld.World
             halos.Add(merch + up * 4.8f, 1.6f, new Color(1f, .85f, .55f), .8f);
             var map = ctx.OnGround(c.x - side.x * 7f + face.x * 4f, c.z - side.z * 7f + face.z * 4f);
             foreach (var s in new[] { -1f, 1f }) mk.Prism(wood, map + side * s * 1.2f, up, .07f, 2.4f, 5);
-            mk.Box(WorldMaterials.Solid(new Color(.95f, .9f, .75f)), map + up * 1.7f, new Vector3(2.6f, 1.4f, .08f), Quaternion.LookRotation(-face));
-            for (var k = 0; k < 9; k++) mk.Blob(WorldMaterials.Solid(Bunting[k % Bunting.Length]), map + up * (1.3f + (k % 3) * .3f) + side * ((k / 3) * .7f - .7f) - face * .06f, new Vector3(.12f, .12f, .02f), ctx.Rng, 0f);
+            mk.Box(WorldMaterials.Surface(new Color(.95f, .9f, .75f), Surface.Painted), map + up * 1.7f, new Vector3(2.6f, 1.4f, .08f), Quaternion.LookRotation(-face));
+            for (var k = 0; k < 9; k++) mk.Blob(WorldMaterials.Surface(Bunting[k % Bunting.Length], Surface.Painted), map + up * (1.3f + (k % 3) * .3f) + side * ((k / 3) * .7f - .7f) - face * .06f, new Vector3(.12f, .12f, .02f), ctx.Rng, 0f);
             fixtures.Add(new Vector3(map.x, 1.5f, map.z));
             solid.Box(wood, map + up * 1.2f, new Vector3(2.6f, 2.4f, .3f), Quaternion.LookRotation(face));
             noGrass.Add(new Vector3(c.x, 9f, c.z));
@@ -250,7 +250,7 @@ namespace EverythingWorld.World
         /// network (so they never cross), with flag bunting and strings of festoon lights on poles along them.
         void Walkways(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 start)
         {
-            var path = WorldMaterials.Solid(Trodden);
+            var path = WorldMaterials.Surface(Trodden, Surface.Stone);
             Remember(start, 0);
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
             var walk = 1; var poles = new List<Vector3>();
@@ -330,7 +330,7 @@ namespace EverythingWorld.World
                             var t = j / (float)n; var q = Vector3.Lerp(a, b, t) - Vector3.up * Mathf.Sin(t * Mathf.PI) * .7f;
                             soft.Box(rope, (prev + q) / 2f, new Vector3(.02f, .02f, Vector3.Distance(prev, q) + .01f), Quaternion.LookRotation(q - prev));
                             // bunting triangles hanging under the line, a bulb at every other one
-                            var flagC = WorldMaterials.Solid(Bunting[(j + i) % Bunting.Length]);
+                            var flagC = WorldMaterials.Surface(Bunting[(j + i) % Bunting.Length], Surface.Cloth);
                             var across = (b - a).normalized * .22f;
                             foreach (var inside in new[] { q + Vector3.Cross(across, Vector3.up), q - Vector3.Cross(across, Vector3.up) })
                                 soft.Tri(flagC, q - across, q + across, q - Vector3.up * .45f, inside);

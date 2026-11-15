@@ -155,10 +155,10 @@ namespace EverythingWorld.World
                 {
                     float b0 = Mathf.PI * j / 6f, b1 = Mathf.PI * (j + 1) / 6f;
                     Vector3 P(float a, float b) => new Vector3(Mathf.Cos(a) * Mathf.Sin(b) * 7f, -Mathf.Cos(b) * 8f * (b > Mathf.PI / 2f ? .7f : 1f), Mathf.Sin(a) * Mathf.Sin(b) * 7f);
-                    mk.Quad(WorldMaterials.Solid(cols[k % 3]), P(a0, b0), P(a1, b0), P(a1, b1), P(a0, b1), Vector3.zero);
+                    mk.Quad(WorldMaterials.Surface(cols[k % 3], Surface.Cloth), P(a0, b0), P(a1, b0), P(a1, b1), P(a0, b1), Vector3.zero);
                 }
             }
-            mk.Box(WorldMaterials.Solid(new Color(.5f, .38f, .25f)), new Vector3(0, -13f, 0), new Vector3(1.6f, 1.2f, 1.6f), Quaternion.identity);
+            mk.Box(WorldMaterials.Surface(new Color(.5f, .38f, .25f), Surface.Wood), new Vector3(0, -13f, 0), new Vector3(1.6f, 1.2f, 1.6f), Quaternion.identity);
             mk.Blob(WorldMaterials.Glow(new Color(1f, .6f, .25f), 3f), new Vector3(0, -8.5f, 0), Vector3.one * .5f, rng, 0f);
             balloon = mk.Build("Hot-air balloon", transform, false).transform;
             balloon.gameObject.SetActive(false);
