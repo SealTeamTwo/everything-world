@@ -505,24 +505,51 @@ namespace EverythingWorld.World
             noGrass.Add(new Vector3(at.x, 7f, at.z));
         }
 
+        /// The range's scrub, in patches on bare ash and rock: low wiry ash-scrub, rust-brown grass on the slopes,
+        /// and thick clumps of dead tall grass, with wide bare stretches between. Each patch has its own shade, from
+        /// near-black ash to warm rust (by brightness and warmth), and every blade its own.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, 1f, new Color(.26f, .24f, .2f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1970);
             const float step = 3f;
+            Color ash = new Color(.2f, .19f, .17f), rust = new Color(.42f, .3f, .19f), dead = new Color(.62f, .46f, .3f);
+            int scrub = 0, grass = 0, clumps = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || InRiver(px, pz, 2f) || OnPeak(px, pz, -peakR * .2f)) continue;
-                if (Mathf.PerlinNoise(px * .03f + 2f, pz * .03f + 6f) < .5f) continue;
+                if (WindMesh.Patch(px, pz, .03f, 2f) < .54f) continue;                     // bare ash and rock between patches
+                var kind = WindMesh.Patch(px, pz, .012f, 5f);                              // which kind of patch
+                var tone = WindMesh.Patch(px, pz, .025f, 8f);                              // the patch's shade
+                var r = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.24f, .22f, .18f), new Color(.4f, .3f, .2f), (float)rng.NextDouble());
+                var col = Color.Lerp(ash, rust, Mathf.Clamp01((tone - .25f) * 1.8f)) * (.9f + r * .2f);
                 var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
-                wm.Tuft(at, .4f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, new Color(.6f, .4f, .25f), .3f), rng, 3, .06f);
+                if (kind < .4f)
+                {
+                    // ash scrub: low, dark and wiry
+                    var sc = Color.Lerp(col, ash, .4f);
+                    wm.Tuft(at, .22f + r * .25f, sc, Color.Lerp(sc, rust, .35f), rng, 3, .05f, .14f); scrub++;
+                }
+                else if (kind < .7f)
+                {
+                    // rust grass on the slopes
+                    wm.Tuft(at, .4f + r * .4f, col, Color.Lerp(col, new Color(.6f, .4f, .25f), .3f), rng, 3, .06f, .14f); grass++;
+                }
+                else
+                {
+                    // dead tall grass in thick clumps, dull straw-rust tips
+                    var dc = Color.Lerp(col, rust, .3f);
+                    wm.Tuft(at, .65f + r * .4f, dc, Color.Lerp(dc, dead, .5f), rng, 4, .06f, .14f);
+                    if (r < .5f) wm.Tuft(at + new Vector3(.4f, 0, -.35f), .5f + r * .4f, dc, Color.Lerp(dc, dead, .4f), rng, 4, .06f, .14f);
+                    clumps++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Iron grass", ctx.Root, mat);
+            Debug.Log($"The Iron Range scrub: {scrub} ash-scrub tufts, {grass} rust-grass tufts, {clumps} dead-grass clumps");
         }
     }
 }
