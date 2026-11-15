@@ -293,24 +293,51 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Long night grass, blue-green with pale tips.
+        /// Long night grass in patches, blue-green with pale tips: long grass in clumps, short dark lawns, and drifts of
+        /// tall feather grass that catch the moonlight.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .8f, new Color(.2f, .34f, .32f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1978);
             const float st = 2.4f;
+            Color blue = new Color(.14f, .28f, .32f), green = new Color(.26f, .4f, .34f);
+            int longGrass = 0, lawn = 0, feather = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (Mathf.PerlinNoise(px * .04f + 3f, pz * .04f + 9f) < .4f) continue;
+                var kind = WindMesh.Patch(px, pz, .013f, 61f);      // long grass, short lawn or feather grass
+                var tone = WindMesh.Patch(px, pz, .025f, 62f);      // the patch's shade, deep blue to green
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.16f, .3f, .3f), new Color(.24f, .4f, .36f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .3f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, Moon, .5f), rng, 3, .08f);
+                var col = Color.Lerp(blue, green, tone) * (.92f + r2 * .16f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .45f)
+                {
+                    // long night grass in clumps
+                    wm.Tuft(at, .35f + r2 * .4f, col, Color.Lerp(col, Moon, .5f), rng, 3, .08f, .12f);
+                    if (r1 < .25f) wm.Tuft(at + new Vector3(.4f, 0, -.3f), .3f + r1 * .4f, col, Color.Lerp(col, Moon, .45f), rng, 3, .08f, .12f);
+                    longGrass++;
+                }
+                else if (kind < .75f)
+                {
+                    // a short dark lawn, barely tipped with light
+                    wm.Tuft(at, .16f + r2 * .12f, col, Color.Lerp(col, Moon, .3f), rng, 3, .06f, .12f);
+                    if (r1 < .3f) wm.Tuft(at + new Vector3(-.4f, 0, .35f), .14f + r1 * .1f, col, Color.Lerp(col, Moon, .25f), rng, 2, .06f, .12f);
+                    lawn++;
+                }
+                else
+                {
+                    // feather grass: tall and fine, silvered by the moon
+                    var fc = Color.Lerp(col, green, .3f);
+                    wm.Tuft(at, .65f + r2 * .4f, fc, Color.Lerp(fc, Moon, .6f), rng, 3, .04f, .12f); feather++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Scores grass", ctx.Root, mat);
+            Debug.Log($"The Isle of Scores grass: {longGrass} long-grass clumps, {lawn} lawn spots, {feather} feather-grass tufts");
         }
     }
 }
