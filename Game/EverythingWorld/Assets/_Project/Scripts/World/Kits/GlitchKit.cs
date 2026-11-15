@@ -279,24 +279,33 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Short square tufts in two greens, a few tips lit like pixels.
+        /// Short square tufts in two greens, laid out in hard low-resolution blocks like the ground: each 9 m block is
+        /// bare or grown, one green or the other, short or a little taller, and dark or lit, where many tips glow like
+        /// pixels. Every blade gets only a faint shade of its own, to keep the look graphic.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.2f, .8f, new Color(.2f, .3f, .26f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2002);
-            const float st = 3f;
+            const float st = 3f, block = 9f;
+            int dark = 0, lit = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .05f + 3f, pz * .05f + 6f) < .5f) continue;
+                var bx = (Mathf.Floor(px / block) + .5f) * block; var bz = (Mathf.Floor(pz / block) + .5f) * block;   // the block's centre
+                if (WindMesh.Patch(bx, bz, .05f, 1f) < .5f) continue;      // a bare block
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = (float)rng.NextDouble() < .5f ? new Color(.16f, .26f, .22f) : new Color(.2f, .32f, .26f);
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .2f + (float)rng.NextDouble() * .2f, col, Color.Lerp(col, Term, .5f), rng, 3, .1f);
+                var col = WindMesh.Patch(bx, bz, .07f, 2f) < .5f ? new Color(.16f, .26f, .22f) : new Color(.2f, .32f, .26f);
+                var isLit = WindMesh.Patch(bx, bz, .06f, 3f) > .6f;
+                var tall = WindMesh.Patch(bx, bz, .08f, 4f) > .55f;
+                var tip = isLit && rng.NextDouble() < .45 ? Term : Color.Lerp(col, Term, .5f);
+                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), (tall ? .3f : .2f) + (float)rng.NextDouble() * .2f, col, tip, rng, 3, .1f, .06f);
+                if (isLit) lit++; else dark++;
             }
             foreach (var kv in meshes) kv.Value.Build("Glitch grass", ctx.Root, mat);
+            Debug.Log($"The IDM Glitchlands grass: {dark} tufts in dark blocks, {lit} in lit blocks");
         }
     }
 }
