@@ -384,7 +384,10 @@ namespace EverythingWorld.World
         }
 
         // ---------------------------------------------------------------- ground cover
-        /// Long festival grass with clover and wildflowers, trodden flat near the walkways.
+        /// Festival grass, in patches the way a field looks on the last night: long grass waving where nobody walks,
+        /// clover lawns with drifts of one kind of wildflower, grass trodden flat and yellowed along the walkways,
+        /// and the odd bare scuffed patch. Each patch its own shade, from a cool dusk blue-green to a warm
+        /// yellow-green; every blade its own.
         void GroundCover(LandContext ctx)
         {
             var grassMat = WindMesh.Material(.35f, 1.1f, Grass);
@@ -392,22 +395,43 @@ namespace EverythingWorld.World
             var rng = new System.Random(4321);
             const float step = 1.8f;
             Color[] flowers = { new Color(1f, .9f, .3f), new Color(1f, 1f, 1f), new Color(.95f, .45f, .6f), new Color(.6f, .55f, 1f) };
+            Color cool = new Color(.34f, .52f, .32f), warm = new Color(.6f, .66f, .3f), glow = new Color(1f, .85f, .5f);
+            int longGrass = 0, clover = 0, trodden = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, 0f, .7f)) continue;
-                var n = Mathf.PerlinNoise(px * .02f + 1f, pz * .02f + 5f);
-                if (n < .3f) continue;
+                var byWalk = NearPath(px, pz, 5.5f);                                 // trodden along the walkways
+                var kind = WindMesh.Patch(px, pz, .013f, 1f);                     // long grass or clover lawn
+                var bare = WindMesh.Patch(px, pz, .02f, 2f);
+                if (bare < (byWalk ? .4f : .3f)) continue;
+                var tone = WindMesh.Patch(px, pz, .022f, 3f); var drift = WindMesh.Patch(px, pz, .06f, 4f);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
                 var g = ctx.Ground(px, pz);
-                var col = Color.Lerp(new Color(.36f, .55f, .26f), new Color(.6f, .66f, .32f), (float)rng.NextDouble());
+                var col = Color.Lerp(cool, warm, Mathf.Clamp01((tone - .25f) * 2f)) * (.92f + (float)rng.NextDouble() * .16f);
                 var at = new Vector3(px, g - .04f, pz);
-                wm.Tuft(at, .35f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, new Color(1f, .85f, .5f), .35f), rng, 4, .07f);
-                if (rng.NextDouble() < .1) wm.Flower(at + new Vector3(.2f, 0, .1f), .3f, flowers[rng.Next(flowers.Length)], rng);
+                if (byWalk)
+                {
+                    var tc = Color.Lerp(col, Trodden, .35f);
+                    wm.Tuft(at, .14f + (float)rng.NextDouble() * .16f, tc, Color.Lerp(tc, Straw, .3f), rng, 3, .07f, .14f); trodden++;
+                }
+                else if (kind > .5f)
+                {
+                    wm.Tuft(at, .5f + (float)rng.NextDouble() * .45f, col, Color.Lerp(col, glow, .35f), rng, 5, .07f, .15f); longGrass++;
+                    if (rng.NextDouble() < .04) { wm.Flower(at + new Vector3(.2f, 0, .1f), .45f, flowers[rng.Next(flowers.Length)], rng); blooms++; }
+                }
+                else
+                {
+                    var cc = Color.Lerp(col, cool, .2f);
+                    wm.Tuft(at, .22f + (float)rng.NextDouble() * .2f, cc, Color.Lerp(cc, glow, .25f), rng, 4, .08f, .14f); clover++;
+                    var fl = flowers[WindMesh.Pick(WindMesh.Patch(px, pz, .016f, 5f), flowers.Length)];
+                    if (rng.NextDouble() < (drift > .6f ? .35 : .04)) { wm.Flower(at + new Vector3(.2f, 0, .1f), .25f + (float)rng.NextDouble() * .08f, fl, rng); blooms++; }
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Festival grass", ctx.Root, grassMat);
+            Debug.Log($"The Electric Fields grass: {longGrass} long-grass tufts, {clover} clover tufts, {trodden} trodden tufts, {blooms} wildflowers");
         }
     }
 }
