@@ -120,12 +120,12 @@ namespace EverythingWorld.World
                 {
                     float b0 = s * Mathf.PI * 2f / seg, b1 = (s + 1) * Mathf.PI * 2f / seg;
                     Vector3 P(float a, float b) { var rad = Mathf.Sin(a) * 9f * (a > Mathf.PI * .6f ? Mathf.Lerp(1f, .35f, (a - Mathf.PI * .6f) / (Mathf.PI * .4f)) : 1f); return new Vector3(Mathf.Cos(b) * rad, Mathf.Cos(a) * 11f, Mathf.Sin(b) * rad); }
-                    mk.Quad(WorldMaterials.Solid(stripes[s % stripes.Length], .4f), P(a0, b0), P(a0, b1), P(a1, b1), P(a1, b0), Vector3.zero);
+                    mk.Quad(WorldMaterials.Surface(stripes[s % stripes.Length], Surface.Cloth), P(a0, b0), P(a0, b1), P(a1, b1), P(a1, b0), Vector3.zero);
                 }
             }
-            mk.Box(WorldMaterials.Solid(new Color(.5f, .38f, .24f)), Vector3.down * 15f, new Vector3(2f, 1.4f, 2f), Quaternion.identity);
+            mk.Box(WorldMaterials.Surface(new Color(.5f, .38f, .24f), Surface.Wood), Vector3.down * 15f, new Vector3(2f, 1.4f, 2f), Quaternion.identity);
             foreach (var d in new[] { new Vector3(1, 0, 1), new Vector3(-1, 0, 1), new Vector3(1, 0, -1), new Vector3(-1, 0, -1) })
-                mk.Box(WorldMaterials.Solid(new Color(.3f, .25f, .2f)), Vector3.down * 12.4f + d * .85f, new Vector3(.05f, 4f, .05f), Quaternion.identity);
+                mk.Box(WorldMaterials.Surface(new Color(.3f, .25f, .2f), Surface.Cloth), Vector3.down * 12.4f + d * .85f, new Vector3(.05f, 4f, .05f), Quaternion.identity);
             mk.Box(WorldMaterials.Glow(new Color(1f, .6f, .2f), 2.4f), Vector3.down * 13.6f, new Vector3(.5f, .5f, .5f), Quaternion.identity);
             return mk.BuildSingle("Hot-air balloon", transform, false).transform;
         }

@@ -43,11 +43,11 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            stoneM = WorldMaterials.Solid(Stone); wallM = WorldMaterials.Solid(new Color(.62f, .6f, .54f));
-            asphalt = WorldMaterials.Solid(new Color(.36f, .36f, .38f), .2f); wood = WorldMaterials.Solid(new Color(.5f, .38f, .26f));
-            dark = WorldMaterials.Solid(new Color(.1f, .1f, .11f)); metal = WorldMaterials.Solid(new Color(.75f, .76f, .78f), .7f);
-            hedge = WorldMaterials.Solid(new Color(.25f, .45f, .22f)); oakLeaf = WorldMaterials.Solid(new Color(.32f, .52f, .24f));
-            bark = WorldMaterials.Solid(new Color(.38f, .3f, .24f)); white = WorldMaterials.Solid(new Color(.96f, .95f, .92f));
+            stoneM = WorldMaterials.Surface(Stone, Surface.Stone); wallM = WorldMaterials.Surface(new Color(.62f, .6f, .54f), Surface.Stone);
+            asphalt = WorldMaterials.Surface(new Color(.36f, .36f, .38f), Surface.Stone); wood = WorldMaterials.Surface(new Color(.5f, .38f, .26f), Surface.Wood);
+            dark = WorldMaterials.Solid(new Color(.1f, .1f, .11f)); metal = WorldMaterials.Surface(new Color(.75f, .76f, .78f), Surface.Metal);
+            hedge = WorldMaterials.Surface(new Color(.25f, .45f, .22f), Surface.Foliage); oakLeaf = WorldMaterials.Surface(new Color(.32f, .52f, .24f), Surface.Foliage);
+            bark = WorldMaterials.Surface(new Color(.38f, .3f, .24f), Surface.Bark); white = WorldMaterials.Solid(new Color(.96f, .95f, .92f));
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
@@ -309,7 +309,7 @@ namespace EverythingWorld.World
         {
             var c = ctx.OnGround(center.x, center.z); var up = Vector3.up;
             Oak(ctx, mk, ctx.OnGround(c.x + 17f, c.z + 13f), 1.7f);
-            var box = ctx.OnGround(c.x - 8f, c.z + 4f); var red = WorldMaterials.Solid(new Color(.8f, .12f, .12f));
+            var box = ctx.OnGround(c.x - 8f, c.z + 4f); var red = WorldMaterials.Surface(new Color(.8f, .12f, .12f), Surface.Painted);
             mk.Box(red, box + up * 1.3f, new Vector3(1.1f, 2.6f, 1.1f), Quaternion.identity);
             mk.Box(red, box + up * 2.75f, new Vector3(1.2f, .3f, 1.2f), Quaternion.identity);
             foreach (var d in new[] { Vector3.forward, Vector3.back, Vector3.left, Vector3.right }) mk.Box(GlowM(new Color(1f, .95f, .8f), 1.6f), box + up * 1.6f + d * .56f, new Vector3(Mathf.Abs(d.z) > 0 ? .7f : .02f, 1.2f, Mathf.Abs(d.x) > 0 ? .7f : .02f), Quaternion.identity);
@@ -488,8 +488,8 @@ namespace EverythingWorld.World
             if (!hasStadium) return;
             var c = ctx.OnGround(stadiumC.x, stadiumC.y);
             var up = Vector3.up; const float R = 12f; const int n = 12;
-            var marble = WorldMaterials.Solid(new Color(.95f, .93f, .88f), .5f); var gilt = WorldMaterials.Solid(new Color(.95f, .76f, .3f), .85f);
-            var bronze = WorldMaterials.Solid(new Color(.55f, .38f, .2f), .7f);
+            var marble = WorldMaterials.Surface(new Color(.95f, .93f, .88f), Surface.Painted); var gilt = WorldMaterials.Surface(new Color(.95f, .76f, .3f), Surface.Metal);
+            var bronze = WorldMaterials.Surface(new Color(.55f, .38f, .2f), Surface.Metal);
             // the road up, with banners
             if (!JoinFor(ctx, c, 990, out var from, out _)) from = center;
             var face = new Vector3(from.x - c.x, 0, from.z - c.z).normalized; if (face.sqrMagnitude < .1f) face = Vector3.forward;
@@ -560,7 +560,7 @@ namespace EverythingWorld.World
                 {
                     case 0: Guitar(mk, ctx.Rng, top, -d, Paint[k % Paint.Length], 1.1f, 6f); break;
                     case 1: mk.Prism(metal, top, up, .04f, 1.2f, 6); mk.Blob(metal, top + up * 1.35f, new Vector3(.12f, .18f, .12f), ctx.Rng, 0f); break;     // a microphone
-                    case 2: mk.Prism(white, top + up * .02f, up, .4f, .5f, 14); mk.Prism(WorldMaterials.Solid(new Color(.85f, .7f, .3f), .9f), top + up * .9f + d * .3f, up, .35f, .02f, 14); mk.Box(metal, top + up * .45f + d * .3f, new Vector3(.03f, .9f, .03f), rot); break; // a drum and cymbal
+                    case 2: mk.Prism(white, top + up * .02f, up, .4f, .5f, 14); mk.Prism(WorldMaterials.Surface(new Color(.85f, .7f, .3f), Surface.Metal), top + up * .9f + d * .3f, up, .35f, .02f, 14); mk.Box(metal, top + up * .45f + d * .3f, new Vector3(.03f, .9f, .03f), rot); break; // a drum and cymbal
                     default: mk.Box(white, top + up * .05f, new Vector3(1f, .1f, .5f), rot); for (var key = 0; key < 7; key++) mk.Box(dark, top + up * .11f + Vector3.Cross(up, d) * ((key - 3f) * .13f) + d * .08f, new Vector3(.05f, .02f, .25f), rot); break;  // a keyboard
                 }
                 var candle = pl + up * 1.15f + Vector3.Cross(up, d) * .5f + d * .4f;
@@ -580,8 +580,8 @@ namespace EverythingWorld.World
         /// A royal banner on a tall pole: crimson or deep blue cloth with a gold band, a gold finial on top.
         void Banner(LandContext ctx, MeshKit mk, Vector3 g, bool crimson)
         {
-            var up = Vector3.up; var gilt = WorldMaterials.Solid(new Color(.95f, .76f, .3f), .85f);
-            var cloth = WorldMaterials.Solid(crimson ? new Color(.7f, .08f, .12f) : new Color(.12f, .2f, .55f));
+            var up = Vector3.up; var gilt = WorldMaterials.Surface(new Color(.95f, .76f, .3f), Surface.Metal);
+            var cloth = WorldMaterials.Surface(crimson ? new Color(.7f, .08f, .12f) : new Color(.12f, .2f, .55f), Surface.Cloth);
             var face = new Vector3(center.x - g.x, 0, center.z - g.z).normalized; var rot = Quaternion.LookRotation(face);
             mk.Prism(dark, g - up * .3f, up, .07f, 5.4f, 6);
             mk.Blob(gilt, g + up * 5.2f, Vector3.one * .14f, ctx.Rng, 0f);

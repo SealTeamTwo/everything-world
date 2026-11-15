@@ -58,7 +58,7 @@ namespace EverythingWorld.World
                 var c = p + up * (r - .4f);
                 mk.Prism(vinyl, c - d * .12f, d, r, .24f, 24);
                 mk.Prism(vinyl, c + d * .12f, -d, r, .24f, 24);
-                foreach (var s in new[] { 1f, -1f }) { mk.Prism(groove, c + d * s * .125f, d * s, r * .75f, .01f, 24); mk.Prism(WorldMaterials.Solid(labels[k % labels.Length]), c + d * s * .138f, d * s, r * .32f, .01f, 16); mk.Prism(dark, c + d * s * .151f, d * s, .06f, .01f, 8); }
+                foreach (var s in new[] { 1f, -1f }) { mk.Prism(groove, c + d * s * .125f, d * s, r * .75f, .01f, 24); mk.Prism(WorldMaterials.Surface(labels[k % labels.Length], Surface.Painted), c + d * s * .138f, d * s, r * .32f, .01f, 16); mk.Prism(dark, c + d * s * .151f, d * s, .06f, .01f, 8); }
                 solid.Prism(vinyl, c - d * .2f, d, r, .4f, 12);   // the whole disc (a box r * 1.6 wide left its round edges open)
             }
             mk.Prism(stoneM, at - up * .2f, up, 1.4f, .7f, 10);
@@ -71,8 +71,8 @@ namespace EverythingWorld.World
         void Jukebox(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
             var up = Vector3.up; var face = new Vector3(center.x - at.x, 0, center.z - at.z).normalized; var rot = Quaternion.LookRotation(face);
-            mk.Box(WorldMaterials.Solid(new Color(.55f, .3f, .2f), .6f), at + up * .9f, new Vector3(1.2f, 1.8f, .8f), rot);
-            mk.Prism(WorldMaterials.Solid(new Color(.55f, .3f, .2f), .6f), at + up * 1.8f - face * .4f, face, .6f, .8f, 16);
+            mk.Box(WorldMaterials.Surface(new Color(.55f, .3f, .2f), Surface.Painted), at + up * .9f, new Vector3(1.2f, 1.8f, .8f), rot);
+            mk.Prism(WorldMaterials.Surface(new Color(.55f, .3f, .2f), Surface.Painted), at + up * 1.8f - face * .4f, face, .6f, .8f, 16);
             Color[] bands = { new Color(1f, .4f, .2f), new Color(1f, .85f, .3f), new Color(.3f, .8f, 1f) };
             for (var b = 0; b < 3; b++) mk.Box(GlowM(bands[b], 2.4f), at + up * (.5f + b * .45f) + face * .41f, new Vector3(1f, .12f, .02f), rot);
             mk.Box(GlowM(new Color(1f, .9f, .7f), 1.8f), at + up * 1.75f + face * .41f, new Vector3(.8f, .35f, .02f), rot);
@@ -90,7 +90,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var dir = facing ?? Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward; dir.y = 0; dir.Normalize();
             var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(up, dir);
-            var body = WorldMaterials.Solid(paint, .85f); var glass = WorldMaterials.Solid(new Color(.2f, .28f, .35f), .95f); var chrome = WorldMaterials.Solid(new Color(.85f, .86f, .88f), .95f);
+            var body = WorldMaterials.Surface(paint, Surface.Painted); var glass = WorldMaterials.Surface(new Color(.2f, .28f, .35f), Surface.Glass); var chrome = WorldMaterials.Surface(new Color(.85f, .86f, .88f), Surface.Metal);
             mk.Box(body, at + up * .72f, new Vector3(2f, .62f, 5f), rot);                                   // the body
             mk.Box(body, at + up * 1.06f + dir * 1.5f, new Vector3(1.9f, .12f, 1.8f), rot * Quaternion.Euler(4f, 0, 0));   // bonnet
             mk.Box(body, at + up * 1.3f - dir * .4f, new Vector3(1.75f, .55f, 2f), rot);                  // cabin
@@ -132,7 +132,7 @@ namespace EverythingWorld.World
 
         void Haystacks(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
-            var hay = WorldMaterials.Solid(new Color(.88f, .75f, .4f));
+            var hay = WorldMaterials.Surface(new Color(.88f, .75f, .4f), Surface.Foliage);
             for (var k = 0; k < ctx.Rng.Next(2, 5); k++)
             {
                 var p = ctx.OnGround(at.x + ctx.Range(-7f, 7f), at.z + ctx.Range(-7f, 7f)); var d = Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.right;
@@ -146,11 +146,11 @@ namespace EverythingWorld.World
             var up = Vector3.up; var face = new Vector3(center.x - at.x, 0, center.z - at.z).normalized; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
             const float W = 7f, D = 5f, H = 3f;
             mk.Box(stoneM, at + up * H / 2f, new Vector3(W, H, D), rot); solid.Box(stoneM, at + up * H / 2f, new Vector3(W, H, D), rot);
-            mk.GableRoof(WorldMaterials.Solid(new Color(.75f, .65f, .4f)), at + up * H, new Vector3(D + .8f, 0, W + .6f), 2.2f, Quaternion.LookRotation(side));
-            mk.Box(WorldMaterials.Solid(new Color(.3f, .45f, .3f)), at + up * 1f + face * (D / 2f + .02f), new Vector3(1f, 2f, .05f), rot);
+            mk.GableRoof(WorldMaterials.Surface(new Color(.75f, .65f, .4f), Surface.Foliage), at + up * H, new Vector3(D + .8f, 0, W + .6f), 2.2f, Quaternion.LookRotation(side));
+            mk.Box(WorldMaterials.Surface(new Color(.3f, .45f, .3f), Surface.Painted), at + up * 1f + face * (D / 2f + .02f), new Vector3(1f, 2f, .05f), rot);
             foreach (var s in new[] { -1.9f, 1.9f }) mk.Box(GlowM(new Color(1f, .88f, .6f), 1.4f), at + up * 1.6f + face * (D / 2f + .02f) + side * s, new Vector3(1f, .8f, .04f), rot);
             mk.Box(stoneM, at + up * (H + 2f) + side * (W / 2f - .6f), new Vector3(.8f, 1.6f, .8f), rot);
-            for (var k = 0; k < 8; k++) soft.Blob(WorldMaterials.Solid(k % 2 == 0 ? new Color(.9f, .3f, .4f) : new Color(.95f, .85f, .3f)), ctx.OnGround(at.x + face.x * (D / 2f + 1f) + side.x * (k - 3.5f) * .8f, at.z + face.z * (D / 2f + 1f) + side.z * (k - 3.5f) * .8f) + up * .3f, Vector3.one * .25f, ctx.Rng, .3f);
+            for (var k = 0; k < 8; k++) soft.Blob(WorldMaterials.Surface(k % 2 == 0 ? new Color(.9f, .3f, .4f) : new Color(.95f, .85f, .3f), Surface.Foliage), ctx.OnGround(at.x + face.x * (D / 2f + 1f) + side.x * (k - 3.5f) * .8f, at.z + face.z * (D / 2f + 1f) + side.z * (k - 3.5f) * .8f) + up * .3f, Vector3.one * .25f, ctx.Rng, .3f);
             noGrass.Add(new Vector3(at.x, 6f, at.z));
         }
 
