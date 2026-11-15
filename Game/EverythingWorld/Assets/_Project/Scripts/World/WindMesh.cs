@@ -100,6 +100,15 @@ namespace EverythingWorld.World
             go.isStatic = true;
         }
 
+        /// Smooth noise in 0..1 for laying out ground cover in patches (which plant grows where, bare ground, each
+        /// patch's shade, flower drifts): 'scale' = 1 / patch size in metres (.011 gives patches ~90 m across, .05
+        /// ~20 m), 'seed' keeps different fields apart. Clamped, because Unity's Perlin noise strays a little outside 0..1.
+        public static float Patch(float x, float z, float scale, float seed) =>
+            Mathf.Clamp01(Mathf.PerlinNoise(x * scale + seed * 17.3f + 3.1f, z * scale + seed * 9.7f + 5.3f));
+
+        /// Picks one of 'n' things from a 0..1 value, never past the end.
+        public static int Pick(float v, int n) => Mathf.Clamp(Mathf.FloorToInt(v * n), 0, n - 1);
+
         /// A Wind Grass material: 'sway' = metres the tips move at full wind, 'flutter' = how fast.
         public static Material Material(float sway, float flutter, Color fallback)
         {
