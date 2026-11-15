@@ -31,9 +31,9 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            earthM = WorldMaterials.Solid(new Color(.7f, .38f, .22f)); sandM = WorldMaterials.Solid(new Color(.92f, .84f, .64f)); zinc = WorldMaterials.Solid(new Color(.68f, .7f, .72f), .7f); rustM = WorldMaterials.Solid(new Color(.6f, .32f, .18f));
-            woodM = WorldMaterials.Solid(new Color(.5f, .36f, .24f)); plank = WorldMaterials.Solid(new Color(.62f, .5f, .38f)); iron = WorldMaterials.Solid(new Color(.14f, .14f, .16f), .5f); dark = WorldMaterials.Solid(new Color(.07f, .07f, .08f)); white = WorldMaterials.Solid(new Color(.96f, .95f, .9f));
-            leafM = WorldMaterials.Solid(new Color(.16f, .56f, .26f)); leafDark = WorldMaterials.Solid(new Color(.1f, .42f, .24f)); trunkM = WorldMaterials.Solid(new Color(.42f, .32f, .24f));
+            earthM = WorldMaterials.Surface(new Color(.7f, .38f, .22f), Surface.Stone); sandM = WorldMaterials.Surface(new Color(.92f, .84f, .64f), Surface.Stone); zinc = WorldMaterials.Surface(new Color(.68f, .7f, .72f), Surface.Metal); rustM = WorldMaterials.Surface(new Color(.6f, .32f, .18f), Surface.Metal);
+            woodM = WorldMaterials.Surface(new Color(.5f, .36f, .24f), Surface.Wood); plank = WorldMaterials.Surface(new Color(.62f, .5f, .38f), Surface.Wood); iron = WorldMaterials.Surface(new Color(.14f, .14f, .16f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.07f, .07f, .08f)); white = WorldMaterials.Solid(new Color(.96f, .95f, .9f));
+            leafM = WorldMaterials.Surface(new Color(.16f, .56f, .26f), Surface.Foliage); leafDark = WorldMaterials.Surface(new Color(.1f, .42f, .24f), Surface.Foliage); trunkM = WorldMaterials.Surface(new Color(.42f, .32f, .24f), Surface.Bark);
             puddleM = WorldMaterials.Solid(new Color(.62f, .78f, .9f), .95f);
             coneM = new Material(WorldMaterials.Glow(Gold, .6f)) { name = "Roots speaker cones" }; fireM = new Material(WorldMaterials.Glow(new Color(1f, .55f, .12f), 1.8f)) { name = "Roots fires" };
             var bow = new[] { new Color(1f, .2f, .2f), new Color(1f, .6f, .1f), new Color(1f, .9f, .2f), new Color(.2f, .8f, .3f), new Color(.2f, .5f, 1f), new Color(.6f, .3f, .9f) };
@@ -41,7 +41,7 @@ namespace EverythingWorld.World
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
-        Material Paint(Color c) => WorldMaterials.Solid(c);
+        Material Paint(Color c) => WorldMaterials.Surface(c, Surface.Painted);
         static bool HasStation(IslandWorldData.Artist a) => a.stationId != 0;
         static float Foot(IslandWorldData.Artist a)
         {

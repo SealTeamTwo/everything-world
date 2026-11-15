@@ -90,7 +90,7 @@ namespace EverythingWorld.World
             Shot(ctx, "the yard", c + D * 15f - S * 12f + up * 2.6f, tr + up * 3f);
         }
 
-        Material concreteOf() => WorldMaterials.Solid(new Color(.66f, .64f, .6f));
+        Material concreteOf() => WorldMaterials.Surface(new Color(.66f, .64f, .6f), Surface.Stone);
 
         // ---------------------------------------------------------------- Bay Road
         void BayRoad(LandContext ctx, MeshKit mk, MeshKit solid)
