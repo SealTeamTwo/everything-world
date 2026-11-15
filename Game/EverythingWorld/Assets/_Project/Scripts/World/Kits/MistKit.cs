@@ -29,7 +29,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            dirtM = WorldMaterials.Glow(new Color(.5f, .44f, .36f), .1f); wood = WorldMaterials.Glow(new Color(.46f, .36f, .28f), .1f); iron = WorldMaterials.Solid(new Color(.3f, .3f, .32f), .5f); dark = WorldMaterials.Solid(new Color(.1f, .1f, .1f)); white = WorldMaterials.Glow(new Color(.82f, .8f, .76f), .14f);
+            dirtM = WorldMaterials.Glow(new Color(.5f, .44f, .36f), .1f); wood = WorldMaterials.Glow(new Color(.46f, .36f, .28f), .1f); iron = WorldMaterials.Surface(new Color(.3f, .3f, .32f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.1f, .1f, .1f)); white = WorldMaterials.Glow(new Color(.82f, .8f, .76f), .14f);
             leafM = WorldMaterials.Glow(new Color(.42f, .5f, .38f), .1f); trunkM = WorldMaterials.Glow(new Color(.34f, .28f, .24f), .1f); hay = WorldMaterials.Glow(new Color(.8f, .68f, .44f), .12f); wool = WorldMaterials.Glow(new Color(.86f, .84f, .8f), .14f);
             lampM = new Material(WorldMaterials.Glow(Bulb, 1.4f)) { name = "Mist lamps" }; screenM = new Material(WorldMaterials.Glow(new Color(.7f, .8f, .9f), 1f)) { name = "Mist screens" }; waterM = new Material(WorldMaterials.Glow(new Color(.46f, .6f, .62f), .5f)) { name = "Mist water" };
         }
