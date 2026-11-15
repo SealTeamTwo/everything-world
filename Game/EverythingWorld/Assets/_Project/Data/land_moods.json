@@ -14,266 +14,266 @@
    "skyLight": "#94A6BE", "horizonLight": "#D8CCB0", "groundLight": "#6E7A58",
    "fogColor": "#A2ABB4", "fogStart": 90, "fogEnd": 1200,
    "stars": 0, "sunShadows": true, "dailyWeather": true, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.9, "heightFogColor": "#B1B4B3", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Grunge Rainwood",
    "sunPitch": 18, "sunYaw": 210, "sunIntensity": 0.7, "sunColor": "#C8D4DC",
    "skyLight": "#74858C", "horizonLight": "#80908F", "groundLight": "#45514A",
    "fogColor": "#6B797B", "fogStart": 35, "fogEnd": 520, "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "rain", "weatherAmount": 0.4
+   "weather": "rain", "weatherAmount": 0.4, "heightFog": 0.9, "heightFogColor": "#717F81", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Post-Punk Docklands",
    "sunPitch": 30, "sunYaw": 250, "sunIntensity": 0.4, "sunColor": "#8C9CC8",
    "skyLight": "#2A3350", "horizonLight": "#6A4A30", "groundLight": "#4A3E32",
    "fogColor": "#2A2420", "fogStart": 40, "fogEnd": 650, "stars": 0.3, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#3C2F24", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "Metalcore Caldera",
    "sunPitch": 20, "sunYaw": 300, "sunIntensity": 0.7, "sunColor": "#B8A8E0",
    "skyLight": "#4C4562", "horizonLight": "#5A3A6A", "groundLight": "#564870",
    "fogColor": "#3E3448", "fogStart": 60, "fogEnd": 900, "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#463652", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Oddball Backroads",
    "sunPitch": 32, "sunYaw": 240, "sunIntensity": 1.05, "sunColor": "#FFE8B0",
    "skyLight": "#A8C4C8", "horizonLight": "#E8DCA8", "groundLight": "#7A7A50",
    "fogColor": "#D6D4AE", "fogStart": 160, "fogEnd": 1500, "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#DBD6AC", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Fusion Isthmus",
    "sunPitch": 12, "sunYaw": 95, "sunIntensity": 0.75, "sunColor": "#FFB98C",
    "skyLight": "#6E94C8", "horizonLight": "#E6A882", "groundLight": "#6A5E58",
    "fogColor": "#2C6480", "fogStart": 220, "fogEnd": 1800, "stars": 0.3, "sunShadows": false, "dailyWeather": false, "bloom": 1.15,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#607781", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Old Jazz Quarter",
    "sunPitch": 58, "sunYaw": 20, "sunIntensity": 0.6, "sunColor": "#C8D2E8",
    "skyLight": "#9498A8", "horizonLight": "#787C88", "groundLight": "#50525C",
    "fogColor": "#1D1F25", "fogStart": 50, "fogEnd": 1000, "stars": 0.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.3,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#363941", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Delta Crossroads",
    "sunPitch": 56, "sunYaw": 70, "sunIntensity": 1.3, "sunColor": "#FFF2D2",
    "skyLight": "#E0D8B4", "horizonLight": "#EBD9A4", "groundLight": "#A48C5C",
    "fogColor": "#DDCB98", "fogStart": 70, "fogEnd": 1300, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 0.9,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#E1CF9B", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Afrobeat Coast",
    "sunPitch": 7, "sunYaw": 90, "sunIntensity": 0.95, "sunColor": "#FF9448",
    "skyLight": "#9C7CD8", "horizonLight": "#FFA060", "groundLight": "#8A5648",
    "fogColor": "#6C3C88", "fogStart": 260, "fogEnd": 2800, "stars": 0.35, "sunShadows": false, "dailyWeather": false, "bloom": 1.25,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#95587D", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Far Shores",
    "sunPitch": 54, "sunYaw": 60, "sunIntensity": 1.3, "sunColor": "#FFF6E0",
    "skyLight": "#BFE0FF", "horizonLight": "#DDEBF2", "groundLight": "#C8B48A",
    "fogColor": "#7CC2EE", "fogStart": 320, "fogEnd": 2800, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 0.85,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#97CDEF", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "Boom Bap Harbour",
    "sunPitch": 50, "sunYaw": 200, "sunIntensity": 1.25, "sunColor": "#FFF0D0",
    "skyLight": "#C8DCF0", "horizonLight": "#F0E2C4", "groundLight": "#A8927A",
    "fogColor": "#B4CFE2", "fogStart": 140, "fogEnd": 1700, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 0.9,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#C5D4DA", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Velvet Rooftops",
    "sunPitch": 48, "sunYaw": 320, "sunIntensity": 0.7, "sunColor": "#C8B8FF",
    "skyLight": "#8E78D8", "horizonLight": "#B8608E", "groundLight": "#5A4A78",
    "fogColor": "#16122E", "fogStart": 200, "fogEnd": 2400, "stars": 0.8, "sunShadows": false, "dailyWeather": false, "bloom": 1.4,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#533359", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Roots Bay",
    "sunPitch": 26, "sunYaw": 250, "sunIntensity": 1.2, "sunColor": "#FFF2D0",
    "skyLight": "#C4E4F4", "horizonLight": "#F4ECD0", "groundLight": "#8CA878",
    "fogColor": "#BFE2F0", "fogStart": 60, "fogEnd": 1100, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 0.95,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#CEE5E7", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Neo Soul Quarter",
    "sunPitch": 9, "sunYaw": 285, "sunIntensity": 0.7, "sunColor": "#FFAE7C",
    "skyLight": "#A586B4", "horizonLight": "#E8A070", "groundLight": "#7A5A56",
    "fogColor": "#4A2C4C", "fogStart": 70, "fogEnd": 900, "stars": 0.5, "sunShadows": false, "dailyWeather": false, "bloom": 1.25,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#8D5D68", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Hip-Hop Boroughs",
    "sunPitch": 14, "sunYaw": 250, "sunIntensity": 1.3, "sunColor": "#FFD596",
    "skyLight": "#A9CDEE", "horizonLight": "#FFE2A8", "groundLight": "#A89878",
    "fogColor": "#BCD6EC", "fogStart": 200, "fogEnd": 2400, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 1.1,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#CFD9D9", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Lo-Fi Hills",
    "sunPitch": 12, "sunYaw": 300, "sunIntensity": 0.5, "sunColor": "#A8B8E4",
    "skyLight": "#8496CC", "horizonLight": "#7C88B8", "groundLight": "#5C6684",
    "fogColor": "#404A70", "fogStart": 50, "fogEnd": 800, "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 1.3,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#515B84", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Pop Republic",
    "sunPitch": 52, "sunYaw": 140, "sunIntensity": 1.3, "sunColor": "#FFF8EE",
    "skyLight": "#8CC4FF", "horizonLight": "#D8F0FF", "groundLight": "#C8D8B8",
    "fogColor": "#BFE4FF", "fogStart": 260, "fogEnd": 2800, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 0.9,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#C6E7FF", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Heartbreak Boardwalk",
    "sunPitch": 4, "sunYaw": 290, "sunIntensity": 0.8, "sunColor": "#FF9C88",
    "skyLight": "#8C78B0", "horizonLight": "#FFA88C", "groundLight": "#7A6070",
    "fogColor": "#C88A98", "fogStart": 120, "fogEnd": 1600, "stars": 0.25, "sunShadows": false, "dailyWeather": false, "bloom": 1.2,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#D79295", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Glitterlands",
    "sunPitch": 6, "sunYaw": 260, "sunIntensity": 0.75, "sunColor": "#FFB0D8",
    "skyLight": "#9C88D8", "horizonLight": "#FF9CC8", "groundLight": "#8C7CA8",
    "fogColor": "#B094D0", "fogStart": 100, "fogEnd": 1400, "stars": 0.45, "sunShadows": false, "dailyWeather": false, "bloom": 1.35,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#C696CE", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Country Plains",
    "sunPitch": 8, "sunYaw": 255, "sunIntensity": 1.2, "sunColor": "#FFB56A",
    "skyLight": "#8EA8D0", "horizonLight": "#FFC890", "groundLight": "#9A8460",
    "fogColor": "#D8B48C", "fogStart": 160, "fogEnd": 2200, "stars": 0.1, "sunShadows": true, "dailyWeather": false, "bloom": 1.05,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#E3BA8D", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Synthwave Coast",
    "sunPitch": 1, "sunYaw": 270, "sunIntensity": 0.55, "sunColor": "#FF6AA8",
    "skyLight": "#5A3C9C", "horizonLight": "#E0508C", "groundLight": "#3A2850",
    "fogColor": "#2E1A4C", "fogStart": 120, "fogEnd": 1800, "stars": 1.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.4,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#733471", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Latin Coast",
    "sunPitch": 6, "sunYaw": 280, "sunIntensity": 1.15, "sunColor": "#FF9A5A",
    "skyLight": "#7C8CC8", "horizonLight": "#FF9C70", "groundLight": "#9A6A50",
    "fogColor": "#E0906C", "fogStart": 140, "fogEnd": 1900, "stars": 0.15, "sunShadows": true, "dailyWeather": false, "bloom": 1.15,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#E9936D", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Isle of Memes",
    "sunPitch": 14, "sunYaw": 230, "sunIntensity": 0.9, "sunColor": "#FFB0D8",
    "skyLight": "#88C8E0", "horizonLight": "#FFB4D8", "groundLight": "#90A8A0",
    "fogColor": "#E0B8E0", "fogStart": 120, "fogEnd": 1600, "stars": 0.2, "sunShadows": false, "dailyWeather": false, "bloom": 1.2,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#E9B7DE", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "Studio Lot Island",
    "sunPitch": 6, "sunYaw": 250, "sunIntensity": 0.8, "sunColor": "#FF9E6A",
    "skyLight": "#6C78B8", "horizonLight": "#F09A78", "groundLight": "#7A6E68",
    "fogColor": "#5A4E70", "fogStart": 120, "fogEnd": 1500, "stars": 0.5, "sunShadows": false, "dailyWeather": false, "bloom": 1.3,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#9D7788", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Isle of Scores",
    "sunPitch": 40, "sunYaw": 200, "sunIntensity": 0.8, "sunColor": "#C8D4FF",
    "skyLight": "#5A6CC0", "horizonLight": "#4E5AA0", "groundLight": "#3C4660",
    "fogColor": "#141C40", "fogStart": 120, "fogEnd": 1500, "stars": 1.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.35,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#2F396E", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Game Isles",
    "sunPitch": 8, "sunYaw": 240, "sunIntensity": 0.9, "sunColor": "#FFA868",
    "skyLight": "#5A78D8", "horizonLight": "#FF9A68", "groundLight": "#6A6A58",
    "fogColor": "#4A4290", "fogStart": 120, "fogEnd": 1500, "stars": 0.4, "sunShadows": false, "dailyWeather": false, "bloom": 1.3,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#7D5B85", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Concert Isles",
    "sunPitch": 34, "sunYaw": 160, "sunIntensity": 0.9, "sunColor": "#D4E4FF",
    "skyLight": "#4E7894", "horizonLight": "#6C8CA4", "groundLight": "#38484C",
    "fogColor": "#1A2C38", "fogStart": 120, "fogEnd": 1500, "stars": 0.8, "sunShadows": false, "dailyWeather": false, "bloom": 1.3,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#3D5768", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Melodic Bass Highlands",
    "sunPitch": 12, "sunYaw": 250, "sunIntensity": 1.0, "sunColor": "#FF9AB0",
    "skyLight": "#9078D8", "horizonLight": "#FF8AA0", "groundLight": "#7A6898",
    "fogColor": "#3A2A60", "fogStart": 120, "fogEnd": 1500, "stars": 0.7, "sunShadows": false, "dailyWeather": false, "bloom": 1.35,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#875488", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Ambient Mists",
    "sunPitch": 7, "sunYaw": 100, "sunIntensity": 0.9, "sunColor": "#FFB890",
    "skyLight": "#8AA6A2", "horizonLight": "#E8A884", "groundLight": "#7A8064",
    "fogColor": "#8A938C", "fogStart": 30, "fogEnd": 520, "stars": 0.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.25,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.9, "heightFogColor": "#A4998A", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Four-on-the-Floor Steppe",
    "sunPitch": 40, "sunYaw": 200, "sunIntensity": 0.6, "sunColor": "#A8B8FF",
    "skyLight": "#3C4A90", "horizonLight": "#4A3C88", "groundLight": "#38384A",
    "fogColor": "#0E1030", "fogStart": 120, "fogEnd": 1500, "stars": 1.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.4,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#292659", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Dubstep Shards",
    "sunPitch": 35, "sunYaw": 150, "sunIntensity": 0.55, "sunColor": "#B8A0FF",
    "skyLight": "#4A3290", "horizonLight": "#5A2A80", "groundLight": "#342848",
    "fogColor": "#140A28", "fogStart": 100, "fogEnd": 1300, "stars": 0.9, "sunShadows": false, "dailyWeather": false, "bloom": 1.45,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#331B4F", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The IDM Glitchlands",
    "sunPitch": 30, "sunYaw": 120, "sunIntensity": 0.7, "sunColor": "#C8FFE0",
    "skyLight": "#2A4450", "horizonLight": "#284848", "groundLight": "#283838",
    "fogColor": "#0A1418", "fogStart": 120, "fogEnd": 1400, "stars": 0.5, "sunShadows": false, "dailyWeather": false, "bloom": 1.4,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#1A2D30", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Sample Gardens",
    "sunPitch": 16, "sunYaw": 240, "sunIntensity": 1.0, "sunColor": "#FFC890",
    "skyLight": "#A0B0C0", "horizonLight": "#FFC0A0", "groundLight": "#7A7058",
    "fogColor": "#B89C84", "fogStart": 120, "fogEnd": 1500, "stars": 0.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.2,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#CCA68C", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Trip-Hop Undercity",
    "sunPitch": 35, "sunYaw": 60, "sunIntensity": 0.4, "sunColor": "#7090D0",
    "skyLight": "#24304A", "horizonLight": "#2E2034", "groundLight": "#2A2A34",
    "fogColor": "#0A0C14", "fogStart": 40, "fogEnd": 320, "stars": 0.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.4,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#14121D", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Electro Foundry",
    "sunPitch": 25, "sunYaw": 300, "sunIntensity": 0.55, "sunColor": "#B8D8C0",
    "skyLight": "#2E4440", "horizonLight": "#5A4030", "groundLight": "#2C302C",
    "fogColor": "#141C1A", "fogStart": 80, "fogEnd": 900, "stars": 0.3, "sunShadows": false, "dailyWeather": false, "bloom": 1.4,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#282620", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "Mount Virtuoso",
    "sunPitch": 14, "sunYaw": 30, "sunIntensity": 0.85, "sunColor": "#E0E8FF",
    "skyLight": "#7890B0", "horizonLight": "#A8B8D0", "groundLight": "#5A6670",
    "fogColor": "#6C7C94", "fogStart": 60, "fogEnd": 900, "stars": 0.2, "sunShadows": false, "dailyWeather": false, "bloom": 1.25,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#7D8DA5", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Trance Steppe",
    "sunPitch": 4, "sunYaw": 80, "sunIntensity": 0.9, "sunColor": "#FFA880",
    "skyLight": "#8070B0", "horizonLight": "#FF9A80", "groundLight": "#6A5848",
    "fogColor": "#9A6A78", "fogStart": 120, "fogEnd": 1600, "stars": 0.3, "sunShadows": false, "dailyWeather": false, "bloom": 1.35,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#B6777A", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Liquid Rapids",
    "sunPitch": 10, "sunYaw": 250, "sunIntensity": 0.95, "sunColor": "#FFC080",
    "skyLight": "#7090C0", "horizonLight": "#FFB088", "groundLight": "#606858",
    "fogColor": "#90A0B8", "fogStart": 140, "fogEnd": 1600, "stars": 0.2, "sunShadows": false, "dailyWeather": false, "bloom": 1.25,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#AFA4AB", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Tutorial Walk",
@@ -281,7 +281,7 @@
    "skyLight": "#1E2446", "horizonLight": "#2A3260", "groundLight": "#1A1E32",
    "fogColor": "#0E1226", "fogStart": 40, "fogEnd": 420,
    "stars": 1.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.5,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.55, "heightFogColor": "#1E2443", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.25, "grade": 0.5
   },
   {
    "land": "The Pearly Gates",
@@ -289,70 +289,70 @@
    "skyLight": "#B8A88E", "horizonLight": "#D9C29E", "groundLight": "#9C8E78",
    "fogColor": "#C9B694", "fogStart": 30, "fogEnd": 380,
    "stars": 0.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.55, "heightFogColor": "#CDB997", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.6, "grade": 0.5
   },
   {
    "land": "Discotopia",
    "sunPitch": 52, "sunYaw": 30, "sunIntensity": 0.95, "sunColor": "#D4E2FF",
    "skyLight": "#7C8CE0", "horizonLight": "#8A92D0", "groundLight": "#70748C",
    "fogColor": "#0F1736", "fogStart": 120, "fogEnd": 1500, "stars": 1.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.3,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#3E4775", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Funk Tropics",
    "sunPitch": 48, "sunYaw": 200, "sunIntensity": 0.85, "sunColor": "#A8DCEC",
    "skyLight": "#7458D0", "horizonLight": "#7A50B8", "groundLight": "#44705E",
    "fogColor": "#1E1340", "fogStart": 60, "fogEnd": 900, "stars": 0.6, "sunShadows": false, "dailyWeather": false, "bloom": 1.25,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#452F75", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Soul Lowlands",
    "sunPitch": 21, "sunYaw": 100, "sunIntensity": 1.05, "sunColor": "#FFC873",
    "skyLight": "#8FB4E0", "horizonLight": "#F6D6A6", "groundLight": "#6E5438",
    "fogColor": "#A9C6DE", "fogStart": 300, "fogEnd": 2200, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 1.05,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#BFCACE", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Nu Metal Quarry",
    "sunPitch": 40, "sunYaw": 200, "sunIntensity": 0.7, "sunColor": "#E8E2D6",
    "skyLight": "#8A8C90", "horizonLight": "#A8A49A", "groundLight": "#6A665C",
    "fogColor": "#9A968E", "fogStart": 180, "fogEnd": 1400, "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#9E9A91", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Punk Badlands",
    "sunPitch": 72, "sunYaw": 160, "sunIntensity": 1.25, "sunColor": "#FFF6E0",
    "skyLight": "#9CC8F0", "horizonLight": "#F4E6CC", "groundLight": "#9A8462",
    "fogColor": "#E8DCC4", "fogStart": 260, "fogEnd": 2000, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 0.8,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#EBDFC6", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The J-Rock Isles",
    "sunPitch": 6, "sunYaw": 100, "sunIntensity": 0.95, "sunColor": "#FFA070",
    "skyLight": "#8A6A9A", "horizonLight": "#FF9A70", "groundLight": "#6A5060",
    "fogColor": "#C08088", "fogStart": 240, "fogEnd": 1800, "stars": 0.2, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#D28781", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Math Rock Escarpment",
    "sunPitch": 22, "sunYaw": 230, "sunIntensity": 1.15, "sunColor": "#FFD9A0",
    "skyLight": "#8FB4E0", "horizonLight": "#F2D2A8", "groundLight": "#6A5A40",
    "fogColor": "#C8D6E4", "fogStart": 220, "fogEnd": 1800, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#D4D5D3", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Power Metal Peaks",
    "sunPitch": 7, "sunYaw": 255, "sunIntensity": 0.85, "sunColor": "#FF9A50",
    "skyLight": "#8A5A78", "horizonLight": "#FF8A40", "groundLight": "#6A4A44",
    "fogColor": "#7A4048", "fogStart": 260, "fogEnd": 2000, "stars": 0.3, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#9F5546", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Djent Spires",
    "sunPitch": 36, "sunYaw": 210, "sunIntensity": 1.0, "sunColor": "#FFF0D2",
    "skyLight": "#A8C8EA", "horizonLight": "#DCEAF6", "groundLight": "#8C98AC",
    "fogColor": "#C6DAEC", "fogStart": 160, "fogEnd": 1700, "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#CCDEEF", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Iron Range",
@@ -360,7 +360,7 @@
    "skyLight": "#5E5A6A", "horizonLight": "#8A5A40", "groundLight": "#5A4232",
    "fogColor": "#4A4248", "fogStart": 100, "fogEnd": 1100,
    "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#5C4946", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Prog Marches",
@@ -368,7 +368,7 @@
    "skyLight": "#3C2C70", "horizonLight": "#E09A40", "groundLight": "#2C2440",
    "fogColor": "#5E466E", "fogStart": 130, "fogEnd": 1250,
    "stars": 0.7, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.9, "heightFogColor": "#9B7175", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Bluegrass Hollows",
@@ -376,7 +376,7 @@
    "skyLight": "#8EB4E8", "horizonLight": "#D2E2F2", "groundLight": "#6A7A50",
    "fogColor": "#A8C4E4", "fogStart": 140, "fogEnd": 1300,
    "stars": 0, "sunShadows": true, "dailyWeather": true, "bloom": 0.85,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#B4CCE8", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Folk Woods",
@@ -393,7 +393,7 @@
    "skyLight": "#9C8AC8", "horizonLight": "#FFA466", "groundLight": "#5A4850",
    "fogColor": "#D894A0", "fogStart": 220, "fogEnd": 1800,
    "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 1.05,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#E39890", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Jam Band Commonwealth",
@@ -401,7 +401,7 @@
    "skyLight": "#6884C8", "horizonLight": "#F6B080", "groundLight": "#3C4846",
    "fogColor": "#4862A0", "fogStart": 120, "fogEnd": 1300,
    "stars": 0.5, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#908FB3", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Psychedelic Wilds",
@@ -409,7 +409,7 @@
    "skyLight": "#8FA8F0", "horizonLight": "#E8C0F0", "groundLight": "#8A7060",
    "fogColor": "#D8C4F0", "fogStart": 200, "fogEnd": 1700,
    "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 0.9,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#DCC3F0", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "Arena Rock Ridge",
@@ -417,7 +417,7 @@
    "skyLight": "#3A4C8A", "horizonLight": "#40558F", "groundLight": "#363C55",
    "fogColor": "#141B33", "fogStart": 140, "fogEnd": 1500,
    "stars": 1.0, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#2A375D", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Hair Metal Strip",
@@ -425,7 +425,7 @@
    "skyLight": "#7B4FB0", "horizonLight": "#FF8A5A", "groundLight": "#4A3040",
    "fogColor": "#5A2E6E", "fogStart": 90, "fogEnd": 1100,
    "stars": 0.25, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#A2587D", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Southern Rock Bayou",
@@ -433,7 +433,7 @@
    "skyLight": "#C8C489", "horizonLight": "#E6CF8A", "groundLight": "#55603A",
    "fogColor": "#BDB77E", "fogStart": 40, "fogEnd": 900,
    "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 0.9,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.9, "heightFogColor": "#C8BE81", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "Kingdom of Classic Rock",
@@ -441,7 +441,7 @@
    "skyLight": "#A9C6EA", "horizonLight": "#FFD9A0", "groundLight": "#7A7448",
    "fogColor": "#F2D7A6", "fogStart": 220, "fogEnd": 2000,
    "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 0.95,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#F6D8A4", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "Garage Rock Row",
@@ -449,7 +449,7 @@
    "skyLight": "#5FA8B8", "horizonLight": "#3D8C9C", "groundLight": "#5A5038",
    "fogColor": "#1D5A68", "fogStart": 90, "fogEnd": 950,
    "stars": 0.5, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#317D8D", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Electric Fields",
@@ -457,7 +457,7 @@
    "skyLight": "#B9A2D6", "horizonLight": "#FFB98A", "groundLight": "#5B5040",
    "fogColor": "#E8B39A", "fogStart": 120, "fogEnd": 1300,
    "stars": 0.35, "sunShadows": false, "dailyWeather": false, "bloom": 0.95,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#EEB596", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Shoegaze Fens",
@@ -465,7 +465,7 @@
    "skyLight": "#B7A6D8", "horizonLight": "#F0A8C4", "groundLight": "#5A4A66",
    "fogColor": "#D2B6DA", "fogStart": 15, "fogEnd": 480,
    "stars": 0.25, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.9, "heightFogColor": "#DAB2D4", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Driftwood Shore",
@@ -473,7 +473,7 @@
    "skyLight": "#8E99A4", "horizonLight": "#C7B4AE", "groundLight": "#5A5650",
    "fogColor": "#A9B0B6", "fogStart": 30, "fogEnd": 720,
    "stars": 0, "sunShadows": false, "dailyWeather": false, "bloom": 0.9,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.9, "heightFogColor": "#B1B1B4", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Small Hours",
@@ -481,7 +481,7 @@
    "skyLight": "#1F2650", "horizonLight": "#2A2F5C", "groundLight": "#141628",
    "fogColor": "#1A1E3E", "fogStart": 25, "fogEnd": 520,
    "stars": 0.55, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "rain", "weatherAmount": 0.18
+   "weather": "rain", "weatherAmount": 0.18, "heightFog": 0.55, "heightFogColor": "#282D56", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.25, "grade": 0.5
   },
   {
    "land": "The Bedroom Pop Meadows",
@@ -489,7 +489,7 @@
    "skyLight": "#7468B0", "horizonLight": "#C98AA6", "groundLight": "#4A3F6A",
    "fogColor": "#8E7DB8", "fogStart": 60, "fogEnd": 950,
    "stars": 0.2, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.9, "heightFogColor": "#9F81B3", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "The Indie Downs",
@@ -497,7 +497,7 @@
    "skyLight": "#C6CBCB", "horizonLight": "#EAD8B6", "groundLight": "#8E8462",
    "fogColor": "#E6D8BA", "fogStart": 70, "fogEnd": 1150,
    "sunShadows": true, "dailyWeather": false, "bloom": 0.8,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#E7D8B9", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
   },
   {
    "land": "Lanternwood",
@@ -505,14 +505,14 @@
    "skyLight": "#2F3B66", "horizonLight": "#323B57", "groundLight": "#444A63",
    "fogColor": "#3B4970", "fogStart": 25, "fogEnd": 360,
    "stars": 0.9, "sunShadows": false, "dailyWeather": false, "auroraChance": 0.25, "bloom": 1.0,
-   "weather": "snow", "weatherAmount": 0.4
+   "weather": "snow", "weatherAmount": 0.4, "heightFog": 0.75, "heightFogColor": "#46557E", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Everything Hub",
    "sunPitch": 15, "sunYaw": -60, "sunIntensity": 1.25, "sunColor": "#FFC98A",
    "skyLight": "#A9B9D2", "horizonLight": "#E6C49A", "groundLight": "#7A6A55",
    "fogColor": "#E3CCAA", "fogStart": 350, "fogEnd": 2400, "bloom": 1.2,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#E4CAA6", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
   }
  ]
 }
