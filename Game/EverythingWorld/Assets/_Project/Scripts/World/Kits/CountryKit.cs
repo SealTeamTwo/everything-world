@@ -31,13 +31,13 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            dirt = WorldMaterials.Solid(new Color(.62f, .48f, .34f)); gravel = WorldMaterials.Solid(new Color(.56f, .52f, .46f)); woodM = WorldMaterials.Solid(new Color(.5f, .36f, .24f)); plank = WorldMaterials.Solid(new Color(.64f, .5f, .36f)); iron = WorldMaterials.Solid(new Color(.2f, .2f, .22f), .5f); dark = WorldMaterials.Solid(new Color(.08f, .07f, .06f)); white = WorldMaterials.Solid(new Color(.94f, .9f, .82f)); tin = WorldMaterials.Solid(new Color(.6f, .62f, .64f), .6f); hay = WorldMaterials.Solid(new Color(.86f, .72f, .4f));
-            leafM = WorldMaterials.Solid(new Color(.36f, .5f, .26f)); leafGold = WorldMaterials.Solid(new Color(.7f, .6f, .26f)); trunkM = WorldMaterials.Solid(new Color(.36f, .28f, .22f));
+            dirt = WorldMaterials.Surface(new Color(.62f, .48f, .34f), Surface.Stone); gravel = WorldMaterials.Surface(new Color(.56f, .52f, .46f), Surface.Stone); woodM = WorldMaterials.Surface(new Color(.5f, .36f, .24f), Surface.Wood); plank = WorldMaterials.Surface(new Color(.64f, .5f, .36f), Surface.Wood); iron = WorldMaterials.Surface(new Color(.2f, .2f, .22f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .07f, .06f)); white = WorldMaterials.Solid(new Color(.94f, .9f, .82f)); tin = WorldMaterials.Surface(new Color(.6f, .62f, .64f), Surface.Metal); hay = WorldMaterials.Surface(new Color(.86f, .72f, .4f), Surface.Foliage);
+            leafM = WorldMaterials.Surface(new Color(.36f, .5f, .26f), Surface.Foliage); leafGold = WorldMaterials.Surface(new Color(.7f, .6f, .26f), Surface.Foliage); trunkM = WorldMaterials.Surface(new Color(.36f, .28f, .22f), Surface.Bark);
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .78f, .46f), 1.1f)) { name = "Country windows" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .82f, .52f), 1.4f)) { name = "Country lamps" }; fireM = new Material(WorldMaterials.Glow(Fire, 2.2f)) { name = "Country fire" };
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
-        Material Paint(Color c) => WorldMaterials.Solid(c);
+        Material Paint(Color c, Surface kind = Surface.Painted) => WorldMaterials.Surface(c, kind);   // painted unless said (barn and house boards are wood)
         static bool HasStation(IslandWorldData.Artist a) => a.stationId != 0;
         static float Foot(IslandWorldData.Artist a)
         {
@@ -197,7 +197,7 @@ namespace EverythingWorld.World
         /// A hay bale: a big round roll.
         void Bale(LandContext ctx, MeshKit mk, Vector3 g, Vector3 axis)
         {
-            axis.y = 0; axis.Normalize(); mk.Prism(hay, g + Vector3.up * .7f - axis * .7f, axis, .7f, 1.4f, 12); for (var k = 0; k < 3; k++) mk.Prism(Paint(new Color(.74f, .6f, .32f)), g + Vector3.up * .7f - axis * (.71f - k * .7f), axis, .5f - k * .1f, .01f, 10);
+            axis.y = 0; axis.Normalize(); mk.Prism(hay, g + Vector3.up * .7f - axis * .7f, axis, .7f, 1.4f, 12); for (var k = 0; k < 3; k++) mk.Prism(Paint(new Color(.74f, .6f, .32f), Surface.Foliage), g + Vector3.up * .7f - axis * (.71f - k * .7f), axis, .5f - k * .1f, .01f, 10);
             BoxCol(ctx.Root, g + Vector3.up * .7f, new Vector3(1.4f, 1.4f, 1.4f), Quaternion.LookRotation(axis)); Interact.Seat(tlife.transform, g + Vector3.up * 1.45f, Vector3.Cross(Vector3.up, axis), "Sit on the hay bale").seatHeight = .1f;
         }
 
@@ -285,7 +285,7 @@ namespace EverythingWorld.World
         /// A red barn with a white-trimmed door and a hayloft.
         void Barn(LandContext ctx, MeshKit mk, MeshKit solid, PlaceFrame f, int i)
         {
-            var up = Vector3.up; float W = 8f, Dp = 10f, H = 4.4f; var wall = Paint(i % 3 == 2 ? new Color(.66f, .6f, .52f) : BarnRed);
+            var up = Vector3.up; float W = 8f, Dp = 10f, H = 4.4f; var wall = Paint(i % 3 == 2 ? new Color(.66f, .6f, .52f) : BarnRed, Surface.Wood);
             mk.Box(wall, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, Dp), f.r); solid.Box(wall, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, Dp), f.r); mk.GableRoof(tin, f.P(0, H, 0), new Vector3(W + .6f, 0, Dp + .6f), 3f, f.r);
             mk.Box(wall, f.P(0, H + 1f, Dp / 2f - .02f), new Vector3(1f, .1f, .1f), f.r); mk.Box(white, f.P(0, 1.6f, Dp / 2f + .03f), new Vector3(3.2f, 3.2f, .06f), f.r); mk.Box(wall, f.P(0, 1.6f, Dp / 2f + .07f), new Vector3(2.9f, 2.9f, .04f), f.r); foreach (var e in new[] { 1f, -1f }) mk.Box(white, f.P(0, 1.6f, Dp / 2f + .1f), new Vector3(.14f, 4.1f, .03f), f.r * Quaternion.Euler(0, 0, e * 45f)); mk.Box(i % 2 == 0 ? windowM : dark, f.P(0, H + .4f, Dp / 2f + .03f), new Vector3(1.2f, 1f, .05f), f.r);
             if (i % 2 == 0) halos.Add(f.P(0, H + .4f, Dp / 2f + .5f), 1.2f, new Color(1f, .78f, .46f), .3f); Mark(f.o, 7f);

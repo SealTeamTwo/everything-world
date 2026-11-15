@@ -59,7 +59,7 @@ namespace EverythingWorld.World
         void TheSquare(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = ctx.OnGround(center.x, center.z); var rng = new System.Random(3);
-            mk.Prism(gravel, c - up * .28f, up, 19f, .42f, 30); mk.Prism(Paint(new Color(.5f, .58f, .36f)), c + up * .14f, up, 8f, .02f, 24); for (var k = 0; k < 12; k++) Remember(c + Quaternion.Euler(0, k * 30f, 0) * D * 18f, 1);
+            mk.Prism(gravel, c - up * .28f, up, 19f, .42f, 30); mk.Prism(Paint(new Color(.5f, .58f, .36f), Surface.Plain), c + up * .14f, up, 8f, .02f, 24); for (var k = 0; k < 12; k++) Remember(c + Quaternion.Euler(0, k * 30f, 0) * D * 18f, 1);
             // the water tower: four legs, a round tank, the town's name
             var wt = c - D * 4f + S * 10f; const float H = 16f; foreach (var (x, zz) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) { var foot = wt + new Vector3(x, 0, zz) * 2.2f; mk.Prism(tin, foot - up * .2f, (wt + up * H + new Vector3(x, 0, zz) * 1.6f - foot).normalized, .14f, H + .3f, 6); ArtistBits.PostCollider(ctx.Root, foot, 4f, .2f); }
             for (var h = 3f; h < H; h += 4f) mk.Prism(tin, wt + up * h, up, 2.1f - h * .03f, .1f, 10); mk.Prism(Paint(new Color(.84f, .84f, .82f)), wt + up * H, up, 3.2f, 4.2f, 16); mk.Cone(Paint(new Color(.84f, .84f, .82f)), wt + up * (H + 4.2f), 3.3f, 1.6f, 16); mk.Prism(tin, wt + up * (H - .1f), up, 3.5f, .16f, 16);
@@ -81,7 +81,7 @@ namespace EverythingWorld.World
             Shot(ctx, "the square", c + D * 14f - S * 9f + up * 2.4f, wt + up * 12f);
         }
 
-        Material glassM() => WorldMaterials.Solid(new Color(.8f, .9f, .94f), .9f);
+        Material glassM() => WorldMaterials.Surface(new Color(.8f, .9f, .94f), Surface.Glass);
 
         /// A horse standing at rest.
         void Horse(LandContext ctx, MeshKit mk, Vector3 g, Vector3 face, Color c)
@@ -124,7 +124,7 @@ namespace EverythingWorld.World
         /// A false-front store on a little boardwalk: a tall square front with the name across it, a window, a door, an awning, a bench.
         void Store(LandContext ctx, MeshKit mk, MeshKit solid, PlaceFrame f, int i)
         {
-            var up = Vector3.up; float W = 8f, Dp = 7f, H = 4f; var wall = Paint(Paints[i % Paints.Length]); var trim = white; var name = Stores[i % Stores.Length]; var tonk = i == 0;
+            var up = Vector3.up; float W = 8f, Dp = 7f, H = 4f; var wall = Paint(Paints[i % Paints.Length], Surface.Wood); var trim = white; var name = Stores[i % Stores.Length]; var tonk = i == 0;
             mk.Box(wall, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, Dp), f.r); solid.Box(wall, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, Dp), f.r); mk.GableRoof(tin, f.P(0, H, -.4f), new Vector3(W + .2f, 0, Dp - .6f), 1.4f, f.r);
             mk.Box(wall, f.P(0, H + 1.1f, Dp / 2f - .1f), new Vector3(W, 2.2f, .2f), f.r); mk.Box(trim, f.P(0, H + 2.24f, Dp / 2f - .1f), new Vector3(W + .2f, .14f, .3f), f.r); mk.Box(Paint(Cream), f.P(0, H + .9f, Dp / 2f + .01f), new Vector3(W - 1f, .9f, .04f), f.r); Sign(f.P(0, H + .9f, Dp / 2f + .04f), f.Fwd, name, .32f, Ink);
             mk.Box(plank, f.P(0, .1f, Dp / 2f + 1.2f), new Vector3(W, .2f, 2.4f), f.r); solid.Box(plank, f.P(0, -.1f, Dp / 2f + 1.2f), new Vector3(W, .5f, 2.4f), f.r); mk.Box(tin, f.P(0, 3f, Dp / 2f + 1.2f), new Vector3(W, .06f, 2.4f), f.r * Quaternion.Euler(10f, 0, 0)); foreach (var e in new[] { -1f, 1f }) { mk.Prism(woodM, f.P(e * (W / 2f - .2f), .2f, Dp / 2f + 2.3f), up, .07f, 2.8f, 4); ArtistBits.PostCollider(rootT, f.P(e * (W / 2f - .2f), 0, Dp / 2f + 2.3f), 2.8f, .09f); }
@@ -147,8 +147,8 @@ namespace EverythingWorld.World
         void Church(LandContext ctx, MeshKit mk, MeshKit solid, PlaceFrame f)
         {
             var up = Vector3.up; float W = 7f, Dp = 11f, H = 4.6f;
-            mk.Box(white, f.P(0, H / 2f - .3f, -1f), new Vector3(W, H + .6f, Dp), f.r); solid.Box(white, f.P(0, H / 2f - .3f, -1f), new Vector3(W, H + .6f, Dp), f.r); mk.GableRoof(Paint(new Color(.3f, .3f, .34f)), f.P(0, H, -1f), new Vector3(W + .5f, 0, Dp + .4f), 2.6f, f.r);
-            var st = f.P(0, H, Dp / 2f - 2.2f); mk.Box(white, st + up * 1.6f, new Vector3(2f, 3.2f, 2f), f.r); mk.Cone(Paint(new Color(.3f, .3f, .34f)), st + up * 3.2f, 1.5f, 4.4f, 4, 45f); mk.Box(dark, st + up * 1.8f + f.Fwd * 1.01f, new Vector3(1f, 1.4f, .02f), f.r); mk.Prism(Paint(new Color(.8f, .66f, .3f)), st + up * 2f, -up, .3f, .5f, 8, 1.4f); mk.Box(Paint(new Color(.8f, .66f, .3f)), st + up * 8.2f, new Vector3(.1f, 1f, .1f), f.r); mk.Box(Paint(new Color(.8f, .66f, .3f)), st + up * 8.4f, new Vector3(.6f, .1f, .1f), f.r);
+            mk.Box(white, f.P(0, H / 2f - .3f, -1f), new Vector3(W, H + .6f, Dp), f.r); solid.Box(white, f.P(0, H / 2f - .3f, -1f), new Vector3(W, H + .6f, Dp), f.r); mk.GableRoof(Paint(new Color(.3f, .3f, .34f), Surface.Stone), f.P(0, H, -1f), new Vector3(W + .5f, 0, Dp + .4f), 2.6f, f.r);
+            var st = f.P(0, H, Dp / 2f - 2.2f); mk.Box(white, st + up * 1.6f, new Vector3(2f, 3.2f, 2f), f.r); mk.Cone(Paint(new Color(.3f, .3f, .34f), Surface.Stone), st + up * 3.2f, 1.5f, 4.4f, 4, 45f); mk.Box(dark, st + up * 1.8f + f.Fwd * 1.01f, new Vector3(1f, 1.4f, .02f), f.r); mk.Prism(Paint(new Color(.8f, .66f, .3f), Surface.Metal), st + up * 2f, -up, .3f, .5f, 8, 1.4f); mk.Box(Paint(new Color(.8f, .66f, .3f), Surface.Metal), st + up * 8.2f, new Vector3(.1f, 1f, .1f), f.r); mk.Box(Paint(new Color(.8f, .66f, .3f), Surface.Metal), st + up * 8.4f, new Vector3(.6f, .1f, .1f), f.r);
             mk.Box(woodM, f.P(0, 1.3f, Dp / 2f - 1f + .03f), new Vector3(1.6f, 2.6f, .06f), f.r); foreach (var e in new[] { -2.2f, 2.2f }) { mk.Box(windowM, f.P(e, 2f, Dp / 2f - 1f + .03f), new Vector3(.9f, 1.8f, .05f), f.r); halos.Add(f.P(e, 2f, Dp / 2f - .4f), 1.2f, new Color(1f, .8f, .5f), .3f); } for (var k = 0; k < 3; k++) mk.Box(white, f.P(0, -.1f + k * .2f, Dp / 2f - .4f + (2 - k) * .3f), new Vector3(2.4f, .2f, .4f), f.r);
             Mark(f.o, 7f);
         }
@@ -157,9 +157,9 @@ namespace EverythingWorld.World
         void BonfireField(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var bc = G(ctx, streetL + 20f, 0); var rng = new System.Random(88);
-            mk.Prism(Paint(new Color(.5f, .56f, .3f)), bc - up * .26f, up, 21f, .36f, 30); for (var k = 0; k < 12; k++) Remember(bc + Quaternion.Euler(0, k * 30f, 0) * D * 19f, 1); Remember(bc - D * 8f, 1);
+            mk.Prism(Paint(new Color(.5f, .56f, .3f), Surface.Plain), bc - up * .26f, up, 21f, .36f, 30); for (var k = 0; k < 12; k++) Remember(bc + Quaternion.Euler(0, k * 30f, 0) * D * 19f, 1); Remember(bc - D * 8f, 1);
             // the bonfire: a ring of stones, a cone of logs, the flames
-            mk.Prism(Paint(new Color(.4f, .36f, .32f)), bc, up, 1.8f, .3f, 12); for (var k = 0; k < 12; k++) mk.Blob(Paint(new Color(.56f, .52f, .48f)), bc + Quaternion.Euler(0, k * 30f, 0) * D * 1.9f + up * .2f, Vector3.one * .28f, rng, .2f); for (var k = 0; k < 8; k++) { var d = Quaternion.Euler(0, k * 45f, 0) * D; mk.Prism(woodM, bc + d * 1.2f + up * .2f, (up * 2f - d).normalized, .12f, 2.2f, 5); }
+            mk.Prism(Paint(new Color(.4f, .36f, .32f), Surface.Stone), bc, up, 1.8f, .3f, 12); for (var k = 0; k < 12; k++) mk.Blob(Paint(new Color(.56f, .52f, .48f), Surface.Stone), bc + Quaternion.Euler(0, k * 30f, 0) * D * 1.9f + up * .2f, Vector3.one * .28f, rng, .2f); for (var k = 0; k < 8; k++) { var d = Quaternion.Euler(0, k * 45f, 0) * D; mk.Prism(woodM, bc + d * 1.2f + up * .2f, (up * 2f - d).normalized, .12f, 2.2f, 5); }
             mk.Cone(fireM, bc + up * .3f, 1f, 2.6f, 7); mk.Cone(fireM, bc + up * .3f + S * .3f, .6f, 1.8f, 6, 30f); BoxCol(ctx.Root, bc + up * .8f, new Vector3(3.6f, 1.6f, 3.6f), Quaternion.identity); halos.Add(bc + up * 1.4f, 4f, Fire, .4f); ArtistBits.PointLight(ctx.Root, bc + up * 2f, new Color(1f, .6f, .3f), 24f, 3f); life.fireAt = bc + up * 2f;
             // hay bales and camp chairs round the fire; the pickups in a ring beyond, tailgates in
             for (var k = 0; k < 7; k++) { var d = Quaternion.Euler(0, k * 51f + 10f, 0) * D; if (k % 2 == 0) Bale(ctx, mk, bc + d * 5f, Vector3.Cross(up, d)); else { var cp = bc + d * 5f; mk.Box(Paint(new[] { Denim, BarnRed, new Color(.3f, .46f, .3f) }[k % 3]), cp + up * .45f, new Vector3(.6f, .06f, .5f), Quaternion.LookRotation(-d)); mk.Box(Paint(new[] { Denim, BarnRed, new Color(.3f, .46f, .3f) }[k % 3]), cp + up * .75f + d * .24f, new Vector3(.6f, .6f, .05f), Quaternion.LookRotation(-d)); foreach (var e in new[] { -1f, 1f }) mk.Prism(iron, cp + Vector3.Cross(up, d) * e * .28f, up, .015f, .45f, 3); Interact.Seat(tlife.transform, cp + up * .5f, -d, "Sit by the fire"); } }
