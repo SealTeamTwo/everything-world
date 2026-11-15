@@ -34,13 +34,23 @@ namespace EverythingWorld.World
             flash -= Time.unscaledDeltaTime;
             if (pending) { pending = false; flash = 2f; }   // a frame later, so the message isn't in the picture
             var kb = Keyboard.current;
-            if (kb == null || !(kb.pKey.wasPressedThisFrame || kb.f12Key.wasPressedThisFrame)) return;
-            var cam = Camera.main; if (cam == null) return;
-            var land = SkyDirector.Instance != null ? SkyDirector.Instance.CurrentLand : "?";
+            if (kb == null || GameKeys.Off || !(kb.pKey.wasPressedThisFrame || kb.f12Key.wasPressedThisFrame)) return;
+            var where = Where(); if (where == null) return;
             var stamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
             var file = $"{++count:000}_{stamp}.png";
             ScreenCapture.CaptureScreenshot(Path.Combine(dir, file));
+            var line = $"{file}: {where}";
+            File.AppendAllText(Path.Combine(dir, "notes.txt"), line + "\n");
+            Debug.Log("Snapshot for Claude: " + line);
+            pending = true; flashText = "Snapshot " + count + " saved for Claude";
+        }
 
+        /// Where you are right now, in words: the land, position, facing, nearest artist, the song (and how far into
+        /// it) and whether you're indoors. Null before there's a camera. Used by snapshots and notes.
+        public static string Where()
+        {
+            var cam = Camera.main; if (cam == null) return null;
+            var land = SkyDirector.Instance != null ? SkyDirector.Instance.CurrentLand : "?";
             var p = cam.transform.position; var f = cam.transform.forward;
             string[] dirs = { "east", "north-east", "north", "north-west", "west", "south-west", "south", "south-east" };
             var facing = dirs[(int)(Mathf.Repeat(Mathf.Atan2(f.z, f.x) * Mathf.Rad2Deg + 22.5f, 360f) / 45f) % 8];
@@ -53,15 +63,14 @@ namespace EverythingWorld.World
                     if (d < nd) { nd = d; near = a.name; }
                 }
             var md = MusicDirector.Instance;
-            var song = md != null && md.CurrentSlot.IsValid ? md.CurrentSlot.track.name + " by " + md.CurrentSlot.track.artist : "none";
+            var song = "none";
+            if (md != null && md.CurrentSlot.IsValid) { var ms = md.CurrentSlot.PositionMsAt(RadioSchedule.NowSeconds); song = $"{md.CurrentSlot.track.name} by {md.CurrentSlot.track.artist} ({ms / 60000}:{ms / 1000 % 60:00} in)"; }
             var ground = data != null ? data.HeightAt(p.x, p.z) : 0f;
             var sb = new StringBuilder();
-            sb.Append($"{file}: {land}, at x {p.x:0} z {p.z:0}, eyes {p.y - ground:0.0} m above the ground, facing {facing} ");
+            sb.Append($"{land}, at x {p.x:0} z {p.z:0}, eyes {p.y - ground:0.0} m above the ground, facing {facing} ");
             sb.Append($"(looking {(f.y > .25f ? "up" : f.y < -.25f ? "down" : "level")}), nearest artist {near} ({nd:0} m), ");
             sb.Append($"song: {song}{(IndoorSpaces.Contains(p) ? ", indoors" : "")}");
-            File.AppendAllText(Path.Combine(dir, "notes.txt"), sb.ToString() + "\n");
-            Debug.Log("Snapshot for Claude: " + sb);
-            pending = true; flashText = "Snapshot " + count + " saved for Claude";
+            return sb.ToString();
         }
 
         void OnGUI()
