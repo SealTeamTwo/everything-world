@@ -21,7 +21,7 @@ namespace EverythingWorld.World
             var glass = new Material[3];
             for (var i = 0; i < 3; i++) glass[i] = new Material(GlowM(glassCols[i], 2.2f)) { name = "Cathedral glass" };
             life.glass = glass;
-            var wallM = stoneM; var trim = WorldMaterials.Solid(new Color(.7f, .66f, .72f));
+            var wallM = stoneM; var trim = WorldMaterials.Surface(new Color(.7f, .66f, .72f), World.Surface.Stone);
             void Block(Vector3 center, Vector3 size, Quaternion r, bool collide = true)
             {
                 mk.Box(wallM, center, size, r);
@@ -139,7 +139,7 @@ namespace EverythingWorld.World
             }
 
             // inside: the floor, two rows of columns (two fallen), the pool and its candles, the altar
-            mk.Box(WorldMaterials.Solid(new Color(.5f, .47f, .52f)), c + up * .03f, new Vector3(W - T, .06f, L), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.5f, .47f, .52f), World.Surface.Stone), c + up * .03f, new Vector3(W - T, .06f, L), rot);
             for (var i = 0; i < 6; i++)
                 foreach (var side in new[] { -1f, 1f })
                 {

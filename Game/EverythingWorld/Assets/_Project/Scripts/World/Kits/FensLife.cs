@@ -219,7 +219,7 @@ namespace EverythingWorld.World
             heronFly = fly; fly.gameObject.SetActive(false);
             // the candles that drift across the water
             var cmk = new MeshKit(); var wax = WorldMaterials.Solid(new Color(.96f, .93f, .9f)); var flame = WorldMaterials.Glow(new Color(1f, .7f, .45f), 3.2f);
-            var lily = WorldMaterials.Solid(new Color(.4f, .55f, .42f));
+            var lily = WorldMaterials.Surface(new Color(.4f, .55f, .42f), Surface.Foliage);
             for (var i = 0; i < 14; i++)
             {
                 var p = new Vector3(((float)rng.NextDouble() - .5f) * 14f, 0, ((float)rng.NextDouble() - .5f) * 10f);

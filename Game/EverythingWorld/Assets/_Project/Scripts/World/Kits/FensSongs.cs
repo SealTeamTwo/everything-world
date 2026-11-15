@@ -77,7 +77,7 @@ namespace EverythingWorld.World
             var face = best < float.MaxValue ? new Vector3(join.x - c.x, 0, join.z - c.z).normalized : new Vector3(center.x - c.x, 0, center.z - c.z).normalized;
             if (face.sqrMagnitude < .1f) face = Vector3.forward;
             var side = Vector3.Cross(Vector3.up, face);
-            var pad = WorldMaterials.Solid(new Color(.36f, .5f, .4f)); var candle = GlowM(new Color(1f, .82f, .6f), 2.6f);
+            var pad = WorldMaterials.Surface(new Color(.36f, .5f, .4f), World.Surface.Foliage); var candle = GlowM(new Color(1f, .82f, .6f), 2.6f);
             if (best < float.MaxValue)
             {
                 var from = new Vector3(join.x, 0, join.z); var dir = new Vector3(c.x - join.x, 0, c.z - join.z).normalized; var len = best - clear - 1f;
@@ -231,7 +231,7 @@ namespace EverythingWorld.World
         void WinterPier(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face, string id)
         {
             var up = Vector3.up; var side = Vector3.Cross(up, face); var rot = Quaternion.LookRotation(face);
-            var frostWood = WorldMaterials.Solid(new Color(.8f, .85f, .92f)); var snow = WorldMaterials.Solid(new Color(.96f, .97f, 1f));
+            var frostWood = WorldMaterials.Surface(new Color(.8f, .85f, .92f), World.Surface.Wood); var snow = WorldMaterials.Surface(new Color(.96f, .97f, 1f), World.Surface.Stone);
             var deckY = Surface + .45f; var a = c + face * 4f; var b = c - face * 3f; var mid = (a + b) / 2f;
             mk.Box(frostWood, new Vector3(mid.x, deckY - .07f, mid.z), new Vector3(2.2f, .14f, 7.2f), rot);
             solid.Box(frostWood, new Vector3(mid.x, deckY - .3f, mid.z), new Vector3(2.2f, .6f, 7.2f), rot);
@@ -262,8 +262,8 @@ namespace EverythingWorld.World
 
         void RoseThicket(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face, string id)
         {
-            var up = Vector3.up; var stem = WorldMaterials.Solid(new Color(.16f, .2f, .16f)); var rose = SongGlow(id, new Color(1f, .16f, .28f), 2.4f);
-            var leaf = WorldMaterials.Solid(new Color(.24f, .36f, .26f));
+            var up = Vector3.up; var stem = WorldMaterials.Surface(new Color(.16f, .2f, .16f), World.Surface.Foliage); var rose = SongGlow(id, new Color(1f, .16f, .28f), 2.4f);
+            var leaf = WorldMaterials.Surface(new Color(.24f, .36f, .26f), World.Surface.Foliage);
             for (var k = 0; k < 16; k++)
             {
                 var a = k * 2.4f; var r = .4f + (k % 5) * .55f; var p = c + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * r;
@@ -344,7 +344,7 @@ namespace EverythingWorld.World
                 mk.Box(moon, p - radial * th * .3f, new Vector3(1.6f * th + .4f, .9f * th, R * Mathf.PI / n + .06f), Quaternion.LookRotation(tang, -radial));
             }
             mk.Box(cloth, up * .55f + side * -.9f, new Vector3(1.2f, .45f, 1.6f), Quaternion.LookRotation(face) * Quaternion.Euler(0, 0, -12f));
-            mk.Box(WorldMaterials.Solid(new Color(.55f, .45f, .7f)), up * .5f + side * .7f, new Vector3(2.4f, .2f, 2f), Quaternion.LookRotation(face) * Quaternion.Euler(0, 0, 6f));
+            mk.Box(WorldMaterials.Surface(new Color(.55f, .45f, .7f), World.Surface.Cloth), up * .5f + side * .7f, new Vector3(2.4f, .2f, 2f), Quaternion.LookRotation(face) * Quaternion.Euler(0, 0, 6f));
             mk.Build("Moon", t, false);
             life.movers.Add((t, at, .05f, .35f, 5f, 0f, id));
             solid.Box(cloth, at + up * .4f, new Vector3(2.2f, 1f, 7.6f), Quaternion.LookRotation(side));

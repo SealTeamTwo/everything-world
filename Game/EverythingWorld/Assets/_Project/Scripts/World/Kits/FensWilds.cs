@@ -14,7 +14,7 @@ namespace EverythingWorld.World
         void Wilds(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var maxR = 0f; foreach (var e in edge) maxR = Mathf.Max(maxR, e);
-            var pad = WorldMaterials.Solid(new Color(.35f, .5f, .38f)); var padB = WorldMaterials.Solid(new Color(.42f, .55f, .4f));
+            var pad = WorldMaterials.Surface(new Color(.35f, .5f, .38f), World.Surface.Foliage); var padB = WorldMaterials.Surface(new Color(.42f, .55f, .4f), World.Surface.Foliage);
             int lilies = 0, pillars = 0, sunk = 0, willows = 0;
 
             // ---------------------------------------------------------------- in the water
@@ -71,7 +71,7 @@ namespace EverythingWorld.World
                     var big = ctx.Chance(.5f);
                     var size = big ? new Vector3(1.6f, 1.3f, .8f) : new Vector3(1.4f, .5f, 1.1f);
                     var c = w + Vector3.up * (big ? .1f : -.1f);
-                    mk.Box(big ? black : WorldMaterials.Solid(Glows[sunk % Glows.Length] * .7f), c, size, rot);
+                    mk.Box(big ? black : WorldMaterials.Surface(Glows[sunk % Glows.Length] * .7f, World.Surface.Painted), c, size, rot);
                     var col = Glows[(sunk + 2) % Glows.Length];
                     var led = c + rot * new Vector3(size.x * .35f, size.y * .5f + .01f, size.z * .3f);
                     mk.Box(GlowM(col, 3.4f), led, Vector3.one * .08f, rot);
@@ -92,7 +92,7 @@ namespace EverythingWorld.World
             }
 
             // ---------------------------------------------------------------- the hills
-            var shrub = WorldMaterials.Solid(new Color(.4f, .5f, .42f)); var blossom = WorldMaterials.Solid(DustyPink); var blossomB = WorldMaterials.Solid(new Color(.95f, .78f, .85f));
+            var shrub = WorldMaterials.Surface(new Color(.4f, .5f, .42f), World.Surface.Foliage); var blossom = WorldMaterials.Surface(DustyPink, World.Surface.Foliage); var blossomB = WorldMaterials.Surface(new Color(.95f, .78f, .85f), World.Surface.Foliage);
             int things = 0;
             const float cell = 34f;
             for (var x = ctx.MinX; x < ctx.MaxX; x += cell)
@@ -145,7 +145,7 @@ namespace EverythingWorld.World
                     // a speaker cabinet fallen on its back, its two cones to the sky, overgrown: ivy over its edges,
                     // flowers in the cones, its little power light still on (a plain black box read as a stray cube)
                     var yaw = Quaternion.Euler(0, ctx.Range(0, 360f), ctx.Range(-6f, 6f));
-                    var cab = WorldMaterials.Solid(new Color(.2f, .18f, .22f)); var grille = WorldMaterials.Solid(new Color(.55f, .55f, .6f), .6f);
+                    var cab = WorldMaterials.Surface(new Color(.2f, .18f, .22f), World.Surface.Painted); var grille = WorldMaterials.Surface(new Color(.55f, .55f, .6f), World.Surface.Metal);
                     var cone = WorldMaterials.Solid(new Color(.1f, .1f, .11f));
                     mk.Box(cab, p + Vector3.up * .45f, new Vector3(1.4f, .9f, 2f), yaw);
                     mk.Box(grille, p + Vector3.up * .92f, new Vector3(1.46f, .05f, 2.06f), yaw);
@@ -182,7 +182,7 @@ namespace EverythingWorld.World
             // ---------------------------------------------------------------- a finer layer on the hills
             // the hills read empty between the bigger things: foxglove clumps with softly glowing bells, drifts of
             // feather grass, and now and then a little cairn with a candle on top
-            var stalk = WorldMaterials.Solid(new Color(.36f, .46f, .38f)); var feather = WorldMaterials.Solid(new Color(.86f, .8f, .74f));
+            var stalk = WorldMaterials.Surface(new Color(.36f, .46f, .38f), World.Surface.Foliage); var feather = WorldMaterials.Surface(new Color(.86f, .8f, .74f), World.Surface.Foliage);
             Color[] bells = { HotPink, Lilac, new Color(1f, .92f, .95f) };
             int foxgloves = 0, cairns = 0;
             const float fine = 20f;
@@ -254,8 +254,8 @@ namespace EverythingWorld.World
         /// walk through them); the trunk has a collider.
         void Willow(LandContext ctx, MeshKit mk, MeshKit leaves, Vector3 at, float scale)
         {
-            var bark = WorldMaterials.Solid(new Color(.3f, .26f, .28f));
-            var greens = new[] { WorldMaterials.Solid(new Color(.55f, .66f, .5f)), WorldMaterials.Solid(new Color(.64f, .72f, .56f)), WorldMaterials.Solid(new Color(.72f, .64f, .68f)), WorldMaterials.Solid(new Color(.48f, .6f, .48f)) };
+            var bark = WorldMaterials.Surface(new Color(.3f, .26f, .28f), World.Surface.Bark);
+            var greens = new[] { WorldMaterials.Surface(new Color(.55f, .66f, .5f), World.Surface.Foliage), WorldMaterials.Surface(new Color(.64f, .72f, .56f), World.Surface.Foliage), WorldMaterials.Surface(new Color(.72f, .64f, .68f), World.Surface.Foliage), WorldMaterials.Surface(new Color(.48f, .6f, .48f), World.Surface.Foliage) };
             var lean = (Vector3.up + new Vector3(ctx.Range(-.15f, .15f), 0, ctx.Range(-.15f, .15f))).normalized;
             var h = 4f * scale;
             mk.Prism(bark, at - Vector3.up * .5f, lean, .42f * scale, h + .5f, 8, .55f);
@@ -293,7 +293,7 @@ namespace EverythingWorld.World
                         leaves.Tri(m, top - across, top + across, tip, inside);
                         leaves.Tri(m, top, tip + across * .3f, tip - across * .3f, inside);
                     }
-                    if (j % 4 == 0) leaves.Blob(WorldMaterials.Solid(new Color(.95f, .76f, .84f)), tip, Vector3.one * .07f, ctx.Rng, .2f);
+                    if (j % 4 == 0) leaves.Blob(WorldMaterials.Surface(new Color(.95f, .76f, .84f), World.Surface.Foliage), tip, Vector3.one * .07f, ctx.Rng, .2f);
                 }
             }
             for (var k = 0; k < 4; k++)
@@ -317,7 +317,7 @@ namespace EverythingWorld.World
             mk.Box(stoneM, at + up * 6f, new Vector3(4.2f, .5f, 4.2f), rot);
             mk.Box(stoneM, at + up * (H - 3f), new Vector3(4.2f, .4f, 4.2f), rot);
             var bell = at + up * (H - 5f);
-            var brass = WorldMaterials.Solid(new Color(.8f, .62f, .32f), .8f);
+            var brass = WorldMaterials.Surface(new Color(.8f, .62f, .32f), World.Surface.Metal);
             mk.Prism(brass, bell - up * .8f, up, .9f, 1.3f, 14, .5f);
             mk.Box(iron, bell + up * .7f, new Vector3(.1f, .5f, .1f), Quaternion.identity);
             mk.Blob(GlowM(Lilac, 3f), bell - up * 1.1f, Vector3.one * .25f, ctx.Rng, 0f);
@@ -374,7 +374,7 @@ namespace EverythingWorld.World
                 var a = ctx.Range(0, Mathf.PI * 2f); var r = ctx.Range(2f, 5f);
                 var p = at + new Vector3(Mathf.Cos(a) * r, ctx.Range(3.5f, 6.5f), Mathf.Sin(a) * r);
                 var col = Glows[k % Glows.Length];
-                mk.Box(WorldMaterials.Solid(new Color(.6f, .55f, .5f)), p + Vector3.up * .5f, new Vector3(.02f, 1f, .02f), Quaternion.identity);
+                mk.Box(WorldMaterials.Surface(new Color(.6f, .55f, .5f), World.Surface.Wood), p + Vector3.up * .5f, new Vector3(.02f, 1f, .02f), Quaternion.identity);
                 mk.Box(GlowM(col, 2.8f), p, new Vector3(.25f, .35f, .25f), Quaternion.Euler(0, a * Mathf.Rad2Deg, 0));
                 if (k % 2 == 0) halos.Add(p, 1.2f, col, .9f);
             }

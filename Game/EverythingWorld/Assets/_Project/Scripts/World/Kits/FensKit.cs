@@ -44,16 +44,16 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            stoneM = WorldMaterials.Solid(new Color(.62f, .58f, .64f));
-            stoneDark = WorldMaterials.Solid(new Color(.42f, .39f, .45f));
-            wood = WorldMaterials.Solid(new Color(.36f, .3f, .3f));
-            iron = WorldMaterials.Solid(new Color(.16f, .15f, .18f));
+            stoneM = WorldMaterials.Surface(new Color(.62f, .58f, .64f), World.Surface.Stone);
+            stoneDark = WorldMaterials.Surface(new Color(.42f, .39f, .45f), World.Surface.Stone);
+            wood = WorldMaterials.Surface(new Color(.36f, .3f, .3f), World.Surface.Wood);
+            iron = WorldMaterials.Surface(new Color(.16f, .15f, .18f), World.Surface.Metal);
             black = WorldMaterials.Solid(new Color(.07f, .07f, .08f), .6f);
             water = new Material(WorldMaterials.Glow(new Color(.34f, .28f, .46f), .12f)) { name = "Fen water" };     // dark lilac, a faint glow: brighter and the fog washes it white
             water.SetFloat("_Smoothness", .55f);                                   // glossier mirrors the pale sky and reads white
-            leafM = WorldMaterials.Solid(new Color(.52f, .6f, .5f));
-            mossM = WorldMaterials.Solid(Moss);
-            cloth = WorldMaterials.Solid(DustyPink);
+            leafM = WorldMaterials.Surface(new Color(.52f, .6f, .5f), World.Surface.Foliage);
+            mossM = WorldMaterials.Surface(Moss, World.Surface.Foliage);
+            cloth = WorldMaterials.Surface(DustyPink, World.Surface.Cloth);
         }
 
         static bool HasStation(IslandWorldData.Artist a) => a.station || a.stationId != 0;
@@ -394,7 +394,7 @@ namespace EverythingWorld.World
             Color[] paint = { new Color(.85f, .35f, .55f), new Color(.45f, .55f, .85f), new Color(.95f, .75f, .3f), new Color(.4f, .75f, .6f), new Color(.75f, .5f, .9f), new Color(.85f, .85f, .82f), new Color(.2f, .2f, .22f) };
             var dir = pts[pts.Count - 1] - pts[0]; dir.y = 0; dir.Normalize();
             var len = Vector3.Distance(new Vector3(pts[0].x, 0, pts[0].z), new Vector3(pts[pts.Count - 1].x, 0, pts[pts.Count - 1].z));
-            var knob = WorldMaterials.Solid(new Color(.1f, .1f, .1f)); var metal = WorldMaterials.Solid(new Color(.75f, .75f, .78f), .8f);
+            var knob = WorldMaterials.Solid(new Color(.1f, .1f, .1f)); var metal = WorldMaterials.Surface(new Color(.75f, .75f, .78f), World.Surface.Metal);
             var k = 0;
             for (var d = 0f; d <= len; d += 1.55f, k++)
             {
@@ -404,7 +404,7 @@ namespace EverythingWorld.World
                 var floor = waterY - FloorDrop; var topY = waterY + .3f;
                 var c = new Vector3(p.x, (floor + topY) / 2f, p.z);
                 var size = new Vector3(1.9f, topY - floor, 1.3f);
-                mk.Box(WorldMaterials.Solid(col, .5f), c, size, rot);
+                mk.Box(WorldMaterials.Surface(col, World.Surface.Painted), c, size, rot);
                 solid.Box(stoneM, c, size, rot);
                 var top = new Vector3(p.x, topY, p.z);
                 var fwd = rot * Vector3.forward; var rt = rot * Vector3.right;
@@ -421,7 +421,7 @@ namespace EverythingWorld.World
         /// A few mossy trails from the fen's edge up into the hills, each to something worth finding.
         void Trails(LandContext ctx, MeshKit mk, MeshKit solid)
         {
-            var dirt = WorldMaterials.Solid(new Color(.5f, .44f, .46f));
+            var dirt = WorldMaterials.Surface(new Color(.5f, .44f, .46f), World.Surface.Stone);
             var spots = new List<Vector3>();
             for (var k = 0; k < 4; k++)
             {
