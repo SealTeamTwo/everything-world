@@ -535,6 +535,7 @@ namespace EverythingWorld.World
                 {
                     Loading = false; if (heldPlayer != null && !EverythingWorld.Player.MainMenu.Showing) heldPlayer.enabled = true;   // (the title screen lets you go itself)
                     Debug.Log($"Loading screen: built {loadTotal} lands in {Time.realtimeSinceStartup - loadStarted:0.0} s");
+                    LogMaterials();
                 }
                 return;
             }
@@ -567,6 +568,26 @@ namespace EverythingWorld.World
             {
                 Debug.LogException(e); // one broken land should not stop the rest of the world
             }
+        }
+
+        /// How many different materials the built world draws with, grouped by kind (by the start of each material's
+        /// name), printed once every land is built. Each different material is a separate draw setup for the GPU.
+        static void LogMaterials()
+        {
+            var used = new HashSet<Material>();
+            foreach (var r in FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                foreach (var m in r.sharedMaterials) if (m != null) used.Add(m);
+            var kinds = new Dictionary<string, int>();
+            foreach (var m in used)
+            {
+                var n = m.name; var cut = n.IndexOfAny(new[] { ' ', '(' }); var k = cut > 0 ? n.Substring(0, cut) : n;
+                if (n.StartsWith("Song glow")) k = "Song glow"; else if (n.StartsWith("Ground") || n.StartsWith("Terrain")) k = "Ground";
+                kinds[k] = kinds.TryGetValue(k, out var c) ? c + 1 : 1;
+            }
+            var list = new List<KeyValuePair<string, int>>(kinds); list.Sort((x, y) => y.Value.CompareTo(x.Value));
+            var sb = new System.Text.StringBuilder($"Materials: {used.Count} different materials on the world's renderers ({Resources.FindObjectsOfTypeAll<Material>().Length} loaded in all). By kind: ");
+            for (var i = 0; i < list.Count && i < 15; i++) sb.Append(i == 0 ? "" : ", ").Append(list[i].Key).Append(' ').Append(list[i].Value);
+            Debug.Log(sb.ToString());
         }
 
         // ---------- the loading screen ----------
