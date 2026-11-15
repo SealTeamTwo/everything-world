@@ -37,11 +37,11 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            concrete = WorldMaterials.Solid(new Color(.42f, .41f, .4f), .35f); darkConcrete = WorldMaterials.Solid(new Color(.26f, .26f, .26f), .4f);
-            asphalt = WorldMaterials.Solid(new Color(.1f, .1f, .11f), .75f); brick = WorldMaterials.Solid(new Color(.38f, .22f, .17f), .25f); darkBrick = WorldMaterials.Solid(new Color(.24f, .16f, .14f), .25f);
-            steel = WorldMaterials.Solid(new Color(.4f, .42f, .45f), .7f); rust = WorldMaterials.Solid(new Color(.45f, .24f, .14f), .3f);
+            concrete = WorldMaterials.Surface(new Color(.42f, .41f, .4f), Surface.Stone); darkConcrete = WorldMaterials.Surface(new Color(.26f, .26f, .26f), Surface.Stone);
+            asphalt = WorldMaterials.Surface(new Color(.1f, .1f, .11f), Surface.Stone); brick = WorldMaterials.Surface(new Color(.38f, .22f, .17f), Surface.Stone); darkBrick = WorldMaterials.Surface(new Color(.24f, .16f, .14f), Surface.Stone);
+            steel = WorldMaterials.Surface(new Color(.4f, .42f, .45f), Surface.Metal); rust = WorldMaterials.Surface(new Color(.45f, .24f, .14f), Surface.Metal);
             dark = WorldMaterials.Solid(new Color(.06f, .06f, .07f)); black = WorldMaterials.Solid(new Color(.03f, .03f, .035f), .6f);
-            yellow = WorldMaterials.Solid(new Color(.85f, .65f, .12f), .4f); glassDark = WorldMaterials.Solid(new Color(.08f, .1f, .13f), .95f);
+            yellow = WorldMaterials.Surface(new Color(.85f, .65f, .12f), Surface.Painted); glassDark = WorldMaterials.Surface(new Color(.08f, .1f, .13f), Surface.Glass);
             sodium = new Material(WorldMaterials.Glow(Sodium, 2.2f)) { name = "Sodium lamps" };
             windowsOff = new Material(WorldMaterials.Glow(new Color(.06f, .07f, .09f), 0f)) { name = "Tower windows" };
         }
@@ -314,7 +314,7 @@ namespace EverythingWorld.World
             for (var k = 0; k < n; k++)
             {
                 float x = ((float)rng.NextDouble() - .5f) * (w - .5f), y = ((float)rng.NextDouble() - .5f) * (h - .6f);
-                var m = WorldMaterials.Solid(cols[rng.Next(cols.Length)]);
+                var m = WorldMaterials.Surface(cols[rng.Next(cols.Length)], Surface.Painted);
                 mk.Box(m, c + side * x + Vector3.up * y + face * (.012f + k * .007f), new Vector3(.42f, .6f, .005f), Quaternion.LookRotation(face) * Quaternion.Euler(0, 0, ((float)rng.NextDouble() - .5f) * 12f));
             }
         }
@@ -412,7 +412,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up;
             // the quay wall: concrete blocks along the whole harbour coast, a yellow edge line, bollards
-            var bollard = WorldMaterials.Solid(new Color(.15f, .15f, .16f), .6f);
+            var bollard = WorldMaterials.Surface(new Color(.15f, .15f, .16f), Surface.Metal);
             for (var k = 0; k < quayEdge.Count; k++)
             {
                 var q = quayEdge[k]; var g = new Vector3(q.x, 0, q.y); var top = QuayY + .1f;
@@ -468,7 +468,7 @@ namespace EverythingWorld.World
         void Crane(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 edge, Vector3 n, int k)
         {
             var up = Vector3.up; var t = Vector3.Cross(up, n); var rot = Quaternion.LookRotation(n);
-            var paint = WorldMaterials.Solid(k == 0 ? new Color(.62f, .5f, .2f) : new Color(.35f, .4f, .45f), .4f);
+            var paint = WorldMaterials.Surface(k == 0 ? new Color(.62f, .5f, .2f) : new Color(.35f, .4f, .45f), Surface.Painted);
             var b = edge - n * 10f; b.y = QuayY + .1f;
             foreach (var s in new[] { -1f, 1f }) foreach (var f in new[] { -7f, 7f })
             {
@@ -500,7 +500,7 @@ namespace EverythingWorld.World
             var up = Vector3.up; along = Vector3.ProjectOnPlane(along, up).normalized; var rot = Quaternion.LookRotation(along); var sd = Vector3.Cross(up, along);
             if (ctx.IsLand(mid.x, mid.z, 0f)) return;
             mid.y = 0f; const float L = 64f, B = 11f;
-            var hull = WorldMaterials.Solid(new Color(.1f, .1f, .11f), .5f); var red = WorldMaterials.Solid(new Color(.45f, .1f, .08f), .4f); var white = WorldMaterials.Solid(new Color(.78f, .78f, .76f), .3f);
+            var hull = WorldMaterials.Surface(new Color(.1f, .1f, .11f), Surface.Painted); var red = WorldMaterials.Surface(new Color(.45f, .1f, .08f), Surface.Painted); var white = WorldMaterials.Surface(new Color(.78f, .78f, .76f), Surface.Painted);
             mk.Box(hull, mid + up * 2.5f, new Vector3(B, 5f, L), rot); mk.Box(red, mid - up * .6f, new Vector3(B - .2f, 1.4f, L - .4f), rot);
             mk.Cone(hull, mid + along * (L / 2f) + up * 2.5f, B / 2f, 8f, 4, 45f);   // a blunt bow
             mk.Box(hull, mid + along * (L / 2f + 3f) + up * 3.5f, new Vector3(B * .7f, 3f, 6f), rot);
@@ -508,7 +508,7 @@ namespace EverythingWorld.World
             Color[] cc = { new Color(.55f, .15f, .12f), new Color(.15f, .3f, .45f), new Color(.6f, .45f, .15f), new Color(.25f, .4f, .3f), new Color(.45f, .45f, .47f) };
             var rng = ctx.Rng;
             for (var i = 0; i < 7; i++) for (var j = 0; j < 3; j++) for (var h = 0; h < 1 + (i + j) % 3; h++)
-                mk.Box(WorldMaterials.Solid(cc[rng.Next(cc.Length)], .3f), mid + along * (-18f + i * 6.4f) + sd * (j - 1f) * 3.1f + up * (6.3f + h * 2.6f), new Vector3(2.9f, 2.5f, 6.1f), rot);
+                mk.Box(WorldMaterials.Surface(cc[rng.Next(cc.Length)], Surface.Metal), mid + along * (-18f + i * 6.4f) + sd * (j - 1f) * 3.1f + up * (6.3f + h * 2.6f), new Vector3(2.9f, 2.5f, 6.1f), rot);
             var br = mid - along * 26f; mk.Box(white, br + up * 9f, new Vector3(B - 1f, 8f, 7f), rot); mk.Box(white, br + up * 13.6f, new Vector3(B + 2f, 1.2f, 4f), rot);
             var win = GlowM(Window, 1.8f); for (var f = 0; f < 3; f++) mk.Box(win, br + up * (6.5f + f * 2.4f) + along * 3.52f, new Vector3(B - 2f, .9f, .02f), rot);
             mk.Box(GlowM(new Color(.8f, .9f, 1f), 1.8f), br + up * 13.6f + along * 2.02f, new Vector3(B, .6f, .02f), rot);
@@ -538,7 +538,7 @@ namespace EverythingWorld.World
             }
             var lh = start + n * (Len + 3f); lh.y = QuayY;
             mk.Prism(darkConcrete, new Vector3(lh.x, -4f, lh.z), up, 5f, QuayY + 4.1f, 16); solid.Prism(darkConcrete, new Vector3(lh.x, -4f, lh.z), up, 5f, QuayY + 4.1f, 16);
-            var white = WorldMaterials.Solid(new Color(.85f, .85f, .82f)); var red = WorldMaterials.Solid(new Color(.65f, .12f, .1f));
+            var white = WorldMaterials.Surface(new Color(.85f, .85f, .82f), Surface.Painted); var red = WorldMaterials.Surface(new Color(.65f, .12f, .1f), Surface.Painted);
             for (var k = 0; k < 6; k++) mk.Prism(k % 2 == 0 ? white : red, lh + up * (.1f + k * 3f), up, 2.2f - k * .15f, 3f, 14, (2.2f - (k + 1) * .15f) / (2.2f - k * .15f));
             solid.Prism(white, lh, up, 2.2f, 18f, 12);
             var lamp = lh + up * 19.2f; mk.Prism(dark, lamp - up * 1.1f, up, 1.8f, .3f, 12); mk.Prism(GlowM(new Color(1f, .95f, .8f), 3f), lamp - up * .8f, up, 1.1f, 1.6f, 10); mk.Cone(red, lamp + up * .8f, 1.5f, 1.4f, 12);
@@ -573,7 +573,7 @@ namespace EverythingWorld.World
             var rows = ctx.Rng.Next(1, 4); var high = ctx.Rng.Next(1, 4); lastStackRows = rows; Footing(ctx, mk, solid, at, rot, rows * 2.6f, 12.2f);
             for (var r = 0; r < rows; r++) for (var h = 0; h < high - (r % 2); h++)
             {
-                var c = at + sd * (r - (rows - 1) / 2f) * 2.6f + up * (1.3f + h * 2.6f); var m = WorldMaterials.Solid(cc[ctx.Rng.Next(cc.Length)], .3f);
+                var c = at + sd * (r - (rows - 1) / 2f) * 2.6f + up * (1.3f + h * 2.6f); var m = WorldMaterials.Surface(cc[ctx.Rng.Next(cc.Length)], Surface.Metal);
                 mk.Box(m, c, new Vector3(2.45f, 2.55f, 12f), rot);
                 for (var k = 0; k < 10; k++) mk.Box(m, c + sd * 1.24f + dir * (-5.4f + k * 1.2f), new Vector3(.04f, 2.3f, .3f), rot);
                 mk.Box(dark, c + dir * 6.01f, new Vector3(2.3f, 2.4f, .02f), rot);
@@ -586,7 +586,7 @@ namespace EverythingWorld.World
         void Warehouse(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 seaN)
         {
             var up = Vector3.up; var face = seaN; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face);
-            const float W = 24f, D = 12f, H = 7f; var tin = WorldMaterials.Solid(new Color(.3f, .32f, .34f), .5f); Footing(ctx, mk, solid, at, rot, W, D);
+            const float W = 24f, D = 12f, H = 7f; var tin = WorldMaterials.Surface(new Color(.3f, .32f, .34f), Surface.Metal); Footing(ctx, mk, solid, at, rot, W, D);
             mk.Box(tin, at + up * H / 2f, new Vector3(W, H, D), rot); solid.Box(tin, at + up * H / 2f, new Vector3(W, H, D), rot);
             mk.GableRoof(darkConcrete, at + up * H, new Vector3(D + .6f, 0, W + .6f), 2f, Quaternion.LookRotation(sd));
             for (var k = 0; k < 24; k++) mk.Box(darkConcrete, at + sd * (-W / 2f + .5f + k) + up * H / 2f + face * (D / 2f + .02f), new Vector3(.08f, H, .05f), rot);
@@ -669,7 +669,7 @@ namespace EverythingWorld.World
         void Grid(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = new Vector3(heart2.x, 0, heart2.y); var n = Mathf.CeilToInt(CityR / GridStep);
-            var kerb = WorldMaterials.Solid(new Color(.5f, .5f, .5f), .3f);
+            var kerb = WorldMaterials.Surface(new Color(.5f, .5f, .5f), Surface.Stone);
             // streets: lines halfway between block centres, the cross streets broken at the junctions so nothing overlaps
             for (var axis = 0; axis < 2; axis++)
             {
@@ -825,7 +825,7 @@ namespace EverythingWorld.World
         void Fence(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
             var up = Vector3.up; var d = Quaternion.Euler(0, ctx.Range(0, 180f), 0) * Vector3.forward; var len = ctx.Range(8f, 16f); var rot = Quaternion.LookRotation(d);
-            var mesh = WorldMaterials.Solid(new Color(.45f, .47f, .5f), .6f);
+            var mesh = WorldMaterials.Surface(new Color(.45f, .47f, .5f), Surface.Metal);
             // the whole fence stays off the paths and artist areas (only its middle was kept clear, so long ones crossed streets)
             for (var t = 0f; t <= len; t += 2f) { var q = at + d * (t - len / 2f); if (NearPath(q.x, q.z, 3f) || InFootprint(ctx, q.x, q.z, 2f) || !ctx.IsLand(q.x, q.z, 1f)) return; }
             var posts = new List<Vector3>(); var nSeg = Mathf.Max(1, Mathf.RoundToInt(len / 2.5f));
@@ -842,7 +842,7 @@ namespace EverythingWorld.World
 
         void Skip(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
-            var up = Vector3.up; var rot = Quaternion.Euler(0, ctx.Range(0, 180f), 0); var m = WorldMaterials.Solid(ctx.Chance(.5f) ? new Color(.65f, .5f, .1f) : new Color(.2f, .32f, .25f), .3f);
+            var up = Vector3.up; var rot = Quaternion.Euler(0, ctx.Range(0, 180f), 0); var m = WorldMaterials.Surface(ctx.Chance(.5f) ? new Color(.65f, .5f, .1f) : new Color(.2f, .32f, .25f), Surface.Painted);
             at.y = LowUnder(ctx, at, rot, 2f, 3.6f) + .02f;   // on a slope it sits on its lowest corner, the uphill end in the ground
             mk.Box(m, at + up * .7f, new Vector3(2f, 1.4f, 3.6f), rot); mk.Blob(dark, at + up * 1.4f, new Vector3(.9f, .3f, 1.6f), ctx.Rng, .5f);
             solid.Box(m, at + up * .75f, new Vector3(2.1f, 1.6f, 3.7f), rot);
@@ -858,7 +858,7 @@ namespace EverythingWorld.World
 
         void Pallets(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
-            var up = Vector3.up; var rot = Quaternion.Euler(0, ctx.Range(0, 90f), 0); var wood = WorldMaterials.Solid(new Color(.45f, .36f, .25f));
+            var up = Vector3.up; var rot = Quaternion.Euler(0, ctx.Range(0, 90f), 0); var wood = WorldMaterials.Surface(new Color(.45f, .36f, .25f), Surface.Wood);
             var h = ctx.Rng.Next(2, 7); for (var k = 0; k < h; k++) mk.Box(wood, at + up * (.08f + k * .16f), new Vector3(1.2f, .14f, 1f), rot * Quaternion.Euler(0, k * 4f, 0));
             solid.Box(wood, at + up * h * .08f, new Vector3(1.3f, h * .16f, 1.1f), rot);
         }
@@ -867,7 +867,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var d = Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward; var rot = Quaternion.LookRotation(d);
             Color[] paint = { new Color(.3f, .32f, .35f), new Color(.4f, .15f, .12f), new Color(.15f, .2f, .3f), new Color(.6f, .58f, .5f) };
-            var body = WorldMaterials.Solid(paint[ctx.Rng.Next(paint.Length)], .6f);
+            var body = WorldMaterials.Surface(paint[ctx.Rng.Next(paint.Length)], Surface.Painted);
             mk.Box(body, at + up * .6f, new Vector3(1.7f, .6f, 4f), rot); mk.Box(body, at + up * 1.1f - d * .2f, new Vector3(1.5f, .5f, 2f), rot);
             mk.Box(glassDark, at + up * 1.1f - d * .2f, new Vector3(1.52f, .38f, 1.9f), rot);
             foreach (var s in new[] { -1f, 1f }) foreach (var w in new[] { -1.3f, 1.3f }) mk.Prism(dark, at + Vector3.Cross(up, d) * s * .8f + d * w + up * .33f, Vector3.Cross(up, d) * s, .33f, .18f, 10);
