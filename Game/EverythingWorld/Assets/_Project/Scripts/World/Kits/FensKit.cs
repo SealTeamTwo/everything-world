@@ -496,8 +496,10 @@ namespace EverythingWorld.World
         }
 
         // ---------------------------------------------------------------- ground cover
-        /// Soft grass and pink flowers on the hills, moss and tiny flowers on the islands, and tall reeds
-        /// standing in the shallows round every island.
+        /// In patches with bare peat between: low sedge tussocks, the soft lilac-tipped hill grass with drifts of
+        /// dusty pink or lilac flowers, and wet ground nodding with cotton grass; tall reeds stand in the shallows
+        /// round the islands in beds, thick in places with open water between. Each patch has its own shade, from cool
+        /// fen green to the warmer grey-pink, and every blade its own.
         void GroundCover(LandContext ctx)
         {
             var grassMat = WindMesh.Material(.3f, 1.1f, FenGreen);
@@ -505,6 +507,7 @@ namespace EverythingWorld.World
             var grass = new Dictionary<(int, int), WindMesh>(); var reeds = new Dictionary<(int, int), WindMesh>();
             var rng = new System.Random(8181);
             const float step = 1.8f;
+            int sedge = 0, soft = 0, cotton = 0, blooms = 0, reedN = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
@@ -516,29 +519,48 @@ namespace EverythingWorld.World
                 {
                     // reeds only in the shallows near an edge (an island or the bank)
                     if (!OnIsland(px, pz, -3.5f) && Vector2.Distance(new Vector2(px, pz), heart) < Edge(px, pz) - 4f) continue;
-                    if (rng.NextDouble() < .55) continue;
+                    var bed = WindMesh.Patch(px, pz, .05f, 1f);              // reed beds: thick in places, gaps of open water between
+                    if (rng.NextDouble() < .8f - bed * .5f) continue;
                     if (!reeds.TryGetValue(key, out var wr)) reeds[key] = wr = new WindMesh();
-                    var col = Color.Lerp(new Color(.33f, .42f, .33f), new Color(.48f, .52f, .42f), (float)rng.NextDouble());
+                    var col = Color.Lerp(new Color(.33f, .42f, .33f), new Color(.48f, .52f, .42f), Mathf.Clamp01(WindMesh.Patch(px, pz, .03f, 2f) * .8f + (float)rng.NextDouble() * .2f));
                     // rooted in the bed and tall enough to stand out of the water (not floating at the water's height
                     // where a hollow dips below it with no water in it)
                     if (waterY - g > 2.5f) continue;   // too deep for reeds, or a dry hollow below the lake's level
                     var depth = waterY - g;
-                    wr.Tuft(new Vector3(px, g - .04f, pz), depth + .9f + (float)rng.NextDouble() * .8f, col, Color.Lerp(col, DustyPink, .25f), rng, 3, .04f);
+                    wr.Tuft(new Vector3(px, g - .04f, pz), depth + .9f + (float)rng.NextDouble() * .8f, col, Color.Lerp(col, DustyPink, .25f), rng, 3, .04f, .1f); reedN++;
                     continue;
                 }
-                var n = Mathf.PerlinNoise(px * .025f + 2f, pz * .025f + 9f);
-                if (n < .28f) continue;
+                var n = WindMesh.Patch(px, pz, .025f, 3f);
+                if (n < .28f) continue;                                    // bare peat between the patches
                 if (!grass.TryGetValue(key, out var wm)) grass[key] = wm = new WindMesh();
-                var c2 = Color.Lerp(new Color(.4f, .52f, .44f), new Color(.6f, .6f, .58f), (float)rng.NextDouble());
+                var tone = WindMesh.Patch(px, pz, .022f, 4f);              // each patch's shade: cool fen green to the warmer grey-pink
+                var c2 = Color.Lerp(new Color(.38f, .5f, .46f), new Color(.6f, .6f, .56f), Mathf.Clamp01(tone * .8f + (float)rng.NextDouble() * .2f));
                 var at = new Vector3(px, g - .04f, pz);
-                wm.Tuft(at, .35f + (float)rng.NextDouble() * .4f, c2, Color.Lerp(c2, Lilac, .35f), rng, 4, .07f);
-                var fl = rng.NextDouble();
-                if (fl < .1) wm.Flower(at + new Vector3(.2f, 0, .1f), .35f, DustyPink, rng);
-                else if (fl < .16) wm.Flower(at + new Vector3(-.15f, 0, .2f), .4f, Lilac, rng);
-                else if (fl < .19) wm.Flower(at + new Vector3(.1f, 0, -.2f), .3f, new Color(1f, .95f, .9f), rng);
+                var kind = WindMesh.Patch(px, pz, .014f, 5f);
+                var drift = WindMesh.Patch(px, pz, .06f, 6f);
+                if (kind < .36f)
+                {
+                    // sedge: low dense tussocks, a cooler green
+                    var sc = Color.Lerp(c2, new Color(.34f, .46f, .44f), .35f);
+                    wm.Tuft(at, .25f + (float)rng.NextDouble() * .22f, sc, Color.Lerp(sc, Lavender, .25f), rng, 5, .05f, .12f); sedge++;
+                }
+                else if (kind < .68f)
+                {
+                    // the soft hill grass, lilac-tipped, with drifts of one flower (dusty pink or lilac)
+                    wm.Tuft(at, .35f + (float)rng.NextDouble() * .4f, c2, Color.Lerp(c2, Lilac, .35f), rng, 4, .07f, .12f); soft++;
+                    if (drift > .6f && rng.NextDouble() < .35) { wm.Flower(at + new Vector3(.2f, 0, .1f), .32f + (float)rng.NextDouble() * .1f, WindMesh.Patch(px, pz, .012f, 7f) < .5f ? DustyPink : Lilac, rng); blooms++; }
+                    else if (rng.NextDouble() < .05) { wm.Flower(at + new Vector3(-.15f, 0, .2f), .4f, rng.NextDouble() < .6 ? DustyPink : Lilac, rng); blooms++; }
+                }
+                else
+                {
+                    // wet ground with cotton grass: thin blades and soft white heads nodding over them
+                    wm.Tuft(at, .3f + (float)rng.NextDouble() * .2f, c2, Color.Lerp(c2, Lavender, .3f), rng, 3, .05f, .12f); cotton++;
+                    if (drift > .4f && rng.NextDouble() < .3) { wm.Flower(at + new Vector3(.1f, 0, -.2f), .42f + (float)rng.NextDouble() * .12f, new Color(1f, .95f, .9f), rng); blooms++; }
+                }
             }
             foreach (var kv in grass) kv.Value.Build("Fen grass", ctx.Root, grassMat);
             foreach (var kv in reeds) kv.Value.Build("Reeds", ctx.Root, reedMat);
+            Debug.Log($"The Shoegaze Fens ground cover: {sedge} sedge tussocks, {soft} hill-grass tufts, {cotton} cotton-grass tufts, {blooms} flowers, {reedN} reeds");
         }
     }
 }
