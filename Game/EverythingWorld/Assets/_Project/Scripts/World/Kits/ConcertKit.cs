@@ -330,24 +330,40 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Soft lawn grass, silvered at the tips by the moon.
+        /// Soft lawn grass, silvered at the tips by the moon, in patches the way an old garden grows: clipped lawns,
+        /// short, even and dark, and long unmown grass left to wave at the garden's edges, its tips catching more
+        /// moonlight; bare walks between. Each patch is its own shade, from a deep blue-green to a soft olive; the
+        /// lawns vary only a little blade to blade, to keep them formal.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.25f, .8f, new Color(.16f, .32f, .24f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1792);
             const float st = 2.6f;
+            Color deep = new Color(.13f, .28f, .24f), olive = new Color(.26f, .38f, .24f);
+            int lawn = 0, unmown = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 5f, pz * .04f + 2f) < .45f) continue;
+                var kind = WindMesh.Patch(px, pz, .015f, 1f);                     // clipped lawn or unmown grass
+                var bare = WindMesh.Patch(px, pz, .04f, 2f);
+                var wild = kind > .5f;
+                if (bare < (wild ? .38f : .4f)) continue;
+                var tone = WindMesh.Patch(px, pz, .025f, 3f);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.14f, .3f, .22f), new Color(.22f, .38f, .28f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .24f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, Silver, .5f), rng, 3, .08f);
+                var col = Color.Lerp(deep, olive, tone) * (.94f + (float)rng.NextDouble() * .12f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (wild)
+                {
+                    wm.Tuft(at, .4f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, Silver, .55f), rng, 3, .07f, .12f); unmown++;
+                    if (rng.NextDouble() < .3) wm.Tuft(at + new Vector3(-.45f, 0, .35f), .3f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, Silver, .5f), rng, 3, .07f, .12f);
+                }
+                else { wm.Tuft(at, .18f + (float)rng.NextDouble() * .1f, col * .95f, Color.Lerp(col, Silver, .4f), rng, 3, .08f, .07f); lawn++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Concert grass", ctx.Root, mat);
+            Debug.Log($"The Concert Isles grass: {lawn} clipped-lawn tufts, {unmown} unmown clumps");
         }
     }
 }
