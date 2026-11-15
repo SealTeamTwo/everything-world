@@ -145,7 +145,12 @@ namespace EverythingWorld.World
             z.mk.Box(woodDark, deck + toSea * 1.6f + up * 1.45f, new Vector3(9f, .08f, .12f), dRot); z.solid.Box(woodDark, deck + toSea * 1.6f + up * .9f, new Vector3(9f, 1.2f, .2f), dRot);
             Bench(ctx, z.mk, deck + up * .45f, toSea, false);
             // "Ashes in the Snow": a pale bare tree, ash drifting down round it
-            var tree = z.At(-6f, -7f); var pale = WorldMaterials.Surface(new Color(.88f, .87f, .85f), Surface.Bark);
+            var tree = z.At(-6f, -7f);
+            { // keep its branches (they reach about 3 m) clear of the deck and its bench
+                var rel = tree - deck; float lx = Vector3.Dot(rel, dsd), lz = Vector3.Dot(rel, toSea); var near = deck + dsd * Mathf.Clamp(lx, -4.5f, 4.5f) + toSea * Mathf.Clamp(lz, -1.7f, 1.7f); var away = tree - near; away.y = 0f;
+                if (away.magnitude < 4.5f) { var dir = away.sqrMagnitude > .01f ? away.normalized : -toSea; var p = near + dir * 4.5f; tree = ctx.OnGround(p.x, p.z); }
+            }
+            var pale = WorldMaterials.Surface(new Color(.88f, .87f, .85f), Surface.Bark);
             z.mk.Prism(pale, tree - up * .3f, up, .35f, 5f, 6, .6f);
             for (var k = 0; k < 7; k++) { var d = (Quaternion.Euler(0, k * 51f, 0) * Quaternion.Euler(40f + (k % 3) * 8f, 0, 0) * up).normalized; z.mk.Prism(pale, tree + up * (3f + k * .3f), d, .12f, 3.4f - k * .2f, 5, .2f); }
             z.mk.Blob(SongGlow(z, "Ashes in the Snow", Mist, 1.2f), tree + up * 6.8f, Vector3.one * .3f, ctx.Rng, 0f);

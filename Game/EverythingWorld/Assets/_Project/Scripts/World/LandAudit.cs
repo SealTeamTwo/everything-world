@@ -450,7 +450,7 @@ namespace EverythingWorld.World
                 for (var s = 0; s < mesh.subMeshCount; s++)
                 {
                     var m = s < mats.Length ? mats[s] : null;
-                    if (m == null || m.renderQueue >= 2450 || (m.shader != null && (m.shader.name.Contains("Particles") || m.shader.name.Contains("Halo") || m.shader.name.Contains("Wind")))) continue;
+                    if (m == null || m.renderQueue >= 2450 || m.name.Contains("Foliage") || (m.shader != null && (m.shader.name.Contains("Particles") || m.shader.name.Contains("Halo") || m.shader.name.Contains("Wind")))) continue;
                     var tris = mesh.GetTriangles(s);
                     for (var i = 0; i < tris.Length; i += 3)
                     {

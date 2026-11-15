@@ -154,7 +154,7 @@ namespace EverythingWorld.World
             var oil = WorldMaterials.Solid(new Color(.05f, .05f, .06f), .95f); z.mk.Prism(oil, c + up * .03f, up, 2.2f, .04f, 14); life.gusher = c + up * .5f;
             ArtistBits.PostCollider(z.root, c, 8f, 1.6f);
             Pickup(z.ctx, z.mk, z.solid, z.At(-1f, 4.5f));
-            var ch = z.At(1.5f, 1f); Rocker(z.mk, z.solid, z.ctx, ch, z.front); Banjo(z.mk, ch + up * .95f + z.front * .05f, z.Rot * Quaternion.Euler(0, 0, 25f), .9f, false);
+            var ch = z.At(1.5f, 1f); Rocker(z.mk, z.solid, z.ctx, ch, z.front, false); Banjo(z.mk, ch + up * .95f + z.front * .05f, z.Rot * Quaternion.Euler(0, 0, 25f), .9f, false);
         }
 
         void WagonWheelFence(Plot z)

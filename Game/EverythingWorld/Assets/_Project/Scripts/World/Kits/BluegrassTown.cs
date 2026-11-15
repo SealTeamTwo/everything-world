@@ -229,7 +229,7 @@ namespace EverythingWorld.World
         void Picker(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 seat, Vector3 dir, int kind, Color shirt, Color skinC)
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(dir); var side = Side(dir);
-            Rocker(mk, solid, ctx, seat, dir);
+            Rocker(mk, solid, ctx, seat, dir, false);
             var shirtM = WorldMaterials.Surface(shirt, Surface.Cloth); var skin = WorldMaterials.Solid(skinC); var hat = WorldMaterials.Surface(kind % 2 == 0 ? new Color(.35f, .25f, .18f) : new Color(.85f, .78f, .6f), Surface.Cloth);
             foreach (var s in new[] { -.1f, .1f }) { mk.Box(denim, seat + side * s + up * .6f + dir * .12f, new Vector3(.16f, .16f, .5f), rot); mk.Box(denim, seat + side * s + up * .32f + dir * .38f, new Vector3(.15f, .55f, .15f), rot); mk.Box(dark, seat + side * s + up * .06f + dir * .45f, new Vector3(.15f, .1f, .28f), rot); }
             mk.Box(shirtM, seat + up * 1f - dir * .14f, new Vector3(.44f, .62f, .26f), rot * Quaternion.Euler(-6f, 0, 0));

@@ -1,6 +1,13 @@
 # Blocked seats (land audit, 2026-11-15)
 
-The land audit now checks every seat for something where a sitter's body would be (the tree through MONO's bench was the first case found). This is what the full photo tour found on 2026-11-15, sorted by reading the code: **nothing here has been fixed yet.** The check has since been tightened so that most BY DESIGN cases (ride poles, dryer hoods) no longer show up; a ride's or car's own roof or cabin still can.
+The land audit now checks every seat for something where a sitter's body would be (the tree through MONO's bench was the first case found). This is what the full photo tour found on 2026-11-15, sorted by reading the code.
+
+**Update, 2026-11-15: every REAL seat below is fixed**, and a fresh full tour confirms it. What the tour still lists (19 seats) is the BY DESIGN rides and cars, the Mulatu hat and the Punk water-tower edge. The fixes, in short:
+- **Moved:** the Soul benches away from the lamps; Grunge stumps kept clear of the log, the axe target, the bunkhouse, the fire and each other; MONO's ash tree kept 4.5 m from the deck; Boom Bap brownstones never sit below the sidewalk; Far Shores loungers on top of the sand; Afrobeat canoes afloat where the sand runs out; the Fusion ride cymbal moved behind the kit.
+- **Rebuilt:** Scores chair backrests on the right side; Undercity consoles facing the arc's middle, and Portishead chair backs turned; booths spaced or narrowed (Oddball diner, Sal's Pizza, Night Café); Arena hardtops with a higher roof and seats down inside; an open tractor cab with posts and panes; a shorter giant-shoe upper; the kawaii hearts thin along the chair back.
+- **Seats removed** where someone or something already sits: the Bluegrass porch pickers, the Flatt & Scruggs banjo, the Taylor Swift banjo.
+- **Small:** the Driftwood hot tub has no lid, and its water sits at the sitter's waist.
+- **The check** now also skips leaves made of the Foliage surface (two street trees brushing Boom Bap stoops).
 
 Totals: **REAL 69 seats (21 groups), BY DESIGN 32 seats (11 groups), UNSURE 11 seats (4 groups).**
 Paths are relative to `Game/EverythingWorld/Assets/_Project/Scripts/World/Kits/`. Verdicts come from reading the code against the hit positions. Unity was not run.

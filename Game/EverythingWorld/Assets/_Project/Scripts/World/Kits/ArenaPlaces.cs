@@ -103,11 +103,11 @@ namespace EverythingWorld.World
         void Car(MeshKit mk, MeshKit solid, Vector3 at, Vector3 dir, Color paint, bool convertible)
         {
             var up = Vector3.up; var g = G(at); var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(up, dir); var body = WorldMaterials.Surface(paint, Surface.Painted);
-            mk.Box(body, g + up * .65f, new Vector3(1.9f, .6f, 4.4f), rot); if (!convertible) { mk.Box(body, g + up * 1.5f - dir * .3f, new Vector3(1.7f, .08f, 1.9f), rot); foreach (var e in new[] { -1f, 1f }) foreach (var z in new[] { -1.2f, .6f }) mk.Box(body, g + up * 1.2f + side * e * .82f + dir * z, new Vector3(.07f, .6f, .07f), rot); }
+            mk.Box(body, g + up * .65f, new Vector3(1.9f, .6f, 4.4f), rot); if (!convertible) { mk.Box(body, g + up * 1.8f - dir * .3f, new Vector3(1.7f, .08f, 1.9f), rot); foreach (var e in new[] { -1f, 1f }) foreach (var z in new[] { -1.2f, .6f }) mk.Box(body, g + up * 1.375f + side * e * .82f + dir * z, new Vector3(.07f, .85f, .07f), rot); }
             else mk.Box(GlowM(new Color(.7f, .85f, 1f), .3f), g + up * 1.15f + dir * .65f, new Vector3(1.7f, .5f, .05f), rot * Quaternion.Euler(-20f, 0, 0));
             mk.Box(dark, g + up * .9f - dir * .35f, new Vector3(1.6f, .12f, 1.5f), rot);
             foreach (var e in new[] { -1f, 1f }) { foreach (var z in new[] { -1.4f, 1.4f }) mk.Prism(dark, g + side * e * .86f + dir * z + up * .38f, side * e, .38f, .22f, 10); mk.Box(GlowM(new Color(1f, .95f, .8f), 2.4f), g + up * .7f + dir * 2.21f + side * e * .65f, new Vector3(.3f, .16f, .03f), rot); mk.Box(GlowM(new Color(1f, .15f, .1f), 1.6f), g + up * .7f - dir * 2.21f + side * e * .65f, new Vector3(.3f, .14f, .03f), rot); }
-            solid.Box(body, g + up * .45f, new Vector3(1.9f, .9f, 4.4f), rot); foreach (var e in new[] { -.42f, .42f }) Interact.Seat(plife.transform, g + up * 1f - dir * .3f + side * e, dir, "Sit in the car");
+            solid.Box(body, g + up * .45f, new Vector3(1.9f, .9f, 4.4f), rot); foreach (var e in new[] { -.42f, .42f }) Interact.Seat(plife.transform, g + up * .6f - dir * .3f + side * e, dir, "Sit in the car");
         }
 
         // ---------------------------------------------------------------- the Drive-In

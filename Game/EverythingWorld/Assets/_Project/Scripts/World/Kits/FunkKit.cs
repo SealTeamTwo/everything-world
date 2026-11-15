@@ -256,8 +256,8 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var c = WorldMaterials.Surface(Neon[i % Neon.Length] * .75f, Surface.Painted); var sole = WorldMaterials.Surface(new Color(.9f, .85f, .7f), Surface.Painted);
             mk.Box(sole, g + up * .35f, new Vector3(1.3f, .7f, 3.2f), rot); solid.Box(sole, g + up * .35f, new Vector3(1.3f, .7f, 3.2f), rot); mk.Box(sole, g + up * 1f - face * 1f, new Vector3(1.2f, .7f, 1.1f), rot); solid.Box(sole, g + up * .7f - face * 1f, new Vector3(1.2f, 1.4f, 1.1f), rot);
-            mk.Box(c, g + up * 1.1f + face * .5f, new Vector3(1.25f, .7f, 2f), rot * Quaternion.Euler(14f, 0, 0)); mk.Box(c, g + up * 1.9f - face * 1.1f, new Vector3(1.2f, 1.1f, .9f), rot); mk.Blob(GlowM(Gold, 1.4f), g + up * 1.5f + face * .2f, new Vector3(.2f, .2f, .2f), new System.Random(i), 0f);
-            Interact.Seat(plife.transform, g + up * .72f + face * 1.3f, face, "Sit on the giant shoe");
+            mk.Box(c, g + up * 1.1f + face * .3f, new Vector3(1.25f, .7f, 1.6f), rot * Quaternion.Euler(14f, 0, 0)); mk.Box(c, g + up * 1.9f - face * 1.1f, new Vector3(1.2f, 1.1f, .9f), rot); mk.Blob(GlowM(Gold, 1.4f), g + up * 1.5f + face * .2f, new Vector3(.2f, .2f, .2f), new System.Random(i), 0f);
+            Interact.Seat(plife.transform, g + up * .72f + face * 1.35f, face, "Sit on the giant shoe");
         }
 
         // ---------------------------------------------------------------- the lanes to the artists

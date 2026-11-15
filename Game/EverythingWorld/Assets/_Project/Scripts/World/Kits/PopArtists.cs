@@ -186,7 +186,7 @@ namespace EverythingWorld.World
             // "Lavender Haze": a bed of lavender
             var lv = z.At(-2f, -14f) + up * .08f; z.mk.Prism(Paint(new Color(.5f, .4f, .34f)), lv, up, 2.2f, .14f, 14); for (var k = 0; k < 30; k++) { var lp = lv + Quaternion.Euler(0, k * 47f, 0) * Vector3.forward * (.3f + (k % 6) * .32f); z.mk.Prism(leafMint, lp + up * .14f, up, .015f, .4f, 3); z.mk.Prism(k % 4 == 0 ? SongGlow(lh, Lilac, 1f) : Paint(Lilac), lp + up * .5f, up, .045f, .22f, 4, .4f); }
             // "Mean": a banjo on a chair
-            var bj = z.At(-4f, 13f) + up * .08f; Chair(z.mk, bj, (fr + sd * .2f).normalized); z.mk.Prism(Paint(new Color(.96f, .94f, .88f)), bj + up * .62f + fr * .1f, (fr + up * 1.3f).normalized, .2f, .06f, 14); z.mk.Prism(SongGlow(mn, Gold, .6f), bj + up * .62f + fr * .1f, (up + fr * .3f).normalized, .025f, .9f, 4);
+            var bj = z.At(-4f, 13f) + up * .08f; Chair(z.mk, bj, (fr + sd * .2f).normalized, false); z.mk.Prism(Paint(new Color(.96f, .94f, .88f)), bj + up * .62f + fr * .1f, (fr + up * 1.3f).normalized, .2f, .06f, 14); z.mk.Prism(SongGlow(mn, Gold, .6f), bj + up * .62f + fr * .1f, (up + fr * .3f).normalized, .025f, .9f, 4);
             // "Paper Rings": a paper ring on a cushion
             var rg = z.At(1.6f, 15f) + up * .08f; Plinth(z, rg, .6f, 1f); z.mk.Prism(Paint(Pink), rg + up * 1f, up, .24f, .08f, 10); var ring = SongGlow(pr, White, 1.2f); for (var k = 0; k < 12; k++) { var a = Quaternion.AngleAxis(k * 30f, sd); z.mk.Box(ring, rg + up * 1.24f + a * up * .12f, new Vector3(.03f, .065f, .03f), a * rot); }
             // "Wildest Dreams": an old film screen with sepia light
@@ -203,10 +203,10 @@ namespace EverythingWorld.World
         void Plinth(Plot z, Vector3 at, float w, float h) { z.mk.Box(white, at + Vector3.up * (h / 2f), new Vector3(w, h, w), z.Rot); BoxCol(z.root, at + Vector3.up * (h / 2f), new Vector3(w, h, w), z.Rot); }
 
         /// A chair to sit on.
-        void Chair(MeshKit mk, Vector3 g, Vector3 face)
+        void Chair(MeshKit mk, Vector3 g, Vector3 face, bool seat = true)
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); mk.Box(white, g + up * .45f, new Vector3(.46f, .05f, .46f), rot); mk.Box(white, g + up * .8f - face * .21f, new Vector3(.46f, .7f, .05f), rot); foreach (var (x, zz) in new[] { (-.2f, -.2f), (.2f, -.2f), (.2f, .2f), (-.2f, .2f) }) mk.Box(white, g + up * .22f + rot * new Vector3(x, 0, zz), new Vector3(.04f, .44f, .04f), rot);
-            Interact.Seat(tlife.transform, g + up * .5f, face);
+            if (seat) Interact.Seat(tlife.transform, g + up * .5f, face);   // no seat when something stands on the chair
         }
 
         // ---------------------------------------------------------------- Sabrina Carpenter

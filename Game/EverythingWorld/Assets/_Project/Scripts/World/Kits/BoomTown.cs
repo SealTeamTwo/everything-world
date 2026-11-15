@@ -112,7 +112,8 @@ namespace EverythingWorld.World
             {
                 if (Mathf.Abs(d - ElOff) < 13f) continue;
                 var p = Wp(d, e * off); if (!ctx.IsLand(p.x, p.z, 8f) || InFootprint(ctx, p.x, p.z, 6.2f) || LaneNear(p.x, p.z, 6.4f)) continue;
-                Brownstone(ctx, mk, solid, new PlaceFrame(ctx.OnGround(p.x, p.z), -S * e), i); built++;
+                var hg = ctx.OnGround(p.x, p.z); hg.y = Mathf.Max(hg.y, G(ctx, d, e * (StreetW / 2f + 1.3f)).y + .22f);   // never below the sidewalk, or the stoop sinks into it
+                Brownstone(ctx, mk, solid, new PlaceFrame(hg, -S * e), i); built++;
             }
             Debug.Log($"Boom Bap Harbour: {built} brownstones");
         }

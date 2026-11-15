@@ -76,7 +76,7 @@ namespace EverythingWorld.World
             for (var row = 0; row < 3; row++) for (var k = 0; k <= 6 + row * 2; k++)
             {
                 var a = Mathf.Lerp(-70f, 70f, k / (float)(6 + row * 2)); var dir = Quaternion.Euler(0, a, 0) * D; var r = 3f + row * 1.8f; var cp = sc + dir * r + up * .5f; var face = -dir;
-                mk.Box(dark, cp + up * .45f, new Vector3(.4f, .05f, .4f), Quaternion.LookRotation(face)); mk.Box(dark, cp + up * .7f - face * .2f, new Vector3(.4f, .5f, .04f), Quaternion.LookRotation(face)); foreach (var e in new[] { -.16f, .16f }) mk.Prism(iron, cp + Vector3.Cross(up, face) * e, up, .02f, .45f, 4);
+                mk.Box(dark, cp + up * .45f, new Vector3(.4f, .05f, .4f), Quaternion.LookRotation(face)); mk.Box(dark, cp + up * .7f + face * .2f, new Vector3(.4f, .5f, .04f), Quaternion.LookRotation(face)); foreach (var e in new[] { -.16f, .16f }) mk.Prism(iron, cp + Vector3.Cross(up, face) * e, up, .02f, .45f, 4);
                 Stand(mk, cp + face * -.7f, face); BoxCol(rootT, cp + up * .7f - face * .3f, new Vector3(.55f, 1.4f, 1.3f), Quaternion.LookRotation(face));
                 if (k % 3 == 1) Interact.Seat(tlife.transform, cp + up * .5f, -face, "Take a seat in the orchestra").seatHeight = .5f;
             }

@@ -227,7 +227,7 @@ namespace EverythingWorld.World
             Folk(fo.P(-3.3f, 0, -D / 2f + 3.4f) + up * .8f, f.Fwd, Resident.Pose.Sit, new[] { "Coffee's free if you can tell me what day it is.", "I came in for one egg. That was 1994." }, Look(Residents.Tool.Mug), null, .8f);
             // booths along the front windows
             foreach (var e in new[] { -1f, 1f })
-                foreach (var b in new[] { 4.2f, 6.6f })
+                foreach (var b in new[] { 3.6f, 6.6f })
                 {
                     var bc = fo.P(e * b, 0, D / 2f - 1.5f);
                     Wall(bc + up * .375f, new Vector3(1.1f, .75f, 1f), red);   // the table base

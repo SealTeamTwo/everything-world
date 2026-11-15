@@ -433,7 +433,7 @@ namespace EverythingWorld.World
         }
 
         /// A rocking chair facing dir.
-        void Rocker(MeshKit mk, MeshKit solid, LandContext ctx, Vector3 at, Vector3 dir)
+        void Rocker(MeshKit mk, MeshKit solid, LandContext ctx, Vector3 at, Vector3 dir, bool seat = true)
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(up, dir);
             mk.Box(wood, at + up * .48f, new Vector3(.6f, .06f, .55f), rot); mk.Box(wood, at + up * .95f - dir * .3f, new Vector3(.6f, .9f, .06f), rot * Quaternion.Euler(-12f, 0, 0));
@@ -443,7 +443,7 @@ namespace EverythingWorld.World
                 mk.Box(wood, at + side * s + up * .68f + dir * .05f, new Vector3(.05f, .05f, .5f), rot);
             }
             solid.Box(wood, at + up * .5f, new Vector3(.7f, 1f, .8f), rot);
-            Interact.Seat(life.transform, at + up * .52f, dir, "Sit and rock");
+            if (seat) Interact.Seat(life.transform, at + up * .52f, dir, "Sit and rock");   // no seat where someone (or something) already sits
         }
 
         // ---------------------------------------------------------------- the creek, bridges, the mill

@@ -102,7 +102,7 @@ namespace EverythingWorld.World
             // inside: two booths under the window, a counter with stools along the back, a pie under glass, a radio
             for (var k = 0; k < 2; k++)
             {
-                var bc = fo.P(wx0 + 1.9f + k * 3.6f, 0, D / 2f - T - 1.1f); mk.Box(wood, bc + up * .75f, new Vector3(1.1f, .06f, 1.6f), f.r); mk.Prism(iron, bc, up, .06f, .75f, 6); Col(bc + up * .4f, new Vector3(1.1f, .8f, 1.6f), f.r);
+                var bc = fo.P(wx0 + 1.7f + k * 3.2f, 0, D / 2f - T - 1.1f); mk.Box(wood, bc + up * .75f, new Vector3(1.1f, .06f, 1.6f), f.r); mk.Prism(iron, bc, up, .06f, .75f, 6); Col(bc + up * .4f, new Vector3(1.1f, .8f, 1.6f), f.r);
                 foreach (var e in new[] { -1f, 1f }) { var sp = bc + f.Right * e * 1.15f; mk.Box(seatM, sp + up * .45f, new Vector3(.6f, .12f, 1.6f), f.r); mk.Box(seatM, sp + up * .95f + f.Right * e * .28f, new Vector3(.1f, 1.1f, 1.6f), f.r); mk.Box(board, sp + up * .2f, new Vector3(.55f, .4f, 1.5f), f.r); Col(sp + up * .5f, new Vector3(.65f, 1f, 1.6f), f.r); if (!(k == 0 && e > 0)) Interact.Seat(plife.transform, sp + up * .54f, -f.Right * e, "Slide into the booth"); }
                 mk.Blob(WorldMaterials.Glow(warm, 1.6f), bc + up * 2.3f, Vector3.one * .12f, prng, 0f); mk.Box(iron, bc + up * 2.8f, new Vector3(.02f, .9f, .02f), f.r);
             }
