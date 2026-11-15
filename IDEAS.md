@@ -113,6 +113,8 @@ Open questions:
 - Should cross-scene features become visible links, for example a signpost or a path between the two artists' areas?
 - Does an artist area have its own music, for example the radio playing only that artist's songs while you stand there, or does it stay part of the scene's station?
 
+- **Blue fire in the Metalcore Caldera** (a friend's idea in play, 2026-11-15): burning sulphur gives a blue flame, so the Caldera could have blue lava or blue flames somewhere, maybe a sulphur vent field or its hottest heart. That would also add strong blue/yellow contrast against the orange.
+
 ## Done
 
 - **Zone radio** (2026-11-08): every scene is an always-on station on a shared clock, so friends hear the same part of the same song.
