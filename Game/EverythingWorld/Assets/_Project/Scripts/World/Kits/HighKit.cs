@@ -30,7 +30,7 @@ namespace EverythingWorld.World
         void MakeMaterials()
         {
             rock = WorldMaterials.Glow(new Color(.42f, .38f, .5f), .1f); rockD = WorldMaterials.Glow(new Color(.28f, .25f, .36f), .08f); grassTop = WorldMaterials.Glow(new Color(.34f, .48f, .42f), .1f); path = WorldMaterials.Glow(new Color(.36f, .32f, .42f), .08f);
-            iron = WorldMaterials.Solid(new Color(.14f, .12f, .18f), .5f); dark = WorldMaterials.Solid(new Color(.05f, .04f, .08f)); white = WorldMaterials.Glow(new Color(.86f, .84f, .9f), .16f); leafM = WorldMaterials.Glow(new Color(.3f, .46f, .4f), .12f); trunkM = WorldMaterials.Glow(new Color(.3f, .22f, .24f), .1f);
+            iron = WorldMaterials.Surface(new Color(.14f, .12f, .18f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.05f, .04f, .08f)); white = WorldMaterials.Glow(new Color(.86f, .84f, .9f), .16f); leafM = WorldMaterials.Glow(new Color(.3f, .46f, .4f), .12f); trunkM = WorldMaterials.Glow(new Color(.3f, .22f, .24f), .1f);
             runeM = new Material(WorldMaterials.Glow(Rune, 1.6f)) { name = "High runes" }; lampM = new Material(WorldMaterials.Glow(Gold, 1.6f)) { name = "High lanterns" }; waterM = new Material(WorldMaterials.Glow(Water, .6f)) { name = "High water" }; crystalM = new Material(WorldMaterials.Glow(Pink, 1.1f)) { name = "High crystals" };
         }
 
