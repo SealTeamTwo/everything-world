@@ -151,6 +151,7 @@ namespace EverythingWorld.World
                     break;
                 case 4:   // a small open-air stage, a crowd of lights swaying in threes, blazing hottest at the solo
                     mk.Box(darkWood, c - face * 1.2f + up * .3f, new Vector3(3f, .6f, 2f), rot); solid.Box(darkWood, c - face * 1.2f + up * .3f, new Vector3(3f, .6f, 2f), rot);
+                    mk.Box(darkWood, c - face * 1.2f + up * .15f, new Vector3(3.6f, .3f, 2.6f), rot); solid.Box(darkWood, c - face * 1.2f + up * .15f, new Vector3(3.6f, .3f, 2.6f), rot);   // a step up round the stage
                     mk.Box(Cue(id, new Color(1f, .5f, .15f), .3f, 4f, from, to + .01f, 1.2f, 0f, .7f), c - face * 1.2f + up * .62f, new Vector3(2.8f, .02f, 1.8f), rot);
                     var crowd = Part(root, "Concert crowd", c + face * 2f, rot);
                     for (var k = 0; k < 15; k++) crowd.mk.Blob(Lit(.4f), new Vector3((k % 5 - 2f) * .6f, 1.4f + (k / 5) * .1f, (k / 5) * .6f), Vector3.one * .08f, ctx.Rng, 0f);
@@ -207,7 +208,9 @@ namespace EverythingWorld.World
                     break;
             }
             // each station's own warm-to-cold glow on the ground
-            mk.Prism(Cue(id, col, .035f, 1.5f, from, to + .01f), G(ctx, c) + up * .025f, up, j == 11 ? 3.9f : 3.2f, .01f, 20, 1f, 7f);
+            // (at the piano-key stairway it lies at the stair's foot, not under it, so the stair doesn't stand in the way)
+            if (j == 6) mk.Prism(Cue(id, col, .035f, 1.5f, from, to + .01f), G(ctx, c + face * 1.75f) + up * .025f, up, 1.5f, .01f, 20, 1f, 7f);
+            else mk.Prism(Cue(id, col, .035f, 1.5f, from, to + .01f), G(ctx, c) + up * .025f, up, j == 11 ? 3.9f : 3.2f, .01f, 20, 1f, 7f);
         }
 
         void Bench(MeshKit mk, MeshKit solid, Vector3 at, Vector3 facing)

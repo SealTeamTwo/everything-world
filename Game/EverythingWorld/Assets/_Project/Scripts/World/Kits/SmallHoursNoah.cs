@@ -400,7 +400,7 @@ namespace EverythingWorld.World
             foreach (var p in drive) Remember(p);
             // the swing set
             var swing = N + F * 13f + side * 8f;
-            var white = WorldMaterials.Surface(new Color(.8f, .8f, .8f), Surface.Painted);
+            var white = WorldMaterials.Surface(new Color(.8f, .8f, .8f), Surface.Painted); var wornPatches = new List<Vector3>();
             foreach (var s in new[] { -1f, 1f })
                 foreach (var k in new[] { -1f, 1f })
                 {
@@ -415,6 +415,8 @@ namespace EverythingWorld.World
                 foreach (var k in new[] { -.25f, .25f }) mk.Box(iron, bar + side * (s + k) - Vector3.up * .95f, new Vector3(.02f, 1.9f, .02f), Quaternion.identity);
                 solid.Box(iron, bar + side * s - Vector3.up * 1.3f, new Vector3(.7f, 1.3f, .4f), Quaternion.LookRotation(F));
                 mk.Box(WorldMaterials.Surface(new Color(.3f, .32f, .38f), Surface.Painted), bar + side * s - Vector3.up * 1.9f, new Vector3(.6f, .05f, .3f), Quaternion.LookRotation(F));
+                // the bare patch worn under each swing by feet scuffing the ground
+                var worn = G(swing + side * s); mk.Prism(dirt, worn - Vector3.up * .01f, Vector3.up, .75f, .04f, 10); wornPatches.Add(worn);
             }
             // the birdbath and the white goose ornaments
             var bath = G(N + F * 16f - side * 6f);
@@ -449,6 +451,7 @@ namespace EverythingWorld.World
                 var p = N + F * 10f + new Vector3(Mathf.Cos(a) * r, 0, Mathf.Sin(a) * r);
                 if (NearPath(p.x, p.z, 1.8f)) continue;
                 if ((new Vector2(p.x, p.z) - new Vector2(N.x + F.x * 4f, N.z + F.z * 4f)).magnitude < 9.5f) continue;
+                if (wornPatches.Exists(w => (new Vector2(p.x - w.x, p.z - w.z)).sqrMagnitude < .8f * .8f)) continue;   // the bare patches under the swings
                 if (WindMesh.Patch(p.x, p.z, .12f, 21f) < .28f) continue;                    // bare frozen earth
                 var tone = WindMesh.Patch(p.x, p.z, .07f, 22f);
                 var col = Color.Lerp(new Color(.44f, .4f, .34f), new Color(.64f, .53f, .36f), tone) * (.92f + (float)rng.NextDouble() * .16f);
