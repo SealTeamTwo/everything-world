@@ -406,13 +406,16 @@ namespace EverythingWorld.World
             for (var b = 0; b < 6; b++) { var r = 150f - b * 5f; var prev = c - S * r; for (var k = 1; k <= 40; k++) { var a = k / 40f * Mathf.PI; var p = c - S * Mathf.Cos(a) * r + Vector3.up * Mathf.Sin(a) * r; mk.Prism(bowM[b], prev, (p - prev).normalized, 2.6f, Vector3.Distance(prev, p) + .4f, 5); prev = p; } }
         }
 
-        /// Wet green grass, thick, with small flowers; nothing on the sand.
+        /// Wet green grass in patches: thick long grass on the hills, short turf the goats keep down, and patches in
+        /// flower, each patch one flower's colour; nothing on the sand.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .9f, new Color(.22f, .62f, .26f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1974);
             Color[] flowers = { Gold, new Color(1f, .4f, .4f), Cream, new Color(.9f, .5f, .8f) };
             const float st = 2.4f;
+            Color deep = new Color(.14f, .5f, .26f), lush = new Color(.36f, .7f, .26f), dew = new Color(.8f, .95f, .6f);
+            int thick = 0, turf = 0, flowering = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
@@ -420,12 +423,37 @@ namespace EverythingWorld.World
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 var gy = ctx.Ground(px, pz); if (gy < waterY + 3.4f) continue;
                 if (Mathf.PerlinNoise(px * .04f + 6f, pz * .04f + 3f) < .3f) continue;
+                var kind = WindMesh.Patch(px, pz, .014f, 51f);      // thick grass, goat turf or a patch in flower
+                var tone = WindMesh.Patch(px, pz, .026f, 52f);      // the patch's shade, deep blue-green to sunny
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.16f, .54f, .22f), new Color(.34f, .7f, .28f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, gy - .04f, pz), .3f + (float)rng.NextDouble() * .36f, col, rng.NextDouble() < .14 ? flowers[rng.Next(flowers.Length)] : Color.Lerp(col, new Color(.8f, .95f, .6f), .4f), rng, 3, .06f);
+                var col = Color.Lerp(deep, lush, tone) * (.92f + r2 * .16f);
+                var at = new Vector3(px, gy - .04f, pz);
+                if (kind < .4f)
+                {
+                    // thick wet grass, long and heavy
+                    wm.Tuft(at, .42f + r2 * .4f, col, Color.Lerp(col, dew, .35f), rng, 4, .07f, .14f);
+                    if (r1 < .15f) wm.Tuft(at + new Vector3(.4f, 0, .3f), .35f + r1 * .4f, col, Color.Lerp(col, dew, .35f), rng, 3, .07f, .14f);
+                    thick++;
+                }
+                else if (kind < .7f)
+                {
+                    // goat-cropped turf: short and bright
+                    var lc = Color.Lerp(col, lush, .3f);
+                    wm.Tuft(at, .16f + r2 * .14f, lc, Color.Lerp(lc, dew, .3f), rng, 3, .05f, .14f);
+                    if (r1 < .3f) wm.Tuft(at + new Vector3(-.4f, 0, .3f), .14f + r1 * .1f, lc, lc, rng, 2, .05f, .14f);
+                    turf++;
+                }
+                else
+                {
+                    // in flower: the patch's own flower on half the tufts
+                    var fl = flowers[WindMesh.Pick(WindMesh.Patch(px, pz, .03f, 53f), flowers.Length)];
+                    wm.Tuft(at, .3f + r2 * .3f, col, r1 < .5f ? fl : Color.Lerp(col, dew, .4f), rng, 3, .06f, .14f); flowering++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Roots Bay grass", ctx.Root, mat);
+            Debug.Log($"The Roots Bay grass: {thick} thick-grass tufts, {turf} turf spots, {flowering} flowering tufts");
         }
     }
 }
