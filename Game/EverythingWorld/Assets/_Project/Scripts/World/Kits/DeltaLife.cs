@@ -20,6 +20,7 @@ namespace EverythingWorld.World
         public string wolfSong, rainSong, thrillSong, boomSong;
         public HashSet<string> johnson = new HashSet<string>(), muddy = new HashSet<string>();
         public Material bulbs, neon, bottles, eyes, storm; public Transform figure;
+        public GameObject stormBank;   // only shown while you're in the Delta (it stands over the neighbouring lands)
         public float played = -99f, stomped = -99f;
         public List<(string song, Material m, Color c)> songGlows = new List<(string, Material, Color)>();
         readonly Dictionary<string, float> songAmount = new Dictionary<string, float>();
@@ -71,6 +72,7 @@ namespace EverythingWorld.World
         {
             var dt = Time.deltaTime; var t = Time.time; var now = (float)(SharedChance.Now % 100000.0);
             var here = SkyDirector.Instance != null && SkyDirector.Instance.CurrentLand == Land;
+            if (stormBank != null && stormBank.activeSelf != here) stormBank.SetActive(here);
             var d = MusicDirector.Instance; var playing = d != null && d.CurrentSlot.IsValid;
             var energy = SurpriseDirector.Energy;
             var id = MusicDirector.ForcedTrackId ?? (playing ? d.CurrentSlot.track.id : null);

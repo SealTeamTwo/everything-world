@@ -156,7 +156,7 @@ namespace EverythingWorld.World
             Store(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Wilds(ctx, mk, solid);
-            StormBank(ctx, mk);
+            StormBank(ctx);
             mk.Build("The Delta Crossroads", ctx.Root, false);
             solid.BuildCollider("The Delta Crossroads walls", ctx.Root);
         }
@@ -451,15 +451,19 @@ namespace EverythingWorld.World
             noGrass.Add(new Vector3(g.x, 5.5f, g.z));
         }
 
-        /// The storm stacked on the western horizon: a wall of dark cloud that DeltaLife sets flickering.
-        void StormBank(LandContext ctx, MeshKit mk)
+        /// The storm stacked on the western horizon: a wall of dark cloud that DeltaLife sets flickering. It is its
+        /// own object, shown only while you're in the Delta: 600 to 900 m out it stands over the Folk Woods, the Jam
+        /// Band Commonwealth and the Old Jazz Quarter, where it hung overhead as huge grey slabs.
+        void StormBank(LandContext ctx)
         {
-            var rng = new System.Random(1958);
+            var rng = new System.Random(1958); var mk = new MeshKit();
             for (var k = 0; k < 46; k++)
             {
                 var a = (150f + (float)rng.NextDouble() * 150f) * Mathf.Deg2Rad; var d = 620f + (float)rng.NextDouble() * 260f; var h = 60f + (float)rng.NextDouble() * 260f;
                 mk.Blob(stormM, center + new Vector3(Mathf.Sin(a) * d, h, Mathf.Cos(a) * d), new Vector3(120f + (float)rng.NextDouble() * 90f, 50f + (float)rng.NextDouble() * 50f, 120f + (float)rng.NextDouble() * 90f), rng, .3f);
             }
+            life.stormBank = mk.BuildSingle("Delta storm bank", ctx.Root, false);
+            if (life.stormBank != null) { life.stormBank.isStatic = false; foreach (var r in life.stormBank.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; life.stormBank.SetActive(false); }
         }
 
         /// The fields: cotton in rows, white with bolls; dry grass everywhere else.

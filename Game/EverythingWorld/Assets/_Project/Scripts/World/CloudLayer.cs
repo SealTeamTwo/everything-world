@@ -13,9 +13,8 @@ namespace EverythingWorld.World
         public int count = 120;
         public float span = 3600f;                // the square of sky the clouds wrap round in
         public float minHeight = 150f, maxHeight = 290f, speed = 5f, size = 1f;
-        /// Every land's heights are raised by this much: at the heights the lands were first given (60 to 300 m over
-        /// the arrival) the clouds hung so low they read as a ceiling of huge flat slabs, from the hills and in flight.
-        public float lift = 2.4f;
+        /// Raises (above 1) or lowers this land's cloud heights all together.
+        public float lift = 1f;
         public string key = "clouds";             // the wind and the hourly cloudiness are shared per key
         public float minCover = .25f;             // the clearest an hour can be
         public float cover = -1f;                 // set 0..1 to choose the cloudiness yourself (-1 = by the hour)
