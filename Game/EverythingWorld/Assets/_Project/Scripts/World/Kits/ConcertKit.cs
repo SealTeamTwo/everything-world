@@ -32,7 +32,7 @@ namespace EverythingWorld.World
         void MakeMaterials()
         {
             marble = WorldMaterials.Glow(new Color(.4f, .42f, .46f), .08f); marbleD = WorldMaterials.Glow(new Color(.28f, .3f, .34f), .06f); gravel = WorldMaterials.Glow(new Color(.24f, .25f, .26f), .06f); hedgeM = WorldMaterials.Glow(Hedge, .1f); goldM = WorldMaterials.Glow(Gold, .5f);
-            iron = WorldMaterials.Solid(new Color(.12f, .12f, .14f), .5f); dark = WorldMaterials.Solid(new Color(.04f, .04f, .06f)); white = WorldMaterials.Glow(new Color(.86f, .86f, .88f), .16f); leafM = WorldMaterials.Glow(new Color(.14f, .3f, .2f), .1f); trunkM = WorldMaterials.Glow(new Color(.26f, .2f, .16f), .1f);
+            iron = WorldMaterials.Surface(new Color(.12f, .12f, .14f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.04f, .04f, .06f)); white = WorldMaterials.Glow(new Color(.86f, .86f, .88f), .16f); leafM = WorldMaterials.Glow(new Color(.14f, .3f, .2f), .1f); trunkM = WorldMaterials.Glow(new Color(.26f, .2f, .16f), .1f);
             candleM = new Material(WorldMaterials.Glow(Candle, 1.8f)) { name = "Concert candles" }; waterM = new Material(WorldMaterials.Glow(Water, .6f)) { name = "Concert water" }; windowM = new Material(WorldMaterials.Glow(new Color(1f, .8f, .5f), 1.1f)) { name = "Concert windows" };
         }
 
