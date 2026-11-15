@@ -415,24 +415,40 @@ namespace EverythingWorld.World
             return true;
         }
 
+        /// The backroads' grass in patches, still by height (dark green down low, summer green in between, hazy gold
+        /// up high): mown verges, ordinary summer grass, and stands of tall roadside weeds nobody has cut, with bare
+        /// dirt between. Each patch its own shade within its band; every blade its own.
         void Grass(LandContext ctx)
         {
             var mat = WindMesh.Material(.4f, 1f, new Color(.55f, .6f, .32f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1988);
             const float st = 2.4f;
+            int mown = 0, summer = 0, weeds = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, RoadW / 2f + 1.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .03f + 4f, pz * .03f + 8f) < .38f) continue;
+                if (WindMesh.Patch(px, pz, .03f, 4f) < .4f) continue;                      // bare dirt between patches
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
                 var gh = ctx.Ground(px, pz); var r0 = (float)rng.NextDouble();
-                var col = gh < 18f ? Color.Lerp(new Color(.2f, .32f, .14f), new Color(.3f, .42f, .18f), r0) : gh > 30f ? Color.Lerp(new Color(.85f, .74f, .4f), new Color(.95f, .86f, .5f), r0) : Color.Lerp(new Color(.48f, .58f, .28f), new Color(.75f, .72f, .38f), r0);
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .4f + (float)rng.NextDouble() * .5f, col, Color.Lerp(col, new Color(.95f, .9f, .6f), .35f), rng, 4, .05f);
+                var kind = WindMesh.Patch(px, pz, .013f, 9f); var t = Mathf.Clamp01((WindMesh.Patch(px, pz, .022f, 20f) - .25f) * 2f) * .7f + r0 * .3f;
+                var col = gh < 18f ? Color.Lerp(new Color(.2f, .32f, .14f), new Color(.3f, .42f, .18f), t) : gh > 30f ? Color.Lerp(new Color(.85f, .74f, .4f), new Color(.95f, .86f, .5f), t) : Color.Lerp(new Color(.46f, .58f, .3f), new Color(.75f, .72f, .38f), t);
+                var tip = Color.Lerp(col, new Color(.95f, .9f, .6f), .35f);
+                var at = new Vector3(px, gh - .04f, pz);
+                if (kind < .35f) { wm.Tuft(at, .2f + r0 * .15f, col, tip, rng, 4, .05f, .14f); mown++; }
+                else if (kind < .7f) { wm.Tuft(at, .4f + r0 * .5f, col, tip, rng, 4, .05f, .14f); summer++; }
+                else
+                {
+                    var wc = col * .92f;
+                    wm.Tuft(at, .7f + r0 * .5f, wc, tip, rng, 5, .06f, .14f);
+                    if (r0 < .35f) wm.Tuft(at + new Vector3(-.4f, 0, .35f), .6f + r0 * .45f, wc, tip, rng, 4, .06f, .14f);
+                    weeds++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Backroads grass", ctx.Root, mat);
+            Debug.Log($"The Oddball Backroads grass: {mown} mown-verge tufts, {summer} summer-grass tufts, {weeds} tall-weed stands");
         }
     }
 }
