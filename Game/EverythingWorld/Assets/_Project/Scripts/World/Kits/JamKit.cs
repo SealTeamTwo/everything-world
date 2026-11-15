@@ -480,26 +480,49 @@ namespace EverythingWorld.World
             StringLights(mk, a + up * 2.6f, b + up * 2.6f, Warm, 8);
         }
 
+        /// The woods' grass in patches: trodden festival lawns, mixed meadow, and stands of tall summer grass, with
+        /// bare leafy ground between. Round every place the grass is still brighter and full of flowers, but now in
+        /// drifts of one tie-dye colour each (and the odd small drift out in the woods). Each patch its own shade,
+        /// cool blue-green to warm yellow-green; every blade its own.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, 1f, new Color(.25f, .45f, .28f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1983);
             const float step = 2.3f;
+            Color wCool = new Color(.22f, .42f, .3f), wWarm = new Color(.4f, .5f, .28f), gCool = new Color(.42f, .66f, .36f), gWarm = new Color(.64f, .76f, .36f);
+            int lawn = 0, meadow = 0, tall = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -3f)) continue;
-                if (Mathf.PerlinNoise(px * .025f + 1f, pz * .025f + 4f) < .35f) continue;
+                var glade = InGlade(px, pz);   // round each place the grass is brighter and full of flowers
+                if (WindMesh.Patch(px, pz, .025f, 1f) < (glade ? .3f : .38f)) continue;   // bare leafy ground between patches
+                var kind = WindMesh.Patch(px, pz, .013f, 4f); var tone = WindMesh.Patch(px, pz, .02f, 9f); var drift = WindMesh.Patch(px, pz, .05f, 14f);
+                var r = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var glade = InGlade(px, pz);   // round each place the grass is brighter and full of flowers
-                var col = glade ? Color.Lerp(new Color(.45f, .68f, .32f), new Color(.62f, .78f, .38f), (float)rng.NextDouble()) : Color.Lerp(new Color(.24f, .44f, .28f), new Color(.38f, .5f, .3f), (float)rng.NextDouble());
+                var t = Mathf.Clamp01((tone - .25f) * 2f);
+                var col = (glade ? Color.Lerp(gCool, gWarm, t) : Color.Lerp(wCool, wWarm, t)) * (.92f + r * .16f);
                 var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
-                wm.Tuft(at, .4f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, new Color(.8f, .85f, .6f), .3f), rng, 4, .07f);
-                if (rng.NextDouble() < (glade ? .3 : .05)) wm.Flower(at + new Vector3(.15f, 0, .1f), .4f, Dye[rng.Next(Dye.Length)], rng);
+                if (kind < .35f || glade && kind < .55f) { wm.Tuft(at, .22f + r * .18f, col, Color.Lerp(col, new Color(.8f, .85f, .6f), .25f), rng, 4, .06f, .14f); lawn++; }
+                else if (kind < .66f) { wm.Tuft(at, .4f + r * .4f, col, Color.Lerp(col, new Color(.8f, .85f, .6f), .3f), rng, 4, .07f, .14f); meadow++; }
+                else
+                {
+                    var tc = Color.Lerp(col, new Color(.45f, .5f, .3f), .25f);
+                    wm.Tuft(at, .8f + r * .45f, tc, Color.Lerp(tc, new Color(.78f, .74f, .48f), .45f), rng, 5, .08f, .14f);
+                    if (r < .5f) wm.Tuft(at + new Vector3(-.45f, 0, .35f), .65f + r * .4f, tc, Color.Lerp(tc, new Color(.78f, .74f, .48f), .35f), rng, 4, .07f, .14f);
+                    tall++;
+                }
+                // flowers in drifts of one tie-dye colour each: thick round the places, a few small drifts in the woods
+                if (rng.NextDouble() < (glade ? (drift > .45f ? .4 : .1) : (drift > .68f ? .14 : .015)))
+                {
+                    var fl = Dye[WindMesh.Pick(WindMesh.Patch(px, pz, .03f, 21f), Dye.Length)];
+                    wm.Flower(at + new Vector3(.15f, 0, .1f), .32f + r * .15f, fl, rng); blooms++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Commonwealth grass", ctx.Root, mat);
+            Debug.Log($"The Jam Band Commonwealth grass: {lawn} lawn tufts, {meadow} meadow tufts, {tall} tall-grass clumps, {blooms} flowers");
         }
     }
 }
