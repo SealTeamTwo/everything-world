@@ -33,16 +33,16 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            wood = WorldMaterials.Solid(new Color(.45f, .36f, .3f));
-            darkWood = WorldMaterials.Solid(new Color(.24f, .2f, .2f));
-            iron = WorldMaterials.Solid(new Color(.16f, .16f, .19f));
-            board = WorldMaterials.Solid(new Color(.14f, .13f, .16f));
-            stone = WorldMaterials.Solid(new Color(.42f, .42f, .46f));
-            slate = WorldMaterials.Solid(new Color(.22f, .23f, .28f));
-            glassDark = WorldMaterials.Solid(new Color(.12f, .14f, .2f), .7f);
-            lane = WorldMaterials.Solid(WetStone, .55f);
-            bark = WorldMaterials.Solid(new Color(.18f, .16f, .18f));
-            leaf = WorldMaterials.Solid(new Color(.16f, .24f, .22f));
+            wood = WorldMaterials.Surface(new Color(.45f, .36f, .3f), Surface.Wood);
+            darkWood = WorldMaterials.Surface(new Color(.24f, .2f, .2f), Surface.Wood);
+            iron = WorldMaterials.Surface(new Color(.16f, .16f, .19f), Surface.Metal);
+            board = WorldMaterials.Surface(new Color(.14f, .13f, .16f), Surface.Painted);
+            stone = WorldMaterials.Surface(new Color(.42f, .42f, .46f), Surface.Stone);
+            slate = WorldMaterials.Surface(new Color(.22f, .23f, .28f), Surface.Stone);
+            glassDark = WorldMaterials.Surface(new Color(.12f, .14f, .2f), Surface.Glass);
+            lane = WorldMaterials.Surface(WetStone, Surface.Stone);
+            bark = WorldMaterials.Surface(new Color(.18f, .16f, .18f), Surface.Bark);
+            leaf = WorldMaterials.Surface(new Color(.16f, .24f, .22f), Surface.Foliage);
         }
 
         public override bool Ground(float height, float slope, float patch, out Color color)
@@ -248,7 +248,7 @@ namespace EverythingWorld.World
             const float W = 10f, D = 8f, H = 4.2f, t = .3f;
             var (lo, hi) = Footprint(ctx, at, rot, W, D);
             var c = new Vector3(at.x, hi + .1f, at.z);
-            var paint = WorldMaterials.Solid(new Color(.75f, .76f, .8f));
+            var paint = WorldMaterials.Surface(new Color(.75f, .76f, .8f), Surface.Painted);
             mk.Box(stone, new Vector3(c.x, (lo + c.y) / 2f - .2f, c.z), new Vector3(W + .3f, c.y - lo + .5f, D + .3f), rot);
             void Wall(Vector3 p, Vector3 s, Quaternion r) { mk.Box(paint, p, s, r); solid.Box(paint, p, s, r); }
             Wall(c - face * (D / 2f - t / 2f) + Vector3.up * H / 2f, new Vector3(W, H, t), rot);
@@ -271,13 +271,13 @@ namespace EverythingWorld.World
             for (var i = 0; i < 5; i++)
             {
                 var m = c - face * (D / 2f - 1.1f) + side * ((i - 2f) * 1.7f);
-                mk.Box(WorldMaterials.Solid(new Color(.92f, .92f, .94f)), m + Vector3.up * .55f, new Vector3(1.3f, 1.1f, 1.2f), rot);
+                mk.Box(WorldMaterials.Surface(new Color(.92f, .92f, .94f), Surface.Painted), m + Vector3.up * .55f, new Vector3(1.3f, 1.1f, 1.2f), rot);
                 solid.Box(paint, m + Vector3.up * .55f, new Vector3(1.3f, 1.1f, 1.2f), rot);
                 var drum = new GameObject("Drum").transform; drum.SetParent(ctx.Root, false);
                 drum.SetPositionAndRotation(m + Vector3.up * .58f + face * .62f, rot);
                 var dk = new MeshKit();
                 dk.Prism(WorldMaterials.Glow(new Color(.75f, .88f, 1f), 1.2f), Vector3.zero, Vector3.forward, .4f, .03f, 12);
-                dk.Box(WorldMaterials.Solid(i % 2 == 0 ? new Color(.85f, .45f, .5f) : new Color(.45f, .6f, .85f)), Vector3.forward * .035f + Vector3.up * .12f, new Vector3(.3f, .1f, .01f), Quaternion.identity);
+                dk.Box(WorldMaterials.Surface(i % 2 == 0 ? new Color(.85f, .45f, .5f) : new Color(.45f, .6f, .85f), Surface.Cloth), Vector3.forward * .035f + Vector3.up * .12f, new Vector3(.3f, .1f, .01f), Quaternion.identity);
                 dk.Build("Drum", drum, false).isStatic = false;
                 drums.Add(drum);
             }
@@ -313,7 +313,7 @@ namespace EverythingWorld.World
                 // the whole hedge (and the tree in it) clear of the lane's width: nudged away from the nearest lane point
                 var keep = r * 1.1f + 2.2f;
                 if (NearestPath(p.x, p.z, keep, out var lp)) { var away = new Vector3(p.x - lp.x, 0, p.z - lp.z); away = away.sqrMagnitude > .01f ? away.normalized : Vector3.right; p = ctx.OnGround(lp.x + away.x * keep, lp.z + away.z * keep); }
-                mk.Blob(i % 3 == 0 ? leaf : WorldMaterials.Solid(new Color(.14f, .2f, .2f)), p + Vector3.up * r * .6f, new Vector3(r, r * .8f, r), ctx.Rng, .2f);
+                mk.Blob(i % 3 == 0 ? leaf : WorldMaterials.Surface(new Color(.14f, .2f, .2f), Surface.Foliage), p + Vector3.up * r * .6f, new Vector3(r, r * .8f, r), ctx.Rng, .2f);
                 solid.Blob(leaf, p + Vector3.up * r * .6f, new Vector3(r, r * .8f, r) * 1.1f, Smooth, 0f);   // the hedge's own round shape
                 solid.Box(leaf, p + Vector3.up * r * .6f, new Vector3(r * 1.9f, r * 1.6f, r * 1.9f), Quaternion.identity);
                 if (i % 4 == 0)

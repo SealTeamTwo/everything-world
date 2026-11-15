@@ -35,8 +35,8 @@ namespace EverythingWorld.World
             const float W = 14f, D = 10f, H1 = 3.8f, H2 = 3.3f, t = .3f;
             var flat = c - F * 3f; var (lo, hi) = Footprint(ctx, flat, rot, W, D);
             var fy = hi + .4f; var eave = fy + H1 + H2;
-            var plaster = WorldMaterials.Solid(new Color(.84f, .82f, .76f)); var trim = WorldMaterials.Solid(new Color(.72f, .7f, .64f));
-            var roofM = WorldMaterials.Solid(new Color(.24f, .22f, .24f));
+            var plaster = WorldMaterials.Surface(new Color(.84f, .82f, .76f), Surface.Stone); var trim = WorldMaterials.Surface(new Color(.72f, .7f, .64f), Surface.Painted);
+            var roofM = WorldMaterials.Surface(new Color(.24f, .22f, .24f), Surface.Stone);
             var unlit = new Color(.12f, .16f, .26f); var orange = new Color(1f, .45f, .12f);
             var darkWindows = new List<Material>();
             Material Window(bool lit)
@@ -100,7 +100,7 @@ namespace EverythingWorld.World
             mk.GableRoof(roofM, gb - F * 1.2f + up * .02f, new Vector3(5.4f, 0, 3f), 2.7f, Quaternion.LookRotation(F));
             mk.Prism(Window(true), gb + up * 1f + F * .02f, F, .38f, .04f, 14);
             // chimneys
-            foreach (var s in new[] { -1f, 1f }) { var ch = flatY + S * s * 3.6f - F * 1.6f; mk.Box(WorldMaterials.Solid(new Color(.55f, .5f, .48f)), ch + up * (ry - .2f), new Vector3(.8f, 2.6f, .8f), rot); mk.Box(trim, ch + up * (ry + 1.15f), new Vector3(1f, .2f, 1f), rot); }
+            foreach (var s in new[] { -1f, 1f }) { var ch = flatY + S * s * 3.6f - F * 1.6f; mk.Box(WorldMaterials.Surface(new Color(.55f, .5f, .48f), Surface.Stone), ch + up * (ry - .2f), new Vector3(.8f, 2.6f, .8f), rot); mk.Box(trim, ch + up * (ry + 1.15f), new Vector3(1f, .2f, 1f), rot); }
             // steps up to the door
             var stepsN = Mathf.Max(1, Mathf.CeilToInt((fy - ctx.Ground(fz.x + F.x * 2f, fz.z + F.z * 2f)) / .25f));
             for (var k = 0; k < stepsN; k++)
@@ -126,7 +126,7 @@ namespace EverythingWorld.World
                 mk.Prism(WorldMaterials.Glow(FretColors[l], 2f), back + up * .92f + F * .085f + S * (lx * 1.1f), F, .07f, .01f, 10);
             }
             var couch = back + F * 4.2f; var crot = Quaternion.LookRotation(-F);
-            var fabric = WorldMaterials.Solid(new Color(.35f, .2f, .22f));
+            var fabric = WorldMaterials.Surface(new Color(.35f, .2f, .22f), Surface.Cloth);
             mk.Box(fabric, couch + up * .35f, new Vector3(3f, .5f, 1.1f), crot); mk.Box(fabric, couch + up * .85f + F * .45f, new Vector3(3f, .8f, .25f), crot);
             foreach (var s in new[] { -1.5f, 1.5f }) mk.Box(fabric, couch + up * .55f + S * s, new Vector3(.25f, .7f, 1.1f), crot);
             solid.Box(fabric, couch + up * .5f, new Vector3(3.2f, 1f, 1.2f), crot);
@@ -135,8 +135,8 @@ namespace EverythingWorld.World
             var mic = couch + S * 2.4f - F * .6f;
             mk.Prism(iron, mic, up, .035f, 1.6f, 6); mk.Box(iron, mic + up * .02f, new Vector3(.6f, .05f, .6f), rot);
             mk.Box(iron, mic + up * 1.62f, new Vector3(.05f, .05f, .35f), Quaternion.LookRotation(F + up * .4f));
-            mk.Prism(WorldMaterials.Solid(new Color(.15f, .15f, .17f)), mic + up * 1.68f + F * .18f, (F + up * .5f).normalized, .07f, .18f, 10);
-            mk.Blob(WorldMaterials.Solid(new Color(.75f, .75f, .78f), .9f), mic + up * 1.78f + F * .26f, Vector3.one * .1f, ctx.Rng, 0f);
+            mk.Prism(WorldMaterials.Surface(new Color(.15f, .15f, .17f), Surface.Metal), mic + up * 1.68f + F * .18f, (F + up * .5f).normalized, .07f, .18f, 10);
+            mk.Blob(WorldMaterials.Surface(new Color(.75f, .75f, .78f), Surface.Metal), mic + up * 1.78f + F * .26f, Vector3.one * .1f, ctx.Rng, 0f);
             ArtistBits.PostCollider(root, mic, 1.8f, .25f);
             var spot = new GameObject("Karaoke spotlight").AddComponent<Light>(); spot.transform.SetParent(root, false);
             spot.type = LightType.Spot; spot.spotAngle = 40f; spot.range = 8f; spot.intensity = 0f; spot.color = new Color(.85f, .55f, 1f);
@@ -146,7 +146,7 @@ namespace EverythingWorld.World
 
             // ---- the yard: iron railing with stone pillars, the gate with moon globes, the bare tree
             var gateC = c + F * 14f; var fenceHalf = 13f;
-            var railM = WorldMaterials.Solid(new Color(.1f, .1f, .12f), .5f); var pillarM = WorldMaterials.Solid(new Color(.6f, .58f, .54f));
+            var railM = WorldMaterials.Surface(new Color(.1f, .1f, .12f), Surface.Metal); var pillarM = WorldMaterials.Surface(new Color(.6f, .58f, .54f), Surface.Stone);
             void Pillar(Vector3 at, float h, bool moon)
             {
                 var g = G(at); mk.Box(pillarM, g + up * (h / 2f - .2f), new Vector3(.8f, h + .4f, .8f), rot); mk.Box(trim, g + up * (h + .1f), new Vector3(1f, .2f, 1f), rot);
@@ -198,7 +198,7 @@ namespace EverythingWorld.World
             {
                 frets[l] = new Material(WorldMaterials.Glow(FretColors[l], 1f)) { name = "Fret " + l };
                 var fp = strike + S * ((l - 2f) * laneW);
-                mk.Prism(WorldMaterials.Solid(new Color(.85f, .85f, .88f), .8f), fp, up, .32f, .1f, 16);
+                mk.Prism(WorldMaterials.Surface(new Color(.85f, .85f, .88f), Surface.Painted), fp, up, .32f, .1f, 16);
                 mk.Prism(frets[l], fp + up * .1f, up, .25f, .04f, 16);
             }
             mk.Box(WorldMaterials.Glow(new Color(.9f, .9f, 1f), 1.4f), strike + up * .1f, new Vector3(hwW, .03f, .06f), rot);
@@ -208,7 +208,7 @@ namespace EverythingWorld.World
             for (var k = 0; k < 24; k++)
             {
                 var l = rng.Next(5); var gk = new MeshKit();
-                gk.Prism(WorldMaterials.Solid(new Color(.9f, .9f, .92f), .8f), Vector3.zero, Vector3.up, .3f, .1f, 14);
+                gk.Prism(WorldMaterials.Surface(new Color(.9f, .9f, .92f), Surface.Painted), Vector3.zero, Vector3.up, .3f, .1f, 14);
                 gk.Prism(WorldMaterials.Glow(FretColors[l], 2.2f), Vector3.up * .1f, Vector3.up, .26f, .08f, 14);
                 var gt = gk.BuildSingle("Note", root, false).transform; gt.gameObject.SetActive(false);
                 gems.Add(gt); lanes.Add(l);
@@ -232,17 +232,17 @@ namespace EverythingWorld.World
         void Controller(MeshKit mk, Vector3 at, Vector3 face, Vector3 side, Color body)
         {
             var rot = Quaternion.LookRotation(face) * Quaternion.Euler(-15f, 0, 0); var up = rot * Vector3.up;
-            mk.Box(WorldMaterials.Solid(body, .7f), at + up * .3f, new Vector3(.38f, .45f, .07f), rot);
-            mk.Box(WorldMaterials.Solid(body, .7f), at + up * .52f + (rot * Vector3.right) * .12f, new Vector3(.16f, .18f, .07f), rot);
-            mk.Box(WorldMaterials.Solid(new Color(.1f, .1f, .1f)), at + up * .9f, new Vector3(.07f, .7f, .05f), rot);
-            mk.Box(WorldMaterials.Solid(new Color(.9f, .9f, .9f)), at + up * .32f + rot * Vector3.forward * .04f, new Vector3(.18f, .05f, .02f), rot);    // strum bar
+            mk.Box(WorldMaterials.Surface(body, Surface.Painted), at + up * .3f, new Vector3(.38f, .45f, .07f), rot);
+            mk.Box(WorldMaterials.Surface(body, Surface.Painted), at + up * .52f + (rot * Vector3.right) * .12f, new Vector3(.16f, .18f, .07f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.1f, .1f, .1f), Surface.Painted), at + up * .9f, new Vector3(.07f, .7f, .05f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.9f, .9f, .9f), Surface.Painted), at + up * .32f + rot * Vector3.forward * .04f, new Vector3(.18f, .05f, .02f), rot);    // strum bar
             for (var l = 0; l < 5; l++) mk.Box(WorldMaterials.Glow(FretColors[l], 1.2f), at + up * (1.1f - l * .06f) + rot * Vector3.forward * .03f, new Vector3(.05f, .04f, .015f), rot);
         }
 
         /// A bare black tree with no leaves, its branches reaching up and out.
         void BareTree(LandContext ctx, MeshKit mk, Vector3 at, float s)
         {
-            var barkM = WorldMaterials.Solid(new Color(.08f, .07f, .07f));
+            var barkM = WorldMaterials.Surface(new Color(.08f, .07f, .07f), Surface.Bark);
             void Branch(Vector3 from, Vector3 dir, float len, float r, int depth)
             {
                 mk.Prism(barkM, from, dir, r, len, 6, .65f);

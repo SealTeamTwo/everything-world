@@ -52,7 +52,7 @@ namespace EverythingWorld.World
             float W = 5.5f + (float)rng.NextDouble() * 1.5f, D = 5f, H = 3.4f + (float)rng.NextDouble() * .8f;
             var (lo, hi) = Footprint(ctx, p, rot, W, D);
             var b = new Vector3(p.x, lo - .3f, p.z); var top = hi + H;
-            var paint = WorldMaterials.Solid(Color.Lerp(Paint[rng.Next(Paint.Length)], new Color(.2f, .2f, .26f), .45f));
+            var paint = WorldMaterials.Surface(Color.Lerp(Paint[rng.Next(Paint.Length)], new Color(.2f, .2f, .26f), .45f), Surface.Painted);
             mk.Box(paint, new Vector3(p.x, (b.y + top) / 2f, p.z), new Vector3(W, top - b.y, D), rot);
             solid.Box(paint, new Vector3(p.x, (b.y + top) / 2f, p.z), new Vector3(W, top - b.y, D), rot);
             mk.GableRoof(slate, new Vector3(p.x, top, p.z), new Vector3(D + .7f, 0, W + .7f), 2.2f, Quaternion.LookRotation(side));
@@ -115,7 +115,7 @@ namespace EverythingWorld.World
                 var t = (i + 1f) / (n + 1f);
                 var at = Vector3.Lerp(a, b, t) + up * (2.1f - .35f * 4f * t * (1f - t));
                 var h = .6f + (float)rng.NextDouble() * .5f;
-                soft.Box(WorldMaterials.Solid(cloth[rng.Next(cloth.Length)]), at - up * h / 2f, new Vector3(.03f, h, .7f + (float)rng.NextDouble() * .4f), Quaternion.LookRotation(side));
+                soft.Box(WorldMaterials.Surface(cloth[rng.Next(cloth.Length)], Surface.Cloth), at - up * h / 2f, new Vector3(.03f, h, .7f + (float)rng.NextDouble() * .4f), Quaternion.LookRotation(side));
             }
         }
 
@@ -125,7 +125,7 @@ namespace EverythingWorld.World
             var along = Vector3.Cross(Vector3.up, face); var up = Vector3.up;
             var len = 12f + (float)rng.NextDouble() * 6f;
             var gate = (float)rng.NextDouble() * len * .5f - len * .25f;
-            var wet = WorldMaterials.Solid(WetStone, .55f);
+            var wet = WorldMaterials.Surface(WetStone, Surface.Stone);
             for (var d = -len / 2f; d < len / 2f; d += 1.1f)
             {
                 if (Mathf.Abs(d - gate) < 1.1f) continue;
@@ -163,7 +163,7 @@ namespace EverythingWorld.World
                 var h = 3.5f + (float)rng.NextDouble() * 3f; var cr = 2f + (float)rng.NextDouble() * 1.2f;
                 if (NearPath(t.x, t.z, 2f)) { new MeshKit().Blob(leaf, t, Vector3.one, rng, .16f); continue; }   // not on a lane (same random numbers drawn)
                 mk.Prism(bark, t, up, .22f, h + .5f, 6, .7f);
-                soft.Blob(i % 2 == 0 ? leaf : WorldMaterials.Solid(new Color(.12f, .19f, .2f)), t + up * (h + cr * .6f), new Vector3(cr, cr * .85f, cr), rng, .16f);
+                soft.Blob(i % 2 == 0 ? leaf : WorldMaterials.Surface(new Color(.12f, .19f, .2f), Surface.Foliage), t + up * (h + cr * .6f), new Vector3(cr, cr * .85f, cr), rng, .16f);
                 ArtistBits.PostCollider(ctx.Root, t, h, .28f);
             }
             var hr = 1.2f + (float)rng.NextDouble();
@@ -193,7 +193,7 @@ namespace EverythingWorld.World
         {
             var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(Vector3.up, face); var up = Vector3.up;
             var blue = new Color(.55f, .78f, 1f);
-            mk.Box(WorldMaterials.Solid(new Color(.75f, .76f, .8f)), p + up * 1f, new Vector3(1.1f, 2f, .8f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.75f, .76f, .8f), Surface.Painted), p + up * 1f, new Vector3(1.1f, 2f, .8f), rot);
             solid.Box(iron, p + up * 1f, new Vector3(1.1f, 2f, .8f), rot);
             mk.Box(WorldMaterials.Glow(blue, 1.4f), p + face * .41f + up * 1.2f + side * .12f, new Vector3(.7f, 1.2f, .02f), rot);
             for (var i = 0; i < 4; i++) mk.Box(WorldMaterials.Glow(new Color(1f, .45f, .4f), 1.6f), p + face * .41f + up * (.9f + i * .25f) - side * .4f, new Vector3(.08f, .08f, .03f), rot);

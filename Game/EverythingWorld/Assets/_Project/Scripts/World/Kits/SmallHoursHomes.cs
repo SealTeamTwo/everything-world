@@ -64,8 +64,8 @@ namespace EverythingWorld.World
             floorY = hi + .2f;
             var flat = new Vector3(c.x, 0, c.z);
             inside = flat;
-            var paint = WorldMaterials.Solid(Paint[Mathf.Abs(a.name.GetHashCode()) % Paint.Length]);
-            var floorMat = WorldMaterials.Solid(new Color(.36f, .28f, .24f));
+            var paint = WorldMaterials.Surface(Paint[Mathf.Abs(a.name.GetHashCode()) % Paint.Length], Surface.Painted);
+            var floorMat = WorldMaterials.Surface(new Color(.36f, .28f, .24f), Surface.Wood);
             var fy = floorY;
             mk.Box(stone, new Vector3(c.x, (lo + fy) / 2f - .2f, c.z), new Vector3(W + .3f, fy - lo + .6f, D + .3f), rot);
             mk.Box(floorMat, new Vector3(c.x, fy - .05f, c.z), new Vector3(W, .1f, D), rot);
@@ -108,10 +108,10 @@ namespace EverythingWorld.World
             var mic = desk + front * 1.6f + side * .9f;
             mk.Prism(iron, mic, up, .03f, 1.55f, 6);
             mk.Box(iron, mic + up * .02f, new Vector3(.5f, .04f, .5f), rot);
-            mk.Box(WorldMaterials.Solid(new Color(.6f, .6f, .62f), .6f), mic + up * 1.65f, new Vector3(.12f, .25f, .12f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.6f, .6f, .62f), Surface.Metal), mic + up * 1.65f, new Vector3(.12f, .25f, .12f), rot);
             ArtistBits.PostCollider(root, mic, 1.7f, .2f);
             mk.Box(darkWood, desk + front * .9f + up * .45f, new Vector3(.5f, .06f, .5f), rot);
-            mk.Box(WorldMaterials.Solid(new Color(.38f, .3f, .42f)), flat + up * (fy + .02f) + front * .8f, new Vector3(3.6f, .02f, 2.6f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.38f, .3f, .42f), Surface.Cloth), flat + up * (fy + .02f) + front * .8f, new Vector3(3.6f, .02f, 2.6f), rot);
             ArtistBits.CoverWall(pictures, labels, ctx, a, flat - front * (D / 2f - t - .03f) + up * (fy + 2.6f), front, 3, .75f, 3, true, Ink);
             ArtistBits.PointLight(root, flat + up * (fy + H - .6f), WindowGlow, 9f, 1.4f, true);
             IndoorSpaces.Add(flat + up * (fy + H / 2f), rot, new Vector3(W, H, D));
@@ -149,8 +149,8 @@ namespace EverythingWorld.World
         {
             // built about 1.4x life size so it reads on the sill; along = the way the bell points
             const float s = 1.4f;
-            var brass = WorldMaterials.Solid(new Color(.88f, .68f, .3f), .8f);
-            var pearl = WorldMaterials.Solid(new Color(.95f, .93f, .88f), .6f);
+            var brass = WorldMaterials.Surface(new Color(.88f, .68f, .3f), Surface.Metal);
+            var pearl = WorldMaterials.Surface(new Color(.95f, .93f, .88f), Surface.Painted);
             var up = Vector3.up;
             var acrossDir = Vector3.Cross(up, along);
             void Tube(Vector3 a, Vector3 b, float r) { var d = b - a; if (d.sqrMagnitude > 1e-6f) mk.Prism(brass, a, d.normalized, r, d.magnitude, 8); }
@@ -221,9 +221,9 @@ namespace EverythingWorld.World
             mk.Box(slate, new Vector3(deck.x, floorY + 3.5f, deck.z), new Vector3(8.8f, .15f, 3.4f), rot * Quaternion.Euler(-8f, 0, 0));
             // the pedal steel: a long body on four legs, strings along it, a pedal bar beneath
             var ps = new Vector3(deck.x, floorY, deck.z) - side * 1.6f;
-            var body = WorldMaterials.Solid(new Color(.32f, .24f, .2f), .5f);
+            var body = WorldMaterials.Surface(new Color(.32f, .24f, .2f), Surface.Wood);
             mk.Box(body, ps + Vector3.up * .78f, new Vector3(1.6f, .14f, .5f), Quaternion.LookRotation(side));
-            for (var k = 0; k < 10; k++) mk.Box(WorldMaterials.Solid(new Color(.8f, .8f, .82f), .7f), ps + Vector3.up * .86f + front * (k * .04f - .18f), new Vector3(1.5f, .006f, .006f), Quaternion.LookRotation(side));
+            for (var k = 0; k < 10; k++) mk.Box(WorldMaterials.Surface(new Color(.8f, .8f, .82f), Surface.Metal), ps + Vector3.up * .86f + front * (k * .04f - .18f), new Vector3(1.5f, .006f, .006f), Quaternion.LookRotation(side));
             foreach (var (a, b) in new[] { (-1f, -1f), (1f, -1f), (-1f, 1f), (1f, 1f) }) mk.Prism(iron, ps + side * a * .7f + front * b * .2f, Vector3.up, .025f, .74f, 5);
             mk.Box(iron, ps + Vector3.up * .15f, new Vector3(.08f, .05f, 1.2f), rot);
             mk.Box(darkWood, ps - front * .7f + Vector3.up * .45f, new Vector3(.45f, .06f, .45f), rot);
@@ -235,7 +235,7 @@ namespace EverythingWorld.World
         {
             var rot = Quaternion.LookRotation(front);
             var at = inside + side * 2.9f - front * 2.6f + Vector3.up * floorY;
-            mk.Box(WorldMaterials.Solid(new Color(.86f, .84f, .8f)), at + Vector3.up * .45f, new Vector3(1.2f, .9f, 1f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.86f, .84f, .8f), Surface.Painted), at + Vector3.up * .45f, new Vector3(1.2f, .9f, 1f), rot);
             solid.Box(stone, at + Vector3.up * .45f, new Vector3(1.2f, .9f, 1f), rot);
             mk.Prism(WorldMaterials.Glow(new Color(1f, .4f, .15f), 1.8f), at + Vector3.up * .9f, Vector3.up, .25f, .02f, 10);
             mk.Prism(iron, at + Vector3.up * .93f, Vector3.up, .3f, .06f, 12);
@@ -271,8 +271,8 @@ namespace EverythingWorld.World
 
         void Plants(LandContext ctx, MeshKit mk, Vector3 inside, Vector3 home, Vector3 front, Vector3 side, float floorY)
         {
-            var pot = WorldMaterials.Solid(new Color(.62f, .38f, .28f));
-            var green = WorldMaterials.Solid(new Color(.22f, .42f, .3f));
+            var pot = WorldMaterials.Surface(new Color(.62f, .38f, .28f), Surface.Painted);
+            var green = WorldMaterials.Surface(new Color(.22f, .42f, .3f), Surface.Foliage);
             for (var i = 0; i < 14; i++)
             {
                 var p = i < 9 ? inside + new Vector3(ctx.Range(-3.4f, 3.4f), floorY, ctx.Range(-3.2f, 3.2f))
