@@ -531,6 +531,8 @@ namespace EverythingWorld.World
             var mat = WindMesh.Material(.25f, .9f, new Color(.45f, .58f, .35f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1977);
             const float step = 2.4f;
+            Color green = new Color(.45f, .58f, .35f), sunned = new Color(.65f, .65f, .4f), warm = new Color(1f, .85f, .6f), pink = new Color(.95f, .35f, .6f);
+            int lawn = 0, dry = 0, wild = 0, meadow = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
@@ -539,12 +541,42 @@ namespace EverythingWorld.World
                 if (Mathf.PerlinNoise(px * .025f + 6f, pz * .025f + 2f) < .4f) continue;
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.45f, .58f, .35f), new Color(.65f, .65f, .4f), (float)rng.NextDouble());
                 var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
-                wm.Tuft(at, .35f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, new Color(1f, .85f, .6f), .3f), rng, 3, .07f);
-                if (rng.NextDouble() < .06) wm.Flower(at + new Vector3(.1f, 0, .1f), .4f, new Color(.95f, .35f, .6f), rng);
+                if (px > GazeboAt.x + 8f)
+                {
+                    // the east meadow beyond the gazebo, kept for the mini golf: its grass as it was (only each blade's shade)
+                    var mc = Color.Lerp(green, sunned, (float)rng.NextDouble());
+                    wm.Tuft(at, .35f + (float)rng.NextDouble() * .35f, mc, Color.Lerp(mc, warm, .3f), rng, 3, .07f, .1f); meadow++;
+                    if (rng.NextDouble() < .06) { wm.Flower(at + new Vector3(.1f, 0, .1f), .4f, pink, rng); blooms++; }
+                    continue;
+                }
+                var kind = WindMesh.Patch(px, pz, .014f, 141f);     // villa lawn, dry hillside grass or wild meadow
+                var tone = WindMesh.Patch(px, pz, .025f, 142f);     // the patch's shade, cool green to sun-warmed
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
+                var col = Color.Lerp(green, sunned, tone) * (.92f + r2 * .16f);
+                if (kind < .35f)
+                {
+                    // a villa lawn, watered: short, even and greener
+                    var lc = Color.Lerp(col, green, .45f);
+                    wm.Tuft(at, .16f + r2 * .12f, lc, Color.Lerp(lc, warm, .2f), rng, 3, .06f, .1f);
+                    if (r1 < .4f) wm.Tuft(at + new Vector3(.4f, 0, -.35f), .14f + r1 * .1f, lc, Color.Lerp(lc, warm, .2f), rng, 2, .06f, .1f);
+                    lawn++;
+                }
+                else if (kind < .7f)
+                {
+                    // dry hillside grass, gone gold in the sun
+                    var dc = Color.Lerp(col, new Color(.72f, .64f, .4f), .35f);
+                    wm.Tuft(at, .35f + r2 * .35f, dc, Color.Lerp(dc, warm, .3f), rng, 3, .06f, .14f); dry++;
+                }
+                else
+                {
+                    // wild meadow with drifts of pink flowers
+                    wm.Tuft(at, .3f + r2 * .3f, col, Color.Lerp(col, warm, .3f), rng, 3, .07f, .14f); wild++;
+                    if (WindMesh.Patch(px, pz, .05f, 143f) > .55f && rng.NextDouble() < .35) { for (var k = 0; k < 2; k++) wm.Flower(at + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * 1.3f, .32f + (float)rng.NextDouble() * .1f, pink, rng); blooms += 2; }
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Riviera grass", ctx.Root, mat);
+            Debug.Log($"The Yacht Rock Riviera grass: {lawn} lawn spots, {dry} dry-grass tufts, {wild} wild-meadow tufts, {meadow} east-meadow tufts (as before), {blooms} flowers");
         }
     }
 }
