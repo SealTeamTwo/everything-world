@@ -41,10 +41,10 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            stone = WorldMaterials.Solid(new Color(.5f, .48f, .52f)); darkStone = WorldMaterials.Solid(new Color(.3f, .28f, .34f));
-            chrome = WorldMaterials.Solid(new Color(.78f, .8f, .84f), .95f); brass = WorldMaterials.Solid(new Color(.8f, .6f, .25f), .85f);
-            dark = WorldMaterials.Solid(new Color(.07f, .06f, .09f)); wood = WorldMaterials.Solid(new Color(.42f, .3f, .22f));
-            paving = WorldMaterials.Solid(new Color(.55f, .53f, .58f)); reed = WorldMaterials.Solid(new Color(.55f, .5f, .35f));
+            stone = WorldMaterials.Surface(new Color(.5f, .48f, .52f), World.Surface.Stone); darkStone = WorldMaterials.Surface(new Color(.3f, .28f, .34f), World.Surface.Stone);
+            chrome = WorldMaterials.Surface(new Color(.78f, .8f, .84f), World.Surface.Metal); brass = WorldMaterials.Surface(new Color(.8f, .6f, .25f), World.Surface.Metal);
+            dark = WorldMaterials.Solid(new Color(.07f, .06f, .09f)); wood = WorldMaterials.Surface(new Color(.42f, .3f, .22f), World.Surface.Wood);
+            paving = WorldMaterials.Surface(new Color(.55f, .53f, .58f), World.Surface.Stone); reed = WorldMaterials.Surface(new Color(.55f, .5f, .35f), World.Surface.Foliage);
             glass = new Material(WorldMaterials.Glow(new Color(.42f, .55f, .85f), .07f)) { name = "Prism glass" }; glass.SetFloat("_Smoothness", .95f);
         }
 
@@ -312,7 +312,7 @@ namespace EverythingWorld.World
         void Trails(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var todo = new List<IslandWorldData.Artist>(ctx.Artists); var walk = 1; var lamps = new List<Vector3>();
-            var dirt = WorldMaterials.Solid(new Color(.5f, .46f, .42f));
+            var dirt = WorldMaterials.Surface(new Color(.5f, .46f, .42f), World.Surface.Stone);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
@@ -410,7 +410,7 @@ namespace EverythingWorld.World
             }
             // the fallen clock face, leaning back on the ground
             var cc = c + face * 12f; cc.y = ctx.Ground(cc.x, cc.z) + 1.2f; var crot = Quaternion.LookRotation(face) * Quaternion.Euler(-65f, 0, 0);
-            mk.Prism(brass, cc - crot * Vector3.forward * .3f, crot * Vector3.forward, 6f, .3f, 32); mk.Prism(WorldMaterials.Solid(new Color(.95f, .92f, .82f)), cc + crot * Vector3.forward * .01f, crot * Vector3.forward, 5.6f, .02f, 32);
+            mk.Prism(brass, cc - crot * Vector3.forward * .3f, crot * Vector3.forward, 6f, .3f, 32); mk.Prism(WorldMaterials.Surface(new Color(.95f, .92f, .82f), World.Surface.Painted), cc + crot * Vector3.forward * .01f, crot * Vector3.forward, 5.6f, .02f, 32);
             for (var h = 0; h < 12; h++) { var a = h * 30f; mk.Box(dark, cc + crot * (Quaternion.Euler(0, 0, a) * Vector3.up * 4.9f) + crot * Vector3.forward * .04f, new Vector3(.2f, h % 3 == 0 ? 1f : .5f, .02f), crot * Quaternion.Euler(0, 0, a)); }
             solid.Box(brass, cc, new Vector3(12f, 1.6f, 6f), Quaternion.LookRotation(face));
             var hands = new MeshKit(); hands.Box(dark, new Vector3(0, 1.6f, 0), new Vector3(.35f, 3.2f, .06f), Quaternion.identity);
@@ -478,7 +478,7 @@ namespace EverythingWorld.World
         void Marches(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             int trees = 0, rocks = 0, pools = 0, cairns = 0;
-            const float cell = 19f; var bark = WorldMaterials.Solid(new Color(.25f, .22f, .26f)); var pool = new Material(WorldMaterials.Glow(new Color(.16f, .13f, .3f), .1f)) { name = "Marsh pool" }; pool.SetFloat("_Smoothness", .55f);
+            const float cell = 19f; var bark = WorldMaterials.Surface(new Color(.25f, .22f, .26f), World.Surface.Bark); var pool = new Material(WorldMaterials.Glow(new Color(.16f, .13f, .3f), .1f)) { name = "Marsh pool" }; pool.SetFloat("_Smoothness", .55f);
             for (var x = ctx.MinX; x < ctx.MaxX; x += cell)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += cell)
             {
@@ -497,7 +497,7 @@ namespace EverythingWorld.World
                 // a pool shrinks until its edge and reeds stay off the paths (only its middle was kept clear)
                 else if (roll < .36f && FlatEnough(ctx, p, 5f)) { var r = ctx.Range(2.5f, 5f); while (r > 1.5f && NearPath(px, pz, r + 2.4f)) r -= .25f; for (var k = 0; k < 16; k++) { float a0 = k * Mathf.PI / 8f, a1 = (k + 1) * Mathf.PI / 8f; var w = p + Vector3.up * .05f; mk.Tri(pool, w, w + new Vector3(Mathf.Cos(a0), 0, Mathf.Sin(a0)) * r, w + new Vector3(Mathf.Cos(a1), 0, Mathf.Sin(a1)) * r, w - Vector3.up); } for (var k = 0; k < 8; k++) { var a = ctx.Range(0, Mathf.PI * 2f); var q = p + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * (r + .3f); soft.Box(reed, q + Vector3.up * .6f, new Vector3(.05f, 1.2f, .05f), Quaternion.Euler(ctx.Range(-8f, 8f), 0, ctx.Range(-8f, 8f))); } noGrass.Add(new Vector3(p.x, r + .5f, p.z)); pools++; }
                 else if (roll < .39f) { for (var k = 0; k < 5; k++) mk.Blob(stone, p + Vector3.up * (.3f + k * .45f), Vector3.one * (.6f - k * .09f), ctx.Rng, .3f); solid.Box(stone, p + Vector3.up * 1f, new Vector3(1.5f, 2f, 1.5f), Quaternion.identity); cairns++; }
-                else if (roll < .55f) { for (var k = 0; k < 4; k++) soft.Blob(WorldMaterials.Solid(new Color(.45f, .3f, .5f)), p + new Vector3(ctx.Range(-1.2f, 1.2f), .3f, ctx.Range(-1.2f, 1.2f)), new Vector3(.7f, .35f, .7f), ctx.Rng, .3f); }
+                else if (roll < .55f) { for (var k = 0; k < 4; k++) soft.Blob(WorldMaterials.Surface(new Color(.45f, .3f, .5f), World.Surface.Foliage), p + new Vector3(ctx.Range(-1.2f, 1.2f), .3f, ctx.Range(-1.2f, 1.2f)), new Vector3(.7f, .35f, .7f), ctx.Rng, .3f); }
             }
             Debug.Log($"The Prog Marches: {loop.Count} loop points, {trees} twisted trees, {rocks} boulders, {pools} pools, {cairns} cairns");
         }

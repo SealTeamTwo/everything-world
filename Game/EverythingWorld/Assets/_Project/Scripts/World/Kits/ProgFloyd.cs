@@ -104,7 +104,7 @@ namespace EverythingWorld.World
             {
                 var pts = new List<Vector3>(); var from = new Vector3(join.x, 0, join.z); var dir = new Vector3(c.x - join.x, 0, c.z - join.z).normalized; var len = best - stop;
                 for (var d = TrailW / 2f + .1f; ; d += 1.5f) { var dd = Mathf.Min(d, len); var q = from + dir * dd; if (!ctx.IsLand(q.x, q.z, 0f)) break; pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= len) break; }
-                if (pts.Count > 1) { Strip(mk, pts, WorldMaterials.Solid(new Color(.5f, .46f, .42f)), TrailW, .192f, ctx); foreach (var p in pts) Remember(p, 350); }
+                if (pts.Count > 1) { Strip(mk, pts, WorldMaterials.Surface(new Color(.5f, .46f, .42f), World.Surface.Stone), TrailW, .192f, ctx); foreach (var p in pts) Remember(p, 350); }
             }
             var side = Vector3.Cross(Vector3.up, face); var sp = ctx.OnGround(c.x + face.x * stop + side.x * 2.6f, c.z + face.z * stop + side.z * 2.6f); var rot = Quaternion.LookRotation(face);
             mk.Box(darkStone, sp + Vector3.up * .7f, new Vector3(.25f, 1.4f, .25f), rot); mk.Box(darkStone, sp + Vector3.up * 1.6f, new Vector3(2.6f, .6f, .12f), rot);
@@ -140,7 +140,7 @@ namespace EverythingWorld.World
         /// The hall of clocks: clocks of every kind on posts and stands, a grandfather clock in the middle.
         void Clocks(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face)
         {
-            var up = Vector3.up; var faceM = WorldMaterials.Solid(new Color(.95f, .92f, .82f)); var glow = SongGlow(TimeSong, Amber, 1.4f);
+            var up = Vector3.up; var faceM = WorldMaterials.Surface(new Color(.95f, .92f, .82f), World.Surface.Painted); var glow = SongGlow(TimeSong, Amber, 1.4f);
             for (var k = 0; k < 13; k++)
             {
                 var a = k * 27.7f * Mathf.Deg2Rad; var r = 3.5f + (k % 3) * 2.6f; var p = ctx.OnGround(c.x + Mathf.Cos(a) * r, c.z + Mathf.Sin(a) * r);
@@ -171,7 +171,7 @@ namespace EverythingWorld.World
         /// spotlight.
         void Wall(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face)
         {
-            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face); var white = WorldMaterials.Solid(new Color(.94f, .94f, .93f)); var mortar = WorldMaterials.Solid(new Color(.55f, .55f, .56f));
+            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face); var white = WorldMaterials.Surface(new Color(.94f, .94f, .93f), World.Surface.Stone); var mortar = WorldMaterials.Surface(new Color(.55f, .55f, .56f), World.Surface.Stone);
             const float L = 26f, H = 6.5f, T = 1.2f, hole0 = 3f, hole1 = 6.4f, holeTop = 4f;
             var b = c - face * 3f; b.y = ctx.Ground(b.x, b.z) - .3f;
             // the wall reaches down to the lowest ground along its length (on a slope its ends hung in the air)
@@ -201,7 +201,7 @@ namespace EverythingWorld.World
             // the guitarist on top, in the spotlight
             var g = b + up * (H + .3f) - side * 4f; var suit = WorldMaterials.Solid(new Color(.1f, .1f, .12f));
             foreach (var s in new[] { -.12f, .12f }) mk.Box(suit, g + side * s + up * .45f, new Vector3(.16f, .9f, .18f), rot);
-            mk.Box(suit, g + up * 1.25f, new Vector3(.48f, .7f, .26f), rot); mk.Blob(WorldMaterials.Solid(new Color(.8f, .66f, .55f)), g + up * 1.75f, new Vector3(.12f, .14f, .12f), ctx.Rng, 0f);
+            mk.Box(suit, g + up * 1.25f, new Vector3(.48f, .7f, .26f), rot); mk.Blob(WorldMaterials.Surface(new Color(.8f, .66f, .55f), World.Surface.Painted), g + up * 1.75f, new Vector3(.12f, .14f, .12f), ctx.Rng, 0f);
             var gtr = SongGlow(ComfortablyNumb, new Color(.95f, .95f, 1f), 1.2f);
             mk.Box(gtr, g + up * 1.05f + face * .2f, new Vector3(.5f, .35f, .08f), rot * Quaternion.Euler(0, 0, -25f)); mk.Box(dark, g + up * 1.3f + face * .2f + side * .45f, new Vector3(.75f, .06f, .05f), rot * Quaternion.Euler(0, 0, 25f));
             var spot = new List<Vector3>(); var col = new List<Color>(); var tri = new List<int>(); var top = g + up * 22f + face * 3f; var foot = g + up * .1f;
@@ -216,7 +216,7 @@ namespace EverythingWorld.World
         /// The sheep pen: a low dry-stone wall round a flock of grazing sheep, their eyes glowing red.
         void SheepPen(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face)
         {
-            var up = Vector3.up; const float R = 9f; var wool = WorldMaterials.Solid(new Color(.93f, .92f, .88f)); var black = WorldMaterials.Solid(new Color(.1f, .1f, .11f)); var eyes = SongGlow(SheepSong, new Color(1f, .15f, .1f), 1.2f);
+            var up = Vector3.up; const float R = 9f; var wool = WorldMaterials.Surface(new Color(.93f, .92f, .88f), World.Surface.Cloth); var black = WorldMaterials.Solid(new Color(.1f, .1f, .11f)); var eyes = SongGlow(SheepSong, new Color(1f, .15f, .1f), 1.2f);
             for (var k = 0; k < 28; k++)
             {
                 var a0 = k * Mathf.PI * 2f / 28f; var a1 = (k + 1) * Mathf.PI * 2f / 28f; var mid = (a0 + a1) / 2f; var dir = new Vector3(Mathf.Cos(mid), 0, Mathf.Sin(mid));
@@ -243,10 +243,10 @@ namespace EverythingWorld.World
         void Cigar(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face)
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
-            mk.Box(WorldMaterials.Solid(new Color(.55f, .1f, .12f)), c + up * .04f, new Vector3(7f, .08f, 5f), rot);
-            var desk = c - face * .5f + up * .1f; mk.Box(WorldMaterials.Solid(new Color(.35f, .2f, .12f), .7f), desk + up * .45f, new Vector3(3.2f, .9f, 1.4f), rot); solid.Box(wood, desk + up * .45f, new Vector3(3.2f, .9f, 1.4f), rot);
-            mk.Box(WorldMaterials.Solid(new Color(.15f, .3f, .2f)), desk + up * .91f, new Vector3(1.4f, .02f, .8f), rot); mk.Box(dark, desk + up * 1f + side * 1f, new Vector3(.3f, .15f, .25f), rot);
-            var chair = c - face * 1.9f + up * .1f; var leather = WorldMaterials.Solid(new Color(.3f, .12f, .08f), .6f);
+            mk.Box(WorldMaterials.Surface(new Color(.55f, .1f, .12f), World.Surface.Cloth), c + up * .04f, new Vector3(7f, .08f, 5f), rot);
+            var desk = c - face * .5f + up * .1f; mk.Box(WorldMaterials.Surface(new Color(.35f, .2f, .12f), World.Surface.Wood), desk + up * .45f, new Vector3(3.2f, .9f, 1.4f), rot); solid.Box(wood, desk + up * .45f, new Vector3(3.2f, .9f, 1.4f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.15f, .3f, .2f), World.Surface.Cloth), desk + up * .91f, new Vector3(1.4f, .02f, .8f), rot); mk.Box(dark, desk + up * 1f + side * 1f, new Vector3(.3f, .15f, .25f), rot);
+            var chair = c - face * 1.9f + up * .1f; var leather = WorldMaterials.Surface(new Color(.3f, .12f, .08f), World.Surface.Cloth);
             mk.Box(leather, chair + up * .45f, new Vector3(1f, .3f, .9f), rot); mk.Box(leather, chair + up * 1.2f - face * .4f, new Vector3(1f, 1.3f, .25f), rot); solid.Box(leather, chair + up * .7f, new Vector3(1.1f, 1.4f, 1f), rot);
             // the gold record on an easel
             var ea = c - face * .8f + side * 3f; ea = ctx.OnGround(ea.x, ea.z);
@@ -258,7 +258,7 @@ namespace EverythingWorld.World
             var at = c + face * 1.8f - side * 2.4f; at = ctx.OnGround(at.x, at.z);
             mk.Prism(chrome, at, up, 1.6f, .35f, 16); mk.Prism(dark, at + up * .3f, up, 1.3f, .06f, 16); solid.Prism(chrome, at, up, 1.6f, .4f, 16);
             var cdir = (side * .9f + up * .25f).normalized; var cs = at + up * .35f - cdir * 1.2f;
-            mk.Prism(WorldMaterials.Solid(new Color(.45f, .28f, .15f)), cs, cdir, .22f, 3f, 10); mk.Prism(WorldMaterials.Solid(new Color(.8f, .65f, .3f)), cs + cdir * .5f, cdir, .23f, .25f, 10);
+            mk.Prism(WorldMaterials.Surface(new Color(.45f, .28f, .15f), World.Surface.Painted), cs, cdir, .22f, 3f, 10); mk.Prism(WorldMaterials.Surface(new Color(.8f, .65f, .3f), World.Surface.Painted), cs + cdir * .5f, cdir, .23f, .25f, 10);
             mk.Prism(SongGlow(HaveACigar, new Color(1f, .4f, .1f), 2.4f), cs + cdir * 3f, cdir, .2f, .06f, 10);
             life.smoke.Add(cs + cdir * 3.1f);
             halos.Add(cs + cdir * 3f, .8f, new Color(1f, .45f, .15f), .7f);
@@ -288,7 +288,7 @@ namespace EverythingWorld.World
         /// Green Is the Colour: a glade of tall glowing green flowers round a little dark pool, a bench.
         void Glade(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face)
         {
-            var up = Vector3.up; var green = SongGlow(GreenIsTheColour, new Color(.35f, 1f, .45f), 1.6f); var stem = WorldMaterials.Solid(new Color(.25f, .45f, .25f));
+            var up = Vector3.up; var green = SongGlow(GreenIsTheColour, new Color(.35f, 1f, .45f), 1.6f); var stem = WorldMaterials.Surface(new Color(.25f, .45f, .25f), World.Surface.Foliage);
             var pool = new Material(WorldMaterials.Glow(new Color(.05f, .2f, .12f), .1f)) { name = "Glade pool" }; pool.SetFloat("_Smoothness", .7f);
             for (var k = 0; k < 20; k++) { float a0 = k * Mathf.PI / 10f, a1 = (k + 1) * Mathf.PI / 10f; var w = c + up * .06f; mk.Tri(pool, w, w + new Vector3(Mathf.Cos(a0), 0, Mathf.Sin(a0)) * 2.6f, w + new Vector3(Mathf.Cos(a1), 0, Mathf.Sin(a1)) * 2.6f, w - up); }
             for (var k = 0; k < 14; k++)
