@@ -336,24 +336,50 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Tall gold steppe grass, lit pink at the tips by the dawn.
+        /// Tall gold steppe grass, lit pink at the tips by the dawn, in patches: seas of tall feather grass, rounder
+        /// bunch grass, low dusty sage-grass, and bare earth here and there between.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.4f, .9f, new Color(.66f, .56f, .36f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2000);
             const float st = 2f;
+            Color rose = new Color(.62f, .52f, .38f), gold = new Color(.78f, .63f, .36f), sage = new Color(.56f, .56f, .46f);
+            int feather = 0, bunch = 0, low = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (Mathf.PerlinNoise(px * .03f + 5f, pz * .03f + 3f) < .25f) continue;
+                if (WindMesh.Patch(px, pz, .05f, 111f) < .22f) continue;                            // bare earth between the patches
+                var kind = WindMesh.Patch(px, pz, .011f, 112f);     // feather grass, bunch grass or sage-grass
+                var tone = WindMesh.Patch(px, pz, .02f, 113f);      // the patch's shade, rosy to deep gold
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.64f, .54f, .34f), new Color(.76f, .62f, .4f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .5f + (float)rng.NextDouble() * .6f, col, Color.Lerp(col, Dawn, .5f), rng, 4, .08f);
+                var col = Color.Lerp(rose, gold, tone) * (.92f + r2 * .16f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .45f)
+                {
+                    // a sea of tall feather grass, fine blades, pink at the tips
+                    wm.Tuft(at, .7f + r2 * .55f, col, Color.Lerp(col, Dawn, .55f), rng, 5, .05f, .12f); feather++;
+                }
+                else if (kind < .8f)
+                {
+                    // bunch grass: rounder, knee high
+                    wm.Tuft(at, .4f + r2 * .35f, col, Color.Lerp(col, Dawn, .5f), rng, 3, .08f, .12f);
+                    if (r1 < .4f) wm.Tuft(at + new Vector3(.4f, 0, -.3f), .35f + r1 * .3f, col, Color.Lerp(col, Dawn, .45f), rng, 3, .08f, .12f);
+                    bunch++;
+                }
+                else
+                {
+                    // low dusty sage-grass, cooler and shorter
+                    var sc = Color.Lerp(col, sage, .5f);
+                    wm.Tuft(at, .22f + r2 * .2f, sc, Color.Lerp(sc, Dawn, .35f), rng, 3, .07f, .12f); low++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Trance grass", ctx.Root, mat);
+            Debug.Log($"The Trance Steppe grass: {feather} feather-grass tufts, {bunch} bunch-grass clumps, {low} sage-grass tufts");
         }
     }
 }
