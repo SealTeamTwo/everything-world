@@ -329,24 +329,30 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Dry gold scrub between the blocks.
+        /// Dry gold scrub between the blocks, in patches with bare ground between: low wiry scrub, and clumps of
+        /// taller dry grass gleaming gold at the tips. Each patch has its own shade (dusty olive-gold to bright
+        /// gold); every blade its own.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .8f, new Color(.7f, .6f, .34f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1989);
             const float st = 2.8f;
+            int scrub = 0, clumps = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 4.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 8f, pz * .04f + 4f) < .46f) continue;
+                if (WindMesh.Patch(px, pz, .04f, 1f) < .46f) continue;     // bare ground
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.66f, .56f, .3f), new Color(.8f, .68f, .34f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .26f + (float)rng.NextDouble() * .36f, col, Color.Lerp(col, new Color(1f, .9f, .5f), .4f), rng, 3, .08f);
+                var col = Color.Lerp(new Color(.6f, .54f, .32f), new Color(.8f, .68f, .32f), Mathf.Clamp01(WindMesh.Patch(px, pz, .022f, 2f) * .8f + (float)rng.NextDouble() * .2f));
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (WindMesh.Patch(px, pz, .03f, 3f) < .5f) { wm.Tuft(at, .16f + (float)rng.NextDouble() * .16f, col * .92f, Color.Lerp(col, new Color(1f, .9f, .5f), .25f), rng, 2, .09f, .12f); scrub++; }
+                else { wm.Tuft(at, .34f + (float)rng.NextDouble() * .38f, col, Color.Lerp(col, new Color(1f, .9f, .5f), .4f), rng, 4, .07f, .12f); clumps++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Hip-Hop scrub", ctx.Root, mat);
+            Debug.Log($"The Hip-Hop Boroughs scrub: {scrub} low scrub tufts, {clumps} dry-grass clumps");
         }
     }
 }
