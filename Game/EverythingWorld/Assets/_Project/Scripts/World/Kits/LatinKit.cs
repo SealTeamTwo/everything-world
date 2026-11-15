@@ -324,25 +324,54 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Dry hillside grass with flowers in it.
+        /// Dry hillside grass with flowers in it, in patches: sun-baked golden grass, greener hill grass with
+        /// drifts where the tips flower all in one colour (fuchsia here, marigold there), and tall wiry olive scrub,
+        /// with bare dusty earth between. Each patch its own shade, green to gold; every blade its own.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.35f, .8f, new Color(.56f, .62f, .34f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2000);
             var flowers = new[] { Fuchsia, Marigold, new Color(1f, .9f, .3f), Jacaranda, Color.white };
             const float st = 2.6f;
+            Color green = new Color(.46f, .58f, .3f), gold = new Color(.72f, .64f, .34f), olive = new Color(.42f, .44f, .26f);
+            int dry = 0, hill = 0, scrub = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 8f, pz * .04f + 4f) < .42f) continue;
+                if (WindMesh.Patch(px, pz, .04f, 8f) < .45f) continue;                     // bare dusty earth between patches
+                var kind = WindMesh.Patch(px, pz, .015f, 3f); var tone = WindMesh.Patch(px, pz, .024f, 10f); var drift = WindMesh.Patch(px, pz, .05f, 19f);
+                var r = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.48f, .58f, .3f), new Color(.7f, .66f, .36f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .26f + (float)rng.NextDouble() * .34f, col, rng.NextDouble() < .2 ? flowers[rng.Next(flowers.Length)] : Color.Lerp(col, Cream, .4f), rng, 3, .08f);
+                var col = Color.Lerp(green, gold, Mathf.Clamp01((tone - .2f) * 1.7f)) * (.92f + r * .16f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .4f)
+                {
+                    // sun-baked golden grass
+                    var dc = Color.Lerp(col, gold, .45f);
+                    wm.Tuft(at, .26f + r * .3f, dc, Color.Lerp(dc, Cream, .35f), rng, 3, .08f, .14f);
+                    if (r < .4f) wm.Tuft(at + new Vector3(.4f, 0, .3f), .2f + r * .3f, dc, Color.Lerp(dc, Cream, .3f), rng, 3, .08f, .14f);
+                    dry++;
+                }
+                else if (kind < .7f)
+                {
+                    // greener hill grass; in a drift the tips flower, all in the drift's one colour
+                    var bloom = rng.NextDouble() < (drift > .55f ? .45 : .05);
+                    var fl = flowers[WindMesh.Pick(Mathf.Clamp01((WindMesh.Patch(px, pz, .02f, 23f) - .2f) * 1.67f), flowers.Length)];
+                    wm.Tuft(at, .26f + r * .34f, col, bloom ? fl : Color.Lerp(col, Cream, .4f), rng, 4, .08f, .14f);
+                    hill++; if (bloom) blooms++;
+                }
+                else
+                {
+                    // tall wiry olive scrub
+                    var sc = Color.Lerp(col, olive, .5f);
+                    wm.Tuft(at, .5f + r * .3f, sc, Color.Lerp(sc, gold, .4f), rng, 3, .06f, .14f); scrub++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Latin hillside grass", ctx.Root, mat);
+            Debug.Log($"The Latin Coast hillsides: {dry} golden-grass spots, {hill} hill-grass tufts ({blooms} in flower), {scrub} scrub tufts");
         }
     }
 }
