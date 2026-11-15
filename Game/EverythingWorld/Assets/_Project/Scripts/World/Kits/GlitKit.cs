@@ -30,7 +30,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            cloudM = WorldMaterials.Glow(new Color(.9f, .84f, .96f), .35f); cloudPink = WorldMaterials.Glow(new Color(1f, .78f, .9f), .35f); floorM = WorldMaterials.Glow(new Color(.3f, .26f, .4f), .2f); chrome = WorldMaterials.Solid(new Color(.82f, .84f, .92f), .95f); white = WorldMaterials.Glow(Cream, .2f); dark = WorldMaterials.Solid(new Color(.1f, .08f, .14f)); iron = WorldMaterials.Solid(new Color(.3f, .3f, .38f), .7f); glassM = WorldMaterials.Solid(new Color(.7f, .8f, 1f), .9f);
+            cloudM = WorldMaterials.Glow(new Color(.9f, .84f, .96f), .35f); cloudPink = WorldMaterials.Glow(new Color(1f, .78f, .9f), .35f); floorM = WorldMaterials.Glow(new Color(.3f, .26f, .4f), .2f); chrome = WorldMaterials.Surface(new Color(.82f, .84f, .92f), Surface.Metal); white = WorldMaterials.Glow(Cream, .2f); dark = WorldMaterials.Solid(new Color(.1f, .08f, .14f)); iron = WorldMaterials.Surface(new Color(.3f, .3f, .38f), Surface.Metal); glassM = WorldMaterials.Surface(new Color(.7f, .8f, 1f), Surface.Glass);
             mirror = new Material(WorldMaterials.Glow(Silver, 1.1f)) { name = "Glitter mirrors" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .9f, .96f), 1.4f)) { name = "Glitter lamps" }; crystal = new Material(WorldMaterials.Glow(Lilac, .9f)) { name = "Glitter crystal" };
             for (var i = 0; i < 4; i++) tileM[i] = new Material(WorldMaterials.Glow(Disco[i], 1.1f)) { name = "Glitter tiles " + i };
         }
