@@ -303,24 +303,36 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Short square tufts of pixel grass.
+        /// Short square tufts of pixel grass, laid out the way a game map is: in square 4 m tiles. Each tile is
+        /// one kind (an empty tile, a lawn tile of short tufts, or a tall-grass tile packed with long dark blades,
+        /// where wild things surely hide) and one flat step of green from a short palette, so the patches have
+        /// square edges like a level. Blades vary only a little within a tile, to keep the look flat and graphic.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.25f, .8f, new Color(.28f, .62f, .26f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1986);
-            const float st = 2.6f;
+            const float st = 2.6f, tile = 4f;
+            Color[] steps = { new Color(.22f, .5f, .26f), new Color(.26f, .6f, .24f), new Color(.38f, .72f, .3f), new Color(.5f, .76f, .28f) };
+            int lawn = 0, tall = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .05f + 1f, pz * .05f + 6f) < .5f) continue;
+                float tx = Mathf.Floor(px / tile) * tile, tz = Mathf.Floor(pz / tile) * tile;   // the tile this spot is in
+                var kind = WindMesh.Patch(tx, tz, .03f, 1f);                      // empty, lawn or tall grass
+                if (kind < .3f) continue;
+                var isTall = kind > .66f;
+                if (!isTall && WindMesh.Patch(px, pz, .05f, 2f) < .5f) continue;    // lawn tiles thin out in places
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = (float)rng.NextDouble() < .5f ? new Color(.26f, .6f, .24f) : new Color(.38f, .72f, .3f);
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .26f + (float)rng.NextDouble() * .2f, col, Color.Lerp(col, Gold, .3f), rng, 3, .1f);
+                var col = steps[WindMesh.Pick(WindMesh.Patch(tx, tz, .045f, 3f), steps.Length)];
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (isTall) { var tc = col * .8f; wm.Tuft(at, .5f + (float)rng.NextDouble() * .2f, tc, Color.Lerp(tc, col, .6f), rng, 5, .1f, .06f); tall++; }
+                else { wm.Tuft(at, .26f + (float)rng.NextDouble() * .2f, col, Color.Lerp(col, Gold, .3f), rng, 3, .1f, .06f); lawn++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Bit grass", ctx.Root, mat);
+            Debug.Log($"The Game Isles grass: {lawn} lawn tufts, {tall} tall-grass tufts");
         }
     }
 }
