@@ -561,35 +561,49 @@ namespace EverythingWorld.World
             var chunks = new Dictionary<(int, int), WindMesh>();
             var rng = new System.Random(4949);
             const float step = 1.55f;
-            var count = 0;
+            // In patches like a real field: deep drifts of long lilac grass (tallest and thickest at their hearts),
+            // low lawns of purple clover, small trodden hollows of bare ground, flowers in drifts of one pastel each,
+            // and dandelion clocks gathered in their own corners. Each patch its own shade, from a deep dusk violet
+            // to a lighter, warmer lilac (by brightness and blue/yellow); every blade a touch its own.
+            int longGrass = 0, clover = 0, blooms = 0, clocks = 0;
             Color[] flowers = { new Color(.98f, .72f, .84f), new Color(.98f, .96f, .94f), new Color(.98f, .92f, .6f), new Color(.8f, .72f, .98f) };
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 3f) || !ctx.IsFree(px, pz, 1.5f) || NearPath(px, pz, 2.4f)) continue;
-                var n = Mathf.PerlinNoise(px * .018f + 2f, pz * .018f + 7f);
+                if (WindMesh.Patch(px, pz, .05f, 41f) < .28f) continue;                   // little trodden hollows
+                var n = Mathf.Clamp01(Mathf.PerlinNoise(px * .018f + 2f, pz * .018f + 7f));
+                var tone = Mathf.Clamp01((WindMesh.Patch(px, pz, .022f, 43f) - .25f) * 2f);
+                var drift = WindMesh.Patch(px, pz, .045f, 45f); var clockField = WindMesh.Patch(px, pz, .035f, 47f);
+                var r = (float)rng.NextDouble();
                 var g = ctx.Ground(px, pz);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!chunks.TryGetValue(key, out var wm)) chunks[key] = wm = new WindMesh();
                 var at = new Vector3(px, g - .04f, pz);
                 if (n > .45f)
                 {
-                    var col = Color.Lerp(new Color(.46f, .38f, .64f), new Color(.62f, .5f, .78f), (float)rng.NextDouble());
-                    wm.Tuft(at, .6f + (float)rng.NextDouble() * .7f * n, col, new Color(.84f, .76f, .96f), rng);
+                    var col = Color.Lerp(new Color(.44f, .37f, .64f), new Color(.64f, .52f, .76f), tone) * (.93f + r * .14f);
+                    wm.Tuft(at, .6f + r * .7f * n, col, new Color(.84f, .76f, .96f), rng, 3, .1f, .12f);
+                    if (n > .62f && r < .3f) wm.Tuft(at + new Vector3(.4f, 0, -.3f), .55f + r * .6f, col, new Color(.84f, .76f, .96f), rng, 3, .1f, .12f);
+                    longGrass++;
                 }
                 else
                 {
-                    var col = Color.Lerp(new Color(.36f, .32f, .5f), new Color(.46f, .4f, .6f), (float)rng.NextDouble());
-                    wm.Tuft(at, .2f + (float)rng.NextDouble() * .15f, col, Color.Lerp(col, Cream, .2f), rng, 4, .09f);   // low clover
+                    var col = Color.Lerp(new Color(.34f, .31f, .5f), new Color(.48f, .41f, .58f), tone) * (.93f + r * .14f);
+                    wm.Tuft(at, .2f + r * .15f, col, Color.Lerp(col, Cream, .2f), rng, 4, .09f, .12f);   // low clover
+                    clover++;
                 }
                 var f = rng.NextDouble();
-                if (f < .09) wm.Flower(at + new Vector3(.3f, 0, .2f), .35f + (float)f * 4f, flowers[(int)(f * 1000) % flowers.Length], rng);
-                else if (f < .12) Dandelion(wm, at + new Vector3(-.2f, 0, .3f), .5f, rng);
-                count++;
+                if (f < (drift > .6f ? .2 : .03))
+                {
+                    var fl = flowers[WindMesh.Pick(Mathf.Clamp01((WindMesh.Patch(px, pz, .02f, 49f) - .2f) * 1.67f), flowers.Length)];   // the drift's one flower
+                    wm.Flower(at + new Vector3(.3f, 0, .2f), .35f + r * .3f, fl, rng); blooms++;
+                }
+                else if (rng.NextDouble() < (clockField > .65f ? .12 : .01)) { Dandelion(wm, at + new Vector3(-.2f, 0, .3f), .5f, rng); clocks++; }
             }
             foreach (var kv in chunks) kv.Value.Build("Lilac meadow", ctx.Root, mat);
-            Debug.Log($"The Bedroom Pop Meadows: {count} tufts, clover, flowers and dandelion clocks");
+            Debug.Log($"The Bedroom Pop Meadows: {longGrass} long-grass tufts, {clover} clover tufts, {blooms} flowers, {clocks} dandelion clocks");
         }
 
         /// A dandelion clock: a stem and a pale round puff of seeds.
