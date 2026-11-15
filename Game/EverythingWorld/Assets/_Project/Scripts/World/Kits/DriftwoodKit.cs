@@ -47,17 +47,17 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            drift = WorldMaterials.Solid(Bone);
-            driftDark = WorldMaterials.Solid(new Color(.6f, .56f, .5f));
-            planks = WorldMaterials.Solid(new Color(.62f, .56f, .5f));
-            plankGap = WorldMaterials.Solid(new Color(.32f, .29f, .27f));
-            rope = WorldMaterials.Solid(new Color(.72f, .66f, .54f));
-            iron = WorldMaterials.Solid(new Color(.2f, .2f, .22f));
+            drift = WorldMaterials.Surface(Bone, Surface.Wood);
+            driftDark = WorldMaterials.Surface(new Color(.6f, .56f, .5f), Surface.Wood);
+            planks = WorldMaterials.Surface(new Color(.62f, .56f, .5f), Surface.Wood);
+            plankGap = WorldMaterials.Surface(new Color(.32f, .29f, .27f), Surface.Wood);
+            rope = WorldMaterials.Surface(new Color(.72f, .66f, .54f), Surface.Cloth);
+            iron = WorldMaterials.Surface(new Color(.2f, .2f, .22f), Surface.Metal);
             board = WorldMaterials.Solid(new Color(.16f, .15f, .15f));
-            stone = WorldMaterials.Solid(new Color(.5f, .5f, .52f));
+            stone = WorldMaterials.Surface(new Color(.5f, .5f, .52f), Surface.Stone);
             water = WorldMaterials.Solid(new Color(.34f, .42f, .46f), .95f);
-            seaweed = WorldMaterials.Solid(new Color(.18f, .24f, .16f), .6f);
-            cloth = WorldMaterials.Solid(new Color(.8f, .74f, .7f));
+            seaweed = WorldMaterials.Surface(new Color(.18f, .24f, .16f), Surface.Foliage);
+            cloth = WorldMaterials.Surface(new Color(.8f, .74f, .7f), Surface.Cloth);
             bulb = WorldMaterials.Glow(Bulb, 2.6f);
         }
 
@@ -435,7 +435,7 @@ namespace EverythingWorld.World
             var c = ctx.OnGround(center.x, center.z);
             var sea = seaDir; var across = Vector3.Cross(Vector3.up, sea); var up = Vector3.up;
             mk.Prism(water, c + up * .05f, up, LagoonR, .04f, 40);
-            mk.Prism(WorldMaterials.Solid(WetSand), c + up * .03f, up, LagoonR + 3f, .03f, 40);
+            mk.Prism(WorldMaterials.Surface(WetSand, Surface.Stone), c + up * .03f, up, LagoonR + 3f, .03f, 40);
             for (var k = 0; k < 46; k++)
             {
                 var a = ctx.Range(0, Mathf.PI * 2f); var r = ctx.Range(LagoonR + .5f, LagoonR + 3.2f);
@@ -491,7 +491,7 @@ namespace EverythingWorld.World
                 mk.Prism(rope, P(a, ArchR - .15f) - tangent * .25f, tangent, .62f, .5f, 10);
             }
             // a ship's bell at the top and sea-glass floats hanging along the curve
-            var brass = WorldMaterials.Solid(new Color(.78f, .6f, .3f), .8f);
+            var brass = WorldMaterials.Surface(new Color(.78f, .6f, .3f), Surface.Metal);
             var apex = P(Mathf.PI / 2f, ArchR - .6f);
             mk.Box(rope, apex - up * .4f, new Vector3(.03f, .8f, .03f), Quaternion.identity);
             mk.Prism(brass, apex - up * 1.4f, up, .42f, .6f, 12, .55f);

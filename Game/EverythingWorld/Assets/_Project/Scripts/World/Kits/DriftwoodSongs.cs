@@ -149,7 +149,7 @@ namespace EverythingWorld.World
             var up = Vector3.up; var pool = WorldMaterials.Solid(new Color(.3f, .4f, .45f), .95f);
             mk.Prism(pool, c + up * .02f, up, 2.6f, .03f, 14);
             for (var k = 0; k < 12; k++) { var a = k * Mathf.PI / 6f + .2f; mk.Blob(stone, ctx.OnGround(c.x + Mathf.Cos(a) * 2.8f, c.z + Mathf.Sin(a) * 2.8f), new Vector3(.5f, .3f, .45f), ctx.Rng, .25f); }
-            var white = WorldMaterials.Solid(new Color(.9f, .9f, .88f)); var red = WorldMaterials.Solid(new Color(.7f, .25f, .22f));
+            var white = WorldMaterials.Surface(new Color(.9f, .9f, .88f), Surface.Painted); var red = WorldMaterials.Surface(new Color(.7f, .25f, .22f), Surface.Painted);
             for (var k = 0; k < 8; k++) mk.Box(k % 2 == 0 ? white : red, c + up * (.2f + k * .4f), new Vector3(.24f, .4f, .24f), Quaternion.LookRotation(face));
             ArtistBits.PostCollider(ctx.Root, c, 3.3f, .2f);
             mk.Box(SongGlow(id, new Color(.6f, .85f, 1f), 2.6f), c + up * 1.3f, new Vector3(.36f, .06f, .36f), Quaternion.LookRotation(face));
@@ -160,7 +160,7 @@ namespace EverythingWorld.World
 
         void CandleJars(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face, string id)
         {
-            var up = Vector3.up; var jar = WorldMaterials.Solid(new Color(.7f, .8f, .78f), .9f); var flame = SongGlow(id, Bulb, 2.8f);
+            var up = Vector3.up; var jar = WorldMaterials.Surface(new Color(.7f, .8f, .78f), Surface.Glass); var flame = SongGlow(id, Bulb, 2.8f);
             for (var k = 0; k < 6; k++)
             {
                 var a = k * Mathf.PI / 3f; var p = ctx.OnGround(c.x + Mathf.Cos(a) * 2.4f, c.z + Mathf.Sin(a) * 2.4f); var d = new Vector3(-Mathf.Sin(a), 0, Mathf.Cos(a));
@@ -246,11 +246,11 @@ namespace EverythingWorld.World
 
         void BirchBench(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face, string id)
         {
-            var up = Vector3.up; var birch = WorldMaterials.Solid(new Color(.86f, .84f, .8f)); var leaf = SongGlow(id, new Color(1f, .68f, .25f), 1.4f);
+            var up = Vector3.up; var birch = WorldMaterials.Surface(new Color(.86f, .84f, .8f), Surface.Bark); var leaf = SongGlow(id, new Color(1f, .68f, .25f), 1.4f);
             var trunk = c - face * 1.2f; mk.Prism(birch, trunk - up * .2f, up, .18f, 5.5f, 7, .6f); ArtistBits.PostCollider(ctx.Root, trunk, 5f, .25f);
             foreach (var (a, h, l) in new[] { (0f, 3.2f, 1.8f), (110f, 3.8f, 1.5f), (220f, 4.3f, 1.4f), (300f, 2.8f, 1.3f) }) { var d = Quaternion.Euler(0, a, 0) * Vector3.forward; mk.Prism(birch, trunk + up * h, (d + up * .7f).normalized, .07f, l, 5, .5f); }
             foreach (var (o, r) in new[] { (new Vector3(0, 5.3f, 0), 1.3f), (new Vector3(1f, 4.6f, .4f), 1f), (new Vector3(-.9f, 4.8f, -.3f), 1.05f), (new Vector3(.2f, 4.4f, -1f), .9f), (new Vector3(-.3f, 4.3f, 1f), .85f) })
-                soft.Blob(WorldMaterials.Solid(Color.Lerp(new Color(.82f, .6f, .32f), new Color(.9f, .75f, .45f), r - .85f)), trunk + o, new Vector3(r, r * .75f, r), ctx.Rng, .25f);
+                soft.Blob(WorldMaterials.Surface(Color.Lerp(new Color(.82f, .6f, .32f), new Color(.9f, .75f, .45f), r - .85f), Surface.Foliage), trunk + o, new Vector3(r, r * .75f, r), ctx.Rng, .25f);
             for (var k = 0; k < 40; k++) { var a = ctx.Range(0f, Mathf.PI * 2f); var r = ctx.Range(.2f, 3.2f); var p = ctx.OnGround(trunk.x + Mathf.Cos(a) * r, trunk.z + Mathf.Sin(a) * r); var y = k % 3 == 0 ? ctx.Range(.6f, 4f) : .02f; mk.Box(leaf, p + up * y, new Vector3(.12f, .01f, .09f), Quaternion.Euler(k % 3 == 0 ? 40f : 0f, ctx.Range(0, 360f), 0)); }
             var rot = Quaternion.LookRotation(face); mk.Box(planks, c + up * .45f, new Vector3(1.8f, .08f, .45f), rot);
             foreach (var s in new[] { -1f, 1f }) mk.Box(driftDark, c + Vector3.Cross(up, face) * s * .75f + up * .22f, new Vector3(.08f, .45f, .4f), rot);

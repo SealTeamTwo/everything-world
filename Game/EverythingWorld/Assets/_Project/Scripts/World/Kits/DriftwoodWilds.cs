@@ -13,8 +13,8 @@ namespace EverythingWorld.World
         void Wilds(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             Promenade(ctx, mk, solid);
-            var leaf = WorldMaterials.Solid(new Color(.34f, .4f, .34f)); var leafB = WorldMaterials.Solid(new Color(.42f, .47f, .4f));
-            var bark = WorldMaterials.Solid(new Color(.36f, .32f, .3f));
+            var leaf = WorldMaterials.Surface(new Color(.34f, .4f, .34f), Surface.Foliage); var leafB = WorldMaterials.Surface(new Color(.42f, .47f, .4f), Surface.Foliage);
+            var bark = WorldMaterials.Surface(new Color(.36f, .32f, .3f), Surface.Bark);
             int sheds = 0, ruins = 0, benches = 0, cairns = 0, trees = 0, fences = 0, nets = 0, pots = 0;
             const float cell = 46f;
             for (var x = ctx.MinX; x < ctx.MaxX; x += cell)
@@ -82,7 +82,7 @@ namespace EverythingWorld.World
         {
             var rot = Quaternion.LookRotation(sea); var side = Vector3.Cross(Vector3.up, sea);
             const float H = 3.6f;
-            var white = WorldMaterials.Solid(new Color(.88f, .87f, .84f)); var red = WorldMaterials.Solid(new Color(.75f, .3f, .26f));
+            var white = WorldMaterials.Surface(new Color(.88f, .87f, .84f), Surface.Painted); var red = WorldMaterials.Surface(new Color(.75f, .3f, .26f), Surface.Painted);
             foreach (var (a, b) in new[] { (-1f, -1f), (1f, -1f), (-1f, 1f), (1f, 1f) })
             {
                 var foot = at + side * a * 1.4f + sea * b * 1.4f; var top = at + side * a * 1.1f + sea * b * 1.1f + Vector3.up * H;
@@ -104,7 +104,7 @@ namespace EverythingWorld.World
             mk.Prism(white, pole, Vector3.up, .04f, 2.4f, 5);
             var lee = -sea;
             mk.Tri(red, pole + Vector3.up * 2.4f, pole + Vector3.up * 1.6f, pole + Vector3.up * 2f + lee * 1.1f, pole + side);
-            mk.Tri(WorldMaterials.Solid(new Color(.95f, .8f, .3f)), pole + Vector3.up * 2.4f, pole + Vector3.up * 1.6f, pole + Vector3.up * 2f + lee * 1.1f, pole - side);
+            mk.Tri(WorldMaterials.Surface(new Color(.95f, .8f, .3f), Surface.Cloth), pole + Vector3.up * 2.4f, pole + Vector3.up * 1.6f, pole + Vector3.up * 2f + lee * 1.1f, pole - side);
             ArtistBits.PostCollider(ctx.Root, at, H, 1.5f);
             noGrass.Add(new Vector3(at.x, 4f, at.z));
             life.landmarks.Add(at);
@@ -161,7 +161,7 @@ namespace EverythingWorld.World
             }
             var mid = ctx.OnGround(at.x, at.z);
             solid.Box(drift, mid + Vector3.up * .5f, new Vector3(.2f, 1f, n * .36f), Quaternion.LookRotation(along));
-            mk.Blob(WorldMaterials.Solid(DuneSand), mid, new Vector3(n * .2f, .35f, 1f), ctx.Rng, .2f);
+            mk.Blob(WorldMaterials.Surface(DuneSand, Surface.Stone), mid, new Vector3(n * .2f, .35f, 1f), ctx.Rng, .2f);
             noGrass.Add(new Vector3(at.x, n * .2f, at.z));
         }
 
@@ -169,7 +169,7 @@ namespace EverythingWorld.World
         void NetPoles(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 sea)
         {
             var along = Quaternion.Euler(0, ctx.Range(-50f, 50f), 0) * Vector3.Cross(Vector3.up, sea);
-            var net = WorldMaterials.Solid(new Color(.3f, .36f, .38f)); var cork = WorldMaterials.Solid(new Color(.75f, .55f, .35f));
+            var net = WorldMaterials.Surface(new Color(.3f, .36f, .38f), Surface.Cloth); var cork = WorldMaterials.Surface(new Color(.75f, .55f, .35f), Surface.Wood);
             var tops = new Vector3[3];
             for (var k = 0; k < 3; k++)
             {
@@ -202,7 +202,7 @@ namespace EverythingWorld.World
         /// Old crab pots stacked by a post, a coil of rope and a red buoy hanging off them.
         void PotStack(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
-            var pot = WorldMaterials.Solid(new Color(.32f, .32f, .34f)); var mesh = WorldMaterials.Solid(new Color(.5f, .48f, .42f));
+            var pot = WorldMaterials.Surface(new Color(.32f, .32f, .34f), Surface.Metal); var mesh = WorldMaterials.Surface(new Color(.5f, .48f, .42f), Surface.Cloth);
             var rot = Quaternion.Euler(0, ctx.Range(0, 360f), 0);
             var n = ctx.Rng.Next(3, 7);
             for (var k = 0; k < n; k++)
@@ -215,7 +215,7 @@ namespace EverythingWorld.World
             }
             solid.Box(pot, at + Vector3.up * .9f, new Vector3(3f, 1.8f, .7f), rot);
             mk.Prism(rope, at + rot * new Vector3(1.9f, 0, .3f), Vector3.up, .35f, .25f, 10);
-            mk.Blob(WorldMaterials.Solid(new Color(.8f, .3f, .25f)), at + rot * new Vector3(1.6f, .9f, -.35f), Vector3.one * .25f, ctx.Rng, 0f);
+            mk.Blob(WorldMaterials.Surface(new Color(.8f, .3f, .25f), Surface.Painted), at + rot * new Vector3(1.6f, .9f, -.35f), Vector3.one * .25f, ctx.Rng, 0f);
             noGrass.Add(new Vector3(at.x, 2.2f, at.z));
         }
 
@@ -257,7 +257,7 @@ namespace EverythingWorld.World
             // the hull, upside down: a smooth arch from the flat stern to the pointed bow, keel along the top
             var along = Quaternion.Euler(0, ctx.Range(-40f, 40f), 0) * Vector3.Cross(Vector3.up, sea);
             var side = Vector3.Cross(Vector3.up, along); var rot = Quaternion.LookRotation(along);
-            var tar = WorldMaterials.Solid(new Color(.2f, .19f, .2f)); var band = WorldMaterials.Solid(HutPaint[ctx.Rng.Next(HutPaint.Length)]);
+            var tar = WorldMaterials.Surface(new Color(.2f, .19f, .2f), Surface.Wood); var band = WorldMaterials.Surface(HutPaint[ctx.Rng.Next(HutPaint.Length)], Surface.Painted);
             const float L = 8.5f; const int stations = 10, arc = 8;
             var baseY = at.y - .15f;
             var stern = at - along * (L / 2f);
@@ -281,7 +281,7 @@ namespace EverythingWorld.World
             for (var i = 0; i < stations; i++)
             {
                 var a = Q(i, arc / 2); var b = Q(i + 1, arc / 2);
-                mk.Box(WorldMaterials.Solid(new Color(.32f, .28f, .26f)), (a + b) / 2f + Vector3.up * .08f, new Vector3(.2f, .2f, Vector3.Distance(a, b) + .05f), Quaternion.LookRotation(b - a));
+                mk.Box(WorldMaterials.Surface(new Color(.32f, .28f, .26f), Surface.Wood), (a + b) / 2f + Vector3.up * .08f, new Vector3(.2f, .2f, Vector3.Distance(a, b) + .05f), Quaternion.LookRotation(b - a));
             }
             // the flat stern: a plank wall with a door and a lit window
             for (var k = 0; k < arc; k++) mk.Tri(planks, new Vector3(stern.x, baseY, stern.z), Q(0, k), Q(0, k + 1), stern + along);
@@ -309,7 +309,7 @@ namespace EverythingWorld.World
         void Ruin(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 sea)
         {
             var rot = Quaternion.LookRotation(sea); var side = Vector3.Cross(Vector3.up, sea);
-            var wallMat = WorldMaterials.Solid(new Color(.55f, .54f, .52f));
+            var wallMat = WorldMaterials.Surface(new Color(.55f, .54f, .52f), Surface.Stone);
             const float W = 7f, D = 5f, T = .45f;
             var baseY = at.y - .3f;
             void Wall(Vector3 c, float len, Vector3 dir, float h0, float h1)

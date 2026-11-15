@@ -96,7 +96,7 @@ namespace EverythingWorld.World
         {
             var rng = new System.Random(77);
             var mk = new MeshKit();
-            var hull = WorldMaterials.Solid(new Color(.22f, .2f, .2f)); var sail = WorldMaterials.Solid(new Color(.82f, .8f, .76f));
+            var hull = WorldMaterials.Surface(new Color(.22f, .2f, .2f), Surface.Painted); var sail = WorldMaterials.Surface(new Color(.82f, .8f, .76f), Surface.Cloth);
             for (var i = 0; i < 7; i++)
             {
                 var t = i / 6f - .5f; var w = Mathf.Lerp(3.2f, .9f, Mathf.Abs(t) * 2f);
@@ -200,7 +200,7 @@ namespace EverythingWorld.World
             mk.Prism(glass, new Vector3(0, .12f, -.2f), Vector3.forward, .12f, .3f, 8);
             mk.Prism(glass, new Vector3(0, .12f, .1f), Vector3.forward, .12f, .12f, 8, .4f);
             mk.Prism(glass, new Vector3(0, .12f, .22f), Vector3.forward, .05f, .1f, 8);
-            mk.Prism(WorldMaterials.Solid(new Color(.6f, .45f, .3f)), new Vector3(0, .12f, .32f), Vector3.forward, .045f, .05f, 8);
+            mk.Prism(WorldMaterials.Surface(new Color(.6f, .45f, .3f), Surface.Wood), new Vector3(0, .12f, .32f), Vector3.forward, .045f, .05f, 8);
             mk.Box(WorldMaterials.Solid(new Color(.92f, .88f, .76f)), new Vector3(0, .12f, -.08f), new Vector3(.12f, .06f, .2f), Quaternion.identity);
             bottle = mk.Build("Message in a bottle", transform, false).transform;
             var l = new GameObject("Bottle glow").AddComponent<Light>(); l.transform.SetParent(bottle, false);

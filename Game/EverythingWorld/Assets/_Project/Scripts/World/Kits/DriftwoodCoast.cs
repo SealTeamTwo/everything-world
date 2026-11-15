@@ -117,7 +117,7 @@ namespace EverythingWorld.World
             // the beacon at the end: a banded tower with a lantern room and a beam that sweeps through the mist
             var end = deckEnd + sea * 2.5f; end.y = DeckY - .1f;
             mk.Prism(stone, new Vector3(end.x, -2f, end.z), Vector3.up, 2.1f, end.y + 2f, 10);
-            var white = WorldMaterials.Solid(new Color(.88f, .87f, .84f)); var red = WorldMaterials.Solid(new Color(.62f, .24f, .22f));
+            var white = WorldMaterials.Surface(new Color(.88f, .87f, .84f), Surface.Painted); var red = WorldMaterials.Surface(new Color(.62f, .24f, .22f), Surface.Painted);
             for (var b = 0; b < 4; b++) mk.Prism(b % 2 == 0 ? white : red, end + Vector3.up * b * 2.2f, Vector3.up, 1.6f - b * .15f, 2.2f, 12, .93f);
             solid.Prism(white, end, Vector3.up, 1.6f, 9f, 8, .7f);
             var room = end + Vector3.up * 8.8f;
@@ -140,7 +140,7 @@ namespace EverythingWorld.World
         {
             var along = Quaternion.Euler(0, ctx.Range(-30f, 30f), 0) * Vector3.Cross(Vector3.up, sea);
             var side = Vector3.Cross(Vector3.up, along);
-            var hull = WorldMaterials.Solid(new Color(.38f, .33f, .3f));
+            var hull = WorldMaterials.Surface(new Color(.38f, .33f, .3f), Surface.Wood);
             var sink = Vector3.up * -1.4f;
             const float L = 28f;
             mk.Box(hull, at + sink + Vector3.up * .3f, new Vector3(.6f, .6f, L), Quaternion.LookRotation(along));
@@ -179,7 +179,7 @@ namespace EverythingWorld.World
             mk.Prism(hull, mastFoot, mastDir, .35f, 13f, 8, .6f);
             var yard = mastFoot + mastDir * 10f;
             mk.Box(hull, yard, new Vector3(.2f, .2f, 6f), Quaternion.LookRotation(side));
-            var sail = WorldMaterials.Solid(new Color(.78f, .7f, .68f));
+            var sail = WorldMaterials.Surface(new Color(.78f, .7f, .68f), Surface.Cloth);
             mk.Tri(sail, yard - side * 2.8f, yard + side * 1.2f, yard - side * 1.5f - mastDir * 5f + sea * 1.5f, yard + sea * 3f);
             mk.Tri(sail, yard - side * 2.8f, yard + side * 1.2f, yard - side * 1.5f - mastDir * 5f + sea * 1.5f, yard - sea * 3f);
             // a lantern someone hung on the broken mast
@@ -265,15 +265,15 @@ namespace EverythingWorld.World
                 if (!ctx.IsLand(p.x, p.z, 1f) || InFootprint(ctx, p.x, p.z, 2f) || NearPath(p.x, p.z, 3.2f)) continue;
                 p = ctx.OnGround(p.x, p.z);
                 var rot = Quaternion.LookRotation(sea);
-                var paint = WorldMaterials.Solid(HutPaint[i % HutPaint.Length]);
+                var paint = WorldMaterials.Surface(HutPaint[i % HutPaint.Length], Surface.Wood);
                 const float w = 3f, d = 3f, h = 3.2f;
                 var baseY = p.y + .4f;
                 mk.Box(driftDark, new Vector3(p.x, p.y - .3f, p.z), new Vector3(w + .2f, 1.4f, d + .2f), rot);
                 mk.Box(paint, new Vector3(p.x, baseY + h / 2f, p.z), new Vector3(w, h, d), rot);
                 solid.Box(paint, new Vector3(p.x, baseY + h / 2f, p.z), new Vector3(w, h, d), rot);
-                mk.GableRoof(WorldMaterials.Solid(new Color(.86f, .85f, .82f)), new Vector3(p.x, baseY + h, p.z), new Vector3(d + .4f, 0, w + .4f), 1.3f, Quaternion.LookRotation(along));
+                mk.GableRoof(WorldMaterials.Surface(new Color(.86f, .85f, .82f), Surface.Painted), new Vector3(p.x, baseY + h, p.z), new Vector3(d + .4f, 0, w + .4f), 1.3f, Quaternion.LookRotation(along));
                 var face = new Vector3(p.x, baseY, p.z) + sea * (d / 2f + .02f);
-                mk.Box(WorldMaterials.Solid(Color.Lerp(HutPaint[(i + 2) % HutPaint.Length], Color.white, .3f)), face + Vector3.up * 1.1f, new Vector3(1.2f, 2.2f, .06f), rot);
+                mk.Box(WorldMaterials.Surface(Color.Lerp(HutPaint[(i + 2) % HutPaint.Length], Color.white, .3f), Surface.Painted), face + Vector3.up * 1.1f, new Vector3(1.2f, 2.2f, .06f), rot);
                 for (var k = 0; k < 6; k++) mk.Box(paint, face + along * ((k - 2.5f) * .45f) + Vector3.up * 2.6f + sea * .02f, new Vector3(.04f, .5f, .03f), rot);
                 if (i % 2 == 1)
                 {
@@ -307,8 +307,8 @@ namespace EverythingWorld.World
                 var along = Vector3.Cross(Vector3.up, d);
                 mk.Prism(drift, p + Vector3.up * .3f - along * 1f, along, .3f, 2f, 7);
                 solid.Box(drift, p + Vector3.up * .3f, new Vector3(2f, .6f, .6f), Quaternion.LookRotation(along));
-                if (k == 0) mk.Prism(WorldMaterials.Solid(new Color(.5f, .25f, .25f), .5f), p + Vector3.up * .6f + along * .6f, Vector3.up, .07f, .3f, 8);
-                if (k == 1) mk.Box(WorldMaterials.Solid(new Color(.55f, .45f, .5f)), p + Vector3.up * .62f, new Vector3(1.2f, .04f, .5f), Quaternion.LookRotation(along) * Quaternion.Euler(0, 0, 3));
+                if (k == 0) mk.Prism(WorldMaterials.Surface(new Color(.5f, .25f, .25f), Surface.Painted), p + Vector3.up * .6f + along * .6f, Vector3.up, .07f, .3f, 8);
+                if (k == 1) mk.Box(WorldMaterials.Surface(new Color(.55f, .45f, .5f), Surface.Cloth), p + Vector3.up * .62f, new Vector3(1.2f, .04f, .5f), Quaternion.LookRotation(along) * Quaternion.Euler(0, 0, 3));
             }
             noGrass.Add(new Vector3(at.x, 5f, at.z));
             life.landmarks.Add(at);
@@ -350,8 +350,8 @@ namespace EverythingWorld.World
             for (var i = 0; i < SeaGlass.Length; i++) glassMats[i] = new Material(WorldMaterials.Glow(SeaGlass[i], 1.8f)) { name = "Sea glass" };
             life.seaGlass = glassMats;
             var shell = WorldMaterials.Solid(new Color(.92f, .88f, .82f));
-            var buoy = WorldMaterials.Solid(new Color(.8f, .3f, .25f)); var buoyW = WorldMaterials.Solid(new Color(.9f, .9f, .88f));
-            var pot = WorldMaterials.Solid(new Color(.3f, .3f, .32f));
+            var buoy = WorldMaterials.Surface(new Color(.8f, .3f, .25f), Surface.Painted); var buoyW = WorldMaterials.Surface(new Color(.9f, .9f, .88f), Surface.Painted);
+            var pot = WorldMaterials.Surface(new Color(.3f, .3f, .32f), Surface.Metal);
             int logs = 0, glass = 0;
             for (var tries = 0; tries < 7000; tries++)
             {
