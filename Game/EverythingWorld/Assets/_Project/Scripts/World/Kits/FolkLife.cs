@@ -22,6 +22,7 @@ namespace EverythingWorld.World
         public int giants;
 
         CloudLayer clouds; ParticleSystem steam, mist, smoke, flame, stars, seeds; Material shaftM;
+        readonly List<(MeshRenderer r, Vector3 foot, Vector3 top)> shaftParts = new List<(MeshRenderer, Vector3, Vector3)>(); MaterialPropertyBlock shaftBlock;
         readonly List<Transform> train = new List<Transform>(); Material trainLights;
         readonly List<Transform> birds = new List<Transform>();
         float[] trackLen = new float[0]; float total;
@@ -57,10 +58,13 @@ namespace EverythingWorld.World
                 var tex = new Texture2D(8, 32, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
                 for (var y = 0; y < 32; y++) for (var x = 0; x < 8; x++) { var e = Mathf.Sin((x + .5f) / 8f * Mathf.PI); var v = y / 31f; tex.SetPixel(x, y, new Color(1, 1, 1, e * Mathf.SmoothStep(0f, .08f, v) * Mathf.SmoothStep(1f, .55f, v))); }
                 tex.Apply(); shaftM.SetTexture("_BaseMap", tex);
-                var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>();
+                // each shaft its own object, so it can fade away as you come near: close up, a 40 m sheet of light
+                // fills the view as a flat slab (the owner saw huge cloud-like surfaces); from afar it reads as a beam
                 var lean = new Vector3(-.55f, 1f, .12f).normalized; var rng = new System.Random(77);
+                var root = new GameObject("Sun shafts").transform; root.SetParent(transform, false);
                 foreach (var g in shafts)
                 {
+                    var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>();
                     var len = 30f + (float)rng.NextDouble() * 14f; var w = 4f + (float)rng.NextDouble() * 5f;
                     var top = g + lean * len;
                     foreach (var across in new[] { new Vector3(1f, 0, 0), new Vector3(0, 0, 1f) })
@@ -70,12 +74,13 @@ namespace EverythingWorld.World
                         uvs.Add(new Vector2(0, 0)); uvs.Add(new Vector2(1, 0)); uvs.Add(new Vector2(1, 1)); uvs.Add(new Vector2(0, 1));
                         tris.AddRange(new[] { b, b + 1, b + 2, b, b + 2, b + 3 });
                     }
+                    var mesh = new Mesh { name = "Sun shaft" };
+                    var cols = new List<Color>(); foreach (var _ in verts) cols.Add(Color.white);
+                    mesh.SetVertices(verts); mesh.SetColors(cols); mesh.SetUVs(0, uvs); mesh.SetTriangles(tris, 0); mesh.RecalculateBounds();
+                    var go = new GameObject("Sun shaft"); go.transform.SetParent(root, false);
+                    go.AddComponent<MeshFilter>().sharedMesh = mesh; var mr = go.AddComponent<MeshRenderer>(); mr.sharedMaterial = shaftM; mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; mr.receiveShadows = false;
+                    shaftParts.Add((mr, g, top));
                 }
-                var mesh = new Mesh { name = "Sun shafts" }; mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-                var cols = new List<Color>(); foreach (var _ in verts) cols.Add(Color.white);
-                mesh.SetVertices(verts); mesh.SetColors(cols); mesh.SetUVs(0, uvs); mesh.SetTriangles(tris, 0); mesh.RecalculateBounds();
-                var go = new GameObject("Sun shafts"); go.transform.SetParent(transform, false);
-                go.AddComponent<MeshFilter>().sharedMesh = mesh; var mr = go.AddComponent<MeshRenderer>(); mr.sharedMaterial = shaftM; mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; mr.receiveShadows = false;
             }
             // the train: an engine and three carriages
             trackLen = new float[track.Length]; for (var i = 1; i < track.Length; i++) trackLen[i] = trackLen[i - 1] + Vector3.Distance(track[i - 1], track[i]); total = track.Length > 1 ? trackLen[track.Length - 1] : 1f;
@@ -198,7 +203,22 @@ namespace EverythingWorld.World
             if (here && nextSmoke <= 0f) { nextSmoke = .6f; foreach (var c in chimneys) { smoke.transform.position = c; smoke.Emit(1); } }
             nextFlame -= dt;
             if (here && nextFlame <= 0f) { nextFlame = .1f; foreach (var f in fires) { flame.transform.position = f; flame.Emit(2); } }
-            if (shaftM != null) shaftM.SetColor("_BaseColor", new Color(1f, .74f, .3f, (.52f + .06f * Mathf.Sin(t * .4f) + .15f * bridge + .1f * rocky) * (1f - storm)));
+            if (shaftM != null)
+            {
+                // each shaft fades out as you come within 40 m of it and is gone inside 15 m
+                var a = (.52f + .06f * Mathf.Sin(t * .4f) + .15f * bridge + .1f * rocky) * (1f - storm);
+                var eye = Camera.main != null ? Camera.main.transform.position : Vector3.zero;
+                shaftBlock ??= new MaterialPropertyBlock();
+                foreach (var (sr, foot, top) in shaftParts)
+                {
+                    var ab = top - foot; var k = Mathf.Clamp01(Vector3.Dot(eye - foot, ab) / ab.sqrMagnitude);
+                    var near = Vector3.Distance(eye, foot + ab * k);
+                    var f = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(15f, 40f, near)) * a;
+                    sr.enabled = f > .005f;
+                    if (!sr.enabled) continue;
+                    shaftBlock.SetColor("_BaseColor", new Color(1f, .74f, .3f, f)); sr.SetPropertyBlock(shaftBlock);
+                }
+            }
             nextSeed -= dt;
             var cam = Camera.main;
             if (here && cam != null && nextSeed <= 0f && storm < .6f) { nextSeed = .08f; seeds.transform.position = cam.transform.position + new Vector3(Random.Range(-28f, 28f), Random.Range(-1f, 9f), Random.Range(-28f, 28f)); seeds.Emit(1); }
