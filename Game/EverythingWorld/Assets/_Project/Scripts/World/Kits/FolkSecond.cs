@@ -125,11 +125,11 @@ namespace EverythingWorld.World
         void Roadster(Plot z)
         {
             var up = Vector3.up; var at = z.At(2.5f, -5.5f); var dir = z.side; var rot = Quaternion.LookRotation(dir); var sd = Vector3.Cross(up, dir);
-            var red = WorldMaterials.Solid(new Color(.75f, .1f, .08f), .85f); var cream = S(.9f, .85f, .75f);
+            var red = WorldMaterials.Surface(new Color(.75f, .1f, .08f), Surface.Painted); var cream = S(.9f, .85f, .75f);
             z.mk.Box(red, at + up * .6f, new Vector3(1.6f, .45f, 3.8f), rot);
             z.mk.Box(red, at + up * .55f + dir * 1.5f, new Vector3(1.5f, .4f, .9f), rot * Quaternion.Euler(8f, 0, 0));
             z.mk.Box(cream, at + up * .75f - dir * .3f, new Vector3(1.3f, .3f, 1.3f), rot);   // the seats
-            z.mk.Box(WorldMaterials.Solid(new Color(.6f, .75f, .85f), .95f), at + up * 1.05f + dir * .5f, new Vector3(1.4f, .4f, .04f), rot * Quaternion.Euler(-25f, 0, 0));
+            z.mk.Box(WorldMaterials.Surface(new Color(.6f, .75f, .85f), Surface.Glass), at + up * 1.05f + dir * .5f, new Vector3(1.4f, .4f, .04f), rot * Quaternion.Euler(-25f, 0, 0));
             foreach (var s in new[] { -1f, 1f }) foreach (var w in new[] { -1.2f, 1.2f }) z.mk.Prism(dark, at + sd * s * .82f + dir * w + up * .32f, sd * s, .32f, .2f, 12);
             var head = SongGlow(MrsRobinson, new Color(1f, .95f, .75f), 2.4f); var tail = SongGlow(MrsRobinson, new Color(1f, .15f, .1f), 2f);
             foreach (var s in new[] { -.5f, .5f })

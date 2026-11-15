@@ -29,6 +29,8 @@ namespace EverythingWorld.World
         public float borderBlend = 40f;
         [Tooltip("A faint, slightly pixelly grain on built scenery and the ground (Valheim-like), so big flat surfaces don't look like plastic. Off to compare.")]
         public bool surfaceGrain = true;
+        [Tooltip("Lands that mark what things are made of (stone, wood, bark, cloth, metal, paint, glass, leaves) draw each kind with one shared material that has its own finish and fine texture, the colour carried in the mesh. Off: one plain material per colour, as before.")]
+        public bool surfaceKinds = true;
         [Tooltip("Shimmering curtains where lands meet, at bridge ends and round artist-radio areas.")]
         public bool zoneFields = true;
         [Tooltip("Frames per second to aim for. Without a cap the editor runs the GPU flat out (loud fans).")]
@@ -96,7 +98,7 @@ namespace EverythingWorld.World
         void Awake()
         {
             Instance = this;
-            WorldMaterials.UseToon = toonShading; WorldMaterials.UseGrain = surfaceGrain;
+            WorldMaterials.UseToon = toonShading; WorldMaterials.UseGrain = surfaceGrain; WorldMaterials.UseSurfaces = surfaceKinds;
             IndoorSpaces.Clear();
             SurpriseSpots.Clear();
             if (GetComponent<SurpriseDirector>() == null) gameObject.AddComponent<SurpriseDirector>();

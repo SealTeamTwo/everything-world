@@ -12,6 +12,8 @@ namespace EverythingWorld.World
     {
         readonly List<Vector3> verts = new List<Vector3>();
         readonly List<Vector2> uvs = new List<Vector2>();
+        /// Vertex colours, kept only once a surface-kind material (WorldMaterials.Surface) is used; until then null.
+        List<Color> cols;
         readonly Dictionary<Material, List<int>> tris = new Dictionary<Material, List<int>>();
 
         public int VertexCount => verts.Count;
@@ -22,10 +24,14 @@ namespace EverythingWorld.World
             var n = Vector3.Cross(b - a, c - a);
             if (Vector3.Dot(n, (a + b + c) / 3f - inside) < 0) { (b, c) = (c, b); (ub, uc) = (uc, ub); }
             if (ua == default && ub == default && uc == default) { ua = GrainUV(a, n); ub = GrainUV(b, n); uc = GrainUV(c, n); }
+            // a surface kind: draw with the kind's shared material, the colour going into the mesh
+            var col = Color.white;
+            if (WorldMaterials.KindOf(m, out var shared, out var lin)) { m = shared; col = lin; if (cols == null) { cols = new List<Color>(verts.Count + 3); for (var i = 0; i < verts.Count; i++) cols.Add(Color.white); } }
             if (!tris.TryGetValue(m, out var list)) tris[m] = list = new List<int>();
             list.Add(verts.Count); verts.Add(a); uvs.Add(ua);
             list.Add(verts.Count); verts.Add(b); uvs.Add(ub);
             list.Add(verts.Count); verts.Add(c); uvs.Add(uc);
+            if (cols != null) { cols.Add(col); cols.Add(col); cols.Add(col); }
         }
 
         /// Metres per repeat of the surface grain (WorldMaterials.Grain).
@@ -205,6 +211,7 @@ namespace EverythingWorld.World
                     t.Add(mk.verts.Count); mk.verts.Add(a); mk.uvs.Add(uvs[list[i]]);
                     t.Add(mk.verts.Count); mk.verts.Add(b); mk.uvs.Add(uvs[list[i + 1]]);
                     t.Add(mk.verts.Count); mk.verts.Add(c); mk.uvs.Add(uvs[list[i + 2]]);
+                    if (cols != null) { mk.cols ??= new List<Color>(); mk.cols.Add(cols[list[i]]); mk.cols.Add(cols[list[i + 1]]); mk.cols.Add(cols[list[i + 2]]); }
                 }
             }
             foreach (var kv in chunks) kv.Value.BuildOne($"{name} {kv.Key.Item1},{kv.Key.Item2}", root.transform, collider);
@@ -246,6 +253,7 @@ namespace EverythingWorld.World
             var mesh = new Mesh { name = name, indexFormat = IndexFormat.UInt32 };
             mesh.SetVertices(verts);
             mesh.SetUVs(0, uvs);
+            if (cols != null && cols.Count == verts.Count) mesh.SetColors(cols);
             mesh.subMeshCount = tris.Count;
             var mats = new Material[tris.Count];
             var i = 0;

@@ -65,7 +65,7 @@ namespace EverythingWorld.World
             Vector2 near = way[0]; var bd = 150f * 150f; foreach (var (p, _) in walkPoints) { var d = (p.x - way[0].x) * (p.x - way[0].x) + (p.z - way[0].y) * (p.z - way[0].y); if (d < bd) { bd = d; near = new Vector2(p.x, p.z); } }
             var full = new List<Vector2> { near }; full.AddRange(way);
             var pts = Smooth(ctx, full, false, 2f); Bend(ctx, pts); if (pts.Count < 2) return;
-            Strip(mk, pts, WorldMaterials.Solid(new Color(.62f, .5f, .34f)), 2.6f, .05f, ctx);
+            Strip(mk, pts, WorldMaterials.Surface(new Color(.62f, .5f, .34f), Surface.Stone), 2.6f, .05f, ctx);
             var up = Vector3.up; var n = 0;
             for (var i = 7; i < pts.Count; i += 13) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (n++ % 2 == 0 ? 2f : -2f); if (ctx.IsLand(lp.x, lp.z, 2f)) Lantern(ctx, mk, ctx.OnGround(lp.x, lp.z)); }
             foreach (var p in pts) Remember(p, 700);
@@ -77,7 +77,7 @@ namespace EverythingWorld.World
             var from = Nearest(roadPts, to); var d = new Vector2(to.x - from.x, to.z - from.z); var len = d.magnitude; if (len < stopShort + 3f) return; d /= len;
             var a = new Vector2(from.x, from.z) + d * 1.4f; var b = new Vector2(from.x, from.z) + d * (len - stopShort);
             var pts = Smooth(ctx, new[] { a, Vector2.Lerp(a, b, .5f) + new Vector2(-d.y, d.x) * Mathf.Min(5f, len * .1f), b }, false, 2f, 1f); if (pts.Count < 2) return;
-            Strip(mk, pts, WorldMaterials.Solid(new Color(.62f, .5f, .34f)), 2f, .045f, ctx); foreach (var p in pts) Remember(p, 900);
+            Strip(mk, pts, WorldMaterials.Surface(new Color(.62f, .5f, .34f), Surface.Stone), 2f, .045f, ctx); foreach (var p in pts) Remember(p, 900);
         }
 
         void WoodsPlaces(LandContext ctx, MeshKit mk, MeshKit solid)
@@ -119,7 +119,7 @@ namespace EverythingWorld.World
             }
             // the cabin at the top: a deck, a roof on four posts, a bench, a lantern
             var deck = new Vector3(g.x, top, g.z); mk.Box(wood, deck - up * .08f, new Vector3(Core + .2f, .16f, Core + .2f), f.r); solid.Box(wood, deck - up * .15f, new Vector3(Core + .2f, .3f, Core + .2f), f.r);
-            mk.GableRoof(WorldMaterials.Solid(new Color(.3f, .4f, .32f)), deck + up * 2.6f, new Vector3(Core + 1.2f, 0, Core + 1.2f), 1.2f, f.r);
+            mk.GableRoof(WorldMaterials.Surface(new Color(.3f, .4f, .32f), Surface.Wood), deck + up * 2.6f, new Vector3(Core + 1.2f, 0, Core + 1.2f), 1.2f, f.r);
             foreach (var (x, z) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) mk.Box(logM, deck + f.r * new Vector3(x * Core / 2f, 1.3f, z * Core / 2f), new Vector3(.2f, 2.6f, .2f), f.r);
             foreach (var s in new[] { 0, 1, 2 }) { var d = f.r * (Quaternion.Euler(0, s * 90f + 180f, 0) * Vector3.forward); Col(deck + d * (Core / 2f) + up * .5f, new Vector3(Core, 1f, .1f), Quaternion.LookRotation(d)); mk.Box(logM, deck + d * (Core / 2f) + up * 1f, new Vector3(Core, .1f, .1f), Quaternion.LookRotation(d)); }
             mk.Box(wood, deck + up * .45f - f.Fwd * .2f, new Vector3(1.8f, .07f, .45f), f.r); Interact.Bench(plife.transform, deck + up * .5f - f.Fwd * .2f - f.Right * .6f, deck + up * .5f - f.Fwd * .2f + f.Right * .6f, f.Fwd);
@@ -135,7 +135,7 @@ namespace EverythingWorld.World
         // the Orchard: rows of apple trees, a basket of apples, a cider press
         void Orchard(LandContext ctx, MeshKit mk, MeshKit solid)
         {
-            var up = Vector3.up; var g = ctx.OnGround(OrchardAt.x, OrchardAt.y); var f = new PlaceFrame(g, FaceTo(g, Nearest(roadPts, g))); var apple = WorldMaterials.Solid(new Color(.85f, .15f, .12f)); var crown = WorldMaterials.Solid(new Color(.4f, .58f, .3f));
+            var up = Vector3.up; var g = ctx.OnGround(OrchardAt.x, OrchardAt.y); var f = new PlaceFrame(g, FaceTo(g, Nearest(roadPts, g))); var apple = WorldMaterials.Surface(new Color(.85f, .15f, .12f), Surface.Painted); var crown = WorldMaterials.Surface(new Color(.4f, .58f, .3f), Surface.Foliage);
             for (var x = -1; x <= 1; x++) for (var z = 0; z < 3; z++)
             {
                 var p = ctx.OnGround(f.P(x * 7f, 0, -4f - z * 6f).x, f.P(x * 7f, 0, -4f - z * 6f).z); mk.Prism(bark, p - up * .2f, up, .22f, 2.4f, 6); ArtistBits.PostCollider(ctx.Root, p, 2.4f, .25f);
@@ -203,7 +203,7 @@ namespace EverythingWorld.World
             mk.Box(WorldMaterials.Solid(new Color(.35f, .42f, .32f)), f.P(0, 2.8f, 0), new Vector3(6f, .12f, 4.2f), f.r * Quaternion.Euler(10f, 0, 0)); mk.Box(wood, f.P(0, 1.2f, -1.6f), new Vector3(4.98f, 2.4f, .1f), f.r); Col(f.P(0, 1.2f, -1.6f), new Vector3(5f, 2.4f, .15f), f.r);
             mk.Box(wood, f.P(-.6f, .9f, -1f), new Vector3(3f, .1f, .9f), f.r); foreach (var e in new[] { -2f, .8f }) mk.Box(logM, f.P(e, .45f, -1f), new Vector3(.12f, .9f, .8f), f.r); Col(f.P(-.6f, .5f, -1f), new Vector3(3f, 1f, .9f), f.r);
             // carved animals on the bench and round the shed: a bear, an owl, a fish
-            var carved = WorldMaterials.Solid(new Color(.72f, .56f, .38f));
+            var carved = WorldMaterials.Surface(new Color(.72f, .56f, .38f), Surface.Wood);
             var bear = ctx.OnGround(f.P(-4.5f, 0, 1.5f).x, f.P(-4.5f, 0, 1.5f).z); mk.Blob(carved, bear + up * .8f, new Vector3(.6f, .8f, .5f), ctx.Rng, .1f); mk.Blob(carved, bear + up * 1.75f, Vector3.one * .38f, ctx.Rng, .05f); foreach (var e in new[] { -.25f, .25f }) mk.Blob(carved, bear + up * 2.1f + f.Right * e, Vector3.one * .12f, ctx.Rng, 0f); ArtistBits.PostCollider(ctx.Root, bear, 2f, .6f);
             var owl = f.P(-1.4f, 1.15f, -1f); mk.Blob(carved, owl, new Vector3(.16f, .22f, .14f), ctx.Rng, 0f); foreach (var e in new[] { -.06f, .06f }) mk.Blob(GlowM(new Color(1f, .8f, .3f), 1.6f), owl + up * .08f + f.Right * e + f.Fwd * .13f, Vector3.one * .03f, ctx.Rng, 0f);
             mk.Box(carved, f.P(.2f, 1.02f, -1f), new Vector3(.5f, .14f, .08f), f.r * Quaternion.Euler(0, 20f, 0)); mk.Box(carved, f.P(.5f, 1.02f, -.9f), new Vector3(.08f, .2f, .04f), f.r * Quaternion.Euler(0, 20f, 0));
