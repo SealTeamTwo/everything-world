@@ -49,14 +49,14 @@ namespace EverythingWorld.World
         void District(Plot z)
         {
             dz = z; dc = z.c; dF = z.front; dS = z.side; dRot = Quaternion.LookRotation(dF);
-            var keep = concrete; concrete = WorldMaterials.Solid(new Color(.3f, .3f, .3f), .15f);
+            var keep = concrete; concrete = WorldMaterials.Surface(new Color(.3f, .3f, .3f), Surface.Stone);
             const float C = Cell;
             // floors, one per room
             var floors = new Dictionary<(int, int), Material>
             {
-                [(0, 1)] = slate, [(-1, 1)] = WorldMaterials.Solid(new Color(.05f, .12f, .26f), .9f), [(-1, 0)] = WorldMaterials.Solid(new Color(.66f, .66f, .64f)),
-                [(-1, -1)] = WorldMaterials.Solid(new Color(.03f, .03f, .04f), .95f), [(0, -1)] = WorldMaterials.Solid(new Color(.74f, .74f, .75f)), [(1, -1)] = WorldMaterials.Solid(new Color(.06f, .07f, .09f), .8f),
-                [(1, 0)] = WorldMaterials.Solid(new Color(.8f, .79f, .75f)), [(1, 1)] = WorldMaterials.Solid(new Color(.55f, .5f, .44f)), [(0, 0)] = WorldMaterials.Solid(new Color(.84f, .84f, .82f)),
+                [(0, 1)] = slate, [(-1, 1)] = WorldMaterials.Solid(new Color(.05f, .12f, .26f), .9f), [(-1, 0)] = WorldMaterials.Surface(new Color(.66f, .66f, .64f), Surface.Stone),
+                [(-1, -1)] = WorldMaterials.Solid(new Color(.03f, .03f, .04f), .95f), [(0, -1)] = WorldMaterials.Surface(new Color(.74f, .74f, .75f), Surface.Stone), [(1, -1)] = WorldMaterials.Solid(new Color(.06f, .07f, .09f), .8f),
+                [(1, 0)] = WorldMaterials.Surface(new Color(.8f, .79f, .75f), Surface.Stone), [(1, 1)] = WorldMaterials.Surface(new Color(.55f, .5f, .44f), Surface.Wood), [(0, 0)] = WorldMaterials.Surface(new Color(.84f, .84f, .82f), Surface.Stone),
             };
             foreach (var kv in floors)
             {
@@ -176,7 +176,7 @@ namespace EverythingWorld.World
             // the canopy over the doorway, and the forecourt
             dz.mk.Box(concrete, D(0, 4.9f, C * 1.5f + 2.5f), new Vector3(9f, .45f, 5f), dRot);
             dz.mk.Box(GlowM(new Color(1f, .5f, .35f), 1.2f), D(0, 4.66f, C * 1.5f + 2.5f), new Vector3(7f, .02f, .25f), dRot);
-            Floor(WorldMaterials.Solid(new Color(.5f, .5f, .49f)), 0, C * 1.5f + 6f, 22f, 11f, .06f, -.3f);
+            Floor(WorldMaterials.Surface(new Color(.5f, .5f, .49f), Surface.Stone), 0, C * 1.5f + 6f, 22f, 11f, .06f, -.3f);
             foreach (var s in new[] { -1f, 1f }) StreetLamp(dz.ctx, dz.mk, D(s * 9f, .06f, C * 1.5f + 9f));
             halos.Add(D(0, 3f, C * 1.5f + 1.5f), 4f, new Color(1f, .5f, .35f), .35f);
             // inside: song titles on the walls (changed by MoorsLife), a wall of televisions full of static
@@ -188,7 +188,7 @@ namespace EverythingWorld.World
             words.Add(ArtistBits.Label(dz.labels, Titles[9], D(0, 4.6f, C / 2f + h), dF, .38f, new Color(.6f, .8f, 1f), TextAnchor.MiddleCenter));
             life.words = words;
             var tv = new Material(WorldMaterials.Glow(new Color(.5f, .56f, .64f), .5f)) { name = "Television static" }; life.static_ = tv;
-            var cabinet = WorldMaterials.Solid(new Color(.18f, .16f, .14f));
+            var cabinet = WorldMaterials.Surface(new Color(.18f, .16f, .14f), Surface.Wood);
             // what the sets show: static with rolling dark bars, test-card colour bars, or a blue no-signal screen
             Color[] cardCols = { new Color(.75f, .75f, .75f), new Color(.8f, .75f, .1f), new Color(.1f, .7f, .75f), new Color(.1f, .65f, .15f), new Color(.7f, .1f, .65f), new Color(.75f, .1f, .1f), new Color(.1f, .15f, .7f) };
             var roll = WorldMaterials.Solid(new Color(.05f, .06f, .08f)); var noSignal = GlowM(new Color(.12f, .25f, .8f), .9f);
@@ -235,7 +235,7 @@ namespace EverythingWorld.World
             }
             life.rippleSide = dS;
             // a small round stage with a lone microphone in a spotlight
-            var stage = D(cx, .12f, cf - 2f); var wood2 = WorldMaterials.Solid(new Color(.2f, .16f, .14f), .5f);
+            var stage = D(cx, .12f, cf - 2f); var wood2 = WorldMaterials.Surface(new Color(.2f, .16f, .14f), Surface.Wood);
             dz.mk.Prism(wood2, stage, up, 1.9f, .3f, 20); dz.solid.Prism(wood2, stage, up, 1.9f, .3f, 12);
             var micBase = stage + up * .3f; dz.mk.Prism(steel, micBase, up, .25f, .04f, 10); dz.mk.Prism(steel, micBase, up, .03f, 1.55f, 6);
             dz.mk.Box(steel, micBase + up * 1.5f + dF * .12f, new Vector3(.03f, .03f, .3f), Quaternion.LookRotation(dF + up * .4f)); dz.mk.Blob(dark, micBase + up * 1.6f + dF * .28f, new Vector3(.06f, .06f, .1f), dz.ctx.Rng, 0f);
@@ -252,9 +252,9 @@ namespace EverythingWorld.World
             const float C = Cell; var up = Vector3.up; float cx = -C, cf = 0f;
             const float edge = -24f;
             // the track bed sits just above the ground (the terrain can't be dug under a room, so a sunken bed showed grass)
-            Floor(WorldMaterials.Solid(new Color(.22f, .21f, .2f)), (-C * 1.5f + edge) / 2f, cf, edge + C * 1.5f, C, .04f, -.8f);
-            Floor(WorldMaterials.Solid(new Color(.66f, .66f, .64f)), (edge - C / 2f) / 2f, cf, -C / 2f - edge, C, .12f);
-            dz.mk.Box(WorldMaterials.Solid(new Color(1f, .82f, .1f)), D(edge + .25f, .13f, cf), new Vector3(.3f, .04f, C - WallT), dRot);
+            Floor(WorldMaterials.Surface(new Color(.22f, .21f, .2f), Surface.Stone), (-C * 1.5f + edge) / 2f, cf, edge + C * 1.5f, C, .04f, -.8f);
+            Floor(WorldMaterials.Surface(new Color(.66f, .66f, .64f), Surface.Stone), (edge - C / 2f) / 2f, cf, -C / 2f - edge, C, .12f);
+            dz.mk.Box(WorldMaterials.Surface(new Color(1f, .82f, .1f), Surface.Painted), D(edge + .25f, .13f, cf), new Vector3(.3f, .04f, C - WallT), dRot);
             // the track: rails and sleepers, tunnel mouths at both ends
             var track = -26.1f;
             foreach (var s in new[] { -.72f, .72f }) dz.mk.Box(steel, D(track + s, .18f, cf), new Vector3(.12f, .16f, C - WallT), dRot);
@@ -295,7 +295,7 @@ namespace EverythingWorld.World
             var col = new Material(WorldMaterials.Glow(new Color(1f, .3f, .22f), .5f)) { name = "Rain room columns" }; life.rainColumns = col;
             for (var k = 0; k < 6; k++) { var a = k * 60f * Mathf.Deg2Rad; var p = D(cx + Mathf.Cos(a) * 2.6f, .12f, cf + Mathf.Sin(a) * 2.6f); dz.mk.Prism(col, p, up, .12f, 6.2f, 8); ArtistBits.PostCollider(dz.root, p, 6f, .15f); }
             // a lone chair in the middle, getting rained on
-            var ch = D(cx, .12f, cf); var chair = WorldMaterials.Solid(new Color(.15f, .12f, .1f), .4f);
+            var ch = D(cx, .12f, cf); var chair = WorldMaterials.Surface(new Color(.15f, .12f, .1f), Surface.Wood);
             dz.mk.Box(chair, ch + up * .48f, new Vector3(.5f, .06f, .5f), dRot); dz.mk.Box(chair, ch + up * .8f - dF * .22f, new Vector3(.5f, .6f, .06f), dRot);
             foreach (var s in new[] { -.21f, .21f }) foreach (var f in new[] { -.21f, .21f }) dz.mk.Box(chair, ch + up * .24f + dS * s + dF * f, new Vector3(.05f, .48f, .05f), dRot);
             dz.solid.Box(chair, ch + up * .5f, new Vector3(.55f, 1f, .55f), dRot);
@@ -310,7 +310,7 @@ namespace EverythingWorld.World
         {
             const float C = Cell; var up = Vector3.up; float cx = 0f, cf = -C;
             dz.mk.Box(GlowM(new Color(.95f, .96f, 1f), .22f), D(cx, RoomH - .08f, cf), new Vector3(C - WallT - .2f, .06f, C - WallT - .2f), dRot);
-            var whiteWall = WorldMaterials.Solid(new Color(.76f, .77f, .79f));   // soft white: brighter blew the room out
+            var whiteWall = WorldMaterials.Surface(new Color(.76f, .77f, .79f), Surface.Stone);   // soft white: brighter blew the room out
             foreach (var s in new[] { -1f, 1f })
             {   // panels on the inner faces, either side of each doorway (no panel crosses a door)
                 var x = s * (C / 2f - WallT / 2f - .03f); foreach (var e in new[] { -1f, 1f }) dz.mk.Box(whiteWall, D(x, 3.5f, cf + e * 5.3f), new Vector3(.04f, 6.8f, 7.6f), dRot);
@@ -365,7 +365,7 @@ namespace EverythingWorld.World
             var pieceRot = Quaternion.LookRotation(-dS);
             for (var i = 0; i < 6; i++) for (var j = 0; j < 3; j++)
             {
-                var home = D(wx, .5f + 1f + j * 2f, cf - 5f + i * 2f); var m = WorldMaterials.Solid(cols[(i * 2 + j * 3) % cols.Length], .3f);
+                var home = D(wx, .5f + 1f + j * 2f, cf - 5f + i * 2f); var m = WorldMaterials.Surface(cols[(i * 2 + j * 3) % cols.Length], Surface.Painted);
                 if (missing.Contains((i, j)))
                 {
                     var pk = new MeshKit(); Piece(pk, m, Vector3.zero, Quaternion.identity, i + j);
@@ -379,7 +379,7 @@ namespace EverythingWorld.World
             }
             dz.solid.Box(dark, D(wx, 3.5f, cf), new Vector3(.6f, 6.4f, 12.4f), dRot);
             // paint run down from the pieces across the floor
-            for (var k = 0; k < 7; k++) dz.mk.Box(WorldMaterials.Solid(cols[k], .4f), D(wx - 3.6f, .14f, cf - 5.1f + k * 1.7f), new Vector3(6.6f - (k % 3) * 1.4f, .04f, 1.1f), dRot);
+            for (var k = 0; k < 7; k++) dz.mk.Box(WorldMaterials.Surface(cols[k], Surface.Painted), D(wx - 3.6f, .14f, cf - 5.1f + k * 1.7f), new Vector3(6.6f - (k % 3) * 1.4f, .04f, 1.1f), dRot);
             var bp = D(cx - 3f, .12f, cf); dz.mk.Box(wood, bp + up * .45f, new Vector3(.7f, .1f, 3.6f), dRot); foreach (var e in new[] { -1.4f, 1.4f }) dz.mk.Box(concrete, bp + up * .2f + dF * e, new Vector3(.6f, .4f, .4f), dRot); dz.solid.Box(wood, bp + up * .3f, new Vector3(.7f, .6f, 3.6f), dRot);
             RoomLight(cx, 5f, cf, new Color(1f, .9f, .8f), 16f, 1f);
             RoomSign("JIGSAW FALLING INTO PLACE", D(cx + 3.2f, 2.3f, -C / 2f + WallT / 2f + .03f), dF);
@@ -419,7 +419,7 @@ namespace EverythingWorld.World
             foreach (var s in new[] { -1f, 1f }) foreach (var e in new[] { -.6f, .5f }) dz.mk.Box(bone, sp + dS * e + dF * s * .15f - up * .45f, new Vector3(.05f, .75f, .05f), Quaternion.LookRotation(dS) * Quaternion.Euler(10f * s, 0, 0));
             Glass(dz.root, dino + up * 1.8f, new Vector3(3.6f, 1.6f, 1.6f), new Color(.8f, .9f, .95f, .12f), Quaternion.LookRotation(dS));
             var stand = D(cx - 6f, .12f, cf + 7f); dz.mk.Prism(wood, stand, up, .05f, 1.9f, 6); dz.mk.Prism(wood, stand, up, .3f, .05f, 8);
-            var coat = WorldMaterials.Solid(new Color(.3f, .27f, .22f)); dz.mk.Box(coat, stand + up * 1.25f + dF * .12f, new Vector3(.55f, 1.1f, .2f), dRot);
+            var coat = WorldMaterials.Surface(new Color(.3f, .27f, .22f), Surface.Cloth); dz.mk.Box(coat, stand + up * 1.25f + dF * .12f, new Vector3(.55f, 1.1f, .2f), dRot);
             dz.mk.Prism(dark, stand + up * 1.9f, up, .32f, .04f, 14); dz.mk.Prism(dark, stand + up * 1.94f, up, .17f, .16f, 12, .85f);
             ArtistBits.PostCollider(dz.root, stand, 2f, .3f);
             RoomLight(cx, 4.5f, cf, new Color(1f, .97f, .92f), 15f, 1.1f);

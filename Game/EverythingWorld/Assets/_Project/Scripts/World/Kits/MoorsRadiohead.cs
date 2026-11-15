@@ -106,7 +106,7 @@ namespace EverythingWorld.World
             var spire = c + new Vector3(-9f, 0, 8f); mk.Box(stone, spire + up * 2f, new Vector3(1.6f, 4f, 1.6f), Quaternion.identity); solid.Box(stone, spire + up * 2f, new Vector3(1.6f, 4f, 1.6f), Quaternion.identity); mk.Cone(slate, spire + up * 4f, 1.1f, 3f, 4, 45f);
             mk.Box(windows, spire + up * 3f + Vector3.forward * .81f, new Vector3(.4f, .7f, .02f), Quaternion.identity);
             // the pyramid, rising out of the water
-            for (var k = 0; k < 9; k++) { var s = 10f - k * 1.1f; mk.Box(WorldMaterials.Solid(new Color(.62f, .6f, .54f)), c + up * (k * 1.6f + .8f), new Vector3(s, 1.6f, s), Quaternion.Euler(0, 45f, 0)); }
+            for (var k = 0; k < 9; k++) { var s = 10f - k * 1.1f; mk.Box(WorldMaterials.Surface(new Color(.62f, .6f, .54f), Surface.Stone), c + up * (k * 1.6f + .8f), new Vector3(s, 1.6f, s), Quaternion.Euler(0, 45f, 0)); }
             mk.Box(GlowM(new Color(.6f, .95f, 1f), 2.4f), c + up * 14.6f, new Vector3(.9f, .5f, .9f), Quaternion.Euler(0, 45f, 0));
             solid.Box(stone, c + up * 7.2f, new Vector3(10f, 14.4f, 10f), Quaternion.Euler(0, 45f, 0));
             halos.Add(c + up * 15f, 2.4f, new Color(.6f, .95f, 1f), .8f);
@@ -128,7 +128,7 @@ namespace EverythingWorld.World
             for (var k = 0; k + 1 < pts.Count; k++)
             {
                 var a = pts[k]; var b = pts[k + 1]; var d = b - a; var sd = Vector3.Cross(up, new Vector3(d.x, 0, d.z).normalized); var rot = Quaternion.LookRotation(d);
-                mk.Box(white, (a + b) / 2f, new Vector3(8f, .6f, d.magnitude + .05f), rot); mk.Box(WorldMaterials.Solid(new Color(.75f, .76f, .78f)), (a + b) / 2f + up * .36f, new Vector3(7.6f, .02f, d.magnitude + .05f), rot);
+                mk.Box(white, (a + b) / 2f, new Vector3(8f, .6f, d.magnitude + .05f), rot); mk.Box(WorldMaterials.Surface(new Color(.75f, .76f, .78f), Surface.Stone), (a + b) / 2f + up * .36f, new Vector3(7.6f, .02f, d.magnitude + .05f), rot);
                 foreach (var s in new[] { -1f, 1f }) mk.Box(white, (a + b) / 2f + sd * s * 3.9f + up * .7f, new Vector3(.25f, .8f, d.magnitude + .05f), rot);
                 mk.Box(GlowM(new Color(1f, 1f, 1f), 1f), (a + b) / 2f + up * .4f, new Vector3(.15f, .02f, d.magnitude * .5f), rot);
                 if (k % 3 == 0) { var g = ctx.Ground(a.x, a.z); mk.Prism(white, new Vector3(a.x, g - .5f, a.z), up, .8f, a.y - g + .2f, 12); solid.Prism(white, new Vector3(a.x, g - .5f, a.z), up, .8f, a.y - g + .2f, 8); }
@@ -160,7 +160,7 @@ namespace EverythingWorld.World
             for (var u = -12.5f; u <= 12.6f; u += 12.5f / 3f) for (var v = -12.5f; v <= 12.6f; v += 12.5f / 3f) { var q = c + side * u + face * v; var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); }
             var baseY = Mathf.Max(c.y, hi); var T = baseY + .08f; var plinthM = stone;   // mid-grey stone sides under the pale square
             mk.Box(plinthM, new Vector3(c.x, (T - .1f + lo - .4f) / 2f, c.z), new Vector3(25f, T - .1f - lo + .4f, 25f), rot); solid.Box(plinthM, new Vector3(c.x, (T + lo - .4f) / 2f, c.z), new Vector3(25f, T - lo + .4f, 25f), rot);
-            mk.Box(WorldMaterials.Solid(new Color(.85f, .84f, .8f)), new Vector3(c.x, T - .05f, c.z), new Vector3(25f, .1f, 25f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.85f, .84f, .8f), Surface.Stone), new Vector3(c.x, T - .05f, c.z), new Vector3(25f, .1f, 25f), rot);
             foreach (var d in new[] { side, -side, face, -face })
             {
                 var e = c + d * 12.5f; var g = ctx.Ground(e.x + d.x, e.z + d.z); var drop = T - g; if (drop < .3f) continue;
@@ -178,14 +178,14 @@ namespace EverythingWorld.World
                 if ((i == 2) || (j == 2)) continue;   // the streets
                 var bw = ctx.Range(3.2f, 4.2f); var bd = ctx.Range(3.2f, 4.2f); var bh = ctx.Range(1.6f, 6.5f);
                 var p = new Vector3(c.x, baseY, c.z) + side * ((i - 2f) * 5f) + face * ((j - 2f) * 5f) + up * (bh / 2f);
-                var m = WorldMaterials.Solid(cols[(i * 3 + j * 5) % cols.Length], .3f);
+                var m = WorldMaterials.Surface(cols[(i * 3 + j * 5) % cols.Length], Surface.Painted);
                 mk.Box(m, p, new Vector3(bw, bh, bd), rot); solid.Box(m, p, new Vector3(bw, bh, bd), rot);
                 var ci = (i * 3 + j * 5) % cols.Length; var ink = ci == 3 || ci == 5 ? new Color(.08f, .08f, .08f) : Color.white;
                 if (w < words.Length) { var wf = j < 2 ? -face : face; var sd = i < 2 ? -side : side; var wd = (i + j) % 2 == 0 ? wf : sd; var depth = wd == wf ? bd : bw; var text = words[w++]; ArtistBits.Label(ctx.Root, text, p + wd * (depth / 2f + .03f) + up * Mathf.Min(bh * .2f, 1f), wd, Mathf.Min(.42f, 3.4f / (text.Length * .62f + 1f)), ink, TextAnchor.MiddleCenter); }
             }
             noGrass.Add(new Vector3(c.x, 20f, c.z));   // the whole square, corners too: no hawthorns through the blocks
             var cb = new Vector3(c.x, baseY, c.z);
-            mk.Box(WorldMaterials.Solid(new Color(.3f, .3f, .32f)), cb + up * .1f, new Vector3(2.4f, .04f, 25f), rot); mk.Box(WorldMaterials.Solid(new Color(.3f, .3f, .32f)), cb + up * .1f, new Vector3(25f, .04f, 2.4f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.3f, .3f, .32f), Surface.Stone), cb + up * .1f, new Vector3(2.4f, .04f, 25f), rot); mk.Box(WorldMaterials.Surface(new Color(.3f, .3f, .32f), Surface.Stone), cb + up * .1f, new Vector3(25f, .04f, 2.4f), rot);
             ArtistBits.PointLight(ctx.Root, cb + up * 7f, new Color(1f, .9f, .8f), 18f, 1f);
             Mark(ctx, "the word city", cb + up * 1f, 22f, -.15f);
         }
@@ -199,7 +199,7 @@ namespace EverythingWorld.World
             {
                 var a = k * 45f * Mathf.Deg2Rad + ctx.Range(-.2f, .2f); var r = k == 0 ? 0f : ctx.Range(5f, 12f); var p = ctx.OnGround(c.x + Mathf.Cos(a) * r, c.z + Mathf.Sin(a) * r);
                 var h = k == 0 ? 34f : ctx.Range(12f, 26f); var rad = h * ctx.Range(.18f, .26f);
-                mk.Cone(ice, p - up * .5f, rad, h, 4, ctx.Range(0, 90f)); mk.Cone(WorldMaterials.Solid(new Color(.95f, .97f, 1f)), p + up * h * .62f, rad * .38f, h * .38f + .05f, 4, ctx.Range(0, 90f));
+                mk.Cone(ice, p - up * .5f, rad, h, 4, ctx.Range(0, 90f)); mk.Cone(WorldMaterials.Surface(new Color(.95f, .97f, 1f), Surface.Stone), p + up * h * .62f, rad * .38f, h * .38f + .05f, 4, ctx.Range(0, 90f));
                 solid.Prism(ice, p - up * .5f, up, rad * .6f, h * .5f, 4);
             }
             noGrass.Add(new Vector3(c.x, 20f, c.z));   // the whole cluster: no hawthorns through the spires
@@ -211,7 +211,7 @@ namespace EverythingWorld.World
         /// among them who flickers in and out (MoorsLife).
         void EyedGrove(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c)
         {
-            var up = Vector3.up; var bark = WorldMaterials.Solid(new Color(.28f, .25f, .22f)); var leaf = WorldMaterials.Solid(new Color(.25f, .34f, .24f)); var eye = GlowM(new Color(.9f, 1f, .7f), 2.4f);
+            var up = Vector3.up; var bark = WorldMaterials.Surface(new Color(.28f, .25f, .22f), Surface.Bark); var leaf = WorldMaterials.Surface(new Color(.25f, .34f, .24f), Surface.Foliage); var eye = GlowM(new Color(.9f, 1f, .7f), 2.4f);
             for (var k = 0; k < 7; k++)
             {
                 var a = k * 51f * Mathf.Deg2Rad; var p = ctx.OnGround(c.x + Mathf.Cos(a) * ctx.Range(5f, 9f), c.z + Mathf.Sin(a) * ctx.Range(5f, 9f)); var q = p - up * .3f; var s = ctx.Range(.9f, 1.3f);

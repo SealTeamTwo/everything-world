@@ -35,11 +35,11 @@ namespace EverythingWorld.World
                     // cairn on top; The Plastic Guru: a ring of glowing plastic flowers round the hill's foot
                     var hill = z.At(-1f, 7.5f); var top = hill + up * 1.5f;
                     var lan = top + up * .55f + z.side * .7f; z.mk.Box(SongGlow(MelancholyHill, new Color(.55f, .8f, 1f), 2.2f), lan, new Vector3(.16f, .22f, .16f), rot); halos.Add(lan, 1.2f, new Color(.55f, .8f, 1f), .6f);
-                    var pk = z.At(-6f, 12.5f); var rock = WorldMaterials.Solid(new Color(.42f, .42f, .46f)); var snow = WorldMaterials.Solid(new Color(.95f, .96f, 1f));
+                    var pk = z.At(-6f, 12.5f); var rock = WorldMaterials.Surface(new Color(.42f, .42f, .46f), Surface.Stone); var snow = WorldMaterials.Surface(new Color(.95f, .96f, 1f), Surface.Stone);
                     z.mk.Cone(rock, pk - up * .2f, 2.6f, 4.6f, 6); z.mk.Cone(snow, pk + up * 2.9f, 1.05f, 1.55f, 6); z.solid.Prism(rock, pk - up * .2f, up, 2f, 3f, 8);
                     var cairn = pk + up * 4.5f; z.mk.Blob(SongGlow(TheMountain, new Color(1f, .7f, .3f), 2.4f), cairn, Vector3.one * .25f, z.ctx.Rng, .2f); halos.Add(cairn, 1.8f, new Color(1f, .7f, .3f), .6f);
                     var petal = SongGlow(PlasticGuru, new Color(1f, .4f, .8f), 2f);
-                    for (var k = 0; k < 12; k++) { var a = k * Mathf.PI * 2f / 12f; var f = hill + (z.side * Mathf.Cos(a) + z.front * Mathf.Sin(a)) * 3.9f; f = z.ctx.OnGround(f.x, f.z); z.mk.Prism(WorldMaterials.Solid(new Color(.3f, .55f, .3f)), f, up, .02f, .35f, 4); z.mk.Prism(petal, f + up * .35f, up, .14f, .05f, 5, 1.6f); }
+                    for (var k = 0; k < 12; k++) { var a = k * Mathf.PI * 2f / 12f; var f = hill + (z.side * Mathf.Cos(a) + z.front * Mathf.Sin(a)) * 3.9f; f = z.ctx.OnGround(f.x, f.z); z.mk.Prism(WorldMaterials.Surface(new Color(.3f, .55f, .3f), Surface.Foliage), f, up, .02f, .35f, 4); z.mk.Prism(petal, f + up * .35f, up, .14f, .05f, 5, 1.6f); }
                     break;
                 }
                 case "Hootie & The Blowfish":
@@ -80,7 +80,7 @@ namespace EverythingWorld.World
                 case "Weezer":
                 {   // Island In The Sun: a lantern at the palm's top; No Scrubs: a jukebox by the diner door
                     var pond = z.At(2.5f, 8f); z.mk.Blob(SongGlow(IslandInTheSun, new Color(1f, .8f, .35f), 2.2f), pond + up * 3.2f + z.side * .5f, Vector3.one * .2f, z.ctx.Rng, 0f); halos.Add(pond + up * 3.2f, 1.8f, new Color(1f, .8f, .35f), .5f);
-                    var jb = z.At(-1.6f, -7.5f); z.mk.Box(WorldMaterials.Solid(new Color(.5f, .25f, .2f), .8f), jb + up * .8f, new Vector3(1f, 1.6f, .6f), rot); z.solid.Box(dark, jb + up * .8f, new Vector3(1f, 1.6f, .6f), rot);
+                    var jb = z.At(-1.6f, -7.5f); z.mk.Box(WorldMaterials.Surface(new Color(.5f, .25f, .2f), Surface.Painted), jb + up * .8f, new Vector3(1f, 1.6f, .6f), rot); z.solid.Box(dark, jb + up * .8f, new Vector3(1f, 1.6f, .6f), rot);
                     z.mk.Prism(SongGlow(NoScrubs, new Color(1f, .45f, .8f), 2f), jb + up * 1.35f + z.front * .31f, z.front, .45f, .03f, 14, 1f); z.mk.Box(SongGlow(NoScrubs, new Color(.4f, .9f, 1f), 1.6f), jb + up * .6f + z.front * .31f, new Vector3(.7f, .5f, .02f), rot);
                     halos.Add(jb + up * 1.2f + z.front * .6f, 1.4f, new Color(1f, .45f, .8f), .5f);
                     break;

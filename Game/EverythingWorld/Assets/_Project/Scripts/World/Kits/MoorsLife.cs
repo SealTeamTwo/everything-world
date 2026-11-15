@@ -96,10 +96,10 @@ namespace EverythingWorld.World
             if (road.Length > 1)
             {
                 roadLen = new float[road.Length]; for (var i = 1; i < road.Length; i++) roadLen[i] = roadLen[i - 1] + Vector3.Distance(road[i - 1], road[i]); roadTotal = roadLen[road.Length - 1];
-                var ck = new MeshKit(); var body = WorldMaterials.Solid(new Color(.55f, .58f, .55f), .6f); var darkM = WorldMaterials.Solid(new Color(.08f, .08f, .09f));
+                var ck = new MeshKit(); var body = WorldMaterials.Surface(new Color(.55f, .58f, .55f), Surface.Painted); var darkM = WorldMaterials.Solid(new Color(.08f, .08f, .09f));
                 headlights = new Material(WorldMaterials.Glow(new Color(1f, .95f, .8f), .2f)) { name = "Headlights" };
                 ck.Box(body, new Vector3(0, .65f, 0), new Vector3(1.7f, .6f, 4.2f), Quaternion.identity); ck.Box(body, new Vector3(0, 1.2f, -.3f), new Vector3(1.5f, .55f, 2f), Quaternion.identity);
-                ck.Box(WorldMaterials.Solid(new Color(.2f, .25f, .3f), .9f), new Vector3(0, 1.2f, -.3f), new Vector3(1.52f, .4f, 1.9f), Quaternion.identity);
+                ck.Box(WorldMaterials.Surface(new Color(.2f, .25f, .3f), Surface.Glass), new Vector3(0, 1.2f, -.3f), new Vector3(1.52f, .4f, 1.9f), Quaternion.identity);
                 foreach (var s in new[] { -.85f, .85f }) foreach (var z in new[] { -1.35f, 1.35f }) ck.Prism(darkM, new Vector3(s, .35f, z), Vector3.right * Mathf.Sign(s), .35f, .2f, 10);
                 foreach (var s in new[] { -.55f, .55f }) ck.Prism(headlights, new Vector3(s, .7f, 2.1f), Vector3.forward, .15f, .05f, 10);
                 car = ck.BuildSingle("The car on the lonely road", transform, false).transform;
@@ -128,7 +128,7 @@ namespace EverythingWorld.World
             }
             if (trackA != trackB)
             {
-                var body = WorldMaterials.Solid(new Color(.86f, .84f, .76f), .5f); var band = WorldMaterials.Solid(new Color(.15f, .45f, .5f), .5f); var roof = WorldMaterials.Solid(new Color(.4f, .42f, .44f));
+                var body = WorldMaterials.Surface(new Color(.86f, .84f, .76f), Surface.Painted); var band = WorldMaterials.Surface(new Color(.15f, .45f, .5f), Surface.Painted); var roof = WorldMaterials.Surface(new Color(.4f, .42f, .44f), Surface.Metal);
                 tramLights = new Material(WorldMaterials.Glow(new Color(1f, .9f, .68f), 1.4f)) { name = "Tram windows" };
                 for (var k = 0; k < 8; k++)
                 {

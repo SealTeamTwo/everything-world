@@ -60,8 +60,8 @@ namespace EverythingWorld.World
 
         void PlaceMaterials()
         {
-            roadM = WorldMaterials.Solid(new Color(.4f, .4f, .42f)); paleStone = WorldMaterials.Solid(new Color(.8f, .8f, .76f)); wool = WorldMaterials.Solid(new Color(.9f, .88f, .82f));
-            brass = WorldMaterials.Solid(new Color(.85f, .68f, .3f), .8f); maroon = WorldMaterials.Solid(new Color(.5f, .12f, .14f)); cream = WorldMaterials.Solid(new Color(.93f, .9f, .78f));
+            roadM = WorldMaterials.Surface(new Color(.4f, .4f, .42f), Surface.Stone); paleStone = WorldMaterials.Surface(new Color(.8f, .8f, .76f), Surface.Stone); wool = WorldMaterials.Solid(new Color(.9f, .88f, .82f));
+            brass = WorldMaterials.Surface(new Color(.85f, .68f, .3f), Surface.Metal); maroon = WorldMaterials.Surface(new Color(.5f, .12f, .14f), Surface.Painted); cream = WorldMaterials.Surface(new Color(.93f, .9f, .78f), Surface.Painted);
         }
 
         // ---------------------------------------------------------------- residents: quiet locals
@@ -144,7 +144,7 @@ namespace EverythingWorld.World
             var a = new Vector2(from.x, from.z) + d * (RoadW / 2f + .1f); var b = new Vector2(from.x, from.z) + d * (len - stopShort); var side = new Vector2(-d.y, d.x);
             var pts = Smooth(ctx, new[] { a, Vector2.Lerp(a, b, .5f) + side * Mathf.Min(8f, len * .1f), b }, false, 1.5f, 1f);
             if (pts.Count < 2) return;
-            Strip(mk, pts, WorldMaterials.Solid(new Color(.62f, .6f, .55f)), 2.4f, .16f, ctx); foreach (var p in pts) Remember(p, 400);
+            Strip(mk, pts, WorldMaterials.Surface(new Color(.62f, .6f, .55f), Surface.Stone), 2.4f, .16f, ctx); foreach (var p in pts) Remember(p, 400);
         }
 
         /// A wooden bench (seats along it) with a street lamp beside it.
@@ -186,7 +186,7 @@ namespace EverythingWorld.World
             var i0 = roadPts.IndexOf(on); var tan = roadPts[Mathf.Min(i0 + 3, roadPts.Count - 1)] - roadPts[Mathf.Max(i0 - 3, 0)]; tan.y = 0; tan.Normalize();
             var f = new PlaceFrame(on, Vector3.Cross(up, tan));   // x along the street, z across it
             // the village sits on mown green (its ground is levelled), bright against the moor
-            var lawn = WorldMaterials.Solid(new Color(.5f, .66f, .36f)); mk.Prism(lawn, new Vector3(want.x, want.y - .5f, want.z), up, 43f, .56f, 40);
+            var lawn = WorldMaterials.Surface(new Color(.5f, .66f, .36f), Surface.Foliage); mk.Prism(lawn, new Vector3(want.x, want.y - .5f, want.z), up, 43f, .56f, 40);
             Pub(ctx, mk, solid, new PlaceFrame(ctx.OnGround(f.P(-16f, 0, 13f).x, f.P(-16f, 0, 13f).z), -f.Fwd));
             Chapel(ctx, mk, solid, new PlaceFrame(ctx.OnGround(f.P(22f, 0, 16f).x, f.P(22f, 0, 16f).z), -f.Fwd));
             Shop(ctx, mk, solid, new PlaceFrame(ctx.OnGround(f.P(4f, 0, 11f).x, f.P(4f, 0, 11f).z), -f.Fwd));
@@ -240,7 +240,7 @@ namespace EverythingWorld.World
             // the bar along the back, stools, the publican
             Wall(fo.P(2.5f, .55f, -D / 2f + 2.2f), new Vector3(6f, 1.1f, .6f), wood); mk.Box(dark, fo.P(2.5f, 1.13f, -D / 2f + 2.2f), new Vector3(6.2f, .06f, .75f), f.r);
             for (var k = 0; k < 4; k++) { var s = fo.P(.4f + k * 1.4f, 0, -D / 2f + 3.1f); mk.Prism(dark, s, up, .05f, .72f, 6); mk.Prism(maroon, s + up * .72f, up, .22f, .08f, 10); ArtistBits.PostCollider(ctx.Root, s, .75f, .23f); Interact.Seat(plife.transform, s + up * .82f, -f.Fwd, "Sit at the bar").seatHeight = .8f; }
-            for (var k = 0; k < 5; k++) mk.Prism(k % 2 == 0 ? brass : WorldMaterials.Solid(new Color(.3f, .5f, .3f)), fo.P(.6f + k * 1f, 1.9f, -D / 2f + T + .15f), up, .06f, .3f, 6);
+            for (var k = 0; k < 5; k++) mk.Prism(k % 2 == 0 ? brass : WorldMaterials.Surface(new Color(.3f, .5f, .3f), Surface.Painted), fo.P(.6f + k * 1f, 1.9f, -D / 2f + T + .15f), up, .06f, .3f, 6);
             mk.Box(wood, fo.P(2.5f, 1.85f, -D / 2f + T + .15f), new Vector3(5.6f, .06f, .3f), f.r);
             Folk(fo.P(2.5f, 0, -D / 2f + 1.3f), f.Fwd, Resident.Pose.Stand, new[] { "Usual? No, you're new. Usual anyway.", "We close at eleven. Or when the fire goes out. Never has yet.", "Quiz night's Thursday. Nobody's ever won." }, Look(Residents.Tool.Mug, true));
             Folk(fo.P(.4f + 1.4f, .82f, -D / 2f + 3.1f), -f.Fwd, Resident.Pose.Sit, new[] { "I've had this pint since March. Pacing myself.", "Don't mind me. I'm part of the furniture. They dust me." }, null, null, .8f);
@@ -263,7 +263,7 @@ namespace EverythingWorld.World
             ArtistBits.PointLight(ctx.Root, fo.P(1.5f, H - .7f, .5f), Lamp, 11f, 1.3f, true);
             // the sign outside
             var sp = f.P(W / 2f + 1.6f, 0, D / 2f + 1.5f); mk.Prism(dark, sp - up * .2f, up, .08f, 3.6f, 6); mk.Box(dark, sp + up * 3.3f - f.Right * .6f, new Vector3(1.3f, .08f, .08f), f.r); ArtistBits.PostCollider(ctx.Root, sp, 3.4f, .1f);
-            mk.Box(WorldMaterials.Solid(new Color(.15f, .25f, .2f)), sp + up * 2.6f - f.Right * .7f, new Vector3(1.1f, 1.2f, .06f), f.r);
+            mk.Box(WorldMaterials.Surface(new Color(.15f, .25f, .2f), Surface.Painted), sp + up * 2.6f - f.Right * .7f, new Vector3(1.1f, 1.2f, .06f), f.r);
             ArtistBits.Label(ctx.Root, "THE LAMB\n& ANTENNA", sp + up * 2.65f - f.Right * .7f + f.Fwd * .04f, f.Fwd, .17f, new Color(.95f, .85f, .5f), TextAnchor.MiddleCenter);
             halos.Add(f.P(0, 2.6f, D / 2f + .6f), 1.6f, Lamp, .5f); mk.Blob(GlowM(Lamp, 2f), f.P(0, 3f, D / 2f + .3f), Vector3.one * .15f, ctx.Rng, 0f);
             LampBench(ctx, mk, f.P(-4.5f, 0, D / 2f + 1.4f), f.Fwd, false);
@@ -284,13 +284,13 @@ namespace EverythingWorld.World
             var bell = new MeshKit(); bell.Prism(brass, new Vector3(0, -.55f, 0), Vector3.up, .32f, .5f, 10, .5f); bell.Box(dark, new Vector3(0, -.65f, 0), new Vector3(.06f, .3f, .06f), Quaternion.identity);
             var bgo = bell.BuildSingle("Chapel bell", plife.transform, false); bgo.transform.SetPositionAndRotation(bc + up * 1.15f, f.r);
             // its rope hangs by the door
-            var rope = f.P(1.3f, 0, D / 2f + .25f); mk.Box(WorldMaterials.Solid(new Color(.8f, .72f, .5f)), rope + up * 3.6f, new Vector3(.04f, 7.2f, .04f), f.r);
+            var rope = f.P(1.3f, 0, D / 2f + .25f); mk.Box(WorldMaterials.Surface(new Color(.8f, .72f, .5f), Surface.Cloth), rope + up * 3.6f, new Vector3(.04f, 7.2f, .04f), f.r);
             var pull = new GameObject("Bell rope"); pull.transform.SetParent(plife.transform, false); pull.transform.position = rope + up * 1.3f;
             var toy = Interact.Toy(pull, Toy.Kind.Custom, "Ring the bell", new Vector3(.5f, 1.6f, .5f)); toy.onUse = t => plife.Ring(bgo.transform);
             Folk(f.P(-1.6f, 0, D / 2f + 1.6f), f.Fwd, Resident.Pose.Stand, new[] { "The bell's for anyone. Give it a pull.", "Congregation of four. Five if it rains.", "We pray for good weather. Then for a sense of humour." }, new Residents.Look { top = new Color(.1f, .1f, .12f), bottom = new Color(.1f, .1f, .12f), hair = new Color(.75f, .75f, .75f), skin = new Color(.9f, .72f, .6f) });
             // a few leaning headstones, a yew
             for (var k = 0; k < 6; k++) { var p = f.P(-W / 2f - 2.5f - (k % 2) * 1.8f, 0, -3.5f + k * 1.5f); p = ctx.OnGround(p.x, p.z); var r = f.r * Quaternion.Euler(0, 90f, (k * 37 % 13) - 6f); mk.Box(copeStone, p + up * .45f, new Vector3(.6f, .9f, .12f), r); Col(p + up * .45f, new Vector3(.6f, .9f, .2f), r); }
-            var yew = f.P(W / 2f + 3f, 0, -2f); yew = ctx.OnGround(yew.x, yew.z); mk.Prism(wood, yew - up * .2f, up, .3f, 2f, 6); soft.Blob(WorldMaterials.Solid(new Color(.14f, .22f, .14f)), yew + up * 3.2f, new Vector3(1.8f, 2.4f, 1.8f), ctx.Rng, .25f); ArtistBits.PostCollider(ctx.Root, yew, 2.4f, .35f);
+            var yew = f.P(W / 2f + 3f, 0, -2f); yew = ctx.OnGround(yew.x, yew.z); mk.Prism(wood, yew - up * .2f, up, .3f, 2f, 6); soft.Blob(WorldMaterials.Surface(new Color(.14f, .22f, .14f), Surface.Foliage), yew + up * 3.2f, new Vector3(1.8f, 2.4f, 1.8f), ctx.Rng, .25f); ArtistBits.PostCollider(ctx.Root, yew, 2.4f, .35f);
             Ring(f.o, 8f);
             Shot(ctx, "the chapel", f.P(-5f, 1.8f, D / 2f + 12f), f.P(0, 4f, 0));
         }
@@ -301,12 +301,12 @@ namespace EverythingWorld.World
             mk.Box(stone, f.P(0, H / 2f - .4f, 0), new Vector3(W, H + .8f, D), f.r); solid.Box(stone, f.P(0, H / 2f, 0), new Vector3(W, H, D), f.r);
             mk.GableRoof(slate, f.P(0, H, 0), new Vector3(D + .6f, 0, W + .6f), 2f, Quaternion.LookRotation(f.Right));
             mk.Box(GlowM(new Color(1f, .9f, .65f), 1.6f), f.P(-1.2f, 1.5f, D / 2f + .02f), new Vector3(3.2f, 1.6f, .05f), f.r); mk.Box(dark, f.P(2.2f, 1.1f, D / 2f + .02f), new Vector3(1f, 2.2f, .05f), f.r);
-            mk.Box(WorldMaterials.Solid(new Color(.2f, .4f, .3f)), f.P(0, 2.75f, D / 2f + .06f), new Vector3(W - .4f, .6f, .1f), f.r);
+            mk.Box(WorldMaterials.Surface(new Color(.2f, .4f, .3f), Surface.Painted), f.P(0, 2.75f, D / 2f + .06f), new Vector3(W - .4f, .6f, .1f), f.r);
             ArtistBits.Label(ctx.Root, "SHOP (OPEN-ISH)", f.P(0, 2.75f, D / 2f + .13f), f.Fwd, .28f, new Color(.95f, .9f, .7f), TextAnchor.MiddleCenter);
             // crates of veg outside, a noticeboard
-            for (var k = 0; k < 3; k++) { var c = f.P(-2.6f + k * 1.1f, .25f, D / 2f + .8f); mk.Box(wood, c, new Vector3(.9f, .5f, .6f), f.r); for (var v = 0; v < 4; v++) mk.Blob(WorldMaterials.Solid(new[] { new Color(.9f, .5f, .1f), new Color(.5f, .7f, .2f), new Color(.8f, .15f, .15f) }[k]), c + up * .3f + f.Right * (-.25f + v * .17f), Vector3.one * .1f, ctx.Rng, 0f); }
+            for (var k = 0; k < 3; k++) { var c = f.P(-2.6f + k * 1.1f, .25f, D / 2f + .8f); mk.Box(wood, c, new Vector3(.9f, .5f, .6f), f.r); for (var v = 0; v < 4; v++) mk.Blob(WorldMaterials.Surface(new[] { new Color(.9f, .5f, .1f), new Color(.5f, .7f, .2f), new Color(.8f, .15f, .15f) }[k], Surface.Painted), c + up * .3f + f.Right * (-.25f + v * .17f), Vector3.one * .1f, ctx.Rng, 0f); }
             Col(f.P(-1.5f, .3f, D / 2f + .8f), new Vector3(3.2f, .7f, .7f), f.r);
-            var nb = f.P(W / 2f + 1.6f, 0, D / 2f + .5f); nb = ctx.OnGround(nb.x, nb.z); foreach (var e in new[] { -.7f, .7f }) mk.Box(wood, nb + f.Right * e + up * .9f, new Vector3(.1f, 1.8f, .1f), f.r); mk.Box(WorldMaterials.Solid(new Color(.3f, .45f, .35f)), nb + up * 1.35f, new Vector3(1.5f, 1f, .06f), f.r); Col(nb + up * .9f, new Vector3(1.6f, 1.8f, .15f), f.r);
+            var nb = f.P(W / 2f + 1.6f, 0, D / 2f + .5f); nb = ctx.OnGround(nb.x, nb.z); foreach (var e in new[] { -.7f, .7f }) mk.Box(wood, nb + f.Right * e + up * .9f, new Vector3(.1f, 1.8f, .1f), f.r); mk.Box(WorldMaterials.Surface(new Color(.3f, .45f, .35f), Surface.Painted), nb + up * 1.35f, new Vector3(1.5f, 1f, .06f), f.r); Col(nb + up * .9f, new Vector3(1.6f, 1.8f, .15f), f.r);
             ArtistBits.Label(ctx.Root, "LOST: one umbrella, grey.\nFOUND: one umbrella, grey.\nNot the same one.\n\nChoir practice cancelled\n(choir on holiday, both of them)", nb + up * 1.38f + f.Fwd * .04f, f.Fwd, .07f, Ink, TextAnchor.MiddleCenter);
             Folk(f.P(2.2f, 0, D / 2f + 1.1f), f.Fwd, Resident.Pose.Lean, new[] { "We've got milk, bread, and one of everything else.", "Paper's yesterday's. News is the same anyway." }, Look(Residents.Tool.None, true));
             Ring(f.o, 6f);
@@ -317,7 +317,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var g = f.o;
             mk.Prism(wood, g - up * .3f, up, .8f, 5f, 8, .7f); ArtistBits.PostCollider(ctx.Root, g, 5f, .9f);
-            for (var k = 0; k < 7; k++) soft.Blob(WorldMaterials.Solid(k % 2 == 0 ? new Color(.25f, .42f, .22f) : new Color(.32f, .5f, .25f)), g + up * (6f + (k % 3) * 1.1f) + new Vector3(Mathf.Cos(k * .9f), 0, Mathf.Sin(k * .9f)) * 2.6f, Vector3.one * 2.6f, ctx.Rng, .25f);
+            for (var k = 0; k < 7; k++) soft.Blob(WorldMaterials.Surface(k % 2 == 0 ? new Color(.25f, .42f, .22f) : new Color(.32f, .5f, .25f), Surface.Foliage), g + up * (6f + (k % 3) * 1.1f) + new Vector3(Mathf.Cos(k * .9f), 0, Mathf.Sin(k * .9f)) * 2.6f, Vector3.one * 2.6f, ctx.Rng, .25f);
             for (var k = 0; k < 8; k++)
             {
                 var a = k * Mathf.PI / 4f; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)); var p = g + d * 1.6f; var rot = Quaternion.LookRotation(d);
@@ -335,7 +335,7 @@ namespace EverythingWorld.World
             var bgo = ball.BuildSingle("Football", plife.transform, false); bgo.transform.position = pitch + up * .3f;
             bgo.AddComponent<SphereCollider>().radius = .22f; var rb = bgo.AddComponent<Rigidbody>(); rb.mass = .6f; rb.linearDamping = .4f; rb.angularDamping = .5f;
             var c = bgo.AddComponent<Carryable>(); c.thing = "the football"; c.home = bgo.transform.position; c.lowest = g.y - 6f;
-            foreach (var e in new[] { -2f, 2f }) mk.Blob(e < 0 ? redPaint : WorldMaterials.Solid(new Color(.2f, .3f, .6f)), ctx.OnGround(pitch.x + f.Right.x * 8f + f.Fwd.x * e, pitch.z + f.Right.z * 8f + f.Fwd.z * e) + up * .12f, new Vector3(.4f, .15f, .3f), ctx.Rng, .2f);
+            foreach (var e in new[] { -2f, 2f }) mk.Blob(e < 0 ? redPaint : WorldMaterials.Surface(new Color(.2f, .3f, .6f), Surface.Painted), ctx.OnGround(pitch.x + f.Right.x * 8f + f.Fwd.x * e, pitch.z + f.Right.z * 8f + f.Fwd.z * e) + up * .12f, new Vector3(.4f, .15f, .3f), ctx.Rng, .2f);
             Folk(pitch + f.Right * 6.5f, -f.Right, Resident.Pose.Wave, new[] { "Jumpers for goalposts. Go on, have a shot.", "Next goal wins. It's been next goal wins since lunch." }, new Residents.Look { top = new Color(.85f, .15f, .15f), bottom = new Color(.1f, .1f, .12f), height = 1.35f, skin = new Color(.88f, .68f, .52f), hair = new Color(.3f, .2f, .12f) });
             ArtistBits.PointLight(ctx.Root, g + up * 4f + f.Fwd * 4f, Lamp, 14f, 1f);
             Ring(g, 5f); Ring(pond, 6f);
@@ -354,7 +354,7 @@ namespace EverythingWorld.World
         void Farm(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var g = Site(ctx, FarmAt, 16f); var f = new PlaceFrame(g, FaceTo(g, Nearest(roadPts, g)));
-            mk.Prism(WorldMaterials.Solid(new Color(.5f, .66f, .36f)), new Vector3(FarmAt.x, ctx.Ground(FarmAt.x, FarmAt.y) - .5f, FarmAt.y), up, 17f, .56f, 28);   // the farmyard's green
+            mk.Prism(WorldMaterials.Surface(new Color(.5f, .66f, .36f), Surface.Foliage), new Vector3(FarmAt.x, ctx.Ground(FarmAt.x, FarmAt.y) - .5f, FarmAt.y), up, 17f, .56f, 28);   // the farmyard's green
             Cottage(ctx, mk, solid, ctx.OnGround(f.P(-9f, 0, -4f).x, f.P(-9f, 0, -4f).z), f.Fwd);
             // the stone barn, its door open and dark, a lamp over it
             var b = f.P(8f, 0, -8f); b = ctx.OnGround(b.x, b.z); const float W = 9f, D = 12f, H = 4.5f;
@@ -405,7 +405,7 @@ namespace EverythingWorld.World
                         if (!ok) continue;
                         c = ctx.OnGround(c.x, c.z); Field(ctx, mk, solid, c, -side * s, W, D); fields.Add((c, -side * s, W, D)); n++;
                         if (n % 2 == 0) { for (var q = 0; q < 4; q++) { var p = c + d * (-10f + q * 6.5f) + side * ((q % 2) * 6f - 3f); SheepAt(ctx, mk, solid, ctx.OnGround(p.x, p.z), Quaternion.Euler(0, q * 95f + n * 40f, 0) * Vector3.forward); } flock++; }
-                        else if (n % 5 == 1) { var t = c + d * (W / 2f - 3f) + side * s * (D / 2f - 3f); t = ctx.OnGround(t.x, t.z); var lean = (Quaternion.Euler(0, 40f, 0) * Vector3.forward + up * 1.6f).normalized; mk.Prism(wood, t - up * .2f, lean, .25f, 3.2f, 6, .6f); solid.Prism(wood, t - up * .2f, lean, .25f, 3.2f, 6, .6f); for (var q = 0; q < 4; q++) soft.Blob(WorldMaterials.Solid(new Color(.32f, .4f, .26f)), t + lean * 3f + Quaternion.Euler(0, q * 90f, 0) * Vector3.forward, new Vector3(1.4f, .9f, 1.2f), ctx.Rng, .35f); }
+                        else if (n % 5 == 1) { var t = c + d * (W / 2f - 3f) + side * s * (D / 2f - 3f); t = ctx.OnGround(t.x, t.z); var lean = (Quaternion.Euler(0, 40f, 0) * Vector3.forward + up * 1.6f).normalized; mk.Prism(wood, t - up * .2f, lean, .25f, 3.2f, 6, .6f); solid.Prism(wood, t - up * .2f, lean, .25f, 3.2f, 6, .6f); for (var q = 0; q < 4; q++) soft.Blob(WorldMaterials.Surface(new Color(.32f, .4f, .26f), Surface.Foliage), t + lean * 3f + Quaternion.Euler(0, q * 90f, 0) * Vector3.forward, new Vector3(1.4f, .9f, 1.2f), ctx.Rng, .35f); }
                     }
                 }
             }
