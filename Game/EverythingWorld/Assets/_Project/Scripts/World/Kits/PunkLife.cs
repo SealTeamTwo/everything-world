@@ -46,7 +46,7 @@ namespace EverythingWorld.World
             var bm = balloons.main; bm.startLifetime = new ParticleSystem.MinMaxCurve(12f, 18f); bm.startSpeed = new ParticleSystem.MinMaxCurve(1.5f, 2.5f); bm.gravityModifier = -.02f;
             var bs = balloons.shape; bs.shapeType = ParticleSystemShapeType.Cone; bs.angle = 20f; bs.radius = 1f; bs.rotation = new Vector3(-90f, 0, 0);
             // the skaters: a figure on a board each, three in the pool and one in each bowl
-            var body = WorldMaterials.Solid(new Color(.12f, .12f, .14f)); var deck = WorldMaterials.Solid(new Color(.85f, .3f, .2f));
+            var body = WorldMaterials.Solid(new Color(.12f, .12f, .14f)); var deck = WorldMaterials.Surface(new Color(.85f, .3f, .2f), World.Surface.Painted);
             Color[] shirts = { new Color(.9f, .2f, .3f), new Color(.2f, .6f, .9f), new Color(.95f, .8f, .2f), new Color(.4f, .85f, .4f) };
             var n = (pool != Vector3.zero ? 3 : 0) + bowls.Count;
             for (var k = 0; k < n; k++)
@@ -54,14 +54,14 @@ namespace EverythingWorld.World
                 var fk = new MeshKit(); var s = 1f;
                 fk.Box(deck, new Vector3(0, .06f, 0), new Vector3(.22f, .04f, .8f), Quaternion.identity);
                 fk.Box(body, new Vector3(-.1f, .45f, .12f), new Vector3(.12f, .75f, .14f) * s, Quaternion.Euler(0, 0, 8f)); fk.Box(body, new Vector3(.1f, .45f, -.12f), new Vector3(.12f, .75f, .14f) * s, Quaternion.Euler(0, 0, -8f));
-                fk.Box(WorldMaterials.Solid(shirts[k % shirts.Length]), new Vector3(0, 1.1f, 0), new Vector3(.4f, .55f, .25f), Quaternion.Euler(0, 70f, 0));
-                fk.Blob(WorldMaterials.Solid(new Color(.9f, .75f, .6f)), new Vector3(0, 1.5f, 0), Vector3.one * .15f, new System.Random(k), 0f);
+                fk.Box(WorldMaterials.Surface(shirts[k % shirts.Length], World.Surface.Cloth), new Vector3(0, 1.1f, 0), new Vector3(.4f, .55f, .25f), Quaternion.Euler(0, 70f, 0));
+                fk.Blob(WorldMaterials.Surface(new Color(.9f, .75f, .6f), World.Surface.Painted), new Vector3(0, 1.5f, 0), Vector3.one * .15f, new System.Random(k), 0f);
                 fk.Box(body, new Vector3(0, 1.1f, .35f), new Vector3(.08f, .08f, .45f), Quaternion.Euler(0, 0, 0)); fk.Box(body, new Vector3(0, 1.1f, -.35f), new Vector3(.08f, .08f, .45f), Quaternion.identity);
                 var go = fk.BuildSingle("Skater", transform, false); if (go == null) continue;
                 skaters.Add(go.transform); skaterBowl.Add(k < (pool != Vector3.zero ? 3 : 0) ? -1 : k - (pool != Vector3.zero ? 3 : 0));
             }
             // tumbleweeds
-            var weedM = WorldMaterials.Solid(new Color(.6f, .5f, .32f));
+            var weedM = WorldMaterials.Surface(new Color(.6f, .5f, .32f), World.Surface.Foliage);
             for (var k = 0; k < Mathf.Min(14, tumbleweeds.Count); k++) { var wk = new MeshKit(); for (var j = 0; j < 5; j++) wk.Blob(weedM, Random.insideUnitSphere * .2f, Vector3.one * .45f, new System.Random(k * 7 + j), .6f); var go = wk.BuildSingle("Tumbleweed", transform, false); if (go != null) weeds.Add(go.transform); }
         }
 
