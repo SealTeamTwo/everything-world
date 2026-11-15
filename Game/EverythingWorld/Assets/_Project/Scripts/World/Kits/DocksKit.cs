@@ -902,23 +902,42 @@ namespace EverythingWorld.World
             var lpb = at + sd * 1.8f - d * .5f; SodiumLamp(ctx, mk, ctx.OnGround(lpb.x, lpb.z), -sd);
         }
 
+        /// Weeds on the waste ground, in patches the way a derelict dockside grows: rank weeds thick along the kerbs
+        /// and wall bases where the run-off collects, tall stands of seeding weeds on the old lots, single tufts
+        /// pushing through the cracks, and plenty of bare ground. Each patch its own shade, from a cold night
+        /// blue-green to a sodium-lit olive-brown; every blade its own.
         void Weeds(LandContext ctx)
         {
             var mat = WindMesh.Material(.2f, 1f, new Color(.2f, .26f, .18f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1979);
             const float st = 3f;
+            Color cold = new Color(.14f, .22f, .2f), sodium = new Color(.32f, .32f, .18f), seedTip = new Color(.45f, .4f, .25f);
+            int kerb = 0, stands = 0, cracks = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || OnQuay(px, pz, 40f)) continue;
-                if (Mathf.PerlinNoise(px * .05f + 3f, pz * .05f + 8f) < .45f) continue;
+                var byKerb = NearPath(px, pz, 5f);                                   // the strip along the kerb
+                var kind = WindMesh.Patch(px, pz, .02f, 1f);                      // an old lot gone to seed, or cracked hard standing
+                var bare = WindMesh.Patch(px, pz, .05f, 2f);
+                var isStand = kind > .6f;
+                if (bare < (byKerb ? .4f : isStand ? .45f : .5f)) continue;
+                var tone = WindMesh.Patch(px, pz, .025f, 3f);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.16f, .22f, .14f), new Color(.3f, .32f, .2f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .25f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, new Color(.45f, .4f, .25f), .4f), rng, 3, .06f);
+                var col = Color.Lerp(cold, sodium, tone) * (.9f + (float)rng.NextDouble() * .2f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (byKerb) { wm.Tuft(at, .3f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, seedTip, .4f), rng, 4, .06f, .14f); kerb++; }
+                else if (isStand)
+                {
+                    wm.Tuft(at, .5f + (float)rng.NextDouble() * .45f, col, Color.Lerp(col, seedTip, .5f), rng, 4, .06f, .14f); stands++;
+                    if (rng.NextDouble() < .3) wm.Tuft(at + new Vector3(-.4f, 0, .45f), .4f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, seedTip, .45f), rng, 3, .06f, .14f);
+                }
+                else { wm.Tuft(at, .2f + (float)rng.NextDouble() * .25f, col, Color.Lerp(col, seedTip, .35f), rng, 2, .06f, .14f); cracks++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Docklands weeds", ctx.Root, mat);
+            Debug.Log($"The Post-Punk Docklands weeds: {kerb} along the kerbs, {stands} seeding stands, {cracks} in the cracks");
         }
     }
 }
