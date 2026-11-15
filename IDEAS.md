@@ -12,6 +12,8 @@ The world is a lobby: a place to exist in, enjoy and lose yourself in with frien
 - **Something extremely unique about each land.** Example, Classic Rock Kingdoms: each main artist holds a territory; where the borders meet, soldiers fight; the borders are the radio stations' edges and move in real time (on the shared clock, so friends see the same front line).
 - **Musical bypasses:** ways to travel between lands without passing through ones you don't want to hear (for example Bluegrass to Math Rock without djent or power metal). Could be a metro (ties in with the underground idea): lines and tunnels with their own music.
 - **Local MP3s** (the owner's, about a week out; never in the repo): lets the world follow the music itself (builds, drops, beats). Hold detailed song-moment work until then.
+- **The music hears the space** (once the MP3s play through Unity): step inside a building and the music sounds like it (muffled through walls, a room's echo, a hall's reverb, tinny from a radio in a shed; open air sounds open). The indoor spaces are already listed per land (IndoorSpaces).
+- **Lands to rework, one by one** (2026-11-15): the owner will list lands that could use a change. First: the Post-Punk Docklands (loved), but much of its music doesn't fit the night-time scenery: it is grim post-punk (Joy Division, The Cure, The Smiths) next to bright new wave, pop and ska (The Go-Go's "Vacation", Nena, Madness, a-ha, Tears For Fears, Dexys, The Police) and noisy art rock (Maruja, Black Country, New Road, Melt-Banana, Sonic Youth).
 - **Generated music** only between the real songs (the wilds, crossings, the sea, a fallback), never replacing the playlist.
 
 ## Owner's notes after a long two-player playtest, 2026-11-14
