@@ -32,16 +32,16 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            paving = WorldMaterials.Solid(new Color(.93f, .92f, .9f)); pavingPink = WorldMaterials.Solid(new Color(1f, .82f, .88f)); carpet = WorldMaterials.Glow(RedC, .2f); goldM = WorldMaterials.Glow(Gold, .45f); glassM = WorldMaterials.Solid(new Color(.6f, .86f, .96f), .9f);
-            white = WorldMaterials.Solid(White); chrome = WorldMaterials.Solid(new Color(.8f, .82f, .88f), .9f); dark = WorldMaterials.Solid(new Color(.1f, .08f, .14f)); ropeM = WorldMaterials.Solid(new Color(.6f, .1f, .2f));
-            leafM = WorldMaterials.Solid(new Color(.4f, .78f, .46f)); leafPink = WorldMaterials.Solid(new Color(1f, .62f, .78f)); leafMint = WorldMaterials.Solid(new Color(.6f, .92f, .78f)); trunkM = WorldMaterials.Solid(new Color(.95f, .9f, .86f));
+            paving = WorldMaterials.Surface(new Color(.93f, .92f, .9f), Surface.Stone); pavingPink = WorldMaterials.Surface(new Color(1f, .82f, .88f), Surface.Stone); carpet = WorldMaterials.Glow(RedC, .2f); goldM = WorldMaterials.Glow(Gold, .45f); glassM = WorldMaterials.Surface(new Color(.6f, .86f, .96f), Surface.Glass);
+            white = WorldMaterials.Solid(White); chrome = WorldMaterials.Surface(new Color(.8f, .82f, .88f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.1f, .08f, .14f)); ropeM = WorldMaterials.Surface(new Color(.6f, .1f, .2f), Surface.Cloth);
+            leafM = WorldMaterials.Surface(new Color(.4f, .78f, .46f), Surface.Foliage); leafPink = WorldMaterials.Surface(new Color(1f, .62f, .78f), Surface.Foliage); leafMint = WorldMaterials.Surface(new Color(.6f, .92f, .78f), Surface.Foliage); trunkM = WorldMaterials.Surface(new Color(.95f, .9f, .86f), Surface.Bark);
             windowM = new Material(WorldMaterials.Glow(new Color(.7f, .9f, 1f), .5f)) { name = "Pop windows" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .95f, .8f), 1.2f)) { name = "Pop lamps" };
             waterM = new Material(WorldMaterials.Glow(Cyan, .9f)) { name = "Pop water" };
             for (var i = 0; i < 3; i++) bulbM[i] = new Material(WorldMaterials.Glow(new[] { Pink, Lemon, Cyan }[i], 1.6f)) { name = "Pop bulbs " + i };
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
-        Material Paint(Color c) => WorldMaterials.Solid(c);
+        Material Paint(Color c) => WorldMaterials.Surface(c, Surface.Painted);
         static bool HasStation(IslandWorldData.Artist a) => a.stationId != 0;
         static float Foot(IslandWorldData.Artist a)
         {
