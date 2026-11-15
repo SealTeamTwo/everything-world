@@ -286,24 +286,33 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Long highland grass, its tips touched pink by the dusk.
+        /// Highland grass in patches, its tips touched pink by the dusk: short close turf, long grass streaming in the
+        /// wind, and low heather tipped violet, with bare stony ground between. Each patch has its own shade (cool
+        /// blue-green to a warmer green) and catches the dusk more or less pink; every blade its own.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .8f, new Color(.24f, .36f, .32f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2014);
             const float st = 2.4f;
+            int turf = 0, longGrass = 0, heather = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 7f, pz * .04f + 3f) < .4f) continue;
+                if (WindMesh.Patch(px, pz, .04f, 1f) < .41f) continue;     // bare stony ground
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.32f, .46f, .42f), new Color(.42f, .52f, .46f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .3f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, Pink, .5f), rng, 3, .08f);
+                var col = Color.Lerp(new Color(.28f, .44f, .44f), new Color(.44f, .52f, .42f), Mathf.Clamp01(WindMesh.Patch(px, pz, .022f, 2f) * .8f + (float)rng.NextDouble() * .2f));
+                var tip = Color.Lerp(col, Pink, .35f + WindMesh.Patch(px, pz, .03f, 3f) * .3f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                var kind = WindMesh.Patch(px, pz, .016f, 4f);
+                if (kind < .34f) { wm.Tuft(at, .16f + (float)rng.NextDouble() * .14f, col, Color.Lerp(col, tip, .6f), rng, 3, .06f, .13f); turf++; }
+                else if (kind < .68f) { wm.Tuft(at, .4f + (float)rng.NextDouble() * .45f, col, tip, rng, 4, .05f, .13f); longGrass++; }
+                else { wm.Tuft(at, .2f + (float)rng.NextDouble() * .14f, col * .85f, Color.Lerp(col, Violet, .6f), rng, 3, .1f, .13f); heather++; }
             }
             foreach (var kv in meshes) kv.Value.Build("High grass", ctx.Root, mat);
+            Debug.Log($"The Melodic Bass Highlands grass: {turf} turf tufts, {longGrass} long-grass tufts, {heather} heather tufts");
         }
     }
 }
