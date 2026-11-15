@@ -154,30 +154,41 @@ namespace EverythingWorld.World
             noGrass.Add(new Vector3(at.x, 6f, at.z));
         }
 
-        /// Long grass on the hills, buttercups and poppies through it, short near the roads.
+        /// Long grass on the hills, in patches the way old English downs grow: long meadow grass going gold in the
+        /// low sun, short close turf along the roads and across the sheep-grazed tops, drifts of buttercups and
+        /// drifts of poppies (each drift one kind), and the odd thin, bare chalky patch. Each patch is its own shade,
+        /// from a cool blue-green to a warm golden green; every blade its own.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, 1f, Grass);
             var meshes = new Dictionary<(int, int), WindMesh>();
             var rng = new System.Random(1969);
             const float step = 1.9f;
+            Color cool = new Color(.36f, .56f, .3f), golden = new Color(.66f, .68f, .32f), seed = new Color(.95f, .9f, .6f);
+            Color[] drifts = { new Color(1f, .85f, .2f), new Color(.9f, .2f, .15f) };          // buttercups, poppies
+            int meadow = 0, turf = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, 0f, .7f) || InPond(px, pz, 1f)) continue;
-                var n = Mathf.PerlinNoise(px * .02f + 3f, pz * .02f + 8f);
-                if (n < .3f) continue;
+                var kind = WindMesh.Patch(px, pz, .012f, 1f);                     // long meadow or short turf
+                var bare = WindMesh.Patch(px, pz, .02f, 2f);                      // thin chalky ground
+                var shortTurf = kind < .4f || NearPath(px, pz, 6.5f);
+                if (bare < (shortTurf ? .35f : .26f)) continue;
+                var tone = WindMesh.Patch(px, pz, .02f, 3f); var drift = WindMesh.Patch(px, pz, .055f, 4f);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.38f, .58f, .28f), new Color(.65f, .68f, .34f), (float)rng.NextDouble());
+                var col = Color.Lerp(cool, golden, Mathf.Clamp01((tone - .25f) * 2f)) * (.92f + (float)rng.NextDouble() * .16f);
                 var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
-                wm.Tuft(at, .35f + (float)rng.NextDouble() * .45f, col, Color.Lerp(col, new Color(.95f, .9f, .6f), .3f), rng, 4, .07f);
-                var f = rng.NextDouble();
-                if (f < .07) wm.Flower(at + new Vector3(.2f, 0, .1f), .35f, new Color(1f, .85f, .2f), rng);
-                else if (f < .1) wm.Flower(at + new Vector3(-.15f, 0, .2f), .4f, new Color(.9f, .2f, .15f), rng);
+                if (shortTurf) { wm.Tuft(at, .2f + (float)rng.NextDouble() * .2f, Color.Lerp(col, cool, .15f), Color.Lerp(col, seed, .2f), rng, 4, .06f, .14f); turf++; }
+                else { wm.Tuft(at, .45f + (float)rng.NextDouble() * .45f, col, Color.Lerp(col, seed, .35f), rng, 5, .07f, .15f); meadow++; }
+                // a drift is all buttercups or all poppies; elsewhere the odd one, as before
+                var fl = drifts[WindMesh.Pick(WindMesh.Patch(px, pz, .016f, 5f), drifts.Length)];
+                if (rng.NextDouble() < (drift > .62f ? .3 : .03)) { wm.Flower(at + new Vector3(.2f, 0, .1f), shortTurf ? .25f : .4f, fl, rng); blooms++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Kingdom grass", ctx.Root, mat);
+            Debug.Log($"The Kingdom of Classic Rock grass: {meadow} long-meadow tufts, {turf} short-turf tufts, {blooms} buttercups and poppies");
         }
     }
 }
