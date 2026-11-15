@@ -782,25 +782,59 @@ namespace EverythingWorld.World
             noGrass.Add(new Vector3(at.x, 6f, at.z));
         }
 
+        /// The holler's grass, in patches the way a working mountain valley grows: hay meadows of tall seeding grass,
+        /// pasture grazed short with drifts of one kind of wildflower, lush blue-green rushes along the creek, and
+        /// worn bare ground between. Each patch is its own shade, from a cool creekside blue-green to a sunny
+        /// yellow-green on the slopes; every blade its own.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, 1f, new Color(.4f, .58f, .26f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1946);
             const float step = 2.2f; Color[] flowers = { new Color(1f, .85f, .2f), new Color(.95f, .95f, .95f), new Color(.55f, .6f, 1f), new Color(1f, .55f, .2f) };
+            Color cool = new Color(.34f, .54f, .3f), sunny = new Color(.6f, .68f, .3f), hayTip = new Color(.9f, .92f, .6f);
+            int hay = 0, pasture = 0, rushes = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || InCreek(px, pz, 1f)) continue;
-                if (Mathf.PerlinNoise(px * .03f + 9f, pz * .03f + 2f) < .33f) continue;
+                var creekside = InCreek(px, pz, 6f);
+                var kind = WindMesh.Patch(px, pz, .012f, 1f);                     // hay meadow or grazed pasture
+                var bare = WindMesh.Patch(px, pz, .03f, 2f);                      // worn ground
+                var meadow = kind > .45f;
+                if (!creekside && bare < (meadow ? .3f : .4f)) continue;
+                var tone = WindMesh.Patch(px, pz, .02f, 3f); var drift = WindMesh.Patch(px, pz, .06f, 4f);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.4f, .58f, .26f), new Color(.58f, .68f, .3f), (float)rng.NextDouble());
+                var col = Color.Lerp(cool, sunny, Mathf.Clamp01((tone - .25f) * 2f)) * (.92f + (float)rng.NextDouble() * .16f);
                 var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
-                wm.Tuft(at, .45f + (float)rng.NextDouble() * .45f, col, Color.Lerp(col, new Color(.9f, .92f, .6f), .3f), rng, 4, .07f);
-                if (rng.NextDouble() < .09) wm.Flower(at + new Vector3(.1f, 0, .1f), .4f, flowers[rng.Next(flowers.Length)], rng);
+                if (creekside)
+                {
+                    // rushes by the water: tall, narrow, cooler
+                    var rc = Color.Lerp(col, cool, .5f);
+                    wm.Tuft(at, .6f + (float)rng.NextDouble() * .5f, rc, Color.Lerp(rc, hayTip, .2f), rng, 4, .05f, .12f); rushes++;
+                }
+                else if (meadow)
+                {
+                    // hay meadow going to seed
+                    wm.Tuft(at, .55f + (float)rng.NextDouble() * .5f, col, Color.Lerp(col, hayTip, .4f), rng, 5, .07f, .14f); hay++;
+                    if (rng.NextDouble() < .06) { wm.Flower(at + new Vector3(.1f, 0, .1f), .5f, flowers[rng.Next(flowers.Length)], rng); blooms++; }
+                }
+                else
+                {
+                    // pasture grazed short; in a drift one kind of wildflower
+                    var pc = Color.Lerp(col, sunny, .15f);
+                    wm.Tuft(at, .25f + (float)rng.NextDouble() * .2f, pc, Color.Lerp(pc, hayTip, .25f), rng, 4, .06f, .14f); pasture++;
+                    if (drift > .64f && rng.NextDouble() < .4)
+                    {
+                        var fl = flowers[WindMesh.Pick(WindMesh.Patch(px, pz, .015f, 5f), flowers.Length)];
+                        for (var k = 0; k < 2; k++) wm.Flower(at + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * 1.2f, .3f + (float)rng.NextDouble() * .1f, fl, rng);
+                        blooms += 2;
+                    }
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Bluegrass grass", ctx.Root, mat);
+            Debug.Log($"The Bluegrass Hollows grass: {hay} hay tufts, {pasture} pasture tufts, {rushes} creek rushes, {blooms} flowers");
         }
     }
 }
