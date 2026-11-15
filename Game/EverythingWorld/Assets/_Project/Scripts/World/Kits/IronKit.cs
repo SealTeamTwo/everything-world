@@ -37,10 +37,10 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            rock = WorldMaterials.Solid(new Color(.3f, .29f, .3f)); darkRock = WorldMaterials.Solid(new Color(.16f, .15f, .16f));
-            iron = WorldMaterials.Solid(new Color(.3f, .31f, .33f), .7f); rust = WorldMaterials.Solid(new Color(.52f, .25f, .13f), .3f);
-            dark = WorldMaterials.Solid(new Color(.06f, .05f, .05f)); timber = WorldMaterials.Solid(new Color(.36f, .26f, .18f));
-            chain = WorldMaterials.Solid(new Color(.4f, .4f, .42f), .8f);
+            rock = WorldMaterials.Surface(new Color(.3f, .29f, .3f), Surface.Stone); darkRock = WorldMaterials.Surface(new Color(.16f, .15f, .16f), Surface.Stone);
+            iron = WorldMaterials.Surface(new Color(.3f, .31f, .33f), Surface.Metal); rust = WorldMaterials.Surface(new Color(.52f, .25f, .13f), Surface.Metal);
+            dark = WorldMaterials.Solid(new Color(.06f, .05f, .05f)); timber = WorldMaterials.Surface(new Color(.36f, .26f, .18f), Surface.Wood);
+            chain = WorldMaterials.Surface(new Color(.4f, .4f, .42f), Surface.Metal);
             lava = new Material(WorldMaterials.Glow(Molten, 1.6f)) { name = "Molten metal" };
         }
 
@@ -287,7 +287,7 @@ namespace EverythingWorld.World
             for (var d = 6f; d <= len; d += 2f) { var q = forge2 + dir2 * d + perp * Mathf.Sin(d / 30f) * 4f; pts.Add(ctx.OnGround(q.x, q.y) + Vector3.up * .15f); }
             if (pts.Count < 2) return;
             Strip(mk, pts, lava, RiverW, .1f, ctx);
-            var crust = WorldMaterials.Solid(new Color(.1f, .08f, .08f));
+            var crust = WorldMaterials.Surface(new Color(.1f, .08f, .08f), Surface.Stone);
             for (var i = 0; i + 1 < pts.Count; i++)
             {
                 var a = pts[i]; var b = pts[i + 1]; var d = b - a; d.y = 0; var sd = Vector3.Cross(Vector3.up, d.normalized);
@@ -334,7 +334,7 @@ namespace EverythingWorld.World
         // ---------------------------------------------------------------- trails
         void Trails(LandContext ctx, MeshKit mk, MeshKit solid)
         {
-            var todo = new List<IslandWorldData.Artist>(ctx.Artists); var walk = 1; var lamps = new List<Vector3>(); var gravel = WorldMaterials.Solid(new Color(.34f, .3f, .28f));
+            var todo = new List<IslandWorldData.Artist>(ctx.Artists); var walk = 1; var lamps = new List<Vector3>(); var gravel = WorldMaterials.Surface(new Color(.34f, .3f, .28f), Surface.Stone);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
@@ -431,7 +431,7 @@ namespace EverythingWorld.World
         void Range(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             int pines = 0, crags = 0, mines = 0, skulls = 0, cracks = 0, anvils = 0;
-            const float cell = 18f; var pine = WorldMaterials.Solid(new Color(.14f, .16f, .15f)); var deadBark = WorldMaterials.Solid(new Color(.2f, .17f, .16f));
+            const float cell = 18f; var pine = WorldMaterials.Surface(new Color(.14f, .16f, .15f), Surface.Foliage); var deadBark = WorldMaterials.Surface(new Color(.2f, .17f, .16f), Surface.Bark);
             var crackM = GlowM(Molten, 1.6f);
             for (var x = ctx.MinX; x < ctx.MaxX; x += cell)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += cell)
