@@ -5,7 +5,7 @@ namespace EverythingWorld.World
 {
     /// What a surface is made of: each kind catches the light its own way and has its own fine texture (see
     /// WorldMaterials.Surface). Plain = the old one-material-per-colour look.
-    public enum Surface { Plain, Stone, Wood, Bark, Cloth, Metal, Painted, Glass, Foliage }
+    public enum Surface { Plain, Stone, Wood, Bark, Cloth, Metal, Painted, Glass, Foliage, Ground }
 
     /// Shared materials for everything built in code: plain colours, glowing colours and pictures.
     /// One material per colour, reused everywhere, so many objects can share a draw call.
@@ -101,6 +101,9 @@ namespace EverythingWorld.World
         static float PlainSmooth(Surface k) => k == World.Surface.Metal ? .55f : k == World.Surface.Glass ? .85f : k == World.Surface.Painted ? .35f : .08f;
 
         /// If 'm' stands for a colour of some kind: the kind's shared material and the colour (linear, for the mesh).
+        /// The kind's shared material (null when surface kinds are off), for meshes that write their own colours.
+        public static Material KindShared(Surface k) => SurfacesOn && k != World.Surface.Plain ? KindMaterial(k) : null;
+
         public static bool KindOf(Material m, out Material shared, out Color linear)
         {
             shared = null; linear = Color.white;
@@ -117,7 +120,7 @@ namespace EverythingWorld.World
             m.SetColor("_BaseColor", Color.white);
             m.SetFloat("_UseVertexColors", 1f); m.EnableKeyword("_USE_VERTEX_COLORS");
             m.SetTexture("_BaseMap", KindTexture(k));
-            float smooth = .06f, metal = 0f, boost = 1f;
+            float smooth = k == World.Surface.Ground ? .08f : .06f, metal = 0f, boost = 1f;   // the ground: exactly as the plain colours were
             switch (k)
             {
                 case World.Surface.Wood: smooth = .22f; break;                              // a soft sheen along the boards
@@ -136,6 +139,7 @@ namespace EverythingWorld.World
         /// meshes without texture coordinates.
         static Texture2D KindTexture(Surface k)
         {
+            if (k == World.Surface.Ground) return UseGrain ? Grain : Texture2D.whiteTexture;   // the ground keeps its old grain (or none, with Surface Grain off)
             if (kindTex.TryGetValue(k, out var t)) return t;
             const int n = 64; t = new Texture2D(n, n, TextureFormat.RGBAHalf, true, true) { name = "Surface " + k, wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Point, anisoLevel = 4 };
             var rng = new System.Random(900 + (int)k); var g = new float[n * n];

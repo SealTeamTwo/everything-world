@@ -150,6 +150,8 @@ namespace EverythingWorld.World
         {
             var verts = new List<Vector3>();
             var byMaterial = new Dictionary<Material, List<int>>();
+            // with surface kinds on, the ground is one material and each triangle's colour goes into the mesh
+            groundMat = WorldMaterials.KindShared(Surface.Ground); var cols = groundMat != null ? new List<Color>() : null;
             var corner = new Vector3[4];
             var uv = new List<Vector2>();
             for (var r = r0; r < r0 + h; r++)
@@ -164,13 +166,13 @@ namespace EverythingWorld.World
                 // alternate the diagonal so the facets don't line up
                 if (((c + r) & 1) == 0)
                 {
-                    AddTri(verts, byMaterial, corner[0], corner[1], corner[2], island, c, r);
-                    AddTri(verts, byMaterial, corner[0], corner[2], corner[3], island, c, r);
+                    AddTri(verts, cols, byMaterial, corner[0], corner[1], corner[2], island, c, r);
+                    AddTri(verts, cols, byMaterial, corner[0], corner[2], corner[3], island, c, r);
                 }
                 else
                 {
-                    AddTri(verts, byMaterial, corner[0], corner[1], corner[3], island, c, r);
-                    AddTri(verts, byMaterial, corner[1], corner[2], corner[3], island, c, r);
+                    AddTri(verts, cols, byMaterial, corner[0], corner[1], corner[3], island, c, r);
+                    AddTri(verts, cols, byMaterial, corner[1], corner[2], corner[3], island, c, r);
                 }
             }
             if (verts.Count == 0) return;
@@ -179,6 +181,7 @@ namespace EverythingWorld.World
             mesh.SetVertices(verts);
             foreach (var v in verts) uv.Add(MeshKit.GrainUV(v, Vector3.up));
             mesh.SetUVs(0, uv);
+            if (cols != null) mesh.SetColors(cols);
             mesh.subMeshCount = byMaterial.Count;
             var mats = new Material[byMaterial.Count];
             var i = 0;
@@ -246,14 +249,23 @@ namespace EverythingWorld.World
             return -1;
         }
 
-        void AddTri(List<Vector3> verts, Dictionary<Material, List<int>> byMaterial, Vector3 a, Vector3 b, Vector3 c, int island, int col, int row)
+        Material groundMat;
+
+        void AddTri(List<Vector3> verts, List<Color> cols, Dictionary<Material, List<int>> byMaterial, Vector3 a, Vector3 b, Vector3 c, int island, int col, int row)
         {
             // clockwise seen from above, so the faces point up
             var n = Vector3.Cross(b - a, c - a);
             if (n.y < 0) { var t = b; b = c; c = t; }
             var avg = (a.y + b.y + c.y) / 3f;
             var slope = Mathf.Max(Mathf.Max(a.y, b.y), c.y) - Mathf.Min(Mathf.Min(a.y, b.y), c.y);
-            var mat = Mat(Quantise(TerrainColor(avg, slope, island, col, row)));
+            Material mat;
+            if (cols != null)
+            {
+                // one material: the colour (no longer rounded to a few shades) goes into the triangle's corners
+                var lin = TerrainColor(avg, slope, island, col, row).linear; mat = groundMat;
+                cols.Add(lin); cols.Add(lin); cols.Add(lin);
+            }
+            else mat = Mat(Quantise(TerrainColor(avg, slope, island, col, row)));
             if (!byMaterial.TryGetValue(mat, out var list)) byMaterial[mat] = list = new List<int>();
             list.Add(verts.Count); verts.Add(a);
             list.Add(verts.Count); verts.Add(b);
