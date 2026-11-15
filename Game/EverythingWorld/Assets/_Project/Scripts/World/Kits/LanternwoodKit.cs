@@ -486,32 +486,43 @@ namespace EverythingWorld.World
             var chunks = new Dictionary<(int, int), WindMesh>();
             var rng = new System.Random(5150);
             const float step = 2f;
-            var count = 0;
+            // In patches, the way a winter wood lies: low ground where the snow has buried all but the frosted tips,
+            // drifts of dry winter grass (taller and thicker in the deeper drifts), and stands of rusty bracken
+            // gathered together. Each patch its own shade, from a cool frost-grey to a warm pale gold (brightness and
+            // blue/yellow), and each blade a touch its own; same frost tips, same hush.
+            Color cold = new Color(.54f, .54f, .5f), gold = new Color(.7f, .63f, .48f), frost = new Color(.88f, .93f, 1f);
+            int buried = 0, grass = 0, ferns = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
-                var n = Mathf.PerlinNoise(px * .025f + 5f, pz * .025f + 9f);
+                var n = Mathf.Clamp01(Mathf.PerlinNoise(px * .025f + 5f, pz * .025f + 9f));   // the same drifts as before
                 if (n < .42f) continue;
                 if (!ctx.IsLand(px, pz, 3f) || !ctx.IsFree(px, pz, 1.5f) || Cleared(px, pz) || OnLake(new Vector3(px, 0, pz), 3f)) continue;
                 var g = ctx.Ground(px, pz);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!chunks.TryGetValue(key, out var wm)) chunks[key] = wm = new WindMesh();
                 var at = new Vector3(px, g - .04f, pz);
-                if (rng.NextDouble() < .84)
+                var kind = WindMesh.Patch(px, pz, .012f, 31f); var tone = WindMesh.Patch(px, pz, .02f, 37f);
+                var r = (float)rng.NextDouble();
+                if (rng.NextDouble() < (kind > .7f ? .55 : .06))
                 {
-                    var col = Color.Lerp(new Color(.55f, .53f, .46f), new Color(.68f, .64f, .52f), (float)rng.NextDouble());
-                    wm.Tuft(at, .28f + (float)rng.NextDouble() * .32f, col, new Color(.88f, .93f, 1f), rng, 4, .06f);
+                    var col = Color.Lerp(new Color(.46f, .27f, .16f), new Color(.62f, .39f, .2f), Mathf.Clamp01(tone * .7f + r * .3f));
+                    wm.Bracken(at, .55f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, new Color(.9f, .92f, .96f), .45f), rng); ferns++;
+                    continue;
                 }
+                var gc = Color.Lerp(cold, gold, Mathf.Clamp01((tone - .25f) * 1.8f)) * (.95f + r * .1f);
+                if (kind < .35f) { wm.Tuft(at, .14f + r * .14f, gc, frost, rng, 4, .06f, .1f); buried++; }
                 else
                 {
-                    var col = Color.Lerp(new Color(.48f, .28f, .16f), new Color(.6f, .38f, .2f), (float)rng.NextDouble());
-                    wm.Bracken(at, .55f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, new Color(.9f, .92f, .96f), .45f), rng);
+                    var deep = n > .6f;                                      // deeper in the drift: taller, thicker
+                    wm.Tuft(at, (deep ? .36f : .28f) + r * .32f, gc, frost, rng, 4, .06f, .1f);
+                    if (deep && r < .35f) wm.Tuft(at + new Vector3(.35f, 0, -.3f), .26f + r * .3f, gc, frost, rng, 3, .06f, .1f);
+                    grass++;
                 }
-                count++;
             }
             foreach (var kv in chunks) kv.Value.Build("Frosty grass", ctx.Root, mat);
-            Debug.Log($"Lanternwood: {count} clumps of frosty grass and bracken");
+            Debug.Log($"Lanternwood: {buried} snow-buried tufts, {grass} dry-grass tufts, {ferns} bracken clumps");
         }
 
         // ---------------------------------------------------------------- artist areas
