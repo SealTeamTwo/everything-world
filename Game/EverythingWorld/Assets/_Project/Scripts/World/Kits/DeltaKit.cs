@@ -466,25 +466,48 @@ namespace EverythingWorld.World
             if (life.stormBank != null) { life.stormBank.isStatic = false; foreach (var r in life.stormBank.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; life.stormBank.SetActive(false); }
         }
 
-        /// The fields: cotton in rows, white with bolls; dry grass everywhere else.
+        /// The fields: cotton in rows, white with bolls, the plants a little darker or paler from stretch to stretch.
+        /// Everywhere else dry grass in patches, the way parched flat country grows: tall straw bunchgrass in
+        /// clumps, short dead grass, wide stretches of bare pale dust between, and the one strip of greener, ranker
+        /// grass in the ditches along the railroad, where water lies after rain. Each patch its own shade, from a
+        /// tired grey-green to bleached straw; every blade its own.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.35f, 1f, new Color(.7f, .62f, .36f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1937);
             const float st = 2.4f;
+            Color tired = new Color(.54f, .52f, .34f), bleached = new Color(.74f, .65f, .38f), ditch = new Color(.4f, .46f, .3f);
+            int cotton = 0, bunch = 0, dead = 0, ditches = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var field = Field(x, z);
                 var px = x + (field ? 0f : ((float)rng.NextDouble() - .5f) * st); var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || OnRail(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (!field && Mathf.PerlinNoise(px * .05f + 3f, pz * .05f + 9f) < .42f) continue;
+                var tone = WindMesh.Patch(px, pz, .022f, 3f);
+                if (field)
+                {
+                    var key0 = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
+                    if (!meshes.TryGetValue(key0, out var wf)) meshes[key0] = wf = new WindMesh();
+                    var cc = Color.Lerp(new Color(.36f, .34f, .2f), new Color(.46f, .42f, .24f), (float)rng.NextDouble()) * (.9f + tone * .2f);
+                    wf.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .5f + (float)rng.NextDouble() * .25f, cc, new Color(.98f, .97f, .93f), rng, 4, .13f, .06f); cotton++;
+                    continue;
+                }
+                var inDitch = OnRail(px, pz, 6f);                                     // the ditches either side of the track
+                var kind = WindMesh.Patch(px, pz, .014f, 1f);                     // bunchgrass or short dead grass
+                var bare = WindMesh.Patch(px, pz, .05f, 2f);                      // bare pale dust
+                var isBunch = kind > .55f;
+                if (bare < (inDitch ? .3f : isBunch ? .45f : .55f)) continue;
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                if (field) { var col = Color.Lerp(new Color(.36f, .34f, .2f), new Color(.46f, .42f, .24f), (float)rng.NextDouble()); wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .5f + (float)rng.NextDouble() * .25f, col, new Color(.98f, .97f, .93f), rng, 4, .13f); }
-                else { var col = Color.Lerp(new Color(.62f, .54f, .3f), new Color(.76f, .68f, .4f), (float)rng.NextDouble()); wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .26f + (float)rng.NextDouble() * .34f, col, Color.Lerp(col, Cream, .4f), rng, 3, .05f); }
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                var col = Color.Lerp(tired, bleached, tone) * (.92f + (float)rng.NextDouble() * .12f);
+                if (inDitch) { var dc = Color.Lerp(ditch, col, .3f); wm.Tuft(at, .45f + (float)rng.NextDouble() * .4f, dc, Color.Lerp(dc, Cream, .3f), rng, 4, .06f, .14f); ditches++; }
+                else if (isBunch) { wm.Tuft(at, .4f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, Cream, .3f), rng, 4, .05f, .14f); bunch++; }
+                else { wm.Tuft(at, .16f + (float)rng.NextDouble() * .2f, col * .95f, Color.Lerp(col, Cream, .3f), rng, 3, .05f, .14f); dead++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Delta fields", ctx.Root, mat);
+            Debug.Log($"The Delta Crossroads ground: {cotton} cotton plants, {bunch} bunchgrass clumps, {dead} dead-grass tufts, {ditches} ditch tufts");
         }
     }
 }
