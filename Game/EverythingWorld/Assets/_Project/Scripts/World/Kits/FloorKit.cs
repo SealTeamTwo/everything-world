@@ -264,24 +264,34 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Dry steppe grass, catching the stage lights at the tips.
+        /// Dry steppe grass in patches, catching the stage lights at the tips: short trodden turf, bunch grass, and
+        /// stands of tall thin feather grass, bare dusty ground between. Each patch has its own shade (cool olive to
+        /// warm straw) and catches the lasers more or less strongly; every blade has its own shade.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .8f, new Color(.44f, .46f, .32f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2012);
             const float st = 2.4f;
+            int turf = 0, bunch = 0, feather = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 4f, pz * .04f + 8f) < .45f) continue;
+                if (WindMesh.Patch(px, pz, .04f, 1f) < .47f) continue;     // bare dusty ground between the patches
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.42f, .44f, .3f), new Color(.56f, .52f, .34f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .3f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, Laser, .25f), rng, 3, .08f);
+                var tone = WindMesh.Patch(px, pz, .02f, 2f);
+                var col = Color.Lerp(new Color(.38f, .43f, .32f), new Color(.58f, .52f, .32f), Mathf.Clamp01(tone * .85f + (float)rng.NextDouble() * .15f));
+                var lit = Color.Lerp(col, Laser, .12f + WindMesh.Patch(px, pz, .03f, 3f) * .3f);   // how strongly this patch catches the lasers
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                var kind = WindMesh.Patch(px, pz, .015f, 4f);
+                if (kind < .36f) { wm.Tuft(at, .16f + (float)rng.NextDouble() * .14f, col * .95f, Color.Lerp(col, lit, .7f), rng, 3, .06f, .14f); turf++; }
+                else if (kind < .68f) { wm.Tuft(at, .3f + (float)rng.NextDouble() * .3f, col, lit, rng, 3, .08f, .14f); bunch++; }
+                else { wm.Tuft(at, .55f + (float)rng.NextDouble() * .35f, col, lit, rng, 5, .04f, .14f); feather++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Floor grass", ctx.Root, mat);
+            Debug.Log($"The Four-on-the-Floor Steppe grass: {turf} turf tufts, {bunch} bunch-grass tufts, {feather} feather-grass stands");
         }
     }
 }
