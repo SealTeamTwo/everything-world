@@ -30,7 +30,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            concrete = WorldMaterials.Glow(new Color(.34f, .34f, .36f), .08f); concreteD = WorldMaterials.Glow(new Color(.2f, .2f, .22f), .06f); tileM = WorldMaterials.Glow(Tile, .14f); stripeM = WorldMaterials.Glow(Stripe, .3f); iron = WorldMaterials.Solid(new Color(.2f, .2f, .22f), .6f); dark = WorldMaterials.Solid(new Color(.04f, .04f, .05f)); white = WorldMaterials.Glow(new Color(.86f, .86f, .88f), .16f); leafM = WorldMaterials.Glow(new Color(.2f, .32f, .26f), .1f);
+            concrete = WorldMaterials.Glow(new Color(.34f, .34f, .36f), .08f); concreteD = WorldMaterials.Glow(new Color(.2f, .2f, .22f), .06f); tileM = WorldMaterials.Glow(Tile, .14f); stripeM = WorldMaterials.Glow(Stripe, .3f); iron = WorldMaterials.Surface(new Color(.2f, .2f, .22f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.04f, .04f, .05f)); white = WorldMaterials.Glow(new Color(.86f, .86f, .88f), .16f); leafM = WorldMaterials.Glow(new Color(.2f, .32f, .26f), .1f);
             waterM = new Material(WorldMaterials.Glow(new Color(.1f, .16f, .26f), .7f)) { name = "Under water" }; lampM = new Material(WorldMaterials.Glow(Amber, 1.6f)) { name = "Under lamps" }; redM = new Material(WorldMaterials.Glow(Red, 1.8f)) { name = "Under red" }; coldM = new Material(WorldMaterials.Glow(Cold, 1.6f)) { name = "Under cold" }; screenM = new Material(WorldMaterials.Glow(new Color(.4f, .8f, 1f), 1.2f)) { name = "Under screens" };
         }
 
