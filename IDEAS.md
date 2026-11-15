@@ -2,6 +2,127 @@
 
 Things to remember that aren't built or decided yet. Newest first.
 
+## The owner's note-taking tour, 2026-11-15 (T notes, sorted)
+
+102 notes and 46 snapshots over about 40 lands (`Logs/Live/notes.txt`, not in the repo). Overall: "a lot more pure time and effort dedicated to each land individually will go a long way."
+
+**Loved:**
+- Metalcore Caldera: visually the favourite land; everyone who has seen it is blown away.
+- Concert Isles: the architecture.
+- Neo Soul Quarter: the giant potted plants.
+- Roots Bay: a surprise favourite. Find more music for it, and make it feel like a real Jamaican island.
+- Old Jazz Quarter: the black-and-white noir.
+- Math Rock Escarpment: the little musical valley between Metalcore and Djent/Power Metal.
+- Power Metal Peaks.
+- Velvet Rooftops: the neon skyscrapers in the water.
+- Boom Bap Harbour: the railroad imagery.
+- Afrobeat Coast: the colour theory.
+
+**Fixes (things that look or work wrong):**
+- **Hub:**
+  - The bridge towards Prog Marches goes halfway, glitches, then lands in the Djent Spires (snapshots 603, 604). There should be more bridges from the Hub.
+  - "Choose your light" runs into the stands and faces an odd way. Turn it, the terminal and the riddle to face the centre.
+  - The flashing blue square for sets would look better as a soft, semi-transparent, wispy blue circle.
+- **Indie Downs:**
+  - Death Cab for Cutie's plaque has a light post right next to it, and it shows a Pavement cover.
+  - Sit on the campfire logs.
+  - Benches should generally have two seats (606).
+- **Shoegaze Fens:**
+  - A path with no collision dips into the water.
+  - Something blocks a path near Arab Strap (613).
+  - A path drops very steeply down a hill (614).
+- **Garage Rock Row:** the Kooks' plaque is inside a vehicle (615).
+- **Bedroom Pop Meadows:** you can't jump onto the blankets and pillows (everyone tries).
+- **Isle of Scores:** the floor glyph flickers against the floor, and two crossing paths flicker.
+- **Concert Isles:**
+  - Two fountains flicker (618, 619).
+  - The artist plaques round one square are hidden (619).
+- **Heartbreak Boardwalk:** a gazebo roof is invisible from underneath (621).
+- **Isle of Memes:**
+  - The green parts of windows flicker (624), and so does the blue of the dolphin piece (626).
+  - Crossing paths flicker.
+  - The Synthwave sun shows from here (627).
+- **Dubstep Shards:** a huge sun in the distance that makes no sense (630).
+- **Mount Virtuoso:**
+  - The walk up is janky (632 to 636).
+  - The grey thing at the top has no collision.
+- **Southern Rock Bayou:** a bridge looks wrong (639 to 641).
+- **Jam Band Commonwealth:**
+  - The farmhouse is inside Widespread Panic's area.
+  - The rainbows should look like tie-dye, not rainbow flags.
+- **Bluegrass Hollows:** the river is badly broken.
+- **Alt Rock Moors:** you can jump down into the aquarium and get stuck.
+- **Lo-Fi Hills:** paths overlap.
+- **Afrobeat Coast:**
+  - A random bridge (647).
+  - The grey plaza has no collision.
+
+**Music:**
+- "Andrew's Favorite" (Lou Doe) feels like a meme song (Isle of Memes?).
+- A couple of Lo-Fi Hills songs may belong in the Game Isles.
+- As a joke with friends, "The Night the Lights Went Out in Georgia" should also play on the Phish radio, while staying where it normally is.
+
+**Artist areas that need much more:**
+- **Lana Del Rey:** hugely important on the playlist; a Radiohead-scale treatment.
+- **Virtual Riot:** Radiohead-scale.
+- **Taylor Swift:** a friend's favourite; better, but not Radiohead-scale.
+- **Others:** Phoebe Bridgers, Big Thief, Florence Road (more artistic and unique), Trey Anastasio.
+- **Power Metal:** the castle with the dragon should belong to the biggest radio-station artist there.
+
+**Lands to rework or add to (directions from the tour):**
+- **Cities, not scattered buildings:**
+  - Hip-Hop Boroughs should be laid out as urban blocks, but kept different from Boom Bap.
+  - Old Jazz Quarter: far more blocks and streets, plus a little red neon to draw the eye.
+  - Funk Tropics: a bigger urban part.
+  - Boom Bap Harbour: less rural overall.
+  - Discotopia: less rural, more of an interior feel.
+  - Several lands have a main street; extend that so some lands are a town or city in every direction.
+- **Velvet Rooftops:** bring the neon skyscrapers inland. Walk on rooftops and walkways, like a floating city, maybe the water pouring into a bottomless hole with the towers rising out of it and you crossing building to building.
+- **Trip-Hop Undercity:** a friend wants it really under a city, mostly interiors, like a New York subway or metro.
+- **Fusion Isthmus:** should really be an isthmus; canals everywhere, like a fusion Venice, and more town.
+- **J-Rock Isles:** tight neon Tokyo-style alleyways, maybe Escher-like with different levels (642).
+- **Power Metal Peaks:** a bit more Japanese theming (a kawaii dragon?).
+- **Kingdom of Classic Rock:** carry on with the war fronts; the owner also likes a Greek Olympian setting.
+- **Yacht Rock Riviera:** a friend thinks lands should match their terrain word better; here, a river.
+- **Math Rock Escarpment:** more fantastical; the autumn forest fits the music, so mix in a contrasting theme.
+- **Ambient Mists and Sample Gardens:**
+  - They look far too alike.
+  - Ambient Mists could be more imaginative: an older art movement than vaporwave, like a Matrix or 90s-techno look.
+  - Sample Gardens: more fictional or imaginative.
+- **Mount Virtuoso:** more atmospheric and epic, with something special at the summit.
+- **Isle of Memes:** a friend couldn't tell it was vaporwave/Y2K; push the theme further.
+- **Thin and need much more:** Studio Lot Island (sparse), Latin Coast (more alive), Soul Lowlands (basic), Far Shores (very basic, a big rework), Liquid Rapids, Trance Steppe (a special theme for both), Grunge Rainwood (more energising), Nu Metal Quarry (bland, which fits the music, but more), Afrobeat Coast (more detail).
+- **Electro Foundry:** the owner loves electro; add a ton.
+- **Dubstep Shards:** more about energy (crystal, electric, plasma).
+- **Lo-Fi Hills:** super vibey and cozy.
+- **Punk Badlands:**
+  - The theme is liked, but rough in low poly.
+  - No trees and same-colour dunes make the bright paper boards stand out, which shows how many duplicates there are.
+- **The crossings between lands:** each should look like the land you're about to enter, more specifically and artistically.
+- **Travel:**
+  - A three-way bridge joining IDM, Trance and Trip-Hop, meeting in a big circle over the sea.
+  - More bridges from the Hub.
+
+**Activities (one main game per land; see the lobby vision below):**
+- Garage Rock Row: bowling, and a casino.
+- Synthwave Coast: light bikes.
+- Game Isles: arcade games, and coins to collect with a sound (they come back).
+- Hair Metal Strip: motorcycle racing.
+- Punk Badlands: skating.
+- Post-Punk Docklands: a falling-blocks game with the containers.
+- Iron Range: a zombie-survival round, maybe in the mines (ambitious).
+- Lanternwood: ice fishing, and a telescope that really works.
+- Indie Downs: kites you can fly.
+- Southern Rock Bayou: the riverboat sails about, carrying the CCR radio station with it.
+
+**Across the world:**
+- Humanoid avatars instead of orbs. The map is held in human hands, which doesn't fit an orb.
+- Everything you pick up does its own thing when you use it. A toaster shoots up toast; you sip drinks (the Small Hours tea mugs) and eat food.
+- Playable instruments: the piano keys and small instruments round the world, played with the keyboard, real notes.
+- One vehicle for getting about faster, which changes look in each land.
+- The Hub riddle unlocks a double jump instead of the floaty effect.
+- The Hub's "launch a rocket" fires a real firework one day.
+
 ## The lobby game: the vision (2026-11-15)
 
 The world is a lobby: a place to exist in, enjoy and lose yourself in with friends, like a hangout spot. Games live inside the lobby; finishing or leaving one leaves you standing in the world, never at a menu. "Finished" is when the small moments (a drink on a bench with friends) feel fluid and immersive. Places stay put so they can be loved; what happens in them keeps changing (chance, rare events, surprise), because staleness is the main worry.
