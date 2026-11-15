@@ -358,24 +358,52 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Long riverbank grass, lit gold at the tips by the low sun.
+        /// Riverbank grass in patches, lit gold at the tips by the low sun: long bank grass, short picnic lawns and
+        /// dark upright sedge, each patch its own shade.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.35f, .8f, new Color(.36f, .52f, .3f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2005);
             const float st = 2.2f;
+            Color deep = new Color(.28f, .48f, .32f), bright = new Color(.48f, .58f, .3f);
+            int longGrass = 0, lawn = 0, sedge = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (Mathf.PerlinNoise(px * .04f + 2f, pz * .04f + 8f) < .35f) continue;
+                var kind = WindMesh.Patch(px, pz, .013f, 41f);      // long bank grass, picnic lawn or sedge
+                var tone = WindMesh.Patch(px, pz, .024f, 42f);      // the patch's shade, deep blue-green to sunlit
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.32f, .5f, .3f), new Color(.46f, .58f, .32f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .4f + (float)rng.NextDouble() * .5f, col, Color.Lerp(col, Gold, .5f), rng, 4, .08f);
+                var col = Color.Lerp(deep, bright, tone) * (.92f + r2 * .16f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .4f)
+                {
+                    // long bank grass, gold-tipped, leaning in clumps
+                    wm.Tuft(at, .5f + r2 * .5f, col, Color.Lerp(col, Gold, .5f), rng, 4, .08f, .14f);
+                    if (r1 < .35f) wm.Tuft(at + new Vector3(.4f, 0, -.3f), .4f + r1 * .4f, col, Color.Lerp(col, Gold, .45f), rng, 3, .08f, .14f);
+                    longGrass++;
+                }
+                else if (kind < .7f)
+                {
+                    // a picnic lawn: short, fine and bright
+                    var lc = Color.Lerp(col, bright, .3f);
+                    wm.Tuft(at, .16f + r2 * .12f, lc, Color.Lerp(lc, Gold, .3f), rng, 3, .05f, .14f);
+                    if (r1 < .7f) wm.Tuft(at + new Vector3(-.45f, 0, .35f), .14f + r1 * .1f, lc, Color.Lerp(lc, Gold, .25f), rng, 2, .05f, .14f);
+                    lawn++;
+                }
+                else
+                {
+                    // sedge: dark, upright and thin, a touch of gold at the very tips
+                    var sc = Color.Lerp(col, deep, .45f);
+                    wm.Tuft(at, .55f + r2 * .35f, sc, Color.Lerp(sc, Gold, .3f), rng, 3, .04f, .1f); sedge++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Rapids grass", ctx.Root, mat);
+            Debug.Log($"The Liquid Rapids verge: {longGrass} long-grass clumps, {lawn} lawn spots, {sedge} sedge tufts");
         }
     }
 }
