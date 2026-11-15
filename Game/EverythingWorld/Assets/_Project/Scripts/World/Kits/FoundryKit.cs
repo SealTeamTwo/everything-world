@@ -29,7 +29,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            steel = WorldMaterials.Solid(new Color(.42f, .44f, .48f), .7f); steelD = WorldMaterials.Solid(new Color(.22f, .23f, .26f), .6f); plate = WorldMaterials.Glow(new Color(.26f, .27f, .3f), .08f); hazard = WorldMaterials.Glow(Hazard, .4f); dark = WorldMaterials.Solid(new Color(.05f, .05f, .06f)); white = WorldMaterials.Glow(new Color(.86f, .88f, .9f), .16f); leafM = WorldMaterials.Glow(new Color(.2f, .3f, .22f), .1f);
+            steel = WorldMaterials.Surface(new Color(.42f, .44f, .48f), Surface.Metal); steelD = WorldMaterials.Surface(new Color(.22f, .23f, .26f), Surface.Metal); plate = WorldMaterials.Glow(new Color(.26f, .27f, .3f), .08f); hazard = WorldMaterials.Glow(Hazard, .4f); dark = WorldMaterials.Solid(new Color(.05f, .05f, .06f)); white = WorldMaterials.Glow(new Color(.86f, .88f, .9f), .16f); leafM = WorldMaterials.Glow(new Color(.2f, .3f, .22f), .1f);
             greenM = new Material(WorldMaterials.Glow(Green, 1.6f)) { name = "Foundry green" }; blueM = new Material(WorldMaterials.Glow(Blue, 1.6f)) { name = "Foundry blue" }; furnaceM = new Material(WorldMaterials.Glow(Furnace, 2f)) { name = "Foundry furnace" }; beaconM = new Material(WorldMaterials.Glow(new Color(1f, .6f, .1f), 2f)) { name = "Foundry beacons" }; lampM = new Material(WorldMaterials.Glow(White, 1.4f)) { name = "Foundry lamps" };
         }
 
