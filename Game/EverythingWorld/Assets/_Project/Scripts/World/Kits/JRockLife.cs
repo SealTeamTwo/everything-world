@@ -50,7 +50,7 @@ namespace EverythingWorld.World
             if (track.Length > 1)
             {
                 trackAt.Add(0f); for (var k = 1; k < track.Length; k++) { trackLen += Vector3.Distance(track[k - 1], track[k]); trackAt.Add(trackLen); }
-                var tk = new MeshKit(); var body = WorldMaterials.Solid(new Color(.88f, .9f, .92f)); var stripe = WorldMaterials.Solid(new Color(.15f, .55f, .35f)); var lit = WorldMaterials.Glow(new Color(1f, .9f, .7f), 1.2f);
+                var tk = new MeshKit(); var body = WorldMaterials.Surface(new Color(.88f, .9f, .92f), Surface.Painted); var stripe = WorldMaterials.Surface(new Color(.15f, .55f, .35f), Surface.Painted); var lit = WorldMaterials.Glow(new Color(1f, .9f, .7f), 1.2f);
                 for (var c = 0; c < 3; c++)
                 {
                     var o = Vector3.forward * (c * 12.6f - 12.6f);

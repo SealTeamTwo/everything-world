@@ -72,7 +72,7 @@ namespace EverythingWorld.World
             area.artistName = a.name; area.stationId = a.stationId; area.radius = a.r; area.glowColor = Pink;
             var z = new Plot { ctx = ctx, root = root, labels = labels, mk = new MeshKit(), solid = new MeshKit(), pictures = new MeshKit(), a = a, c = ctx.OnGround(a.x, a.z), front = front, side = Vector3.Cross(Vector3.up, front), area = area, city = InCity(a.x, a.z) };
             var reach = Foot(a); var up = Vector3.up;
-            z.mk.Box(z.city ? concrete : WorldMaterials.Solid(new Color(.55f, .53f, .5f)), z.c - up * .15f, new Vector3(reach * 1.25f, .4f, reach * 1.25f), z.Rot);
+            z.mk.Box(z.city ? concrete : WorldMaterials.Surface(new Color(.55f, .53f, .5f), Surface.Stone), z.c - up * .15f, new Vector3(reach * 1.25f, .4f, reach * 1.25f), z.Rot);
             switch (a.name)
             {
                 case "Hoshikuma Minami": Hoshikuma(z); break;
@@ -130,14 +130,14 @@ namespace EverythingWorld.World
             var up = Vector3.up; var ctx = z.ctx; var rot = z.Rot; var sd = z.side;
             var s = z.At(-Foot(z.a) * .45f, 0); const float W = 7f, D = 5f, H = 6f;
             var col = NeonC[Mathf.Abs(z.a.name.GetHashCode()) % NeonC.Length];
-            var wall = WorldMaterials.Solid(new[] { new Color(.75f, .7f, .65f), new Color(.6f, .65f, .7f), new Color(.8f, .76f, .66f) }[Mathf.Abs(z.a.name.GetHashCode() / 7) % 3]);
+            var wall = WorldMaterials.Surface(new[] { new Color(.75f, .7f, .65f), new Color(.6f, .65f, .7f), new Color(.8f, .76f, .66f) }[Mathf.Abs(z.a.name.GetHashCode() / 7) % 3], Surface.Stone);
             var b = s - z.front * (D / 2f);
             z.mk.Box(wall, b + up * (H / 2f) - z.front * .1f, new Vector3(W, H, D - .2f), rot);
             foreach (var e in new[] { -1f, 1f }) z.solid.Box(wall, b + sd * e * (W / 2f - .2f) + up * H / 2f, new Vector3(.4f, H, D), rot);
             z.solid.Box(wall, b - z.front * (D / 2f - .2f) + up * H / 2f, new Vector3(W, H, .4f), rot); z.solid.Box(wall, b + up * (H - .8f), new Vector3(W, 1.6f, D), rot);
             z.mk.Box(GlowM(new Color(1f, .85f, .6f), 1f), b - z.front * (D / 2f - .45f) + up * 1.6f, new Vector3(W - 1f, 3f, .05f), rot);   // the lit back of the shop
             z.mk.Box(metal, s + up * 3.4f, new Vector3(W, .7f, .3f), rot);   // the rolled-up shutter
-            z.mk.Box(WorldMaterials.Solid(col * .6f), s + up * 3f + z.front * .9f, new Vector3(W + .4f, .1f, 1.8f), rot * Quaternion.Euler(-14f, 0, 0));
+            z.mk.Box(WorldMaterials.Surface(col * .6f, Surface.Cloth), s + up * 3f + z.front * .9f, new Vector3(W + .4f, .1f, 1.8f), rot * Quaternion.Euler(-14f, 0, 0));
             z.mk.Box(GlowM(new Color(1f, .85f, .55f), 1.2f), s + up * 4.9f + z.front * .03f, new Vector3(W * .7f, 1.1f, .04f), rot);   // the lit upstairs window
             var sign = s + up * 6.6f; z.mk.Box(dark, sign, new Vector3(W, 1.2f, .25f), rot);
             foreach (var y in new[] { -.6f, .6f }) z.mk.Box(GlowM(col, 2.4f), sign + up * y + z.front * .14f, new Vector3(W, .07f, .04f), rot);
@@ -244,7 +244,7 @@ namespace EverythingWorld.World
                 case "Mitsukiyo": case "technoplanet": case "Feryquitous":
                 {
                     var screen = SongGlow(z, "", Cyan, 1.8f);
-                    var body = WorldMaterials.Solid(new Color(.15f, .12f, .22f));
+                    var body = WorldMaterials.Surface(new Color(.15f, .12f, .22f), Surface.Painted);
                     z.mk.Box(body, at + up * 1f, new Vector3(.9f, 1.9f, .8f), rot); BoxCol(z.root, at + up * 1f, new Vector3(.9f, 1.9f, .8f), rot);
                     z.mk.Box(screen, at + up * 1.4f + z.front * .38f, new Vector3(.65f, .55f, .04f), rot * Quaternion.Euler(-12f, 0, 0));
                     z.mk.Box(GlowM(Pink, 2.2f), at + up * 1.95f + z.front * .3f, new Vector3(.85f, .22f, .04f), rot);
@@ -297,7 +297,7 @@ namespace EverythingWorld.World
             z.mk.Box(metal, s + up * 2.2f - z.front * 2.4f, new Vector3(10f, .06f, .06f), rot);
             // amp and guitar
             var amp = s + up * 1.5f - z.front * 1.4f - sd * 2.5f; z.mk.Box(dark, amp, new Vector3(1.4f, 1f, .6f), rot); z.mk.Box(GlowM(Amber, 2.2f), amp + up * .35f + z.front * .31f, new Vector3(.08f, .08f, .02f), rot);
-            var gs = s + up * 1f + sd * 2.6f - z.front * .6f; var gtr = WorldMaterials.Solid(new Color(.2f, .55f, .85f), .8f);
+            var gs = s + up * 1f + sd * 2.6f - z.front * .6f; var gtr = WorldMaterials.Surface(new Color(.2f, .55f, .85f), Surface.Painted);
             z.mk.Box(metal, gs + up * .3f, new Vector3(.5f, .6f, .4f), rot); z.mk.Blob(gtr, gs + up * .95f, new Vector3(.4f, .5f, .12f), ctx.Rng, 0f); z.mk.Box(woodDark, gs + up * 1.75f, new Vector3(.08f, 1.1f, .05f), rot);
             // the new season: a banner and a cut-out of the new character
             var newSeason = SongGlow(z, "It's the Second Season", Pink, 1.4f);
@@ -306,7 +306,7 @@ namespace EverythingWorld.World
             z.mk.Box(newSeason, s + up * 4.4f - z.front * 2.42f, new Vector3(9f, .12f, .02f), rot);
             ArtistBits.Label(z.labels, "SEASON 2", s + up * 4.45f - z.front * 2.4f, z.front, .55f, Pink, TextAnchor.MiddleCenter);
             var cut = s + up * 1f + sd * .6f - z.front * .8f; var skin = WorldMaterials.Solid(new Color(.98f, .86f, .78f)); var hair = WorldMaterials.Solid(new Color(.55f, .35f, .85f));
-            z.mk.Box(WorldMaterials.Solid(new Color(.2f, .25f, .45f)), cut + up * .9f, new Vector3(.6f, 1f, .05f), rot); z.mk.Box(skin, cut + up * 1.65f, new Vector3(.42f, .5f, .05f), rot);
+            z.mk.Box(WorldMaterials.Surface(new Color(.2f, .25f, .45f), Surface.Cloth), cut + up * .9f, new Vector3(.6f, 1f, .05f), rot); z.mk.Box(skin, cut + up * 1.65f, new Vector3(.42f, .5f, .05f), rot);
             z.mk.Box(hair, cut + up * 1.95f, new Vector3(.55f, .3f, .06f), rot); z.mk.Box(hair, cut + up * 1.4f - sd * .3f, new Vector3(.12f, .8f, .06f), rot);
             foreach (var e in new[] { -.1f, .1f }) z.mk.Box(GlowM(new Color(.4f, .8f, 1f), 1.4f), cut + up * 1.7f + sd * e + z.front * .03f, new Vector3(.08f, .1f, .01f), rot);
             z.mk.Box(woodDark, cut + up * .7f - z.front * .25f, new Vector3(.05f, 1.4f, .5f), rot * Quaternion.Euler(-20f, 0, 0));
@@ -323,6 +323,6 @@ namespace EverythingWorld.World
             ArtistBits.PointLight(z.root, s + up * 4f + z.front * 4f, new Color(1f, .75f, .85f), 18f, 2f);
         }
 
-        Material cloth() => WorldMaterials.Solid(new Color(.95f, .93f, .9f));
+        Material cloth() => WorldMaterials.Surface(new Color(.95f, .93f, .9f), Surface.Cloth);
     }
 }
