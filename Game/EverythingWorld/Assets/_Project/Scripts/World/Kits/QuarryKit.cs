@@ -31,10 +31,10 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            rock = WorldMaterials.Solid(new Color(.52f, .5f, .47f)); rockDark = WorldMaterials.Solid(new Color(.34f, .33f, .31f)); gravel = WorldMaterials.Solid(new Color(.6f, .57f, .52f));
-            rust = WorldMaterials.Solid(new Color(.55f, .3f, .18f)); rustDark = WorldMaterials.Solid(new Color(.35f, .2f, .13f)); steel = WorldMaterials.Solid(new Color(.45f, .47f, .5f), .6f);
-            yellow = WorldMaterials.Solid(new Color(.85f, .68f, .15f)); dark = WorldMaterials.Solid(new Color(.08f, .08f, .09f)); concrete = WorldMaterials.Solid(new Color(.62f, .61f, .58f));
-            wood = WorldMaterials.Solid(new Color(.45f, .34f, .24f)); chain = WorldMaterials.Solid(new Color(.55f, .56f, .58f), .4f);
+            rock = WorldMaterials.Surface(new Color(.52f, .5f, .47f), World.Surface.Stone); rockDark = WorldMaterials.Surface(new Color(.34f, .33f, .31f), World.Surface.Stone); gravel = WorldMaterials.Surface(new Color(.6f, .57f, .52f), World.Surface.Stone);
+            rust = WorldMaterials.Surface(new Color(.55f, .3f, .18f), World.Surface.Metal); rustDark = WorldMaterials.Surface(new Color(.35f, .2f, .13f), World.Surface.Metal); steel = WorldMaterials.Surface(new Color(.45f, .47f, .5f), World.Surface.Metal);
+            yellow = WorldMaterials.Surface(new Color(.85f, .68f, .15f), World.Surface.Painted); dark = WorldMaterials.Solid(new Color(.08f, .08f, .09f)); concrete = WorldMaterials.Surface(new Color(.62f, .61f, .58f), World.Surface.Stone);
+            wood = WorldMaterials.Surface(new Color(.45f, .34f, .24f), World.Surface.Wood); chain = WorldMaterials.Surface(new Color(.55f, .56f, .58f), World.Surface.Metal);
             fireM = new Material(WorldMaterials.Glow(Fire, 2.2f)) { name = "Drum fires" };
             lampM = new Material(WorldMaterials.Glow(Sodium, 2f)) { name = "Floodlights" };
         }
@@ -252,7 +252,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var lo = LowUnder(ctx, p, 3.8f);
             if (p.y - lo > .1f) { mk.Box(concrete, new Vector3(p.x, (lo + p.y + .2f) / 2f - .15f, p.z), new Vector3(3.1f, p.y - lo + .5f, 7.1f), rot); solid.Box(concrete, new Vector3(p.x, (lo + p.y + .2f) / 2f - .15f, p.z), new Vector3(3.1f, p.y - lo + .5f, 7.1f), rot); }
-            mk.Box(WorldMaterials.Solid(paint), p + up * h, new Vector3(3f, 2.6f, 7f), rot); solid.Box(concrete, p + up * h, new Vector3(3f, 2.6f, 7f), rot);
+            mk.Box(WorldMaterials.Surface(paint, World.Surface.Painted), p + up * h, new Vector3(3f, 2.6f, 7f), rot); solid.Box(concrete, p + up * h, new Vector3(3f, 2.6f, 7f), rot);
         }
 
         /// A burning oil drum, rusted, fire in its mouth (QuarryLife makes it flicker and spark).
@@ -287,7 +287,7 @@ namespace EverythingWorld.World
             {
                 var p0 = Vector3.Lerp(a, b, k / (float)n); var p1 = Vector3.Lerp(a, b, (k + 1f) / n); p0 = ctx.OnGround(p0.x, p0.z); p1 = ctx.OnGround(p1.x, p1.z);
                 mk.Prism(steel, p0 - up * .2f, up, .05f, 2.4f, 6);
-                mk.Box(WorldMaterials.Solid(new Color(.55f, .56f, .58f), .3f), (p0 + p1) / 2f + up * 1.15f, new Vector3(.02f, 2f, Vector3.Distance(p0, p1)), Quaternion.LookRotation(p1 - p0));
+                mk.Box(WorldMaterials.Surface(new Color(.55f, .56f, .58f), World.Surface.Metal), (p0 + p1) / 2f + up * 1.15f, new Vector3(.02f, 2f, Vector3.Distance(p0, p1)), Quaternion.LookRotation(p1 - p0));
                 mk.Box(steel, (p0 + p1) / 2f + up * 2.15f, new Vector3(.05f, .05f, Vector3.Distance(p0, p1)), Quaternion.LookRotation(p1 - p0));
                 solid.Box(steel, (p0 + p1) / 2f + up * 1.1f, new Vector3(.12f, 2.2f, Vector3.Distance(p0, p1)), Quaternion.LookRotation(p1 - p0));
             }
@@ -392,7 +392,7 @@ namespace EverythingWorld.World
             var up = Vector3.up; var rot = Quaternion.LookRotation(dir); var sd = Vector3.Cross(up, dir); var paint = i % 2 == 0 ? yellow : rust;
             foreach (var e in new[] { -1f, 1f }) foreach (var f in new[] { -2.8f, 2.6f }) mk.Prism(dark, g + sd * e * 2.4f + dir * f + up * 1.6f - sd * e * .5f, sd * e, 1.6f, 1f, 12);
             mk.Box(paint, g + up * 3f + dir * 2.6f, new Vector3(5f, 2.2f, 2.6f), rot);
-            mk.Box(WorldMaterials.Solid(new Color(.3f, .35f, .4f), .8f), g + up * 3.6f + dir * 3.9f, new Vector3(2f, .9f, .05f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.3f, .35f, .4f), World.Surface.Glass), g + up * 3.6f + dir * 3.9f, new Vector3(2f, .9f, .05f), rot);
             mk.Box(paint, g + up * 4f - dir * 1.2f, new Vector3(5.4f, 2.2f, 6f), rot * Quaternion.Euler(-8f, 0, 0));
             mk.Box(rustDark, g + up * 3f - dir * 1.2f, new Vector3(5f, .4f, 5.6f), rot);
             BoxCol(ctx.Root, g + up * 2.6f, new Vector3(6.8f, 5.2f, 9f), rot);
@@ -403,7 +403,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face);
             foreach (var e in new[] { -1f, 1f }) mk.Box(dark, g + sd * e * 1.4f + up * .5f, new Vector3(.9f, 1f, 4.4f), rot);
-            mk.Box(yellow, g + up * 1.8f, new Vector3(3f, 1.6f, 3.2f), rot); mk.Box(WorldMaterials.Solid(new Color(.3f, .35f, .4f), .8f), g + up * 2.9f + sd * .7f + face * .6f, new Vector3(1.2f, 1.1f, 1.4f), rot);
+            mk.Box(yellow, g + up * 1.8f, new Vector3(3f, 1.6f, 3.2f), rot); mk.Box(WorldMaterials.Surface(new Color(.3f, .35f, .4f), World.Surface.Glass), g + up * 2.9f + sd * .7f + face * .6f, new Vector3(1.2f, 1.1f, 1.4f), rot);
             var shoulder = g + up * 2.6f + face * 1.4f - sd * .6f; var elbow = shoulder + face * 3.6f + up * 2.6f; var bucket = elbow + face * 2.4f - up * 3.2f;
             mk.Box(yellow, (shoulder + elbow) / 2f, new Vector3(.5f, .6f, Vector3.Distance(shoulder, elbow)), Quaternion.LookRotation(elbow - shoulder));
             mk.Box(yellow, (elbow + bucket) / 2f, new Vector3(.4f, .5f, Vector3.Distance(elbow, bucket)), Quaternion.LookRotation(bucket - elbow));
@@ -531,7 +531,7 @@ namespace EverythingWorld.World
             var sd0 = Vector3.Cross(Vector3.up, face); float hf = ctx.Ground(g.x + face.x * 2f, g.z + face.z * 2f), hb = ctx.Ground(g.x - face.x * 2f, g.z - face.z * 2f), hl = ctx.Ground(g.x - sd0.x * .9f, g.z - sd0.z * .9f), hr = ctx.Ground(g.x + sd0.x * .9f, g.z + sd0.z * .9f);
             var fw = (face * 4f + Vector3.up * (hf - hb)).normalized; var nrm = Vector3.Cross(fw, (sd0 * 1.8f + Vector3.up * (hr - hl)).normalized).normalized; if (nrm.y < 0f) nrm = -nrm;
             g.y = Mathf.Min((hf + hb + hl + hr) / 4f, g.y) - .05f;
-            var rot = Quaternion.LookRotation(fw, nrm) * Quaternion.Euler(0, 0, i % 3 == 0 ? 8f : 0f); var up = rot * Vector3.up; face = rot * Vector3.forward; var paint = WorldMaterials.Solid(Color.Lerp(new[] { new Color(.6f, .15f, .12f), new Color(.2f, .35f, .55f), new Color(.75f, .75f, .7f) }[i % 3], new Color(.4f, .25f, .18f), .5f));
+            var rot = Quaternion.LookRotation(fw, nrm) * Quaternion.Euler(0, 0, i % 3 == 0 ? 8f : 0f); var up = rot * Vector3.up; face = rot * Vector3.forward; var paint = WorldMaterials.Surface(Color.Lerp(new[] { new Color(.6f, .15f, .12f), new Color(.2f, .35f, .55f), new Color(.75f, .75f, .7f) }[i % 3], new Color(.4f, .25f, .18f), .5f), World.Surface.Painted);
             mk.Box(paint, g + up * .55f, new Vector3(1.9f, .7f, 4.4f), rot); mk.Box(paint, g + up * 1.1f - face * .3f, new Vector3(1.7f, .5f, 2.2f), rot);
             mk.Box(dark, g + up * 1.12f - face * .3f, new Vector3(1.74f, .38f, 2.1f), rot); mk.Box(rustDark, g + up * .92f + face * 1.2f, new Vector3(1.6f, .04f, 1.4f), rot * Quaternion.Euler(-15f, 0, 0));
             BoxCol(ctx.Root, g + up * .75f, new Vector3(1.9f, 1.5f, 4.4f), rot);

@@ -48,7 +48,7 @@ namespace EverythingWorld.World
             // the haul truck on the road
             if (rampTop != Vector3.zero)
             {
-                var tk = new MeshKit(); var yel = WorldMaterials.Solid(new Color(.85f, .68f, .15f)); var dk = WorldMaterials.Solid(new Color(.08f, .08f, .09f));
+                var tk = new MeshKit(); var yel = WorldMaterials.Surface(new Color(.85f, .68f, .15f), World.Surface.Painted); var dk = WorldMaterials.Solid(new Color(.08f, .08f, .09f));
                 foreach (var e in new[] { -1f, 1f }) foreach (var f in new[] { -2.8f, 2.6f }) tk.Prism(dk, new Vector3(e * 1.9f, 1.6f, f), Vector3.right * e, 1.6f, 1f, 12);
                 tk.Box(yel, new Vector3(0, 3f, 2.6f), new Vector3(5f, 2.2f, 2.6f), Quaternion.identity); tk.Box(yel, new Vector3(0, 4f, -1.2f), new Vector3(5.4f, 2.2f, 6f), Quaternion.Euler(-8f, 0, 0));
                 tk.Box(WorldMaterials.Glow(new Color(1f, .95f, .8f), 1.4f), new Vector3(0, 2.6f, 3.92f), new Vector3(3.6f, .3f, .05f), Quaternion.identity);

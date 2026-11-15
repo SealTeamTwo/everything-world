@@ -125,7 +125,7 @@ namespace EverythingWorld.World
         void Container(Plot z)
         {
             var up = Vector3.up; var rot = z.Rot; var sd = z.side; var c = z.At(-Foot(z.a) * .55f, 0);
-            var col = WorldMaterials.Solid(new[] { new Color(.6f, .2f, .15f), new Color(.2f, .35f, .5f), new Color(.25f, .45f, .3f), new Color(.75f, .55f, .2f) }[Mathf.Abs(z.a.name.GetHashCode()) % 4]);
+            var col = WorldMaterials.Surface(new[] { new Color(.6f, .2f, .15f), new Color(.2f, .35f, .5f), new Color(.25f, .45f, .3f), new Color(.75f, .55f, .2f) }[Mathf.Abs(z.a.name.GetHashCode()) % 4], World.Surface.Painted);
             const float L = 6f, D = 2.4f, H = 2.6f;
             z.mk.Box(col, c - z.front * (D / 2f - .05f) + up * H / 2f, new Vector3(L, H, .1f), rot);
             foreach (var e in new[] { -1f, 1f }) z.mk.Box(col, c + sd * e * (L / 2f - .05f) + up * H / 2f, new Vector3(.1f, H, D), rot);
@@ -206,7 +206,7 @@ namespace EverythingWorld.World
             var bed = z.At(3f, 8f); var lamp = SongGlow(z, "Here Without You", Sodium, 2f);
             z.mk.Box(rustDark, bed + up * .9f, new Vector3(2.4f, .2f, 4.4f), rot); foreach (var e in new[] { -1f, 1f }) foreach (var f in new[] { -1.5f, 1.5f }) z.mk.Prism(dark, bed + sd * e * 1.2f + z.front * f + up * .45f, sd * e, .45f, .2f, 10);
             BoxCol(z.root, bed + up * .6f, new Vector3(2.4f, 1.2f, 4.4f), rot);
-            var chairM = WorldMaterials.Solid(new Color(.55f, .4f, .3f)); var ch = bed + up * 1f;
+            var chairM = WorldMaterials.Surface(new Color(.55f, .4f, .3f), World.Surface.Wood); var ch = bed + up * 1f;
             z.mk.Box(chairM, ch + up * .45f, new Vector3(.5f, .06f, .5f), rot); z.mk.Box(chairM, ch + up * .8f - z.front * .24f, new Vector3(.5f, .6f, .05f), rot);
             foreach (var e in new[] { -.2f, .2f }) foreach (var f in new[] { -.2f, .2f }) z.mk.Box(chairM, ch + up * .22f + sd * e + z.front * f, new Vector3(.04f, .45f, .04f), rot);
             var pole = bed + sd * 1.6f; z.mk.Prism(steel, ctx.OnGround(pole.x, pole.z) - up * .2f, up, .07f, 4.2f, 6); z.mk.Box(lamp, pole + up * 3.9f - sd * .6f, new Vector3(.4f, .12f, .3f), rot); ArtistBits.PostCollider(z.root, ctx.OnGround(pole.x, pole.z), 4f, .1f);
@@ -236,8 +236,8 @@ namespace EverythingWorld.World
             var up = Vector3.up; var ctx = z.ctx; var rot = z.Rot; var sd = z.side;
             var sp = z.At(-1f, -8f); var silence = SongGlow(z, "The Sound of Silence", new Color(1f, .8f, .5f), 2.4f);
             z.mk.Box(dark, sp + up * 1.1f, new Vector3(1.6f, 2.2f, 1f), rot); BoxCol(z.root, sp + up * 1.1f, new Vector3(1.6f, 2.2f, 1f), rot);
-            foreach (var y in new[] { .7f, 1.6f }) z.mk.Prism(WorldMaterials.Solid(new Color(.2f, .2f, .2f)), sp + up * y + z.front * .51f, z.front, .5f, .02f, 16);
-            for (var k = 0; k < 10; k++) { var a = k * Mathf.PI / 5f; var cp = ctx.OnGround(sp.x + Mathf.Cos(a) * 2f, sp.z + Mathf.Sin(a) * 2f); z.mk.Prism(WorldMaterials.Solid(new Color(.92f, .9f, .82f)), cp, up, .07f, .35f, 8); z.mk.Blob(silence, cp + up * .43f, new Vector3(.04f, .08f, .04f), ctx.Rng, 0f); halos.Add(cp + up * .45f, .5f, new Color(1f, .8f, .5f), .6f); }
+            foreach (var y in new[] { .7f, 1.6f }) z.mk.Prism(WorldMaterials.Surface(new Color(.2f, .2f, .2f), World.Surface.Cloth), sp + up * y + z.front * .51f, z.front, .5f, .02f, 16);
+            for (var k = 0; k < 10; k++) { var a = k * Mathf.PI / 5f; var cp = ctx.OnGround(sp.x + Mathf.Cos(a) * 2f, sp.z + Mathf.Sin(a) * 2f); z.mk.Prism(WorldMaterials.Surface(new Color(.92f, .9f, .82f), World.Surface.Painted), cp, up, .07f, .35f, 8); z.mk.Blob(silence, cp + up * .43f, new Vector3(.04f, .08f, .04f), ctx.Rng, 0f); halos.Add(cp + up * .45f, .5f, new Color(1f, .8f, .5f), .6f); }
             var rod = z.At(4f, 8f); var stricken = SongGlow(z, "Stricken", new Color(.7f, .8f, 1f), 2.4f);
             z.mk.Prism(steel, rod - up * .2f, up, .12f, 9f, 6, .3f); z.mk.Blob(stricken, rod + up * 9f, Vector3.one * .25f, ctx.Rng, 0f); ArtistBits.PostCollider(z.root, rod, 8f, .15f);
             halos.Add(rod + up * 9f, 2f, new Color(.7f, .8f, 1f), .6f); life.rodAt = rod + up * 9f;
