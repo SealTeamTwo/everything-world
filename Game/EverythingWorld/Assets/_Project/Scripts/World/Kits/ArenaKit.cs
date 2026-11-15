@@ -496,23 +496,44 @@ namespace EverythingWorld.World
             solid.Box(dark, at + up * 2.7f, new Vector3(5.6f, 5.4f, 1.1f), rot);
         }
 
+        /// The ridge's grass, in patches the way a high pine ridge grows: big wiry tussocks of mountain grass
+        /// with cold blue-lit tips, close-bitten turf between them, and wide stretches of bare stony ground and
+        /// needle litter. Each patch is its own shade, from a cold blue-green to a dry grey-yellow, kept dark for the night.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.25f, .9f, new Color(.25f, .38f, .3f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1978);
             const float step = 2.4f;
+            Color cold = new Color(.2f, .34f, .32f), dry = new Color(.38f, .42f, .3f), moon = new Color(.7f, .75f, .9f);
+            int turf = 0, tussocks = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .025f + 4f, pz * .025f + 6f) < .38f) continue;
+                var kind = WindMesh.Patch(px, pz, .013f, 1f);                     // tussock grass or bitten turf
+                var bare = WindMesh.Patch(px, pz, .025f, 2f);                     // bare stony ground and needle litter
+                var tussock = kind > .45f;
+                if (bare < (tussock ? .45f : .33f)) continue;
+                var tone = WindMesh.Patch(px, pz, .02f, 3f);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.22f, .36f, .3f), new Color(.34f, .42f, .34f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .35f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, new Color(.7f, .75f, .9f), .3f), rng, 3, .07f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                var col = Color.Lerp(cold, dry, Mathf.Clamp01((tone - .25f) * 2f)) * (.92f + (float)rng.NextDouble() * .16f);
+                if (tussock)
+                {
+                    // a wiry tussock, knee high, its tips catching the searchlights
+                    wm.Tuft(at, .45f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, moon, .32f), rng, 5, .06f, .12f); tussocks++;
+                }
+                else
+                {
+                    // turf bitten short, darker and finer
+                    var tc = col * .9f;
+                    wm.Tuft(at, .2f + (float)rng.NextDouble() * .18f, tc, Color.Lerp(tc, moon, .22f), rng, 4, .05f, .12f); turf++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Ridge grass", ctx.Root, mat);
+            Debug.Log($"Arena Rock Ridge grass: {tussocks} tussocks, {turf} turf tufts");
         }
     }
 }
