@@ -156,7 +156,7 @@ namespace EverythingWorld.World
                 for (var j = 0; j < n; j++) foreach (var o in open) { var d = Wrap(a[j] - o); if (Mathf.Abs(d) < half) a[j] = o + (d >= 0f ? half : -half); }
             }
             var flagsRoot = new GameObject("Flags").transform; flagsRoot.SetParent(ctx.Root, false);
-            var plaque = WorldMaterials.Solid(new Color(.3f, .28f, .26f));
+            var plaque = WorldMaterials.Surface(new Color(.3f, .28f, .26f), Surface.Stone);
             for (var j = 0; j < n; j++)
             {
                 var isl = lands[order[j]]; var dir = new Vector3(Mathf.Cos(a[j]), 0, Mathf.Sin(a[j])); var p = center + dir * R; p.y = ctx.Ground(p.x, p.z);
@@ -259,7 +259,7 @@ namespace EverythingWorld.World
             }
             // the kiosk where the board picks a land for you
             var kd = Quaternion.Euler(0, 120f, 0) * Vector3.forward; var kp = center + kd * 25.5f; kp.y = groundY; var kr = Quaternion.LookRotation(-kd);
-            var kw = WorldMaterials.Solid(new Color(.5f, .2f, .14f), .4f);
+            var kw = WorldMaterials.Surface(new Color(.5f, .2f, .14f), Surface.Painted);
             mk.Box(kw, kp + up * .55f, new Vector3(2.4f, 1.1f, 1f), kr); solid.Box(kw, kp + up * .55f, new Vector3(2.4f, 1.1f, 1f), kr); mk.Box(bronze, kp + up * 1.14f, new Vector3(2.6f, .08f, 1.2f), kr);
             foreach (var e in new[] { -1.1f, 1.1f }) { var pp = kp + Vector3.Cross(up, kd) * e + kd * .3f; mk.Prism(iron, pp, up, .05f, 2.8f, 5); ArtistBits.PostCollider(ctx.Root, pp, 2.8f, .08f); }
             mk.Box(kw, kp + up * 2.85f + kd * .3f, new Vector3(2.8f, .12f, 1.6f), kr);
@@ -272,9 +272,9 @@ namespace EverythingWorld.World
             // the terminal: an old computer on a desk with a green screen you can type into (HubTerminal)
             {
                 var td = Quaternion.Euler(0, 255f, 0) * Vector3.forward; var tp = center + td * 25f; tp.y = groundY; var f = new PlaceFrame(tp, td);
-                var beige = WorldMaterials.Solid(new Color(.82f, .78f, .68f), .2f); var dkey = WorldMaterials.Solid(new Color(.3f, .29f, .27f));
+                var beige = WorldMaterials.Surface(new Color(.82f, .78f, .68f), Surface.Painted); var dkey = WorldMaterials.Surface(new Color(.3f, .29f, .27f), Surface.Painted);
                 mk.Box(iron, f.P(0, .37f, 0), new Vector3(1.7f, .06f, .85f), f.r); foreach (var e in new[] { -.78f, .78f }) foreach (var z in new[] { -.35f, .35f }) mk.Box(iron, f.P(e, .18f, z), new Vector3(.06f, .36f, .06f), f.r);
-                mk.Box(WorldMaterials.Solid(new Color(.35f, .26f, .18f)), f.P(0, .74f, 0), new Vector3(1.7f, .06f, .85f), f.r); solid.Box(iron, f.P(0, .4f, 0), new Vector3(1.7f, .8f, .85f), f.r);
+                mk.Box(WorldMaterials.Surface(new Color(.35f, .26f, .18f), Surface.Wood), f.P(0, .74f, 0), new Vector3(1.7f, .06f, .85f), f.r); solid.Box(iron, f.P(0, .4f, 0), new Vector3(1.7f, .8f, .85f), f.r);
                 mk.Box(iron, f.P(0, .38f, 0), new Vector3(1.6f, .7f, .8f), f.r);
                 // the monitor: a deep beige box with a bezel and a glowing green screen
                 mk.Box(beige, f.P(0, 1.2f, -.12f), new Vector3(1f, .82f, .7f), f.r); mk.Box(beige, f.P(0, .82f, -.05f), new Vector3(.5f, .1f, .4f), f.r); solid.Box(beige, f.P(0, 1.2f, -.12f), new Vector3(1f, .82f, .7f), f.r);
@@ -285,7 +285,7 @@ namespace EverythingWorld.World
                 for (var row = 0; row < 4; row++) for (var k = 0; k < 13; k++) mk.Box(dkey, f.P(-.39f + k * .065f, .815f + row * .006f, .4f - row * .06f), new Vector3(.05f, .02f, .045f), f.r * Quaternion.Euler(6f, 0, 0));
                 mk.Box(dkey, f.P(0, .81f, .44f), new Vector3(.4f, .02f, .045f), f.r);
                 // the stool, the sign and a lamp
-                var stool = f.P(0, 0, .95f); mk.Prism(iron, stool, Vector3.up, .05f, .55f, 6); mk.Prism(WorldMaterials.Solid(new Color(.5f, .12f, .1f), .3f), stool + Vector3.up * .55f, Vector3.up, .22f, .08f, 12); ArtistBits.PostCollider(ctx.Root, stool, .6f, .22f);
+                var stool = f.P(0, 0, .95f); mk.Prism(iron, stool, Vector3.up, .05f, .55f, 6); mk.Prism(WorldMaterials.Surface(new Color(.5f, .12f, .1f), Surface.Painted), stool + Vector3.up * .55f, Vector3.up, .22f, .08f, 12); ArtistBits.PostCollider(ctx.Root, stool, .6f, .22f);
                 var post = f.P(-1.05f, 0, -.2f); mk.Prism(iron, post, Vector3.up, .05f, 2.4f, 6); ArtistBits.PostCollider(ctx.Root, post, 2.4f, .08f);
                 mk.Box(WorldMaterials.Solid(new Color(.06f, .06f, .07f)), post + Vector3.up * 2.25f + f.Fwd * .06f + f.Right * .45f, new Vector3(1.05f, .28f, .04f), f.r);
                 ArtistBits.Label(people, "TERMINAL", post + Vector3.up * 2.25f + f.Fwd * .09f + f.Right * .45f, f.Fwd, .17f, new Color(.4f, 1f, .5f), TextAnchor.MiddleCenter);
@@ -297,7 +297,7 @@ namespace EverythingWorld.World
                 Shot(ctx, "the terminal", f.P(.25f, .95f, 1.75f), f.P(0, 1.25f, .2f));
                 // the slate beside it: a riddle chalked on a dark board on two posts (its answer goes into the terminal)
                 {
-                    var sc = f.P(2.05f, 0, .1f); var slate = WorldMaterials.Solid(new Color(.1f, .11f, .12f)); var wood = WorldMaterials.Solid(new Color(.36f, .25f, .16f));
+                    var sc = f.P(2.05f, 0, .1f); var slate = WorldMaterials.Surface(new Color(.1f, .11f, .12f), Surface.Stone); var wood = WorldMaterials.Surface(new Color(.36f, .25f, .16f), Surface.Wood);
                     foreach (var e in new[] { -.72f, .72f }) { var pp = sc + f.Right * e; mk.Prism(wood, pp, Vector3.up, .045f, 2f, 6); ArtistBits.PostCollider(ctx.Root, pp, 2f, .06f); }
                     mk.Box(wood, sc + Vector3.up * 1.45f, new Vector3(1.62f, .98f, .06f), f.r); mk.Box(slate, sc + Vector3.up * 1.45f + f.Fwd * .035f, new Vector3(1.5f, .86f, .02f), f.r);
                     solid.Box(wood, sc + Vector3.up * 1.45f, new Vector3(1.62f, .98f, .12f), f.r);
@@ -309,7 +309,7 @@ namespace EverythingWorld.World
             // the colour station: a ring of pedestals, each with a floating orb of one colour; E takes that colour
             {
                 var cd = Quaternion.Euler(0, 28f, 0) * Vector3.forward; var cc = center + cd * 26.5f; cc.y = groundY;
-                var palette = EverythingWorld.Player.PlayerOrb.Palette; var stoneP = WorldMaterials.Solid(new Color(.6f, .57f, .52f));
+                var palette = EverythingWorld.Player.PlayerOrb.Palette; var stoneP = WorldMaterials.Surface(new Color(.6f, .57f, .52f), Surface.Stone);
                 mk.Prism(stoneDark, cc - Vector3.up * .2f, Vector3.up, 3.6f, .3f, 28);
                 for (var i = 0; i < palette.Length; i++)
                 {

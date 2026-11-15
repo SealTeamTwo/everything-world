@@ -87,12 +87,12 @@ namespace EverythingWorld.World
 
         public override void Dress(LandContext ctx)
         {
-            stone = WorldMaterials.Solid(new Color(.82f, .78f, .7f));
-            stoneDark = WorldMaterials.Solid(new Color(.55f, .52f, .48f));
-            marble = WorldMaterials.Solid(new Color(.93f, .91f, .87f), .2f);
-            bronze = WorldMaterials.Solid(new Color(.72f, .52f, .26f), .35f);
-            wood = WorldMaterials.Solid(new Color(.45f, .32f, .22f));
-            iron = WorldMaterials.Solid(new Color(.14f, .14f, .15f));
+            stone = WorldMaterials.Surface(new Color(.82f, .78f, .7f), Surface.Stone);
+            stoneDark = WorldMaterials.Surface(new Color(.55f, .52f, .48f), Surface.Stone);
+            marble = WorldMaterials.Surface(new Color(.93f, .91f, .87f), Surface.Painted);
+            bronze = WorldMaterials.Surface(new Color(.72f, .52f, .26f), Surface.Metal);
+            wood = WorldMaterials.Surface(new Color(.45f, .32f, .22f), Surface.Wood);
+            iron = WorldMaterials.Surface(new Color(.14f, .14f, .15f), Surface.Metal);
             board = WorldMaterials.Solid(new Color(.12f, .1f, .1f));
             var mast = MastOf(ctx.Data);
             if (mast == null) { Debug.LogWarning("The Everything Hub: no mast found"); return; }
@@ -215,8 +215,8 @@ namespace EverythingWorld.World
         // ---------------------------------------------------------------- the plaza and the dais
         void Plaza(LandContext ctx, MeshKit mk, GlowHalos halos)
         {
-            var paving = WorldMaterials.Solid(Paving);
-            var inlay = WorldMaterials.Solid(new Color(.66f, .6f, .5f));
+            var paving = WorldMaterials.Surface(Paving, Surface.Stone);
+            var inlay = WorldMaterials.Surface(new Color(.66f, .6f, .5f), Surface.Stone);
             const int spokes = 48;
             for (var ring = 0; ring < 5; ring++)
             for (var s = 0; s < spokes; s++)
@@ -307,7 +307,7 @@ namespace EverythingWorld.World
         {
             const float tierDepth = 1.6f, tierRise = .32f;   // tiers you can step up and sit on
             const int tiers = 7, segments = 72;
-            var stoneB = WorldMaterials.Solid(new Color(.76f, .72f, .64f));
+            var stoneB = WorldMaterials.Surface(new Color(.76f, .72f, .64f), Surface.Stone);
             for (var s = 0; s < segments; s++)
             {
                 float a0 = s * Mathf.PI * 2f / segments, a1 = (s + 1) * Mathf.PI * 2f / segments, am = (a0 + a1) / 2f;
@@ -359,7 +359,7 @@ namespace EverythingWorld.World
 
         void Paths(LandContext ctx, MeshKit mk)
         {
-            var paving = WorldMaterials.Solid(new Color(.74f, .7f, .62f));
+            var paving = WorldMaterials.Surface(new Color(.74f, .7f, .62f), Surface.Stone);
             // where each crossing's deck meets the hub: a path stops there and joins the deck, instead of running
             // on beside (and under) the bridge into the sea
             var landings = new List<Vector3>();
@@ -400,7 +400,7 @@ namespace EverythingWorld.World
             var face = -dir;                                         // faces the mast
             var rot = Quaternion.LookRotation(face);
             var right = Vector3.Cross(face, Vector3.up).normalized;  // the viewer's right
-            var cabinet = WorldMaterials.Solid(new Color(.42f, .2f, .12f), .45f);
+            var cabinet = WorldMaterials.Surface(new Color(.42f, .2f, .12f), Surface.Painted);
             const float W = 3.6f, D = 1.4f, bodyH = 3f, archR = 1.8f;
             var up = Vector3.up;
             mk.Box(cabinet, at + up * bodyH / 2f, new Vector3(W, bodyH, D), rot);
@@ -460,7 +460,7 @@ namespace EverythingWorld.World
             pointer.SetParent(root, false);
             pointer.SetPositionAndRotation(post + up * 4.7f, Quaternion.identity);
             var pmk = new MeshKit();
-            var arrowWood = WorldMaterials.Solid(new Color(.86f, .74f, .5f));
+            var arrowWood = WorldMaterials.Surface(new Color(.86f, .74f, .5f), Surface.Wood);
             const float len = 3.8f, hh = .45f, th = .07f, tip = 1f, startZ = -.4f;
             // shaft: a board along +z; head: a flat triangle at the end (both built round the pointer's origin)
             pmk.Box(arrowWood, new Vector3(0, 0, startZ + len / 2f), new Vector3(th * 2f, hh * 2f, len), Quaternion.identity);
@@ -650,9 +650,9 @@ namespace EverythingWorld.World
         /// avenue of stone statues of music notation between them.
         void Park(LandContext ctx, MeshKit mk, MeshKit solid, Transform labels)
         {
-            var leafA = WorldMaterials.Solid(new Color(.33f, .5f, .28f));
-            var leafB = WorldMaterials.Solid(new Color(.4f, .56f, .3f));
-            var yew = WorldMaterials.Solid(new Color(.2f, .38f, .27f));
+            var leafA = WorldMaterials.Surface(new Color(.33f, .5f, .28f), Surface.Foliage);
+            var leafB = WorldMaterials.Surface(new Color(.4f, .56f, .3f), Surface.Foliage);
+            var yew = WorldMaterials.Surface(new Color(.2f, .38f, .27f), Surface.Foliage);
             foreach (var (r, cone) in new[] { (TreeRowA, false), (TreeRowB, true), (TreeRowC, false) })
             {
                 var n = Mathf.RoundToInt(2f * Mathf.PI * r / 9f);
