@@ -30,15 +30,15 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            asphalt = WorldMaterials.Solid(new Color(.24f, .23f, .26f)); concrete = WorldMaterials.Solid(Concrete); concreteDark = WorldMaterials.Solid(new Color(.42f, .41f, .42f)); brickM = WorldMaterials.Solid(Brick);
-            woodM = WorldMaterials.Solid(new Color(.44f, .3f, .2f)); iron = WorldMaterials.Solid(new Color(.14f, .13f, .15f), .5f); dark = WorldMaterials.Solid(new Color(.07f, .06f, .08f)); white = WorldMaterials.Solid(new Color(.95f, .93f, .88f));
-            goldM = WorldMaterials.Glow(new Color(1f, .7f, .12f), .22f); leafM = WorldMaterials.Solid(new Color(.36f, .5f, .22f)); leafGold = WorldMaterials.Glow(new Color(.95f, .7f, .2f), .2f); trunkM = WorldMaterials.Solid(new Color(.34f, .26f, .2f)); darkGlass = WorldMaterials.Solid(new Color(.16f, .18f, .24f), .7f); redM = WorldMaterials.Solid(Red);
+            asphalt = WorldMaterials.Surface(new Color(.24f, .23f, .26f), Surface.Stone); concrete = WorldMaterials.Surface(Concrete, Surface.Stone); concreteDark = WorldMaterials.Surface(new Color(.42f, .41f, .42f), Surface.Stone); brickM = WorldMaterials.Surface(Brick, Surface.Stone);
+            woodM = WorldMaterials.Surface(new Color(.44f, .3f, .2f), Surface.Wood); iron = WorldMaterials.Surface(new Color(.14f, .13f, .15f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.07f, .06f, .08f)); white = WorldMaterials.Solid(new Color(.95f, .93f, .88f));
+            goldM = WorldMaterials.Glow(new Color(1f, .7f, .12f), .22f); leafM = WorldMaterials.Surface(new Color(.36f, .5f, .22f), Surface.Foliage); leafGold = WorldMaterials.Glow(new Color(.95f, .7f, .2f), .2f); trunkM = WorldMaterials.Surface(new Color(.34f, .26f, .2f), Surface.Bark); darkGlass = WorldMaterials.Surface(new Color(.16f, .18f, .24f), Surface.Glass); redM = WorldMaterials.Surface(Red, Surface.Painted);
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .68f, .24f), .8f)) { name = "Hip-Hop windows" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .82f, .5f), 1.4f)) { name = "Hip-Hop lamps" };
             coneM = new Material(WorldMaterials.Glow(Gold, .9f)) { name = "Hip-Hop boombox cones" }; stageM = new Material(WorldMaterials.Glow(new Color(1f, .8f, .4f), 1.6f)) { name = "Hip-Hop stage lights" };
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
-        Material Paint(Color c) => WorldMaterials.Solid(c);
+        Material Paint(Color c) => WorldMaterials.Surface(c, Surface.Painted);
         static bool HasStation(IslandWorldData.Artist a) => a.stationId != 0;
         static bool Uk(string n) => n == "Stormzy" || n == "Little Simz" || n == "Dave" || n == "Dizzee Rascal" || n == "The Streets" || n == "Loyle Carner" || n == "Central Cee" || n == "Bakar";
         static float Foot(IslandWorldData.Artist a)
