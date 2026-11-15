@@ -35,8 +35,8 @@ namespace EverythingWorld.World
             // the roofs and decks are faintly self-lit, so the night never swallows them
             roofM = WorldMaterials.Glow(new Color(.2f, .2f, .3f), .16f); deckM = WorldMaterials.Glow(new Color(.36f, .26f, .3f), .18f); concrete = WorldMaterials.Glow(new Color(.42f, .42f, .5f), .12f);
             glassWalk = new Material(WorldMaterials.Glow(new Color(.26f, .2f, .55f), .5f)) { name = "Velvet bridges" };
-            steel = WorldMaterials.Solid(new Color(.5f, .52f, .6f), .8f); dark = WorldMaterials.Solid(new Color(.06f, .06f, .1f)); white = WorldMaterials.Glow(new Color(.95f, .93f, .9f), .14f); velvet = WorldMaterials.Glow(Wine, .2f);
-            woodM = WorldMaterials.Glow(new Color(.4f, .28f, .22f), .1f); leafM = WorldMaterials.Glow(new Color(.14f, .42f, .3f), .14f); trunkM = WorldMaterials.Solid(new Color(.3f, .24f, .22f));
+            steel = WorldMaterials.Surface(new Color(.5f, .52f, .6f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.06f, .06f, .1f)); white = WorldMaterials.Glow(new Color(.95f, .93f, .9f), .14f); velvet = WorldMaterials.Glow(Wine, .2f);
+            woodM = WorldMaterials.Glow(new Color(.4f, .28f, .22f), .1f); leafM = WorldMaterials.Glow(new Color(.14f, .42f, .3f), .14f); trunkM = WorldMaterials.Surface(new Color(.3f, .24f, .22f), Surface.Bark);
             poolM = new Material(WorldMaterials.Glow(new Color(.15f, .85f, .9f), 1.3f)) { name = "Velvet pool" };
             windowWarm = new Material(WorldMaterials.Glow(new Color(1f, .8f, .45f), 1.1f)) { name = "Velvet windows warm" }; windowCool = new Material(WorldMaterials.Glow(new Color(.55f, .75f, 1f), 1f)) { name = "Velvet windows cool" }; windowRose = new Material(WorldMaterials.Glow(new Color(1f, .4f, .6f), 1f)) { name = "Velvet windows rose" };
             beaconM = new Material(WorldMaterials.Glow(new Color(1f, .1f, .1f), 2.4f)) { name = "Velvet beacons" }; skylightM = new Material(WorldMaterials.Glow(new Color(.8f, .9f, 1f), .9f)) { name = "Velvet skylights" }; lampM = new Material(WorldMaterials.Glow(Gold, 1.6f)) { name = "Velvet lamps" };
