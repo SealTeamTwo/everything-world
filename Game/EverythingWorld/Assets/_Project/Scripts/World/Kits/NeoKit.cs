@@ -35,7 +35,7 @@ namespace EverythingWorld.World
         {
             // paving, walls and leaves are faintly self-lit, so the dusk never swallows them
             tile = WorldMaterials.Glow(new Color(.66f, .42f, .32f), .16f); tileDark = WorldMaterials.Glow(new Color(.46f, .28f, .26f), .14f); pot = WorldMaterials.Glow(new Color(.74f, .42f, .28f), .14f);
-            woodM = WorldMaterials.Glow(new Color(.42f, .28f, .2f), .1f); iron = WorldMaterials.Solid(new Color(.14f, .12f, .14f), .5f); dark = WorldMaterials.Solid(new Color(.08f, .06f, .08f)); white = WorldMaterials.Glow(new Color(.95f, .92f, .86f), .12f);
+            woodM = WorldMaterials.Glow(new Color(.42f, .28f, .2f), .1f); iron = WorldMaterials.Surface(new Color(.14f, .12f, .14f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .06f, .08f)); white = WorldMaterials.Glow(new Color(.95f, .92f, .86f), .12f);
             leafM = WorldMaterials.Glow(new Color(.16f, .46f, .26f), .16f); leafDark = WorldMaterials.Glow(new Color(.1f, .32f, .22f), .12f); leafPale = WorldMaterials.Glow(new Color(.36f, .6f, .32f), .16f); stemM = WorldMaterials.Glow(new Color(.3f, .4f, .22f), .1f);
             clothM = WorldMaterials.Glow(new Color(.5f, .2f, .3f), .16f);
             candleM = new Material(WorldMaterials.Glow(new Color(1f, .72f, .3f), 2.2f)) { name = "Neo candles" }; windowM = new Material(WorldMaterials.Glow(new Color(1f, .76f, .42f), 1.1f)) { name = "Neo windows" }; lampM = new Material(WorldMaterials.Glow(Honey, 1.6f)) { name = "Neo lamps" };
