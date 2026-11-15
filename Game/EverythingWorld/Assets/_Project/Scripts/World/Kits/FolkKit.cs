@@ -669,7 +669,7 @@ namespace EverythingWorld.World
                     if (drift > .62f && rng.NextDouble() < .45)
                     {
                         // the drift's own flower, so a patch is all one kind
-                        var fl = flowers[Mathf.FloorToInt(Mathf.PerlinNoise(px * .015f + 200f, pz * .015f + 7f) * flowers.Length * .999f)];
+                        var fl = flowers[Mathf.Clamp(Mathf.FloorToInt(Mathf.PerlinNoise(px * .015f + 200f, pz * .015f + 7f) * flowers.Length), 0, flowers.Length - 1)]   /* Perlin can stray a little outside 0..1 */;
                         for (var k = 0; k < 3; k++) wm.Flower(at + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * 1.4f, .22f + (float)rng.NextDouble() * .1f, fl, rng);
                         blooms += 3;
                     }
