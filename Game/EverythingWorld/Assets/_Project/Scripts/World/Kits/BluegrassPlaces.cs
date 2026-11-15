@@ -67,7 +67,7 @@ namespace EverythingWorld.World
             Vector2 near = way[0]; var bd = 150f * 150f; foreach (var (p, w) in walkPoints) { if (w >= RimWalk && w < 700 || w == 0 && Vector2.Distance(new Vector2(p.x, p.z), new Vector2(center.x, center.z)) < 1f || w >= 1 && InFootprint(ctx, p.x, p.z, 2f)) continue; var d = (p.x - way[0].x) * (p.x - way[0].x) + (p.z - way[0].y) * (p.z - way[0].y); if (d < bd && !CreekBetween(new Vector2(p.x, p.z), way[0])) { bd = d; near = new Vector2(p.x, p.z); } }
             var full = new List<Vector2> { near }; full.AddRange(way);
             var pts = Smooth(ctx, full, false, 2f); Bend(ctx, pts); pts.RemoveAll(p => InCreek(p.x, p.z, 3f)); if (pts.Count < 2) return;
-            Strip(mk, pts, WorldMaterials.Solid(new Color(.66f, .55f, .38f)), 2.8f, .05f, ctx);
+            Strip(mk, pts, WorldMaterials.Surface(new Color(.66f, .55f, .38f), Surface.Stone), 2.8f, .05f, ctx);
             var up = Vector3.up; var n = 0;
             for (var i = 7; i < pts.Count; i += 14) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (n++ % 2 == 0 ? 2.1f : -2.1f); if (ctx.IsLand(lp.x, lp.z, 2f) && !InCreek(lp.x, lp.z, 2f) && !OtherPathNear(lp.x, lp.z, 700, .5f) && !InFootprint(ctx, lp.x, lp.z, .5f)) JarLamp(ctx, mk, ctx.OnGround(lp.x, lp.z)); }
             foreach (var p in pts) Remember(p, 700);
@@ -81,7 +81,7 @@ namespace EverythingWorld.World
             var from = Nearest(roadPts, to); var d = new Vector2(to.x - from.x, to.z - from.z); var len = d.magnitude; if (len < stopShort + 3f) return; d /= len;
             var a = new Vector2(from.x, from.z) + d * 1.5f; var b = new Vector2(from.x, from.z) + d * (len - stopShort);
             var pts = Smooth(ctx, new[] { a, Vector2.Lerp(a, b, .5f) + new Vector2(-d.y, d.x) * Mathf.Min(5f, len * .1f), b }, false, 2f, 1f); pts.RemoveAll(p => InCreek(p.x, p.z, 2f)); if (pts.Count < 2) return;
-            Strip(mk, pts, WorldMaterials.Solid(new Color(.66f, .55f, .38f)), 2f, .045f, ctx); foreach (var p in pts) Remember(p, 900);
+            Strip(mk, pts, WorldMaterials.Surface(new Color(.66f, .55f, .38f), Surface.Stone), 2f, .045f, ctx); foreach (var p in pts) Remember(p, 900);
         }
 
         void HollowPlaces(LandContext ctx, MeshKit mk, MeshKit solid)
@@ -131,7 +131,7 @@ namespace EverythingWorld.World
             mk.Box(roofM, f.P(0, 3.2f, -.4f), new Vector3(7.6f, .12f, 4.8f), f.r * Quaternion.Euler(8f, 0, 0)); foreach (var e in new[] { -3.4f, 3.4f }) { mk.Box(wood, f.P(e, 1.4f, 1.6f), new Vector3(.16f, 2.8f, .16f), f.r); ArtistBits.PostCollider(ctx.Root, f.P(e, 0, 1.6f), 2.8f, .1f); }
             mk.Box(wood, f.P(0, .9f, -1.7f), new Vector3(4.4f, .1f, .9f), f.r); foreach (var e in new[] { -2f, 2f }) mk.Box(wood, f.P(e, .45f, -1.7f), new Vector3(.12f, .9f, .8f), f.r); Col(f.P(0, .5f, -1.7f), new Vector3(4.4f, 1f, .9f), f.r);
             // instruments hung along the back wall: pluck one and its strings shine
-            string[] names = { "banjo", "fiddle", "mandolin", "guitar", "dulcimer" }; var body = WorldMaterials.Solid(new Color(.72f, .5f, .28f)); var pale = WorldMaterials.Solid(new Color(.93f, .9f, .8f));
+            string[] names = { "banjo", "fiddle", "mandolin", "guitar", "dulcimer" }; var body = WorldMaterials.Surface(new Color(.72f, .5f, .28f), Surface.Painted); var pale = WorldMaterials.Solid(new Color(.93f, .9f, .8f));
             for (var k = 0; k < 5; k++)
             {
                 var im = new MeshKit(); var str = new Material(WorldMaterials.Glow(Warm, .25f)) { name = "Strings" }; var round = k == 0 || k == 2;
@@ -161,7 +161,7 @@ namespace EverythingWorld.World
             mk.Box(dark, fo.P(0, 1.1f, D / 2f + .02f), new Vector3(1f, 2.2f, .04f), f.r); foreach (var e in new[] { -2.5f, 2.5f }) mk.Box(GlowM(Warm, 1.5f), fo.P(e, 1.7f, D / 2f + .02f), new Vector3(1.3f, 1.1f, .04f), f.r);
             // a quilting frame on the porch, two quilters in rockers
             Color[] patch = { new Color(.85f, .2f, .22f), new Color(.2f, .4f, .75f), new Color(.95f, .8f, .25f), new Color(.3f, .6f, .35f), new Color(.95f, .93f, .88f), new Color(.65f, .35f, .65f) };
-            for (var x = 0; x < 5; x++) for (var z = 0; z < 3; z++) mk.Box(WorldMaterials.Solid(patch[(x * 2 + z * 3) % patch.Length]), fo.P(-1f + x * .4f + 1.2f, .82f, D / 2f + .7f + z * .4f), new Vector3(.4f, .03f, .4f), f.r);
+            for (var x = 0; x < 5; x++) for (var z = 0; z < 3; z++) mk.Box(WorldMaterials.Surface(patch[(x * 2 + z * 3) % patch.Length], Surface.Cloth), fo.P(-1f + x * .4f + 1.2f, .82f, D / 2f + .7f + z * .4f), new Vector3(.4f, .03f, .4f), f.r);
             foreach (var (x, z) in new[] { (1f, .5f), (3.2f, .5f), (3.2f, 1.9f), (1f, 1.9f) }) mk.Box(wood, fo.P(x, .4f, D / 2f + z), new Vector3(.06f, .8f, .06f), f.r); Col(fo.P(2.1f, .45f, D / 2f + 1.2f), new Vector3(2.3f, .9f, 1.5f), f.r);
             foreach (var e in new[] { -2.6f, -1.2f }) { Rocker(mk, solid, ctx, fo.P(e, 0, D / 2f + 1.2f), f.Fwd); }
             Folk(fo.P(-1.2f, .52f, D / 2f + 1.25f), f.Fwd, Resident.Pose.Sit, new[] { "Every patch is a shirt somebody danced a hole in.", "Sit a spell. That chair's been waitin' on you.", "This one's the wedding ring pattern. That one's just Tuesday." }, Look(Residents.Tool.None, true), null, .48f);
@@ -170,7 +170,7 @@ namespace EverythingWorld.World
             var p0 = ctx.OnGround(f.P(-9f, 0, 2f).x, f.P(-9f, 0, 2f).z); var p1 = ctx.OnGround(f.P(-9f, 0, 12f).x, f.P(-9f, 0, 12f).z);
             foreach (var p in new[] { p0, p1 }) { mk.Box(wood, p + up * 1.1f, new Vector3(.12f, 2.2f, .12f), f.r); mk.Box(wood, p + up * 2.1f, new Vector3(1.4f, .08f, .08f), f.r); ArtistBits.PostCollider(ctx.Root, p, 2.2f, .1f); }
             mk.Box(dark, (p0 + p1) / 2f + up * 2.12f, new Vector3(.02f, .02f, Vector3.Distance(p0, p1)), Quaternion.LookRotation(p1 - p0));
-            for (var q = 0; q < 4; q++) { var c = Vector3.Lerp(p0, p1, (q + .5f) / 4f) + up * 1.25f; for (var x = 0; x < 4; x++) for (var y = 0; y < 4; y++) mk.Box(WorldMaterials.Solid(patch[(x + y * 2 + q * 3) % patch.Length]), c + f.Fwd * (-.75f + x * .5f) + up * (-.6f + y * .42f), new Vector3(.04f, .42f, .5f), f.r); Col(c, new Vector3(.2f, 1.8f, 2f), f.r); }
+            for (var q = 0; q < 4; q++) { var c = Vector3.Lerp(p0, p1, (q + .5f) / 4f) + up * 1.25f; for (var x = 0; x < 4; x++) for (var y = 0; y < 4; y++) mk.Box(WorldMaterials.Surface(patch[(x + y * 2 + q * 3) % patch.Length], Surface.Cloth), c + f.Fwd * (-.75f + x * .5f) + up * (-.6f + y * .42f), new Vector3(.04f, .42f, .5f), f.r); Col(c, new Vector3(.2f, 1.8f, 2f), f.r); }
             ArtistBits.PointLight(ctx.Root, fo.P(0, 2.4f, D / 2f + 1.4f), Warm, 12f, 1.4f);
             Board(ctx, mk, f.P(5.5f, 0, D / 2f + 7f), f.Fwd, "QUILTS", 1.8f);
             Lane(ctx, mk, f.P(0, 0, D / 2f + 5f)); Ring(g, 9f); Ring((p0 + p1) / 2f, 6f);
@@ -182,7 +182,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var g = Site(ctx, LonesomeAt, 8f); var f = new PlaceFrame(g, FaceTo(g, center));
             var pine = ctx.OnGround(f.P(-3f, 0, -2f).x, f.P(-3f, 0, -2f).z); mk.Prism(bark, pine - up * .3f, (up + f.Right * .08f).normalized, .4f, 9f, 7, .5f); ArtistBits.PostCollider(ctx.Root, pine, 6f, .45f);
-            var needle = WorldMaterials.Solid(new Color(.14f, .3f, .22f)); for (var k = 0; k < 4; k++) crowns.Cone(needle, pine + up * (5f + k * 1.8f) + f.Right * (.4f + k * .15f), 3.2f - k * .65f, 3f, 7, k * 25f);
+            var needle = WorldMaterials.Surface(new Color(.14f, .3f, .22f), Surface.Foliage); for (var k = 0; k < 4; k++) crowns.Cone(needle, pine + up * (5f + k * 1.8f) + f.Right * (.4f + k * .15f), 3.2f - k * .65f, 3f, 7, k * 25f);
             PlankBench(ctx, mk, g, f.Fwd, 2.2f);
             for (var k = 0; k < 5; k++) { var p = ctx.OnGround(f.P(3.5f + (k % 2) * 1.6f, 0, -3f + k * 1.4f).x, f.P(3.5f + (k % 2) * 1.6f, 0, -3f + k * 1.4f).z); var r = f.r * Quaternion.Euler((k * 37 % 9) - 4f, 90f, (k * 53 % 11) - 5f); mk.Box(stone, p + up * .4f, new Vector3(.55f, .9f, .12f), r); Col(p + up * .4f, new Vector3(.55f, .9f, .2f), r); }
             JarLamp(ctx, mk, ctx.OnGround(f.P(1.8f, 0, -.6f).x, f.P(1.8f, 0, -.6f).z));
@@ -237,7 +237,7 @@ namespace EverythingWorld.World
             for (var k = 0; k < 2; k++) { var st = f.P(0, .1f - k * .0f, D / 2f + .5f + k * .4f); mk.Box(stone, st, new Vector3(Door + .6f, .3f - k * .12f, .45f), f.r); solid.Box(stone, st, new Vector3(Door + .6f, .3f - k * .12f, .45f), f.r); }
             // inside: the chalkboard, the teacher's desk, two rows of desks to sit at
             mk.Box(dark, fo.P(0, 1.9f, -D / 2f + T + .03f), new Vector3(4f, 1.4f, .05f), f.r); ArtistBits.Label(ctx.Root, "Today's lesson:\nG, C and D.\n(That's the lesson.)", fo.P(0, 1.95f, -D / 2f + T + .07f), f.Fwd, .16f, new Color(.95f, .95f, .9f), TextAnchor.MiddleCenter);
-            mk.Box(wood, fo.P(-1.6f, .78f, -D / 2f + 2f), new Vector3(1.6f, .08f, .8f), f.r); mk.Box(wood, fo.P(-1.6f, .39f, -D / 2f + 2f), new Vector3(1.4f, .78f, .6f), f.r); Col(fo.P(-1.6f, .4f, -D / 2f + 2f), new Vector3(1.6f, .85f, .8f), f.r); mk.Blob(WorldMaterials.Solid(new Color(.8f, .15f, .12f)), fo.P(-1.2f, .9f, -D / 2f + 2f), Vector3.one * .08f, ctx.Rng, 0f);
+            mk.Box(wood, fo.P(-1.6f, .78f, -D / 2f + 2f), new Vector3(1.6f, .08f, .8f), f.r); mk.Box(wood, fo.P(-1.6f, .39f, -D / 2f + 2f), new Vector3(1.4f, .78f, .6f), f.r); Col(fo.P(-1.6f, .4f, -D / 2f + 2f), new Vector3(1.6f, .85f, .8f), f.r); mk.Blob(WorldMaterials.Surface(new Color(.8f, .15f, .12f), Surface.Painted), fo.P(-1.2f, .9f, -D / 2f + 2f), Vector3.one * .08f, ctx.Rng, 0f);
             for (var row = 0; row < 3; row++) foreach (var e in new[] { -1.4f, 1.4f })
             {
                 var c = fo.P(e, 0, -.8f + row * 1.5f); mk.Box(wood, c + up * .7f - f.Fwd * .35f, new Vector3(1f, .06f, .5f), f.r); mk.Box(dark, c + up * .35f - f.Fwd * .35f, new Vector3(.06f, .7f, .4f), f.r); mk.Box(wood, c + up * .42f + f.Fwd * .25f, new Vector3(1f, .06f, .35f), f.r); mk.Box(dark, c + up * .2f + f.Fwd * .25f, new Vector3(.8f, .4f, .06f), f.r);
@@ -247,7 +247,7 @@ namespace EverythingWorld.World
             Folk(fo.P(1.2f, 0, -D / 2f + 1.8f), f.Fwd, Resident.Pose.Stand, new[] { "Sit anywhere. Class is always in; nobody's ever late.", "Three chords and the truth. We do the chords in the morning.", "Ring the bell on your way out. The children like it. There aren't any children." }, new Residents.Look { top = new Color(.9f, .88f, .8f), bottom = new Color(.3f, .25f, .35f), skin = new Color(.75f, .55f, .4f), hair = new Color(.25f, .17f, .1f), longHair = true });
             // the bell on a post by the door
             var bp = ctx.OnGround(f.P(Door / 2f + 1.8f, 0, D / 2f + 1.4f).x, f.P(Door / 2f + 1.8f, 0, D / 2f + 1.4f).z); mk.Box(wood, bp + up * 1.3f, new Vector3(.14f, 2.6f, .14f), f.r); mk.Box(wood, bp + up * 2.5f - f.Right * .3f, new Vector3(.8f, .1f, .1f), f.r); ArtistBits.PostCollider(ctx.Root, bp, 2.6f, .1f);
-            var bell = new MeshKit(); bell.Prism(WorldMaterials.Solid(new Color(.8f, .65f, .3f), .85f), new Vector3(0, -.45f, 0), Vector3.up, .22f, .36f, 10, .5f); var bgo = bell.BuildSingle("School bell", plife.transform, false); bgo.transform.SetPositionAndRotation(bp + up * 2.45f - f.Right * .6f, f.r);
+            var bell = new MeshKit(); bell.Prism(WorldMaterials.Surface(new Color(.8f, .65f, .3f), Surface.Metal), new Vector3(0, -.45f, 0), Vector3.up, .22f, .36f, 10, .5f); var bgo = bell.BuildSingle("School bell", plife.transform, false); bgo.transform.SetPositionAndRotation(bp + up * 2.45f - f.Right * .6f, f.r);
             var bs = bgo.AddComponent<Sway>(); bs.degrees = 35f; bs.speed = 7f; bs.decay = .9f; bs.seconds = 5f; var bt = Interact.Toy(bgo, Toy.Kind.Custom, "Ring the school bell", new Vector3(.8f, 1.2f, .8f)); bgo.GetComponent<BoxCollider>().center = new Vector3(0, -.5f, 0); bt.onUse = _ => bs.Push();
             Board(ctx, mk, f.P(-Door / 2f - 2.4f, 0, D / 2f + 5f), f.Fwd, "SCHOOLHOUSE", 2.2f);
             Lane(ctx, mk, f.P(0, 0, D / 2f + 3f)); Ring(g, 8f);

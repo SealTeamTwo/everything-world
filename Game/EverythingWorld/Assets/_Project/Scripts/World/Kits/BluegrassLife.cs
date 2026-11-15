@@ -72,7 +72,7 @@ namespace EverythingWorld.World
             if (route.Length > 1)
             {
                 routeLen = new float[route.Length]; for (var i = 1; i < route.Length; i++) routeLen[i] = routeLen[i - 1] + Vector3.Distance(route[i - 1], route[i]); routeTotal = routeLen[route.Length - 1];
-                var w = new MeshKit(); var wood = WorldMaterials.Solid(new Color(.55f, .4f, .27f)); var canvas = WorldMaterials.Solid(new Color(.95f, .92f, .84f)); var dark = WorldMaterials.Solid(new Color(.1f, .1f, .1f)); var mule = WorldMaterials.Solid(new Color(.45f, .35f, .28f));
+                var w = new MeshKit(); var wood = WorldMaterials.Surface(new Color(.55f, .4f, .27f), Surface.Wood); var canvas = WorldMaterials.Surface(new Color(.95f, .92f, .84f), Surface.Cloth); var dark = WorldMaterials.Solid(new Color(.1f, .1f, .1f)); var mule = WorldMaterials.Solid(new Color(.45f, .35f, .28f));
                 w.Box(wood, new Vector3(0, 1f, -1f), new Vector3(1.6f, .5f, 3f), Quaternion.identity);
                 for (var k = 0; k < 7; k++) { var a = Mathf.Lerp(-80f, 80f, k / 6f) * Mathf.Deg2Rad; w.Box(canvas, new Vector3(Mathf.Sin(a) * .85f, 1.3f + Mathf.Cos(a) * .9f, -1f), new Vector3(.42f, .1f, 3f), Quaternion.Euler(0, 0, -Mathf.Rad2Deg * a)); }
                 // spoked wheels: a rim, eight spokes and a hub
