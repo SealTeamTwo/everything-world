@@ -406,6 +406,10 @@ namespace EverythingWorld.World
 
         // ---------------------------------------------------------------- dune grass and heath
         /// Silvery marram grass on the dunes, bent hard by the wind; grey-green heath with pink sea thrift inland.
+        /// Both grow in patches, the way a storm coast does: the marram in thick clumps on the dune ridges with
+        /// blowouts of bare sand between and thin wisps on their edges; the heath as a low grey sward, cushions of
+        /// sea thrift gathered in drifts, and taller rough grass in the sheltered dips. Each patch is its own shade,
+        /// from a cold silver-blue to a weathered straw; every blade its own.
         void GroundCover(LandContext ctx)
         {
             var marramMat = WindMesh.Material(.6f, 1.4f, DuneSand);
@@ -413,6 +417,8 @@ namespace EverythingWorld.World
             var marram = new Dictionary<(int, int), WindMesh>(); var heath = new Dictionary<(int, int), WindMesh>();
             var rng = new System.Random(6262);
             const float step = 1.9f;
+            Color silver = new Color(.54f, .6f, .6f), straw = new Color(.72f, .7f, .56f);
+            int clumps = 0, wisps = 0, sward = 0, rough = 0, thrift = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
@@ -420,27 +426,44 @@ namespace EverythingWorld.World
                 if (!ctx.IsLand(px, pz, 1f) || InFootprint(ctx, px, pz, 0f, .5f) || NearPath(px, pz, 2.2f) || InNoGrass(px, pz, 0f)) continue;
                 var g = ctx.Ground(px, pz);
                 if (g < 2.2f) continue;                                         // the wet sand stays bare
-                var n = Mathf.PerlinNoise(px * .02f + 6f, pz * .02f + 3f);
+                var kind = WindMesh.Patch(px, pz, .03f, 1f);                    // marram clump or thin wisps; heath sward or rough grass
+                var bare = WindMesh.Patch(px, pz, .02f, 2f);                    // blowouts and bare patches
+                var tone = WindMesh.Patch(px, pz, .025f, 3f);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 var at = new Vector3(px, g - .04f, pz);
+                var shade = .92f + (float)rng.NextDouble() * .16f;
                 if (g < 7f)
                 {
-                    if (n < .35f) continue;
+                    var clump = kind > .42f;
+                    if (bare < (clump ? .3f : .5f)) continue;
                     if (!marram.TryGetValue(key, out var wm)) marram[key] = wm = new WindMesh();
-                    var col = Color.Lerp(new Color(.56f, .6f, .52f), new Color(.72f, .72f, .62f), (float)rng.NextDouble());
-                    wm.Tuft(at, .7f + (float)rng.NextDouble() * .7f, col, Color.Lerp(col, Pearl, .4f), rng, 5, .05f);
+                    var col = Color.Lerp(silver, straw, tone) * shade;
+                    if (clump) { wm.Tuft(at, .8f + (float)rng.NextDouble() * .7f, col, Color.Lerp(col, Pearl, .4f), rng, 6, .05f, .12f); clumps++; }
+                    else { wm.Tuft(at, .5f + (float)rng.NextDouble() * .5f, col * .97f, Color.Lerp(col, Pearl, .35f), rng, 3, .045f, .12f); wisps++; }
                 }
                 else
                 {
-                    if (n < .3f) continue;
+                    if (bare < .3f) continue;
                     if (!heath.TryGetValue(key, out var wm)) heath[key] = wm = new WindMesh();
-                    var col = Color.Lerp(new Color(.38f, .44f, .38f), new Color(.5f, .54f, .46f), (float)rng.NextDouble());
-                    wm.Tuft(at, .25f + (float)rng.NextDouble() * .2f, col, Color.Lerp(col, Pearl, .2f), rng, 4, .08f);
-                    if (rng.NextDouble() < .12) wm.Flower(at + new Vector3(.2f, 0, .15f), .25f, new Color(.9f, .55f, .68f), rng);   // sea thrift
+                    var col = Color.Lerp(new Color(.36f, .44f, .42f), new Color(.52f, .54f, .44f), tone) * shade;
+                    if (kind > .62f)
+                    {
+                        // rough grass in the sheltered dips
+                        wm.Tuft(at, .4f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, Pearl, .25f), rng, 4, .07f, .12f); rough++;
+                        if (rng.NextDouble() < .04) { wm.Flower(at + new Vector3(.2f, 0, .15f), .3f, new Color(.9f, .55f, .68f), rng); thrift++; }
+                    }
+                    else
+                    {
+                        // the low sward; in a drift the thrift cushions crowd together
+                        wm.Tuft(at, .22f + (float)rng.NextDouble() * .18f, col, Color.Lerp(col, Pearl, .2f), rng, 4, .08f, .12f); sward++;
+                        var inDrift = WindMesh.Patch(px, pz, .06f, 4f) > .6f;
+                        if (rng.NextDouble() < (inDrift ? .35 : .05)) { wm.Flower(at + new Vector3(.2f, 0, .15f), .22f + (float)rng.NextDouble() * .06f, new Color(.9f, .55f, .68f), rng); thrift++; }   // sea thrift
+                    }
                 }
             }
             foreach (var kv in marram) kv.Value.Build("Marram grass", ctx.Root, marramMat);
             foreach (var kv in heath) kv.Value.Build("Heath", ctx.Root, heathMat);
+            Debug.Log($"The Driftwood Shore dunes and heath: {clumps} marram clumps, {wisps} marram wisps, {sward} heath tufts, {rough} rough-grass tufts, {thrift} sea thrift");
         }
     }
 }
