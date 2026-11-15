@@ -630,21 +630,38 @@ namespace EverythingWorld.World
 
         void Grass(LandContext ctx)
         {
+            // The hills' grass in patches, like a summer anime background: short bright lawns with a blush of
+            // blossom on the tips, knee-high summer grass, and stands of silver grass (susuki) with soft tan plumes,
+            // bare earth between. Each patch its own shade, cool blue-green to warm yellow-green; every blade its own.
             var mat = WindMesh.Material(.3f, 1f, new Color(.35f, .48f, .3f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1997);
             const float st = 2.4f;
+            Color cool = new Color(.27f, .44f, .32f), warm = new Color(.52f, .58f, .32f), plume = new Color(.78f, .72f, .6f);
+            int lawn = 0, summer = 0, susuki = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (InCity(px, pz) || !ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .03f + 2f, pz * .03f + 7f) < .4f) continue;
+                if (WindMesh.Patch(px, pz, .03f, 2f) < .45f) continue;                     // bare earth between patches
+                var kind = WindMesh.Patch(px, pz, .014f, 6f); var tone = WindMesh.Patch(px, pz, .022f, 11f);
+                var r = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.3f, .45f, .28f), new Color(.5f, .58f, .34f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .3f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, Blossom, .2f), rng, 4, .05f);
+                var col = Color.Lerp(cool, warm, Mathf.Clamp01((tone - .25f) * 2f)) * (.92f + r * .16f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .4f) { wm.Tuft(at, .18f + r * .16f, col, Color.Lerp(col, Blossom, .2f), rng, 4, .05f, .12f); lawn++; }
+                else if (kind < .72f) { wm.Tuft(at, .35f + r * .35f, col, Color.Lerp(col, Blossom, .15f), rng, 5, .05f, .12f); summer++; }
+                else
+                {
+                    var sc = Color.Lerp(col, new Color(.42f, .5f, .36f), .3f);
+                    wm.Tuft(at, .8f + r * .45f, sc, Color.Lerp(sc, plume, .6f), rng, 5, .04f, .12f);
+                    if (r < .5f) wm.Tuft(at + new Vector3(.4f, 0, .3f), .65f + r * .4f, sc, Color.Lerp(sc, plume, .5f), rng, 4, .04f, .12f);
+                    susuki++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Isles grass", ctx.Root, mat);
+            Debug.Log($"The J-Rock Isles grass: {lawn} lawn tufts, {summer} summer-grass tufts, {susuki} silver-grass stands");
         }
     }
 }
