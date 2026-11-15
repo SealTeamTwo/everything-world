@@ -439,26 +439,55 @@ namespace EverythingWorld.World
             soft.Blob(GlowM(Color.Lerp(c, Color.white, .4f), 2f), at + Vector3.up * 5.2f, Vector3.one * .35f, ctx.Rng, 0f);
         }
 
-        /// Short desert grass, sparse, with bright little flowers.
+        /// Desert grass in patches: thin wisps over open sand, tussock clumps, and drifts of wild bloom, each drift one
+        /// colour of the rainbow.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, 1f, new Color(.75f, .65f, .5f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1969);
             const float step = 2.6f;
+            Color green = new Color(.6f, .7f, .4f), gold = new Color(.85f, .7f, .45f);
+            int wisps = 0, tussocks = 0, bloomSpots = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (Mathf.PerlinNoise(px * .03f + 2f, pz * .03f + 7f) < .42f) continue;
+                var kind = WindMesh.Patch(px, pz, .014f, 11f);      // open sand wisps, tussocks or a bloom drift
+                var tone = WindMesh.Patch(px, pz, .025f, 12f);      // the patch's shade, green to sun-bleached gold
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.6f, .7f, .4f), new Color(.85f, .7f, .45f), (float)rng.NextDouble());
+                var col = Color.Lerp(green, gold, tone) * (.92f + r2 * .16f);
                 var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
-                wm.Tuft(at, .3f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, Color.white, .3f), rng, 3, .07f);
-                if (rng.NextDouble() < .12) wm.Flower(at + new Vector3(.1f, 0, .1f), .35f, Rainbow[rng.Next(Rainbow.Length)], rng);
+                if (kind < .35f)
+                {
+                    // open sand: a thin wisp here and there
+                    if (r1 < .6f) { wm.Tuft(at, .2f + r2 * .2f, col, Color.Lerp(col, Color.white, .3f), rng, 2, .06f, .14f); wisps++; }
+                }
+                else if (kind < .7f)
+                {
+                    // tussocks: round clumps of desert grass
+                    wm.Tuft(at, .35f + r2 * .3f, col, Color.Lerp(col, Color.white, .3f), rng, 3, .07f, .14f);
+                    if (r1 < .35f) wm.Tuft(at + new Vector3(.35f, 0, -.3f), .3f + r1 * .3f, col, Color.Lerp(col, Color.white, .25f), rng, 3, .07f, .14f);
+                    tussocks++;
+                    if (rng.NextDouble() < .04) { wm.Flower(at + new Vector3(.1f, 0, .1f), .35f, Rainbow[rng.Next(Rainbow.Length)], rng); blooms++; }
+                }
+                else
+                {
+                    // a bloom drift: short grass and flowers all of one colour, the colour changing from drift to drift
+                    wm.Tuft(at, .25f + r2 * .2f, col, Color.Lerp(col, Color.white, .3f), rng, 3, .07f, .14f); bloomSpots++;
+                    if (rng.NextDouble() < .5)
+                    {
+                        var fl = Rainbow[WindMesh.Pick(WindMesh.Patch(px, pz, .02f, 13f), Rainbow.Length)];
+                        for (var k = 0; k < 2; k++) wm.Flower(at + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * 1.4f, .28f + (float)rng.NextDouble() * .12f, fl, rng);
+                        blooms += 2;
+                    }
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Wilds grass", ctx.Root, mat);
+            Debug.Log($"The Psychedelic Wilds ground cover: {wisps} sand wisps, {tussocks} tussocks, {bloomSpots} bloom-drift spots, {blooms} flowers");
         }
     }
 }
