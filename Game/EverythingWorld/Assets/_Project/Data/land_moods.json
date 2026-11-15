@@ -481,7 +481,7 @@
    "skyLight": "#1F2650", "horizonLight": "#2A2F5C", "groundLight": "#141628",
    "fogColor": "#1A1E3E", "fogStart": 25, "fogEnd": 520,
    "stars": 0.55, "sunShadows": false, "dailyWeather": false, "bloom": 1.0,
-   "weather": "rain", "weatherAmount": 0.18, "heightFog": 0.55, "heightFogColor": "#282D56", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.25, "grade": 0.5
+   "weather": "rain", "weatherAmount": 0.18, "heightFog": 0.75, "heightFogColor": "#282D56", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Bedroom Pop Meadows",
