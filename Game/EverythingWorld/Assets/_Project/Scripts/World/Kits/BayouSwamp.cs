@@ -165,7 +165,7 @@ namespace EverythingWorld.World
                 placed++;
             }
             // lily pads and pale flowers on the still water
-            var pad = WorldMaterials.Solid(new Color(.3f, .45f, .24f)); var flower = WorldMaterials.Solid(new Color(.85f, .95f, 1f));
+            var pad = WorldMaterials.Surface(new Color(.3f, .45f, .24f), Surface.Foliage); var flower = WorldMaterials.Solid(new Color(.85f, .95f, 1f));
             for (var k = 0; k < 160; k++)
             {
                 var (c, r) = swampPools[ctx.Rng.Next(swampPools.Count)];
@@ -199,14 +199,14 @@ namespace EverythingWorld.World
             var at = new Vector3(a.x, swampY, a.z) + side * 11f;
             if (ctx.Ground(at.x, at.z) > swampY - .3f) at = new Vector3(a.x, swampY, a.z) - side * 11f;
             var rot = Quaternion.LookRotation(Quaternion.Euler(0, 25f, 0) * along) * Quaternion.Euler(4f, 0, 14f);
-            var hull = WorldMaterials.Solid(new Color(.55f, .52f, .46f)); var rotWood = WorldMaterials.Solid(new Color(.35f, .3f, .25f));
+            var hull = WorldMaterials.Surface(new Color(.55f, .52f, .46f), Surface.Wood); var rotWood = WorldMaterials.Surface(new Color(.35f, .3f, .25f), Surface.Wood);
             Vector3 P(float x, float y, float z) => at + rot * new Vector3(x, y, z);
             mk.Box(hull, P(0, -.2f, 0), new Vector3(6f, 1.8f, 18f), rot);
             mk.Box(rotWood, P(0, .72f, 0), new Vector3(6.2f, .15f, 18.2f), rot);
             mk.Box(hull, P(0, 1.9f, -1f), new Vector3(4.6f, 2.2f, 9f), rot);
             mk.Box(rotWood, P(0, 3.05f, -1f), new Vector3(5.6f, .15f, 10f), rot * Quaternion.Euler(0, 0, -6f));
             for (var k = 0; k < 4; k++) mk.Box(WorldMaterials.Solid(new Color(.08f, .1f, .1f)), P(2.31f, 2f, -4f + k * 2.2f), new Vector3(.02f, .9f, .9f), rot);   // empty windows
-            mk.Prism(WorldMaterials.Solid(new Color(.12f, .1f, .09f)), P(-1f, 3.1f, 3f), (rot * new Vector3(-1f, .25f, .6f)).normalized, .35f, 7f, 10);              // the fallen stack
+            mk.Prism(WorldMaterials.Surface(new Color(.12f, .1f, .09f), Surface.Metal), P(-1f, 3.1f, 3f), (rot * new Vector3(-1f, .25f, .6f)).normalized, .35f, 7f, 10);              // the fallen stack
             for (var k = 0; k < 8; k++) { var rr = Quaternion.AngleAxis(k * 45f, rot * Vector3.right); mk.Box(rotWood, P(0, .6f, -10.2f) + rr * (rot * Vector3.up) * 1.6f, new Vector3(4.6f, .25f, .12f), rr * rot); }
             for (var k = 0; k < 24; k++) { var p = P(ctx.Range(-2.8f, 2.8f), ctx.Range(1f, 3f), ctx.Range(-8f, 8f)); HangMoss(ctx, p, ctx.Range(.8f, 2.2f)); }
             solid.Box(hull, P(0, .8f, 0), new Vector3(6f, 4f, 18f), rot);
@@ -219,7 +219,7 @@ namespace EverythingWorld.World
         void OldCypress(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 from)
         {
             var up = Vector3.up; var face = new Vector3(from.x - at.x, 0, from.z - at.z).normalized; var rot = Quaternion.LookRotation(face);
-            var oldBark = WorldMaterials.Solid(new Color(.36f, .31f, .27f));
+            var oldBark = WorldMaterials.Surface(new Color(.36f, .31f, .27f), Surface.Bark);
             // the foot: buttresses flaring out all round, leaving the hollow open at the front
             for (var k = 0; k < 9; k++)
             {
@@ -235,7 +235,7 @@ namespace EverythingWorld.World
             halos.Add(at + up * 1.8f + face * 2.2f, 2.6f, new Color(.4f, 1f, .85f), .9f);
             ArtistBits.PointLight(ctx.Root, at + up * 2f + face * 2f, new Color(.45f, 1f, .85f), 14f, 1.8f);
             // great limbs and flat crowns high up, moss in curtains
-            var crownLeaf = WorldMaterials.Solid(new Color(.33f, .44f, .24f));
+            var crownLeaf = WorldMaterials.Surface(new Color(.33f, .44f, .24f), Surface.Foliage);
             for (var k = 0; k < 7; k++)
             {
                 var d = Quaternion.Euler(0, k * 51f, 0) * Vector3.forward; var y = 16f + (k % 3) * 4f;

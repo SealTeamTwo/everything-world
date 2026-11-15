@@ -48,11 +48,11 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            plank = WorldMaterials.Solid(new Color(.52f, .4f, .27f)); greyWood = WorldMaterials.Solid(new Color(.55f, .52f, .46f));
-            tin = WorldMaterials.Solid(new Color(.62f, .6f, .56f), .6f); dark = WorldMaterials.Solid(new Color(.1f, .09f, .08f));
-            metal = WorldMaterials.Solid(new Color(.7f, .7f, .72f), .7f); bark = WorldMaterials.Solid(new Color(.42f, .36f, .3f));
-            leaf = WorldMaterials.Solid(new Color(.33f, .45f, .22f)); mossM = WorldMaterials.Solid(new Color(.6f, .64f, .52f));
-            white = WorldMaterials.Solid(new Color(.93f, .91f, .85f)); rope = WorldMaterials.Solid(new Color(.75f, .65f, .45f));
+            plank = WorldMaterials.Surface(new Color(.52f, .4f, .27f), Surface.Wood); greyWood = WorldMaterials.Surface(new Color(.55f, .52f, .46f), Surface.Wood);
+            tin = WorldMaterials.Surface(new Color(.62f, .6f, .56f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.1f, .09f, .08f));
+            metal = WorldMaterials.Surface(new Color(.7f, .7f, .72f), Surface.Metal); bark = WorldMaterials.Surface(new Color(.42f, .36f, .3f), Surface.Bark);
+            leaf = WorldMaterials.Surface(new Color(.33f, .45f, .22f), Surface.Foliage); mossM = WorldMaterials.Surface(new Color(.6f, .64f, .52f), Surface.Foliage);
+            white = WorldMaterials.Solid(new Color(.93f, .91f, .85f)); rope = WorldMaterials.Surface(new Color(.75f, .65f, .45f), Surface.Cloth);
             water = new Material(WorldMaterials.Glow(new Color(.2f, .2f, .12f), .06f)) { name = "Bayou water" };     // slow dark brown-green: shinier reads white in the haze
             water.SetFloat("_Smoothness", .45f);
         }
@@ -365,7 +365,7 @@ namespace EverythingWorld.World
                 life.pools.Add(pc);
             }
             // lily pads, some flowering, in the still water
-            var pad = WorldMaterials.Solid(new Color(.35f, .5f, .25f)); var flower = WorldMaterials.Solid(new Color(.98f, .92f, .85f));
+            var pad = WorldMaterials.Surface(new Color(.35f, .5f, .25f), Surface.Foliage); var flower = WorldMaterials.Solid(new Color(.98f, .92f, .85f));
             foreach (var c in channels)
                 for (var i = 0; i < c.pts.Count; i += 3)
                 {
@@ -503,7 +503,7 @@ namespace EverythingWorld.World
             // steps up to the porch
             for (var k = 0; k < 5; k++) { var sp = at + face * (D / 2f + 3.4f + (4 - k) * .45f) + up * (k * .32f + .16f); mk.Box(plank, sp, new Vector3(3f, .32f, .5f), rot); solid.Box(plank, sp, new Vector3(3f, .32f, .5f), rot); }
             // walls: back, two sides, front with a wide doorway and windows
-            var wallM = WorldMaterials.Solid(new Color(.5f, .45f, .36f));
+            var wallM = WorldMaterials.Surface(new Color(.5f, .45f, .36f), Surface.Wood);
             mk.Box(wallM, floor + up * H / 2f - face * (D / 2f - .1f), new Vector3(W, H, .2f), rot);
             foreach (var s in new[] { -1f, 1f }) mk.Box(wallM, floor + up * H / 2f + side * s * (W / 2f - .1f), new Vector3(.2f, H, D - .4f), rot);
             foreach (var s in new[] { -1f, 1f }) mk.Box(wallM, floor + up * H / 2f + face * (D / 2f - .1f) + side * s * (W / 4f + .7f), new Vector3(W / 2f - 1.4f, H, .2f), rot);
@@ -520,7 +520,7 @@ namespace EverythingWorld.World
             // rocking chairs and a slide guitar on the porch
             foreach (var s in new[] { -3.6f, -2.2f, 3f }) RockingChair(mk, solid, floor + face * (D / 2f + 1.6f) + side * s, face);
             var gtr = floor + face * (D / 2f + .6f) + side * 1.6f;
-            mk.Blob(WorldMaterials.Solid(new Color(.75f, .45f, .2f), .7f), gtr + up * .5f, new Vector3(.38f, .45f, .12f), ctx.Rng, 0f);
+            mk.Blob(WorldMaterials.Surface(new Color(.75f, .45f, .2f), Surface.Painted), gtr + up * .5f, new Vector3(.38f, .45f, .12f), ctx.Rng, 0f);
             mk.Box(dark, gtr + up * 1.25f, new Vector3(.07f, 1f, .05f), rot * Quaternion.Euler(0, 0, -12f));
             mk.Prism(metal, gtr + up * .9f + face * .1f, up, .05f, .2f, 8);
             // inside: a little stage, a bar, a lamp
@@ -580,7 +580,7 @@ namespace EverythingWorld.World
         void Motorcycle(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 dir, Color paint)
         {
             var up = Vector3.up; dir.y = 0; dir.Normalize(); var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(up, dir);
-            var lean = Quaternion.AngleAxis(10f, dir); var body = WorldMaterials.Solid(paint, .85f);
+            var lean = Quaternion.AngleAxis(10f, dir); var body = WorldMaterials.Surface(paint, Surface.Painted);
             foreach (var z in new[] { -.75f, .8f }) mk.Prism(dark, at + dir * z + up * .35f - side * .06f, side, .35f, .12f, 12);
             mk.Box(body, at + lean * (up * .75f) + dir * .2f, new Vector3(.3f, .25f, .6f), rot);
             mk.Box(dark, at + lean * (up * .8f) - dir * .35f, new Vector3(.3f, .1f, .6f), rot);
@@ -594,10 +594,10 @@ namespace EverythingWorld.World
         void Pickup(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, Vector3 dir, Color paint)
         {
             var up = Vector3.up; dir.y = 0; dir.Normalize(); var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(up, dir);
-            var body = WorldMaterials.Solid(paint, .6f); var rusty = WorldMaterials.Solid(Rust);
+            var body = WorldMaterials.Surface(paint, Surface.Painted); var rusty = WorldMaterials.Surface(Rust, Surface.Metal);
             mk.Box(body, at + up * .85f, new Vector3(2f, .7f, 5f), rot);
             mk.Box(body, at + up * 1.5f + dir * .5f, new Vector3(1.9f, .7f, 1.6f), rot);
-            mk.Box(WorldMaterials.Solid(new Color(.15f, .18f, .2f), .9f), at + up * 1.55f + dir * .5f, new Vector3(1.92f, .5f, 1.5f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.15f, .18f, .2f), Surface.Glass), at + up * 1.55f + dir * .5f, new Vector3(1.92f, .5f, 1.5f), rot);
             mk.Box(rusty, at + up * 1.2f - dir * 1.5f + side * .997f, new Vector3(.03f, .3f, 1.6f), rot);
             mk.Box(dark, at + up * .7f - dir * 1.5f, new Vector3(1.8f, .1f, 1.9f), rot);
             foreach (var s in new[] { -1f, 1f }) foreach (var z in new[] { -1.6f, 1.6f }) mk.Prism(dark, at + side * s * .9f + dir * z + up * .45f, side * s, .45f, .28f, 12);
@@ -612,7 +612,7 @@ namespace EverythingWorld.World
         {
             var todo = new List<IslandWorldData.Artist>(ctx.Artists);
             var walk = 1; var lamps = new List<Vector3>();
-            var dirt = WorldMaterials.Solid(new Color(.52f, .45f, .33f));
+            var dirt = WorldMaterials.Surface(new Color(.52f, .45f, .33f), Surface.Stone);
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
