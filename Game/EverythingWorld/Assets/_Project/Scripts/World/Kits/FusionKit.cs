@@ -36,12 +36,12 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            brick = WorldMaterials.Solid(Brick); brickDark = WorldMaterials.Solid(new Color(.42f, .24f, .2f));
+            brick = WorldMaterials.Surface(Brick, Surface.Stone); brickDark = WorldMaterials.Surface(new Color(.42f, .24f, .2f), Surface.Stone);
             // paving and stone are faintly self-lit, so dusk never swallows the streets
             paving = WorldMaterials.Glow(new Color(.7f, .56f, .48f), .1f); stoneM = WorldMaterials.Glow(new Color(.72f, .72f, .74f), .1f);
-            brassM = WorldMaterials.Solid(new Color(.86f, .66f, .28f), .8f); iron = WorldMaterials.Solid(new Color(.14f, .15f, .18f), .5f); dark = WorldMaterials.Solid(new Color(.08f, .08f, .1f));
-            white = WorldMaterials.Solid(new Color(.95f, .94f, .9f)); woodM = WorldMaterials.Solid(new Color(.55f, .38f, .24f));
-            leafM = WorldMaterials.Solid(new Color(.3f, .52f, .34f)); leafDark = WorldMaterials.Solid(new Color(.2f, .4f, .32f)); glassDark = WorldMaterials.Solid(new Color(.2f, .28f, .36f), .8f);
+            brassM = WorldMaterials.Surface(new Color(.86f, .66f, .28f), Surface.Metal); iron = WorldMaterials.Surface(new Color(.14f, .15f, .18f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .08f, .1f));
+            white = WorldMaterials.Solid(new Color(.95f, .94f, .9f)); woodM = WorldMaterials.Surface(new Color(.55f, .38f, .24f), Surface.Wood);
+            leafM = WorldMaterials.Surface(new Color(.3f, .52f, .34f), Surface.Foliage); leafDark = WorldMaterials.Surface(new Color(.2f, .4f, .32f), Surface.Foliage); glassDark = WorldMaterials.Surface(new Color(.2f, .28f, .36f), Surface.Glass);
             waterM = new Material(WorldMaterials.Glow(new Color(.1f, .55f, .6f), .3f)) { name = "Canal water" };
             lampM = new Material(WorldMaterials.Glow(Brass, 1.6f)) { name = "Fusion lamps" };
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .8f, .5f), 1.15f)) { name = "Fusion windows" };
@@ -247,7 +247,7 @@ namespace EverythingWorld.World
         /// A plane tree: a pale mottled trunk, a rounded crown, a few bulbs in its branches.
         void PlaneTree(LandContext ctx, MeshKit mk, Vector3 g, float s, System.Random rng)
         {
-            var up = Vector3.up; mk.Prism(WorldMaterials.Solid(new Color(.6f, .58f, .5f)), g - up * .3f, up, .26f * s, 3.4f * s, 7, .7f); ArtistBits.PostCollider(ctx.Root, g, 3f * s, .28f * s);
+            var up = Vector3.up; mk.Prism(WorldMaterials.Surface(new Color(.6f, .58f, .5f), Surface.Bark), g - up * .3f, up, .26f * s, 3.4f * s, 7, .7f); ArtistBits.PostCollider(ctx.Root, g, 3f * s, .28f * s);
             for (var k = 0; k < 3; k++) { var d = Quaternion.Euler(0, k * 120f + (float)rng.NextDouble() * 60f, 0) * Vector3.forward; mk.Blob(k % 2 == 0 ? leafM : leafDark, g + up * (4.4f * s + (float)rng.NextDouble() * .6f) + d * 1.3f * s, new Vector3(2.2f, 1.7f, 2.2f) * s, rng, .2f); }
             mk.Blob(leafM, g + up * 5.5f * s, new Vector3(2.2f, 1.5f, 2.2f) * s, rng, .2f);
             for (var k = 0; k < 6; k++) { var d = Quaternion.Euler((float)rng.NextDouble() * 60f - 10f, k * 60f, 0) * Vector3.forward; mk.Blob(bulbM[k % 3], g + up * 4.6f * s + d * 2.4f * s, Vector3.one * .08f, rng, 0f); }
@@ -256,7 +256,7 @@ namespace EverythingWorld.World
         /// A pot with a plant in it.
         void Pot(MeshKit mk, Vector3 g, float s, System.Random rng, bool flower = true)
         {
-            var up = Vector3.up; mk.Prism(WorldMaterials.Solid(new Color(.72f, .42f, .3f)), g, up, .2f * s, .34f * s, 8, 1.3f); mk.Blob(rng.Next(2) == 0 ? leafM : leafDark, g + up * .6f * s, new Vector3(.34f, .34f, .34f) * s, rng, .3f);
+            var up = Vector3.up; mk.Prism(WorldMaterials.Surface(new Color(.72f, .42f, .3f), Surface.Stone), g, up, .2f * s, .34f * s, 8, 1.3f); mk.Blob(rng.Next(2) == 0 ? leafM : leafDark, g + up * .6f * s, new Vector3(.34f, .34f, .34f) * s, rng, .3f);
             if (flower) mk.Blob(WorldMaterials.Glow(Bloom[rng.Next(Bloom.Length)], .35f), g + up * .86f * s, Vector3.one * .12f * s, rng, .2f);
         }
 
@@ -271,7 +271,7 @@ namespace EverythingWorld.World
         /// A mismatched chair to sit on: i picks which kind.
         void Chair(MeshKit mk, Vector3 g, Vector3 face, int i)
         {
-            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var m = i % 3 == 0 ? woodM : i % 3 == 1 ? WorldMaterials.Solid(Paints[(i + 2) % Paints.Length]) : iron;
+            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var m = i % 3 == 0 ? woodM : i % 3 == 1 ? WorldMaterials.Surface(Paints[(i + 2) % Paints.Length], Surface.Painted) : iron;
             mk.Box(m, g + up * .45f, new Vector3(.46f, .06f, .46f), rot); mk.Box(m, g + up * (.75f + (i % 2) * .1f) - face * .21f, new Vector3(.46f, .5f + (i % 2) * .2f, .05f), rot); mk.Prism(m, g, up, .03f, .45f, 4); foreach (var e in new[] { -.18f, .18f }) mk.Box(m, g + up * .22f + Vector3.Cross(up, face) * e + face * .18f, new Vector3(.04f, .44f, .04f), rot);
             Interact.Seat(tlife.transform, g + up * .5f, face);
         }
