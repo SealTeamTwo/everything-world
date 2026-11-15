@@ -28,7 +28,7 @@ namespace EverythingWorld.World
             var face = new Vector3(z.c.x - at.x, 0, z.c.z - at.z).normalized; if (face.sqrMagnitude < .1f) face = z.front;
             at = z.ctx.OnGround(at.x, at.z); var w = text.Length * .13f + .5f; var up = Vector3.up;
             z.mk.Prism(wood, at - up * .3f, up, .07f, 1.8f, 6); z.mk.Box(dark, at + up * 1.45f, new Vector3(w, .5f, .08f), Quaternion.LookRotation(face));
-            for (var k = 0; k < 6; k++) z.mk.Box(WorldMaterials.Solid(Rainbow[k]), at + up * (1.75f) + Vector3.Cross(up, face) * ((k - 2.5f) * w / 6f) - face * .01f, new Vector3(w / 6f, .1f, .1f), Quaternion.LookRotation(face));
+            for (var k = 0; k < 6; k++) z.mk.Box(WorldMaterials.Surface(Rainbow[k], World.Surface.Painted), at + up * (1.75f) + Vector3.Cross(up, face) * ((k - 2.5f) * w / 6f) - face * .01f, new Vector3(w / 6f, .1f, .1f), Quaternion.LookRotation(face));
             ArtistBits.Label(z.labels, text, at + up * 1.45f + face * .05f, face, .15f, Ink, TextAnchor.MiddleCenter); ArtistBits.PostCollider(z.root, at, 1.8f, .1f);
         }
 
@@ -49,17 +49,17 @@ namespace EverythingWorld.World
             for (var k = 4; k < 48; k += 4) { var lp = loop[k] + (loop[k] - z.c).normalized * 4.5f; lp = ctx.OnGround(lp.x, lp.z); LavaLamp(ctx, z.mk, lp, .38f, k / 4 % Rainbow.Length); }
             // Ship of Fools, aground on the sand
             {
-                var c = P(-40f, 8f); var hullM = WorldMaterials.Solid(new Color(.45f, .3f, .2f)); var rot = Quaternion.LookRotation(z.side) * Quaternion.Euler(0, 0, 8f);
+                var c = P(-40f, 8f); var hullM = WorldMaterials.Surface(new Color(.45f, .3f, .2f), World.Surface.Wood); var rot = Quaternion.LookRotation(z.side) * Quaternion.Euler(0, 0, 8f);
                 var sk = new MeshKit();
                 sk.Box(hullM, up * 1.2f, new Vector3(3.2f, 1.6f, 9f), Quaternion.identity); sk.Prism(hullM, up * 1.2f + Vector3.forward * 4.5f, Vector3.forward, 1.6f, 2.4f, 4, .1f, 45f);
                 sk.Box(wood, up * 2.05f, new Vector3(3f, .1f, 8.6f), Quaternion.identity); sk.Prism(wood, up * 2f, up, .15f, 8f, 6);
-                sk.Box(WorldMaterials.Solid(new Color(.95f, .9f, .8f)), up * 6f + Vector3.forward * .3f, new Vector3(.05f, 3.6f, 4.2f), Quaternion.identity);
-                var bonesM = WorldMaterials.Solid(new Color(.93f, .92f, .86f));
+                sk.Box(WorldMaterials.Surface(new Color(.95f, .9f, .8f), World.Surface.Cloth), up * 6f + Vector3.forward * .3f, new Vector3(.05f, 3.6f, 4.2f), Quaternion.identity);
+                var bonesM = WorldMaterials.Surface(new Color(.93f, .92f, .86f), World.Surface.Painted);
                 for (var k = 0; k < 3; k++)
                 {
                     var bp = up * 2.1f + Vector3.forward * (-2.5f + k * 2.2f) + Vector3.right * ((k % 2) - .5f);
                     sk.Box(bonesM, bp + up * .6f, new Vector3(.12f, 1.1f, .12f), Quaternion.identity); sk.Blob(bonesM, bp + up * 1.35f, new Vector3(.2f, .24f, .22f), ctx.Rng, 0f);
-                    for (var j = 0; j < 3; j++) sk.Cone(WorldMaterials.Solid(Rainbow[(k * 2 + j) % Rainbow.Length], .4f), bp + up * 1.5f, .12f, .45f, 6, j * 120f);
+                    for (var j = 0; j < 3; j++) sk.Cone(WorldMaterials.Surface(Rainbow[(k * 2 + j) % Rainbow.Length], World.Surface.Painted), bp + up * 1.5f, .12f, .45f, 6, j * 120f);
                 }
                 var lantern = new Material(GlowM(new Color(1f, .75f, .35f), 2.4f)) { name = "Ship's lantern" }; sk.Box(lantern, up * 3f + Vector3.forward * 5.6f, new Vector3(.4f, .5f, .4f), Quaternion.identity); life.shipLantern = lantern;
                 var t = Mover(z, "Ship of Fools", sk, c, rot); life.ship = t;
@@ -68,7 +68,7 @@ namespace EverythingWorld.World
             }
             // Brokedown Palace, crumbling, a river of blue glass going by
             {
-                var c = P(-30f, -36f); var rot = Quaternion.LookRotation(z.front); var pale = WorldMaterials.Solid(new Color(.88f, .82f, .75f));
+                var c = P(-30f, -36f); var rot = Quaternion.LookRotation(z.front); var pale = WorldMaterials.Surface(new Color(.88f, .82f, .75f), World.Surface.Stone);
                 z.mk.Box(pale, c + up * .3f, new Vector3(12f, .6f, 4f), rot); z.solid.Box(pale, c + up * .3f, new Vector3(12f, .6f, 4f), rot);
                 for (var k = 0; k < 5; k++)
                 {
@@ -84,7 +84,7 @@ namespace EverythingWorld.World
             }
             // Dire Wolf, howling on a rock under a big pale moon
             {
-                var c = P(24f, -38f); var rock = WorldMaterials.Solid(new Color(.55f, .45f, .5f)); var fur = WorldMaterials.Solid(new Color(.3f, .28f, .32f));
+                var c = P(24f, -38f); var rock = WorldMaterials.Surface(new Color(.55f, .45f, .5f), World.Surface.Stone); var fur = WorldMaterials.Surface(new Color(.3f, .28f, .32f), World.Surface.Painted);
                 z.mk.Blob(rock, c + up * 1.2f, new Vector3(3.2f, 1.8f, 2.8f), ctx.Rng, .25f); z.solid.Box(rock, c + up * 1.2f, new Vector3(5.6f, 2.6f, 5f), Quaternion.identity);
                 var w = c + up * 2.8f; var f = (z.front - z.side).normalized;
                 z.mk.Blob(fur, w + up * .9f, new Vector3(.7f, .7f, 1.5f), ctx.Rng, 0f);
@@ -101,7 +101,7 @@ namespace EverythingWorld.World
             }
             // Ripple: a still round pool, a rowboat on it (Row Jimmy)
             {
-                var c = P(32f, 30f); var rim = WorldMaterials.Solid(new Color(.85f, .78f, .65f));
+                var c = P(32f, 30f); var rim = WorldMaterials.Surface(new Color(.85f, .78f, .65f), World.Surface.Stone);
                 z.mk.Prism(rim, c - up * .2f, up, 6.4f, .45f, 32); z.solid.Prism(rim, c - up * .3f, up, 6.4f, .9f, 16);
                 z.mk.Prism(WorldMaterials.Solid(new Color(.1f, .3f, .55f), .97f), c + up * .2f, up, 5.8f, .1f, 32);
                 var ringM = new Material(GlowM(new Color(.7f, .9f, 1f), .6f)) { name = "Ripples" }; life.rippleM = ringM;
@@ -111,7 +111,7 @@ namespace EverythingWorld.World
                     var t = rk.BuildSingle("Ripple ring", life.transform, false).transform; t.position = c + up * .32f; t.localScale = Vector3.one * (1f + k * 1.3f); life.ripples.Add(t);
                 }
                 life.ripplePool = c + up * .32f;
-                var boat = new MeshKit(); var paint = WorldMaterials.Solid(new Color(.85f, .3f, .2f), .5f);
+                var boat = new MeshKit(); var paint = WorldMaterials.Surface(new Color(.85f, .3f, .2f), World.Surface.Painted);
                 boat.Box(paint, up * .25f, new Vector3(1.1f, .4f, 2.8f), Quaternion.identity); boat.Box(wood, up * .45f, new Vector3(1f, .06f, .3f), Quaternion.identity);
                 foreach (var s in new[] { -1f, 1f }) boat.Box(wood, up * .5f + Vector3.right * s * .9f, new Vector3(1.6f, .05f, .12f), Quaternion.Euler(0, 0, s * -15f));
                 life.rowboat = Mover(z, "Row Jimmy's boat", boat, c + up * .25f + z.side * 2.4f, Quaternion.LookRotation(z.front));
@@ -120,7 +120,7 @@ namespace EverythingWorld.World
             }
             // Uncle Sam: a tall skeleton on stilts in a starred top hat
             {
-                var c = P(36f, 12f); var bonesM = WorldMaterials.Solid(new Color(.93f, .92f, .86f)); var blue = WorldMaterials.Solid(new Color(.15f, .25f, .6f)); var red = WorldMaterials.Solid(new Color(.8f, .12f, .15f));
+                var c = P(36f, 12f); var bonesM = WorldMaterials.Surface(new Color(.93f, .92f, .86f), World.Surface.Painted); var blue = WorldMaterials.Surface(new Color(.15f, .25f, .6f), World.Surface.Painted); var red = WorldMaterials.Surface(new Color(.8f, .12f, .15f), World.Surface.Painted);
                 foreach (var s in new[] { -.4f, .4f }) { z.mk.Box(red, c + z.side * s + up * 2.5f, new Vector3(.25f, 5f, .25f), Quaternion.identity); for (var k = 0; k < 5; k++) z.mk.Box(white, c + z.side * s + up * (.5f + k * 1f), new Vector3(.27f, .3f, .27f), Quaternion.identity); }
                 z.mk.Box(blue, c + up * 6.2f, new Vector3(1.2f, 2f, .6f), Quaternion.LookRotation(z.front));
                 for (var k = 0; k < 4; k++) z.mk.Box(bonesM, c + up * (5.6f + k * .35f) + z.front * .32f, new Vector3(.8f, .06f, .05f), Quaternion.LookRotation(z.front));
@@ -142,7 +142,7 @@ namespace EverythingWorld.World
             }
             // Samson and Delilah: two temple pillars, one cracked and leaning
             {
-                var c = P(-36f, 30f); var stoneM = WorldMaterials.Solid(new Color(.85f, .75f, .6f)); var glow = new Material(GlowM(new Color(1f, .7f, .3f), .4f)) { name = "Samson's cracks" }; life.samson = glow;
+                var c = P(-36f, 30f); var stoneM = WorldMaterials.Surface(new Color(.85f, .75f, .6f), World.Surface.Stone); var glow = new Material(GlowM(new Color(1f, .7f, .3f), .4f)) { name = "Samson's cracks" }; life.samson = glow;
                 z.mk.Prism(stoneM, c - z.side * 2.5f, up, .8f, 9f, 12); z.solid.Prism(stoneM, c - z.side * 2.5f, up, .8f, 9f, 8);
                 var lean = (up + z.side * .25f).normalized; z.mk.Prism(stoneM, c + z.side * 2.5f, lean, .8f, 4f, 12); z.mk.Prism(stoneM, c + z.side * 2.5f + lean * 4.1f, (lean + z.side * .15f).normalized, .78f, 4.6f, 12);
                 z.mk.Box(glow, c + z.side * 2.5f + lean * 4.05f, new Vector3(1.7f, .08f, 1.7f), Quaternion.LookRotation(z.front)); z.solid.Prism(stoneM, c + z.side * 2.5f, up, .8f, 8f, 8);
@@ -153,14 +153,14 @@ namespace EverythingWorld.World
             {
                 var c = P(8f, -40f); var neon = new Material(GlowM(new Color(1f, .3f, .55f), 1.6f)) { name = "Fadeaway neon" }; life.fadeaway = neon;
                 z.mk.Prism(metal, c, up, .18f, 7f, 8); ArtistBits.PostCollider(z.root, c, 7f, .3f);
-                z.mk.Box(WorldMaterials.Solid(new Color(.15f, .35f, .3f)), c + up * 7.8f, new Vector3(5f, 2f, .3f), Quaternion.LookRotation(z.front));
+                z.mk.Box(WorldMaterials.Surface(new Color(.15f, .35f, .3f), World.Surface.Painted), c + up * 7.8f, new Vector3(5f, 2f, .3f), Quaternion.LookRotation(z.front));
                 z.mk.Box(neon, c + up * 7.8f + z.front * .17f, new Vector3(4.6f, .1f, .02f), Quaternion.LookRotation(z.front)); z.mk.Box(neon, c + up * 8.6f + z.front * .17f, new Vector3(4.6f, .1f, .02f), Quaternion.LookRotation(z.front));
                 ArtistBits.Label(z.labels, "MOTEL", c + up * 8.15f + z.front * .18f, z.front, .5f, new Color(1f, .5f, .7f), TextAnchor.MiddleCenter);
                 DeadSign(z, c + z.front * 3f + z.side * 3f, "WEST L.A. FADEAWAY"); PlaceMark(z, "fadeaway", c, 12f);
             }
             // Friend of the Devil: a little red devil on a fence post at a crossroads
             {
-                var c = P(38f, -14f); var red = WorldMaterials.Solid(new Color(.8f, .12f, .1f), .5f);
+                var c = P(38f, -14f); var red = WorldMaterials.Surface(new Color(.8f, .12f, .1f), World.Surface.Painted);
                 z.mk.Box(wood, c + up * 1.1f, new Vector3(.3f, 2.2f, .3f), Quaternion.identity); ArtistBits.PostCollider(z.root, c, 2.2f, .25f);
                 foreach (var d in new[] { z.side, -z.side }) z.mk.Box(wood, c + up * 1.4f + d * 2f, new Vector3(.12f, .12f, 4f), Quaternion.LookRotation(d));
                 var dv = c + up * 2.3f; z.mk.Blob(red, dv + up * .3f, new Vector3(.3f, .35f, .25f), ctx.Rng, 0f); z.mk.Blob(red, dv + up * .85f, Vector3.one * .22f, ctx.Rng, 0f);

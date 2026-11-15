@@ -41,8 +41,8 @@ namespace EverythingWorld.World
         void MakeMaterials()
         {
             dark = WorldMaterials.Solid(new Color(.1f, .08f, .12f)); white = WorldMaterials.Solid(new Color(.96f, .95f, .92f));
-            sandM = WorldMaterials.Solid(new Color(.9f, .72f, .6f)); stalk = WorldMaterials.Solid(new Color(.95f, .9f, .82f));
-            metal = WorldMaterials.Solid(new Color(.75f, .76f, .8f), .8f); wood = WorldMaterials.Solid(new Color(.5f, .36f, .25f));
+            sandM = WorldMaterials.Surface(new Color(.9f, .72f, .6f), World.Surface.Stone); stalk = WorldMaterials.Surface(new Color(.95f, .9f, .82f), World.Surface.Painted);
+            metal = WorldMaterials.Surface(new Color(.75f, .76f, .8f), World.Surface.Metal); wood = WorldMaterials.Surface(new Color(.5f, .36f, .25f), World.Surface.Wood);
             capGlow = new Material[Rainbow.Length];
             for (var i = 0; i < Rainbow.Length; i++) capGlow[i] = new Material(WorldMaterials.Glow(Rainbow[i], 1.1f)) { name = "Mushroom glow" };
         }
@@ -202,7 +202,7 @@ namespace EverythingWorld.World
             var up = Vector3.up; var h = 3.2f * s; var capR = 2.2f * s;
             mk.Prism(stalk, at - up * .3f, up, .35f * s, h + .3f, 8, .8f);
             var top = at + up * h;
-            soft.Blob(WorldMaterials.Solid(Rainbow[colour % Rainbow.Length], .5f), top + up * .45f * s, new Vector3(capR, .9f * s, capR), ctx.Rng, .1f);
+            soft.Blob(WorldMaterials.Surface(Rainbow[colour % Rainbow.Length], World.Surface.Painted), top + up * .45f * s, new Vector3(capR, .9f * s, capR), ctx.Rng, .1f);
             mk.Prism(capGlow[colour % capGlow.Length], top - up * .05f, up, capR * .92f, .1f, 14);
             for (var k = 0; k < 6; k++) { var d = Quaternion.Euler(0, k * 60f + ctx.Range(-20f, 20f), 0) * Vector3.forward; soft.Blob(white, top + up * (.75f * s) + d * capR * ctx.Range(.35f, .7f), new Vector3(.3f, .12f, .3f) * s, ctx.Rng, .2f); }
             ArtistBits.PostCollider(ctx.Root, at, h, .4f * s);
@@ -239,7 +239,7 @@ namespace EverythingWorld.World
             // painted in bands of colour, a few metres each, cycling through the rainbow
             for (var i = 0; i + 1 < n; i++)
             {
-                var mat = WorldMaterials.Solid(Color.Lerp(Rainbow[(startColour + i / 2) % Rainbow.Length], Color.white, .25f), .2f);
+                var mat = WorldMaterials.Surface(Color.Lerp(Rainbow[(startColour + i / 2) % Rainbow.Length], Color.white, .25f), World.Surface.Painted);
                 for (var j = 0; j < m; j++) mk.Quad(mat, V[i, j], V[i, j + 1], V[i + 1, j + 1], V[i + 1, j], (V[i, j] + V[i + 1, j + 1]) / 2f - Vector3.up);
             }
         }
@@ -259,7 +259,7 @@ namespace EverythingWorld.World
                 mk.Prism(capGlow[k % capGlow.Length], c + off + up * (y + 1.2f), up, r + .08f, .35f, 12, 1f, k * 22f);
             }
             var top = c + new Vector3(Mathf.Cos(segs * .5f), 0, Mathf.Sin(segs * .5f)) * 1.2f + up * (segs * 2.4f);
-            soft.Blob(WorldMaterials.Solid(new Color(.95f, .3f, .55f), .5f), top + up * 3f, new Vector3(16f, 6f, 16f), ctx.Rng, .08f);
+            soft.Blob(WorldMaterials.Surface(new Color(.95f, .3f, .55f), World.Surface.Painted), top + up * 3f, new Vector3(16f, 6f, 16f), ctx.Rng, .08f);
             mk.Prism(capGlow[4], top + up * .2f, up, 14.5f, .3f, 24);
             for (var k = 0; k < 14; k++) { var d = Quaternion.Euler(0, k * 26f, 0) * Vector3.forward; soft.Blob(white, top + up * (4.6f + (k % 3) * .6f) + d * ctx.Range(5f, 12f), new Vector3(1.6f, .5f, 1.6f), ctx.Rng, .2f); }
             for (var k = 0; k < 24; k++) { var d = Quaternion.Euler(0, k * 15f, 0) * Vector3.forward; mk.Box(capGlow[k % capGlow.Length], top + d * 8f, new Vector3(.25f, .4f, 12f), Quaternion.LookRotation(d)); }
@@ -354,7 +354,7 @@ namespace EverythingWorld.World
         /// and a clump of little ones.
         void Shroom(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, float s, int colour, int kind)
         {
-            var up = Vector3.up; var col = WorldMaterials.Solid(Rainbow[colour % Rainbow.Length], .5f);
+            var up = Vector3.up; var col = WorldMaterials.Surface(Rainbow[colour % Rainbow.Length], World.Surface.Painted);
             // each one turned its own way (from where it stands, so nothing else moves): same-shaped neighbours'
             // faces are then never parallel, so they can't line up in one plane and flicker
             var turn = Mathf.Repeat(at.x * 7.31f + at.z * 3.17f, 36f);
@@ -378,16 +378,16 @@ namespace EverythingWorld.World
         void Desert(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at)
         {
             var up = Vector3.up; var roll = ctx.Range(0f, 1f);
-            if (roll < .35f) { var rock = WorldMaterials.Solid(Bands[ctx.Rng.Next(Bands.Length)]); for (var k = 0; k < 3; k++) { var bc = at + new Vector3(ctx.Range(-2f, 2f), .6f + k * .4f, ctx.Range(-2f, 2f)); var br = new Vector3(ctx.Range(1.2f, 2.4f), ctx.Range(.8f, 1.4f), ctx.Range(1f, 2f)); mk.Blob(rock, bc, br, ctx.Rng, .25f); solid.Box(rock, bc, br * 1.7f, Quaternion.identity); } solid.Box(rock, at + up * 1f, new Vector3(4.5f, 2f, 4.5f), Quaternion.identity); }
-            else if (roll < .65f) { var ag = WorldMaterials.Solid(new Color(.45f, .6f, .5f)); for (var k = 0; k < 9; k++) { var d = Quaternion.Euler(0, k * 40f, 0) * Vector3.forward; soft.Prism(ag, at, (d + up * 1.3f).normalized, .15f, 1.6f, 4, .1f); } }
-            else { var cac = WorldMaterials.Solid(new Color(.3f, .55f, .35f)); var h = ctx.Range(3f, 5f); mk.Prism(cac, at - up * .3f, up, .35f, h, 8, .9f); foreach (var s in new[] { -1f, 1f }) { if (ctx.Chance(.6f)) { var arm = at + up * h * ctx.Range(.4f, .6f); var d = Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward; mk.Prism(cac, arm, d, .25f, .8f, 8); mk.Prism(cac, arm + d * .8f, up, .25f, 1.4f, 8, .9f); ArtistBits.PostCollider(ctx.Root, at + d * .8f, arm.y - at.y + 1.4f, .45f); } } mk.Blob(GlowM(Rainbow[ctx.Rng.Next(Rainbow.Length)], 2f), at + up * (h + .1f), Vector3.one * .2f, ctx.Rng, 0f); ArtistBits.PostCollider(ctx.Root, at, h, .4f); }
+            if (roll < .35f) { var rock = WorldMaterials.Surface(Bands[ctx.Rng.Next(Bands.Length)], World.Surface.Stone); for (var k = 0; k < 3; k++) { var bc = at + new Vector3(ctx.Range(-2f, 2f), .6f + k * .4f, ctx.Range(-2f, 2f)); var br = new Vector3(ctx.Range(1.2f, 2.4f), ctx.Range(.8f, 1.4f), ctx.Range(1f, 2f)); mk.Blob(rock, bc, br, ctx.Rng, .25f); solid.Box(rock, bc, br * 1.7f, Quaternion.identity); } solid.Box(rock, at + up * 1f, new Vector3(4.5f, 2f, 4.5f), Quaternion.identity); }
+            else if (roll < .65f) { var ag = WorldMaterials.Surface(new Color(.45f, .6f, .5f), World.Surface.Foliage); for (var k = 0; k < 9; k++) { var d = Quaternion.Euler(0, k * 40f, 0) * Vector3.forward; soft.Prism(ag, at, (d + up * 1.3f).normalized, .15f, 1.6f, 4, .1f); } }
+            else { var cac = WorldMaterials.Surface(new Color(.3f, .55f, .35f), World.Surface.Foliage); var h = ctx.Range(3f, 5f); mk.Prism(cac, at - up * .3f, up, .35f, h, 8, .9f); foreach (var s in new[] { -1f, 1f }) { if (ctx.Chance(.6f)) { var arm = at + up * h * ctx.Range(.4f, .6f); var d = Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward; mk.Prism(cac, arm, d, .25f, .8f, 8); mk.Prism(cac, arm + d * .8f, up, .25f, 1.4f, 8, .9f); ArtistBits.PostCollider(ctx.Root, at + d * .8f, arm.y - at.y + 1.4f, .45f); } } mk.Blob(GlowM(Rainbow[ctx.Rng.Next(Rainbow.Length)], 2f), at + up * (h + .1f), Vector3.one * .2f, ctx.Rng, 0f); ArtistBits.PostCollider(ctx.Root, at, h, .4f); }
         }
 
         /// A little dancing bear statue by the path, in one of the rainbow colours.
         void PathBear(LandContext ctx, MeshKit mk, Vector3 at, Vector3 face, int colour)
         {
-            var up = Vector3.up; var fur = WorldMaterials.Solid(Rainbow[colour % Rainbow.Length], .5f); var side = Vector3.Cross(up, face);
-            mk.Prism(WorldMaterials.Solid(new Color(.85f, .8f, .72f)), at - up * .2f, up, .45f, .4f, 10);
+            var up = Vector3.up; var fur = WorldMaterials.Surface(Rainbow[colour % Rainbow.Length], World.Surface.Painted); var side = Vector3.Cross(up, face);
+            mk.Prism(WorldMaterials.Surface(new Color(.85f, .8f, .72f), World.Surface.Stone), at - up * .2f, up, .45f, .4f, 10);
             mk.Blob(fur, at + up * .95f, new Vector3(.32f, .42f, .26f), ctx.Rng, 0f); mk.Blob(fur, at + up * 1.5f, Vector3.one * .23f, ctx.Rng, 0f);
             foreach (var s in new[] { -1f, 1f }) { mk.Blob(fur, at + up * 1.7f + side * s * .16f, Vector3.one * .08f, ctx.Rng, 0f); mk.Box(fur, at + up * 1.1f + side * s * .35f, new Vector3(.1f, .4f, .1f), Quaternion.LookRotation(face) * Quaternion.Euler(0, 0, s * -40f)); }
             mk.Box(fur, at + up * .45f - side * .12f, new Vector3(.12f, .45f, .12f), Quaternion.LookRotation(face) * Quaternion.Euler(15f, 0, 0)); mk.Box(fur, at + up * .5f + side * .14f, new Vector3(.12f, .4f, .12f), Quaternion.LookRotation(face) * Quaternion.Euler(-40f, 0, 0));
@@ -412,24 +412,24 @@ namespace EverythingWorld.World
         void Camper(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 at, int k)
         {
             var up = Vector3.up; var dir = Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward; var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(up, dir);
-            var top = WorldMaterials.Solid(new Color(.96f, .94f, .88f), .5f);
+            var top = WorldMaterials.Surface(new Color(.96f, .94f, .88f), World.Surface.Painted);
             foreach (var s in new[] { -1f, 1f }) foreach (var z in new[] { -1.4f, 1.4f }) { var w = at + side * s * .95f + dir * z; at.y = Mathf.Max(at.y, ctx.Ground(w.x, w.z)); }   // stand on the highest wheel, not sunk on a slope
             mk.Box(top, at + up * 2f, new Vector3(2f, 1.2f, 4.4f), rot);
             // a pop-top roof in a bright colour with a painted flower, so seen from above it reads as a camper, not a white box
-            var pop = at + up * 2.75f - dir * .3f; mk.Box(WorldMaterials.Solid(Rainbow[(k + 3) % Rainbow.Length], .5f), pop, new Vector3(1.8f, .3f, 3.2f), rot);
-            for (var f = 0; f < 6; f++) mk.Blob(WorldMaterials.Solid(Color.Lerp(Rainbow[(k + 5) % Rainbow.Length], Color.white, .3f), .4f), pop + up * .16f + Quaternion.AngleAxis(f * 60f, up) * dir * .45f, new Vector3(.3f, .03f, .3f), ctx.Rng, 0f);
-            mk.Blob(WorldMaterials.Solid(new Color(1f, .85f, .2f), .4f), pop + up * .19f, new Vector3(.25f, .03f, .25f), ctx.Rng, 0f);
-            for (var b = 0; b < 6; b++) mk.Box(WorldMaterials.Solid(Rainbow[(b + k) % Rainbow.Length], .6f), at + up * (.7f + b * .14f) - dir * .1f, new Vector3(2.03f, .15f, 4.3f), rot);
-            mk.Box(WorldMaterials.Solid(new Color(.2f, .3f, .4f), .9f), at + up * 2.1f + dir * 1.9f, new Vector3(1.8f, .8f, .6f), rot * Quaternion.Euler(-12f, 0, 0));
-            mk.Prism(WorldMaterials.Solid(Rainbow[k % Rainbow.Length], .6f), at + up * 1.5f + dir * 2.21f, dir, .45f, .04f, 16);
+            var pop = at + up * 2.75f - dir * .3f; mk.Box(WorldMaterials.Surface(Rainbow[(k + 3) % Rainbow.Length], World.Surface.Painted), pop, new Vector3(1.8f, .3f, 3.2f), rot);
+            for (var f = 0; f < 6; f++) mk.Blob(WorldMaterials.Surface(Color.Lerp(Rainbow[(k + 5) % Rainbow.Length], Color.white, .3f), World.Surface.Painted), pop + up * .16f + Quaternion.AngleAxis(f * 60f, up) * dir * .45f, new Vector3(.3f, .03f, .3f), ctx.Rng, 0f);
+            mk.Blob(WorldMaterials.Surface(new Color(1f, .85f, .2f), World.Surface.Painted), pop + up * .19f, new Vector3(.25f, .03f, .25f), ctx.Rng, 0f);
+            for (var b = 0; b < 6; b++) mk.Box(WorldMaterials.Surface(Rainbow[(b + k) % Rainbow.Length], World.Surface.Painted), at + up * (.7f + b * .14f) - dir * .1f, new Vector3(2.03f, .15f, 4.3f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.2f, .3f, .4f), World.Surface.Glass), at + up * 2.1f + dir * 1.9f, new Vector3(1.8f, .8f, .6f), rot * Quaternion.Euler(-12f, 0, 0));
+            mk.Prism(WorldMaterials.Surface(Rainbow[k % Rainbow.Length], World.Surface.Painted), at + up * 1.5f + dir * 2.21f, dir, .45f, .04f, 16);
             foreach (var s in new[] { -1f, 1f }) foreach (var z in new[] { -1.4f, 1.4f }) mk.Prism(dark, at + side * s * .95f + dir * z + up * .4f, side * s, .4f, .25f, 12);
-            for (var f = 0; f < 5; f++) mk.Blob(WorldMaterials.Solid(Rainbow[(f + k + 2) % Rainbow.Length], .4f), at + up * (1f + (f % 2) * .6f) + side * 1.02f + dir * (-1.5f + f * .7f), new Vector3(.02f, .25f, .25f), ctx.Rng, .1f);
+            for (var f = 0; f < 5; f++) mk.Blob(WorldMaterials.Surface(Rainbow[(f + k + 2) % Rainbow.Length], World.Surface.Painted), at + up * (1f + (f % 2) * .6f) + side * 1.02f + dir * (-1.5f + f * .7f), new Vector3(.02f, .25f, .25f), ctx.Rng, .1f);
             solid.Box(top, at + up * 1.3f, new Vector3(2.1f, 2.6f, 4.6f), rot);
         }
 
         void Spiral(LandContext ctx, MeshKit mk, Vector3 at)
         {
-            var c = Rainbow[ctx.Rng.Next(Rainbow.Length)]; var m = WorldMaterials.Solid(c, .5f);
+            var c = Rainbow[ctx.Rng.Next(Rainbow.Length)]; var m = WorldMaterials.Surface(c, World.Surface.Painted);
             for (var k = 0; k < 18; k++)
             {
                 var a = k * .55f; var r = 1.4f - k * .07f;
