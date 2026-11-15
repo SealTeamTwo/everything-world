@@ -262,24 +262,50 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Sparse wiry grass in the cracks, tipped with cyan.
+        /// Sparse wiry grass in the cracks, tipped with cyan: tight clusters where the cracks meet, dull wisps on the open
+        /// rock, and long bands along the fault lines whose tips glow hard cyan, a few in violet.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .8f, new Color(.3f, .3f, .36f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2016);
             const float st = 3f;
+            Color dark = new Color(.26f, .26f, .34f), lit = new Color(.38f, .35f, .44f);
+            int clusters = 0, wisps = 0, banded = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (Mathf.PerlinNoise(px * .05f + 1f, pz * .05f + 9f) < .55f) continue;
+                var kind = WindMesh.Patch(px, pz, .02f, 71f);                                    // clusters or wisps
+                var band = Mathf.Clamp01(Mathf.PerlinNoise(px * .045f + 13f, pz * .009f + 29f));  // long fault-line bands, stretched along x
+                var tone = WindMesh.Patch(px, pz, .03f, 72f);
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.28f, .28f, .34f), new Color(.36f, .34f, .42f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .24f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, Cyan, .5f), rng, 3, .08f);
+                var col = Color.Lerp(dark, lit, tone) * (.92f + r2 * .16f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (band > .68f)
+                {
+                    // a fault-line band: upright, hard-glowing tips
+                    var tipC = r1 < .15f ? Violet : Cyan;
+                    wm.Tuft(at, .3f + r2 * .3f, col, Color.Lerp(col, tipC, .7f), rng, 3, .06f, .1f); banded++;
+                }
+                else if (kind < .5f)
+                {
+                    // a cluster where the cracks meet
+                    wm.Tuft(at, .26f + r2 * .3f, col, Color.Lerp(col, Cyan, .5f), rng, 3, .08f, .1f);
+                    if (r1 < .6f) wm.Tuft(at + new Vector3(.3f, 0, -.25f), .2f + r1 * .2f, col, Color.Lerp(col, Cyan, .45f), rng, 2, .07f, .1f);
+                    clusters++;
+                }
+                else
+                {
+                    // dull wisps on the open rock
+                    wm.Tuft(at, .18f + r2 * .2f, col * .9f, Color.Lerp(col, Cyan, .25f), rng, 2, .06f, .1f); wisps++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Shard grass", ctx.Root, mat);
+            Debug.Log($"The Dubstep Shards grass: {clusters} crack clusters, {wisps} wisps, {banded} glowing fault-line tufts");
         }
     }
 }
