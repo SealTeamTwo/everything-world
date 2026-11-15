@@ -412,26 +412,52 @@ namespace EverythingWorld.World
             life.sunAt = sc;
         }
 
-        /// The verges: tough green grass on the red earth, nothing on the sand.
+        /// The verges, in patches the way a hot red-earth town grows: rough tussocks thick along the road edges
+        /// where the rain runs off, short tough grass worn thin across the open ground with plenty of bare red earth
+        /// showing, and drifts where the tufts are all tipped with one kind of flower (gold, pink or orange). Each
+        /// patch is its own shade, from a deep blue-green to a sun-yellowed green; nothing on the sand.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .9f, new Color(.24f, .44f, .24f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1971);
             Color[] flowers = { new Color(1f, .8f, .2f), Pink, new Color(1f, .5f, .2f) };
+            Color deep = new Color(.16f, .38f, .24f), sunned = new Color(.34f, .5f, .2f);
             const float st = 2.6f;
+            int worn = 0, rough = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 4.2f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 var gy = ctx.Ground(px, pz); if (gy < waterY + 3.4f) continue;
-                if (Mathf.PerlinNoise(px * .04f + 5f, pz * .04f + 1f) < .4f) continue;
+                var kerb = NearPath(px, pz, 7f);                                     // the road edges, where the run-off feeds it
+                var kind = WindMesh.Patch(px, pz, .014f, 2f);                        // rough grass or worn grass
+                var bare = WindMesh.Patch(px, pz, .04f, 1f);                         // bare red earth
+                var roughHere = kerb || kind > .58f;
+                if (bare < (roughHere ? .3f : .5f)) continue;
+                var tone = WindMesh.Patch(px, pz, .022f, 3f); var drift = WindMesh.Patch(px, pz, .07f, 4f);
+                var r1 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.18f, .4f, .22f), new Color(.3f, .5f, .24f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, gy - .04f, pz), .26f + (float)rng.NextDouble() * .34f, col, rng.NextDouble() < .1 ? flowers[rng.Next(flowers.Length)] : Color.Lerp(col, Gold, .3f), rng, 3, .06f);
+                var at = new Vector3(px, gy - .04f, pz);
+                var col = Color.Lerp(deep, sunned, Mathf.Clamp01((tone - .25f) * 2f)) * (.92f + r1 * .16f);
+                var tip = Color.Lerp(col, Gold, .3f);
+                if (roughHere)
+                {
+                    // rough tussocks, knee high, the odd flower-tipped blade as before
+                    wm.Tuft(at, .34f + (float)rng.NextDouble() * .4f, col, rng.NextDouble() < .1 ? flowers[rng.Next(flowers.Length)] : tip, rng, 4, .065f, .14f); rough++;
+                }
+                else
+                {
+                    // worn grass: short and thin; in a drift every tuft is tipped with the drift's one flower
+                    var inDrift = drift > .64f;
+                    var fl = flowers[WindMesh.Pick(WindMesh.Patch(px, pz, .02f, 5f), flowers.Length)];
+                    wm.Tuft(at, .18f + (float)rng.NextDouble() * .24f, Color.Lerp(col, sunned, .2f), inDrift && rng.NextDouble() < .6 ? fl : tip, rng, 3, .05f, .14f); worn++;
+                    if (inDrift) blooms++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Afrobeat verge", ctx.Root, mat);
+            Debug.Log($"The Afrobeat Coast verges: {rough} rough tussocks, {worn} worn-grass tufts ({blooms} in flower drifts)");
         }
     }
 }
