@@ -319,31 +319,58 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Prairie grass everywhere, and wheat standing tall and gold in the fenced fields.
+        /// Prairie grass everywhere, in patches the way a prairie grows: tall bluestem standing in blue-green
+        /// swathes with drifts of purple coneflowers through them, short gold buffalo grass between, and bare dry
+        /// dirt. Wheat stands tall and gold in the fenced fields, each field at its own ripeness. Every blade its own shade.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.5f, .9f, new Color(.74f, .66f, .36f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1991);
             WindMesh Mesh(float px, float pz) { var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f)); if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh(); return wm; }
+            var nField = 0;
             foreach (var (c, r, w, dp) in fields)
+            {
+                var ripe = WindMesh.Patch(c.x, c.z, .01f, 7f);                      // this field's ripeness: greener gold to deep gold
+                var lo = Color.Lerp(new Color(.74f, .66f, .34f), new Color(.84f, .64f, .3f), ripe); var hi = Color.Lerp(new Color(.9f, .84f, .48f), new Color(.98f, .8f, .44f), ripe);
                 for (var x = -w / 2f; x < w / 2f; x += .9f)
                 for (var zz = -dp / 2f; zz < dp / 2f; zz += .7f)
                 {
                     var p = c + r * new Vector3(x + ((float)rng.NextDouble() - .5f) * .3f, 0, zz); if (!ctx.IsLand(p.x, p.z, 0f)) continue;
-                    var col = Color.Lerp(new Color(.82f, .66f, .32f), new Color(.96f, .82f, .46f), (float)rng.NextDouble());
-                    Mesh(p.x, p.z).Tuft(new Vector3(p.x, ctx.Ground(p.x, p.z) - .04f, p.z), .9f + (float)rng.NextDouble() * .3f, col, new Color(1f, .9f, .6f), rng, 4, .05f);
+                    var col = Color.Lerp(lo, hi, (float)rng.NextDouble());
+                    Mesh(p.x, p.z).Tuft(new Vector3(p.x, ctx.Ground(p.x, p.z) - .04f, p.z), .9f + (float)rng.NextDouble() * .3f, col, new Color(1f, .9f, .6f), rng, 4, .05f, .08f);
                 }
+                nField++;
+            }
             const float st = 2.6f;
+            Color bluestem = new Color(.46f, .56f, .4f), buffalo = new Color(.8f, .7f, .4f), cone = new Color(.6f, .5f, .9f);
+            int tall = 0, shortGrass = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 8f, pz * .04f + 4f) < .38f) continue;
-                var col = Color.Lerp(new Color(.62f, .6f, .32f), new Color(.82f, .7f, .4f), (float)rng.NextDouble());
-                Mesh(px, pz).Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .3f + (float)rng.NextDouble() * .4f, col, rng.NextDouble() < .06 ? new Color(.6f, .5f, .9f) : Color.Lerp(col, Cream, .4f), rng, 3, .07f);
+                var kind = WindMesh.Patch(px, pz, .012f, 1f);                     // tall bluestem or short buffalo grass
+                var bare = WindMesh.Patch(px, pz, .04f, 2f);                      // bare dry dirt
+                var isTall = kind > .55f;
+                if (bare < (isTall ? .3f : .45f)) continue;
+                var tone = WindMesh.Patch(px, pz, .022f, 3f); var drift = WindMesh.Patch(px, pz, .06f, 4f);
+                var shade = .92f + (float)rng.NextDouble() * .16f;
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (isTall)
+                {
+                    var col = Color.Lerp(bluestem, new Color(.64f, .6f, .34f), tone * .7f) * shade;
+                    var inDrift = rng.NextDouble() < (drift > .6f ? .35 : .04);
+                    Mesh(px, pz).Tuft(at, .5f + (float)rng.NextDouble() * .45f, col, inDrift ? cone : Color.Lerp(col, Cream, .3f), rng, 4, .06f, .14f); tall++;
+                    if (inDrift) blooms++;
+                }
+                else
+                {
+                    var col = Color.Lerp(new Color(.62f, .6f, .32f), buffalo, tone) * shade;
+                    Mesh(px, pz).Tuft(at, .2f + (float)rng.NextDouble() * .25f, col, Color.Lerp(col, Cream, .3f), rng, 3, .07f, .14f); shortGrass++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Prairie grass and wheat", ctx.Root, mat);
+            Debug.Log($"The Country Plains prairie: {tall} bluestem tufts ({blooms} with coneflowers), {shortGrass} buffalo-grass tufts, {nField} wheat fields");
         }
     }
 }
