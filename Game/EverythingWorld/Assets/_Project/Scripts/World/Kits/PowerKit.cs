@@ -669,11 +669,16 @@ namespace EverythingWorld.World
             ArtistBits.PostCollider(ctx.Root, at, h * .5f, .25f);
         }
 
+        /// The mountain grass in patches: short alpine turf, dark mountain grass, and thick heathy tussocks, with bare
+        /// rock between that widens as you climb. Each patch its own shade, from a cold dark blue-green to a warm
+        /// olive, all catching the sunset on their tips; every blade its own.
         void MountainGrass(LandContext ctx)
         {
             var mat = WindMesh.Material(.35f, 1f, new Color(.24f, .3f, .2f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1999);
             const float st = 2.6f;
+            Color cold = new Color(.15f, .24f, .2f), olive = new Color(.38f, .36f, .2f), sunset = new Color(.9f, .6f, .3f);
+            int turf = 0, grass = 0, tussocks = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
@@ -681,13 +686,26 @@ namespace EverythingWorld.World
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (hasCastle && Vector2.Distance(new Vector2(px, pz), castle2) < CastleR + 2f) continue;
                 var g = ctx.Ground(px, pz); if (g > 110f) continue;
-                if (Mathf.PerlinNoise(px * .03f + 3f, pz * .03f + 9f) < .4f) continue;
+                if (WindMesh.Patch(px, pz, .03f, 3f) < .4f + Mathf.InverseLerp(60f, 110f, g) * .25f) continue;   // bare rock, more of it up high
+                var kind = WindMesh.Patch(px, pz, .014f, 13f); var tone = WindMesh.Patch(px, pz, .022f, 24f);
+                var r = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.18f, .26f, .16f), new Color(.36f, .36f, .22f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, g - .04f, pz), .35f + (float)rng.NextDouble() * .45f, col, Color.Lerp(col, new Color(.9f, .6f, .3f), .35f), rng, 4, .06f);
+                var col = Color.Lerp(cold, olive, Mathf.Clamp01((tone - .25f) * 2f)) * (.9f + r * .2f);
+                var tip = Color.Lerp(col, sunset, .35f);
+                var at = new Vector3(px, g - .04f, pz);
+                if (kind < .35f) { wm.Tuft(at, .2f + r * .16f, col, tip, rng, 4, .06f, .15f); turf++; }
+                else if (kind < .7f) { wm.Tuft(at, .35f + r * .45f, col, tip, rng, 4, .06f, .15f); grass++; }
+                else
+                {
+                    var tc = col * .9f;
+                    wm.Tuft(at, .55f + r * .35f, tc, Color.Lerp(tc, sunset, .3f), rng, 5, .07f, .15f);
+                    if (r < .35f) wm.Tuft(at + new Vector3(.4f, 0, .35f), .45f + r * .35f, tc, Color.Lerp(tc, sunset, .3f), rng, 4, .07f, .15f);
+                    tussocks++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Mountain grass", ctx.Root, mat);
+            Debug.Log($"The Power Metal Peaks grass: {turf} turf tufts, {grass} mountain-grass tufts, {tussocks} tussocks");
         }
     }
 }
