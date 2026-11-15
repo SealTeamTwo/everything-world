@@ -339,24 +339,39 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Soft green grass with pink and white flowers.
+        /// Soft green grass with pink and white flowers, in patches like a desktop wallpaper: smooth bright lawns,
+        /// softer meadow grass, and drifts where the tips flower all pink or all white, bare ground between. Each
+        /// patch its own shade, from a cool aqua-green to a warm wallpaper green; every blade a touch its own.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .8f, new Color(.4f, .72f, .5f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2001);
             const float st = 2.6f;
+            Color cool = new Color(.34f, .62f, .52f), warm = new Color(.56f, .78f, .42f);
+            int lawn = 0, meadow = 0, drifts = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 8f, pz * .04f + 4f) < .44f) continue;
+                if (WindMesh.Patch(px, pz, .04f, 8f) < .46f) continue;                     // bare ground between patches
+                var kind = WindMesh.Patch(px, pz, .016f, 5f); var tone = WindMesh.Patch(px, pz, .025f, 17f);
+                var r = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.36f, .66f, .48f), new Color(.54f, .8f, .58f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .24f + (float)rng.NextDouble() * .3f, col, rng.NextDouble() < .15 ? (rng.NextDouble() < .5 ? Pink : Marble) : Color.Lerp(col, new Color(.8f, 1f, .9f), .3f), rng, 3, .08f);
+                var col = Color.Lerp(cool, warm, Mathf.Clamp01((tone - .25f) * 2f)) * (.94f + r * .12f);
+                var tip = Color.Lerp(col, new Color(.8f, 1f, .9f), .3f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .45f) { var lc = col * 1.06f; wm.Tuft(at, .16f + r * .14f, lc, Color.Lerp(lc, new Color(.8f, 1f, .9f), .25f), rng, 4, .07f, .1f); lawn++; }
+                else if (kind < .75f) { wm.Tuft(at, .3f + r * .25f, col, tip, rng, 3, .08f, .1f); meadow++; }
+                else
+                {
+                    var fl = WindMesh.Patch(px, pz, .03f, 29f) < .5f ? Pink : Marble;   // the drift's one flower
+                    wm.Tuft(at, .24f + r * .3f, col, rng.NextDouble() < .6 ? fl : tip, rng, 3, .08f, .1f); drifts++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Meme grass", ctx.Root, mat);
+            Debug.Log($"The Isle of Memes grass: {lawn} lawn tufts, {meadow} meadow tufts, {drifts} flowering-drift tufts");
         }
     }
 }
