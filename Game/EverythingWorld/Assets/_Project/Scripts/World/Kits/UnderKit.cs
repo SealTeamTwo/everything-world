@@ -330,24 +330,52 @@ namespace EverythingWorld.World
         Material windowM() => GlowM(Amber, 1f);
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Weeds in the cracks, dark green going grey.
+        /// Weeds in the cracks, dark green going grey, in patches: clusters along the seams, low dark mats of moss where
+        /// it stays damp, and dead weeds gone grey where it doesn't; a faint cold tint at the tips.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.15f, .8f, new Color(.2f, .26f, .22f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1995);
             const float st = 3.4f;
+            Color damp = new Color(.16f, .24f, .2f), grey = new Color(.27f, .29f, .27f);
+            int seams = 0, moss = 0, dead = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (Mathf.PerlinNoise(px * .05f + 2f, pz * .05f + 7f) < .55f) continue;
+                var kind = WindMesh.Patch(px, pz, .02f, 121f);      // seam weeds, moss or dead weeds
+                var tone = WindMesh.Patch(px, pz, .035f, 122f);     // the patch's shade, damp green to grey
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.18f, .24f, .2f), new Color(.26f, .3f, .26f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .2f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, Cold, .3f), rng, 3, .08f);
+                var col = Color.Lerp(damp, grey, tone) * (.92f + r2 * .16f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .4f)
+                {
+                    // weeds along a seam: a tuft and a smaller one in line with it
+                    wm.Tuft(at, .22f + r2 * .3f, col, Color.Lerp(col, Cold, .3f), rng, 3, .08f, .1f);
+                    if (r1 < .5f) wm.Tuft(at + new Vector3(.45f, 0, 0), .16f + r1 * .2f, col, Color.Lerp(col, Cold, .25f), rng, 2, .07f, .1f);
+                    seams++;
+                }
+                else if (kind < .75f)
+                {
+                    // a damp mat of moss: low, wide and dark
+                    var mc = Color.Lerp(col, damp, .5f) * .9f;
+                    wm.Tuft(at, .08f + r2 * .06f, mc, Color.Lerp(mc, Cold, .2f), rng, 2, .12f, .1f);
+                    if (r1 < .5f) wm.Tuft(at + new Vector3(-.3f, 0, .3f), .07f + r1 * .05f, mc, Color.Lerp(mc, Cold, .2f), rng, 2, .12f, .1f);
+                    moss++;
+                }
+                else
+                {
+                    // dead weeds gone grey
+                    var dc = Color.Lerp(col, grey, .6f);
+                    wm.Tuft(at, .2f + r2 * .25f, dc, Color.Lerp(dc, Cold, .25f), rng, 2, .06f, .1f); dead++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Under weeds", ctx.Root, mat);
+            Debug.Log($"The Trip-Hop Undercity weeds: {seams} seam clusters, {moss} moss mats, {dead} dead weeds");
         }
     }
 }
