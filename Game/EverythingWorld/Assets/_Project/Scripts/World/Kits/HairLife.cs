@@ -79,7 +79,7 @@ namespace EverythingWorld.World
 
         Transform MakeBike(Color paint)
         {
-            var mk = new MeshKit(); var body = WorldMaterials.Solid(paint, .9f); var black = WorldMaterials.Solid(new Color(.06f, .06f, .07f)); var chrome = WorldMaterials.Solid(new Color(.85f, .86f, .9f), .95f);
+            var mk = new MeshKit(); var body = WorldMaterials.Surface(paint, Surface.Painted); var black = WorldMaterials.Solid(new Color(.06f, .06f, .07f)); var chrome = WorldMaterials.Surface(new Color(.85f, .86f, .9f), Surface.Metal);
             foreach (var z in new[] { -.8f, .85f }) mk.Prism(black, new Vector3(-.07f, .36f, z), Vector3.right, .36f, .14f, 12);
             mk.Box(body, new Vector3(0, .8f, .2f), new Vector3(.32f, .28f, .62f), Quaternion.identity);
             mk.Box(black, new Vector3(0, .82f, -.38f), new Vector3(.3f, .1f, .65f), Quaternion.identity);

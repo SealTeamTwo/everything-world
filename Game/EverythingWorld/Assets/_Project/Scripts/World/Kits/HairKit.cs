@@ -39,10 +39,10 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            asphalt = WorldMaterials.Solid(new Color(.14f, .12f, .16f), .7f); pave = WorldMaterials.Solid(new Color(.42f, .38f, .42f));
-            chrome = WorldMaterials.Solid(new Color(.82f, .84f, .88f), .95f); black = WorldMaterials.Solid(new Color(.07f, .06f, .08f), .6f);
-            sand = WorldMaterials.Solid(new Color(.78f, .58f, .42f)); rock = WorldMaterials.Solid(new Color(.62f, .38f, .3f));
-            leopard = WorldMaterials.Solid(new Color(.85f, .62f, .28f)); palmLeaf = WorldMaterials.Solid(new Color(.2f, .38f, .26f)); palmBark = WorldMaterials.Solid(new Color(.45f, .34f, .26f));
+            asphalt = WorldMaterials.Surface(new Color(.14f, .12f, .16f), Surface.Stone); pave = WorldMaterials.Surface(new Color(.42f, .38f, .42f), Surface.Stone);
+            chrome = WorldMaterials.Surface(new Color(.82f, .84f, .88f), Surface.Metal); black = WorldMaterials.Solid(new Color(.07f, .06f, .08f), .6f);
+            sand = WorldMaterials.Surface(new Color(.78f, .58f, .42f), Surface.Stone); rock = WorldMaterials.Surface(new Color(.62f, .38f, .3f), Surface.Stone);
+            leopard = WorldMaterials.Surface(new Color(.85f, .62f, .28f), Surface.Cloth); palmLeaf = WorldMaterials.Surface(new Color(.2f, .38f, .26f), Surface.Foliage); palmBark = WorldMaterials.Surface(new Color(.45f, .34f, .26f), Surface.Bark);
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
@@ -182,7 +182,7 @@ namespace EverythingWorld.World
         void Strip(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var side = Vector3.Cross(Vector3.up, streetDir); var up = Vector3.up;
-            var curb = WorldMaterials.Solid(new Color(.6f, .58f, .6f));
+            var curb = WorldMaterials.Surface(new Color(.6f, .58f, .6f), Surface.Stone);
             const float seg = 4f;
             for (var t = -20f; t < streetLen + 30f; t += seg)
             {
@@ -261,7 +261,7 @@ namespace EverythingWorld.World
         void Bike(MeshKit mk, MeshKit solid, Vector3 at, Vector3 dir, Color paint)
         {
             var up = Vector3.up; dir.y = 0; dir.Normalize(); var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(up, dir);
-            var lean = Quaternion.AngleAxis(12f, dir); var body = WorldMaterials.Solid(paint, .9f);
+            var lean = Quaternion.AngleAxis(12f, dir); var body = WorldMaterials.Surface(paint, Surface.Painted);
             foreach (var z in new[] { -.8f, .85f }) { mk.Prism(black, at + dir * z + up * .36f - side * .07f, side, .36f, .14f, 12); mk.Prism(chrome, at + dir * z + up * .36f + side * .075f, side, .15f, .01f, 8); }
             mk.Box(body, at + lean * (up * .8f) + dir * .2f, new Vector3(.32f, .28f, .62f), rot);
             mk.Box(black, at + lean * (up * .82f) - dir * .38f, new Vector3(.3f, .1f, .65f), rot);
@@ -308,7 +308,7 @@ namespace EverythingWorld.World
         /// nozzle is where HairLife puffs glitter from. Returns the nozzle.
         Vector3 HairsprayCan(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 g, float s, Color paint)
         {
-            var up = Vector3.up; var body = WorldMaterials.Solid(paint, .85f);
+            var up = Vector3.up; var body = WorldMaterials.Surface(paint, Surface.Painted);
             var sink = Mathf.Max(0f, g.y - LowRing(ctx, g, 2f * s) - .3f);   // reaches the lowest ground round its foot
             mk.Prism(body, g - up * (.5f + sink), up, 2f * s, 8f * s + sink, 20);
             mk.Prism(chrome, g + up * (7.5f * s), up, 2f * s, 1.2f * s, 20, .55f);
@@ -331,7 +331,7 @@ namespace EverythingWorld.World
             var c = OnStreet(streetLen + 26f, 0f); c.y = StreetY(streetLen);
             var face = -streetDir; var rot = Quaternion.LookRotation(face);
             const float W = 34f, D = 18f, H = 18f;
-            var goldM = WorldMaterials.Solid(Gold, .8f); var grille = WorldMaterials.Solid(new Color(.24f, .2f, .18f));
+            var goldM = WorldMaterials.Surface(Gold, Surface.Metal); var grille = WorldMaterials.Surface(new Color(.24f, .2f, .18f), Surface.Cloth);
             // the shell: back, sides, roof, and the face above the stage opening
             mk.Box(black, c + up * H / 2f - face * (D / 2f - .4f), new Vector3(W, H, .8f), rot); solid.Box(black, c + up * H / 2f - face * (D / 2f - .4f), new Vector3(W, H, .8f), rot);
             foreach (var s in new[] { -1f, 1f }) { mk.Box(black, c + up * H / 2f + side * s * (W / 2f - .4f), new Vector3(.8f, H, D), rot); solid.Box(black, c + up * H / 2f + side * s * (W / 2f - .4f), new Vector3(.8f, H, D), rot); }
@@ -339,7 +339,7 @@ namespace EverythingWorld.World
             var faceY = 9f;
             mk.Box(black, c + up * (faceY + (H - faceY) / 2f) + face * (D / 2f - .4f), new Vector3(W, H - faceY, .8f), rot);
             mk.Box(grille, c + up * (faceY + (H - faceY) / 2f) + face * (D / 2f + .02f), new Vector3(W - 3f, H - faceY - 2.4f, .05f), rot);
-            for (var k = 0; k < 12; k++) mk.Box(WorldMaterials.Solid(new Color(.3f, .26f, .22f)), c + up * (faceY + 1.4f + k * .55f) + face * (D / 2f + .05f), new Vector3(W - 3f, .06f, .03f), rot);
+            for (var k = 0; k < 12; k++) mk.Box(WorldMaterials.Surface(new Color(.3f, .26f, .22f), Surface.Cloth), c + up * (faceY + 1.4f + k * .55f) + face * (D / 2f + .05f), new Vector3(W - 3f, .06f, .03f), rot);
             // gold piping round the face, the name plate, the knobs along the top edge
             foreach (var y in new[] { faceY + .3f, H - .3f }) mk.Box(goldM, c + up * y + face * (D / 2f + .06f), new Vector3(W + .1f, .25f, .1f), rot);
             foreach (var s in new[] { -1f, 1f }) mk.Box(goldM, c + up * (H / 2f) + side * s * (W / 2f) + face * (D / 2f + .06f), new Vector3(.25f, H, .1f), rot);
@@ -360,7 +360,7 @@ namespace EverythingWorld.World
                 var amp = c + up * (1.6f + .9f + (k / 2) * 1.8f) - face * 7f + side * s * (9f + (k % 2) * 2f);
                 mk.Box(black, amp, new Vector3(1.9f, 1.75f, 1f), rot); mk.Box(grille, amp + face * .51f, new Vector3(1.7f, 1.5f, .02f), rot);
             }
-            mk.Box(WorldMaterials.Solid(new Color(.8f, .1f, .3f)), c + up * 2.4f - face * 6.5f, new Vector3(6f, 1.6f, 4f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.8f, .1f, .3f), Surface.Painted), c + up * 2.4f - face * 6.5f, new Vector3(6f, 1.6f, 4f), rot);
             mk.Blob(chrome, c + up * 12f, Vector3.one * 1.4f, ctx.Rng, 0f);
             life.glitterBall = c + up * 12f;
             for (var k = 0; k < 8; k++) mk.Prism(GlowM(Neon[k % Neon.Length], 2.4f), c + up * (H - 1.6f) - face * 2f + side * ((k - 3.5f) * 3.6f), (face - up).normalized, .35f, .5f, 10);
@@ -413,7 +413,7 @@ namespace EverythingWorld.World
             // the base reaches down to the lowest ground under its rim, so it never shows a gap on the downhill side
             var sink = Mathf.Max(0f, g.y - LowRing(ctx, g, r) - .6f);
             mk.Prism(rock, g - up * (1f + sink), up, r, h * .55f + sink, 9, .85f, ctx.Range(0, 40f));
-            mk.Prism(WorldMaterials.Solid(new Color(.7f, .45f, .34f)), g + up * (h * .55f - 1.05f), up, r * .85f, h * .45f, 9, .9f, ctx.Range(0, 40f));
+            mk.Prism(WorldMaterials.Surface(new Color(.7f, .45f, .34f), Surface.Stone), g + up * (h * .55f - 1.05f), up, r * .85f, h * .45f, 9, .9f, ctx.Range(0, 40f));
             solid.Prism(rock, g - up * (1f + sink), up, r * .9f, h + sink, 8);
         }
 
@@ -421,7 +421,7 @@ namespace EverythingWorld.World
         {
             // a skipped one (it would stand on a road) still draws its random numbers, so the rest of the desert stays put
             if (skip) mk = new MeshKit();
-            var up = Vector3.up; var green = WorldMaterials.Solid(new Color(.3f, .48f, .3f)); var h = ctx.Range(3f, 6f);
+            var up = Vector3.up; var green = WorldMaterials.Surface(new Color(.3f, .48f, .3f), Surface.Foliage); var h = ctx.Range(3f, 6f);
             mk.Prism(green, g - up * .2f, up, .35f, h, 8, .9f);
             mk.Blob(green, g + up * h, Vector3.one * .33f, ctx.Rng, 0f);
             foreach (var s in new[] { -1f, 1f })

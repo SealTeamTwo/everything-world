@@ -46,12 +46,12 @@ namespace EverythingWorld.World
             }
         }
 
-        Material AwningM(Style st) => st.awning == "zebra" ? WorldMaterials.Solid(new Color(.95f, .95f, .93f)) : st.awning == "stripes" ? WorldMaterials.Solid(st.trim) : st.awning == "black" ? black : leopard;
+        Material AwningM(Style st) => st.awning == "zebra" ? WorldMaterials.Solid(new Color(.95f, .95f, .93f)) : st.awning == "stripes" ? WorldMaterials.Surface(st.trim, Surface.Cloth) : st.awning == "black" ? black : leopard;
 
         /// The facade pattern and the awning's own markings, on the front wall above the opening and on the sides.
         void Facade(Spot z, Vector3 b, Style st, Quaternion rot, float W, float H, float D, float lintel, Vector3 aw)
         {
-            var up = Vector3.up; var f = z.front * (D / 2f + .03f); var trim = WorldMaterials.Solid(st.trim, .7f); var ctx = z.ctx;
+            var up = Vector3.up; var f = z.front * (D / 2f + .03f); var trim = WorldMaterials.Surface(st.trim, Surface.Painted); var ctx = z.ctx;
             switch (st.facade)
             {
                 case "brick":
@@ -193,12 +193,12 @@ namespace EverythingWorld.World
             float lo = c.y, hi = c.y;
             for (var i = -2; i <= 2; i++) for (var j = -2; j <= 2; j++) { var q = c + side * (i * 3.9f + 2.8f) + face * (j * 2.4f - .8f); var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); }
             c.y = hi;
-            if (hi - lo > .1f) { var dh = hi - lo + .4f; var deck = WorldMaterials.Solid(new Color(.5f, .44f, .46f)); var dc = c + side * 2.8f - face * .8f; dc.y = lo - .4f + dh / 2f + .04f; mk.Box(deck, dc, new Vector3(17f, dh, 11.4f), Quaternion.LookRotation(face)); solid.Box(deck, dc, new Vector3(17f, dh, 11.4f), Quaternion.LookRotation(face)); }
+            if (hi - lo > .1f) { var dh = hi - lo + .4f; var deck = WorldMaterials.Surface(new Color(.5f, .44f, .46f), Surface.Wood); var dc = c + side * 2.8f - face * .8f; dc.y = lo - .4f + dh / 2f + .04f; mk.Box(deck, dc, new Vector3(17f, dh, 11.4f), Quaternion.LookRotation(face)); solid.Box(deck, dc, new Vector3(17f, dh, 11.4f), Quaternion.LookRotation(face)); }
             var water = GlowM(new Color(.25f, .85f, 1f), .9f); const int N = 28; var pts = new List<Vector3>();
             for (var k = 0; k < N; k++) { var a = k * Mathf.PI * 2f / N; var r = 1f + .28f * Mathf.Cos(2f * a); pts.Add(c + side * Mathf.Cos(a) * 4.2f * r + face * Mathf.Sin(a) * 3f * r); }
             for (var k = 0; k < N; k++) { var a = pts[k]; var b = pts[(k + 1) % N]; mk.Tri(water, c + up * .08f, a + up * .08f, b + up * .08f, c - up); mk.Box(chrome, (a + b) / 2f + up * .14f, new Vector3(.25f, .14f, Vector3.Distance(a, b) + .1f), Quaternion.LookRotation(b - a)); }
-            var neck = c + side * 4.6f; mk.Box(WorldMaterials.Solid(new Color(.35f, .22f, .15f)), neck + side * 2.6f + up * .1f, new Vector3(5.6f, .2f, 1f), Quaternion.LookRotation(face)); mk.Box(black, neck + side * 5.8f + up * .12f, new Vector3(1.4f, .24f, 1.6f), Quaternion.LookRotation(face));
-            foreach (var s in new[] { -1f, 1f }) { var dc = c - face * 4.6f + side * s * 2f; mk.Box(WorldMaterials.Solid(s < 0 ? Pink : Gold), dc + up * .4f, new Vector3(.7f, .06f, 1.6f), Quaternion.LookRotation(face) * Quaternion.Euler(-15f, 0, 0)); solid.Box(chrome, dc + up * .3f, new Vector3(.8f, .6f, 1.7f), Quaternion.LookRotation(face)); }
+            var neck = c + side * 4.6f; mk.Box(WorldMaterials.Surface(new Color(.35f, .22f, .15f), Surface.Wood), neck + side * 2.6f + up * .1f, new Vector3(5.6f, .2f, 1f), Quaternion.LookRotation(face)); mk.Box(black, neck + side * 5.8f + up * .12f, new Vector3(1.4f, .24f, 1.6f), Quaternion.LookRotation(face));
+            foreach (var s in new[] { -1f, 1f }) { var dc = c - face * 4.6f + side * s * 2f; mk.Box(WorldMaterials.Surface(s < 0 ? Pink : Gold, Surface.Painted), dc + up * .4f, new Vector3(.7f, .06f, 1.6f), Quaternion.LookRotation(face) * Quaternion.Euler(-15f, 0, 0)); solid.Box(chrome, dc + up * .3f, new Vector3(.8f, .6f, 1.7f), Quaternion.LookRotation(face)); }
             halos.Add(c + up * .5f, 5f, new Color(.25f, .85f, 1f), .3f);
             ArtistBits.PointLight(ctx.Root, c + up * 3f, new Color(.3f, .85f, 1f), 12f, 1.2f);
         }
@@ -208,7 +208,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var face = new Vector3(streetA.x - g.x, 0, streetA.z - g.z).normalized; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
             mk.Prism(chrome, g - up * .2f, up, .25f, 9f, 8); ArtistBits.PostCollider(ctx.Root, g, 9f, .3f);
-            mk.Box(WorldMaterials.Solid(new Color(.15f, .5f, .55f)), g + up * 9.5f, new Vector3(4.6f, 2.2f, .3f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.15f, .5f, .55f), Surface.Painted), g + up * 9.5f, new Vector3(4.6f, 2.2f, .3f), rot);
             ArtistBits.Label(ctx.Root, "MOTEL", g + up * 9.8f + face * .17f, face, .5f, new Color(1f, .9f, .7f), TextAnchor.MiddleCenter);
             mk.Box(GlowM(Pink, 2.2f), g + up * 8f + face * .1f, new Vector3(3.4f, .6f, .1f), rot);
             ArtistBits.Label(ctx.Root, "NO VACANCY", g + up * 8f + face * .17f, face, .26f, new Color(.2f, .02f, .1f), TextAnchor.MiddleCenter);
