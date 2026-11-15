@@ -30,7 +30,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            checkA = WorldMaterials.Glow(new Color(.98f, .8f, .9f), .25f); checkB = WorldMaterials.Glow(new Color(.36f, .32f, .5f), .25f); marble = WorldMaterials.Glow(Marble, .2f); glassM = WorldMaterials.Glow(new Color(.6f, .86f, .96f), .3f); white = WorldMaterials.Glow(Marble, .2f); dark = WorldMaterials.Solid(new Color(.1f, .08f, .14f)); iron = WorldMaterials.Solid(new Color(.6f, .62f, .7f), .7f); chrome = WorldMaterials.Glow(new Color(.8f, .84f, .92f), .3f);
+            checkA = WorldMaterials.Glow(new Color(.98f, .8f, .9f), .25f); checkB = WorldMaterials.Glow(new Color(.36f, .32f, .5f), .25f); marble = WorldMaterials.Glow(Marble, .2f); glassM = WorldMaterials.Glow(new Color(.6f, .86f, .96f), .3f); white = WorldMaterials.Glow(Marble, .2f); dark = WorldMaterials.Solid(new Color(.1f, .08f, .14f)); iron = WorldMaterials.Surface(new Color(.6f, .62f, .7f), Surface.Metal); chrome = WorldMaterials.Glow(new Color(.8f, .84f, .92f), .3f);
             leafM = WorldMaterials.Glow(new Color(.3f, .7f, .5f), .2f); trunkM = WorldMaterials.Glow(new Color(.66f, .5f, .5f), .15f);
             aquaM = new Material(WorldMaterials.Glow(Aqua, .9f)) { name = "Meme aqua" }; bubbleM = new Material(WorldMaterials.Glow(new Color(.7f, .94f, 1f), .9f)) { name = "Meme bubbles" }; windowM = new Material(WorldMaterials.Glow(new Color(1f, .86f, .7f), 1f)) { name = "Meme windows" }; screenM = new Material(WorldMaterials.Glow(new Color(.5f, .7f, 1f), 1.2f)) { name = "Meme screens" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .9f, 1f), 1.4f)) { name = "Meme lamps" };
         }
