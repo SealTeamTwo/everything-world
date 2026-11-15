@@ -30,16 +30,16 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            tileW = WorldMaterials.Solid(new Color(.9f, .88f, .82f)); tileB = WorldMaterials.Solid(new Color(.16f, .17f, .2f)); sandM = WorldMaterials.Solid(new Color(.92f, .86f, .7f)); duneM = WorldMaterials.Solid(new Color(.86f, .72f, .46f));
-            stone = WorldMaterials.Solid(new Color(.8f, .76f, .68f)); woodM = WorldMaterials.Solid(new Color(.56f, .4f, .26f)); bleached = WorldMaterials.Solid(new Color(.8f, .74f, .62f)); thatch = WorldMaterials.Solid(new Color(.78f, .64f, .36f));
-            iron = WorldMaterials.Solid(new Color(.16f, .16f, .18f), .5f); dark = WorldMaterials.Solid(new Color(.08f, .08f, .1f)); white = WorldMaterials.Solid(new Color(.97f, .96f, .93f));
-            trunkM = WorldMaterials.Solid(new Color(.56f, .46f, .36f)); leafM = WorldMaterials.Solid(new Color(.26f, .56f, .26f)); leafDark = WorldMaterials.Solid(new Color(.16f, .42f, .26f));
-            clothM = WorldMaterials.Solid(Indigo); glassM = WorldMaterials.Solid(new Color(.6f, .8f, .86f), .9f);
+            tileW = WorldMaterials.Surface(new Color(.9f, .88f, .82f), Surface.Stone); tileB = WorldMaterials.Surface(new Color(.16f, .17f, .2f), Surface.Stone); sandM = WorldMaterials.Surface(new Color(.92f, .86f, .7f), Surface.Stone); duneM = WorldMaterials.Surface(new Color(.86f, .72f, .46f), Surface.Stone);
+            stone = WorldMaterials.Surface(new Color(.8f, .76f, .68f), Surface.Stone); woodM = WorldMaterials.Surface(new Color(.56f, .4f, .26f), Surface.Wood); bleached = WorldMaterials.Surface(new Color(.8f, .74f, .62f), Surface.Wood); thatch = WorldMaterials.Surface(new Color(.78f, .64f, .36f), Surface.Foliage);
+            iron = WorldMaterials.Surface(new Color(.16f, .16f, .18f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .08f, .1f)); white = WorldMaterials.Solid(new Color(.97f, .96f, .93f));
+            trunkM = WorldMaterials.Surface(new Color(.56f, .46f, .36f), Surface.Bark); leafM = WorldMaterials.Surface(new Color(.26f, .56f, .26f), Surface.Foliage); leafDark = WorldMaterials.Surface(new Color(.16f, .42f, .26f), Surface.Foliage);
+            clothM = WorldMaterials.Surface(Indigo, Surface.Cloth); glassM = WorldMaterials.Surface(new Color(.6f, .8f, .86f), Surface.Glass);
             fireM = new Material(WorldMaterials.Glow(new Color(1f, .55f, .12f), 2.2f)) { name = "Far fires" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .95f, .8f), .9f)) { name = "Far lamps" };
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
-        Material Paint(Color c) => WorldMaterials.Solid(c);
+        Material Paint(Color c) => WorldMaterials.Surface(c, Surface.Painted);
         static bool HasStation(IslandWorldData.Artist a) => a.stationId != 0;
         static float Foot(IslandWorldData.Artist a)
         {
