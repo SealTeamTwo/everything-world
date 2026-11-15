@@ -302,13 +302,18 @@ namespace EverythingWorld.World
             foreach (var p in pts) Remember(p, 997);
         }
 
-        /// Tall swamp grass and ferns over the land, reeds and cattails crowding the water's edge.
+        /// The swamp's undergrowth, in patches the way a bayou grows: reeds crowding the water's edge with cattails
+        /// in stands, waist-high swamp grass across the bottoms with the odd yellow or orange wildflower, palmetto
+        /// fans gathered in thickets, and low sedge over bare mud between. Each patch is its own shade, from a damp
+        /// blue-green in the shade to a hazy gold-green in the open; every blade its own.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.35f, 1f, Cypress);
             var meshes = new Dictionary<(int, int), WindMesh>();
             var rng = new System.Random(1971);
             const float step = 2f;
+            Color damp = new Color(.28f, .44f, .26f), hazy = new Color(.56f, .56f, .28f);
+            int reeds = 0, cattails = 0, swamp = 0, palmettos = 0, sedge = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
@@ -317,26 +322,46 @@ namespace EverythingWorld.World
                 var wetEdge = WaterAt(px, pz, 3f, out var s);
                 var g = ctx.Ground(px, pz);
                 if (wetEdge && g < s - .5f) continue;                                     // open water
-                var n = Mathf.PerlinNoise(px * .025f + 5f, pz * .025f + 1f);
-                if (!wetEdge && n < .35f) continue;
+                var kind = WindMesh.Patch(px, pz, .014f, 1f);                            // swamp grass, palmetto thicket or sedge flat
+                var bare = WindMesh.Patch(px, pz, .025f, 2f);                            // bare mud
+                var tone = WindMesh.Patch(px, pz, .02f, 3f);
+                var stand = WindMesh.Patch(px, pz, .06f, 4f);                            // cattail stands along the edge
+                var flat = kind >= .3f && kind < .52f;
+                if (!wetEdge && bare < (flat ? .45f : .28f)) continue;
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
                 var at = new Vector3(px, Mathf.Max(g, wetEdge ? s - .2f : g) - .04f, pz);
+                var shade = .92f + (float)rng.NextDouble() * .16f;
                 if (wetEdge)
                 {
-                    var col = Color.Lerp(new Color(.4f, .5f, .25f), new Color(.6f, .6f, .32f), (float)rng.NextDouble());
-                    wm.Tuft(at, 1.2f + (float)rng.NextDouble() * .9f, col, Color.Lerp(col, new Color(.85f, .8f, .5f), .4f), rng, 4, .05f);
-                    if (rng.NextDouble() < .15) wm.Flower(at + new Vector3(.1f, 0, .1f), 1.6f, new Color(.45f, .3f, .18f), rng);   // cattail
+                    var col = Color.Lerp(new Color(.38f, .5f, .26f), new Color(.6f, .6f, .32f), tone) * shade;
+                    wm.Tuft(at, 1.2f + (float)rng.NextDouble() * .9f, col, Color.Lerp(col, new Color(.85f, .8f, .5f), .4f), rng, 4, .05f, .12f); reeds++;
+                    if (rng.NextDouble() < (stand > .58f ? .32 : .04)) { wm.Flower(at + new Vector3(.1f, 0, .1f), 1.6f, new Color(.45f, .3f, .18f), rng); cattails++; }   // cattail
+                    continue;
+                }
+                var col2 = Color.Lerp(damp, hazy, Mathf.Clamp01((tone - .25f) * 2f)) * shade;
+                if (kind < .3f && rng.NextDouble() < .5)
+                {
+                    // a palmetto thicket: fans of stiff fronds
+                    var fc = Color.Lerp(col2, new Color(.24f, .42f, .26f), .4f);
+                    wm.Bracken(at, .6f + (float)rng.NextDouble() * .5f, fc, Color.Lerp(fc, new Color(.6f, .62f, .3f), .3f), rng, 5); palmettos++;
+                }
+                else if (flat || kind < .3f)
+                {
+                    // low sedge over the mud
+                    var sc = Color.Lerp(col2, damp, .3f) * .95f;
+                    wm.Tuft(at, .25f + (float)rng.NextDouble() * .25f, sc, Color.Lerp(sc, new Color(.7f, .7f, .45f), .25f), rng, 3, .06f, .12f); sedge++;
                 }
                 else
                 {
-                    var col = Color.Lerp(new Color(.32f, .45f, .22f), new Color(.55f, .56f, .3f), (float)rng.NextDouble());
-                    wm.Tuft(at, .5f + (float)rng.NextDouble() * .6f, col, Color.Lerp(col, new Color(.85f, .82f, .5f), .3f), rng, 4, .08f);
-                    if (rng.NextDouble() < .04) wm.Flower(at + new Vector3(.2f, 0, .1f), .45f, new Color(.95f, .85f, .3f), rng);
-                    else if (rng.NextDouble() < .03) wm.Flower(at + new Vector3(-.15f, 0, .2f), .5f, new Color(.95f, .55f, .2f), rng);
+                    // swamp grass, waist high
+                    wm.Tuft(at, .55f + (float)rng.NextDouble() * .6f, col2, Color.Lerp(col2, new Color(.85f, .82f, .5f), .3f), rng, 4, .08f, .14f); swamp++;
+                    if (rng.NextDouble() < .045) { wm.Flower(at + new Vector3(.2f, 0, .1f), .45f, new Color(.95f, .85f, .3f), rng); blooms++; }
+                    else if (rng.NextDouble() < .035) { wm.Flower(at + new Vector3(-.15f, 0, .2f), .5f, new Color(.95f, .55f, .2f), rng); blooms++; }
                 }
             }
             foreach (var kv in meshes) kv.Value.Build("Bayou grass", ctx.Root, mat);
+            Debug.Log($"The Southern Rock Bayou undergrowth: {reeds} reed clumps, {cattails} cattails, {swamp} swamp-grass tufts, {palmettos} palmettos, {sedge} sedge tufts, {blooms} wildflowers");
         }
     }
 }
