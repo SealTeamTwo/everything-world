@@ -517,20 +517,48 @@ namespace EverythingWorld.World
             var mat = WindMesh.Material(.3f, 1f, new Color(.38f, .42f, .32f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1973);
             const float step = 2.4f; Color[] flowers = { new Color(.7f, .45f, 1f), new Color(1f, .7f, .25f), new Color(.85f, .85f, 1f) };
+            Color moss = new Color(.32f, .4f, .32f), dry = new Color(.54f, .5f, .34f), heath = new Color(.4f, .36f, .36f), straw = new Color(.8f, .74f, .54f);
+            int heather = 0, grass = 0, rush = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .03f + 4f, pz * .03f + 8f) < .36f) continue;
+                if (Mathf.PerlinNoise(px * .03f + 4f, pz * .03f + 8f) < .36f) continue;              // the open marsh's bare ground, as before
+                var kind = WindMesh.Patch(px, pz, .012f, 1f);       // heather, dry grass or rushes
+                var tone = WindMesh.Patch(px, pz, .022f, 2f);       // the patch's shade, cool and mossy to warm and dry
+                var drift = WindMesh.Patch(px, pz, .05f, 3f);       // heather in flower
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.36f, .42f, .3f), new Color(.52f, .5f, .36f), (float)rng.NextDouble());
                 var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
-                wm.Tuft(at, .5f + (float)rng.NextDouble() * .5f, col, Color.Lerp(col, new Color(.85f, .8f, .6f), .3f), rng, 4, .06f);
-                if (rng.NextDouble() < .06) wm.Flower(at + new Vector3(.1f, 0, .1f), .35f, flowers[rng.Next(flowers.Length)], rng);
+                var col = Color.Lerp(moss, dry, tone) * (.9f + r2 * .2f);
+                if (kind < .4f)
+                {
+                    // heather: low, dense and dusky, in flower where the drift is
+                    var hc = Color.Lerp(col, heath, .5f);
+                    wm.Tuft(at, .22f + r2 * .16f, hc, Color.Lerp(hc, new Color(.55f, .45f, .6f), .3f), rng, 3, .06f, .12f);
+                    if (r1 < .6f) wm.Tuft(at + new Vector3(.5f, 0, -.35f), .2f + r1 * .14f, hc, hc, rng, 3, .06f, .12f);
+                    heather++;
+                    if (drift > .58f && rng.NextDouble() < .5) { for (var k = 0; k < 2; k++) wm.Flower(at + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * 1.2f, .22f + (float)rng.NextDouble() * .08f, flowers[0], rng); blooms += 2; }
+                }
+                else if (kind < .68f)
+                {
+                    // dry marsh grass, knee high, the odd amber or pale flower
+                    wm.Tuft(at, .5f + r2 * .5f, col, Color.Lerp(col, new Color(.85f, .8f, .6f), .3f), rng, 4, .06f, .14f); grass++;
+                    if (rng.NextDouble() < .06) { wm.Flower(at + new Vector3(.1f, 0, .1f), .35f, flowers[1 + rng.Next(2)], rng); blooms++; }
+                }
+                else
+                {
+                    // rushes: tall, thin and straw-tipped, in clumps
+                    var rc = Color.Lerp(col, new Color(.42f, .44f, .32f), .3f);
+                    wm.Tuft(at, .85f + r2 * .45f, rc, Color.Lerp(rc, straw, .5f), rng, 5, .04f, .14f);
+                    if (r1 < .4f) wm.Tuft(at + new Vector3(-.45f, 0, .35f), .7f + r1 * .4f, rc, Color.Lerp(rc, straw, .4f), rng, 3, .04f, .14f);
+                    rush++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Prog grass", ctx.Root, mat);
+            Debug.Log($"The Prog Marches ground cover: {heather} heather spots, {grass} dry-grass tufts, {rush} rush clumps, {blooms} flowers");
         }
     }
 }
