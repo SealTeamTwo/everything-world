@@ -277,24 +277,40 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Tall meadow grass, pale and dewy at the tips.
+        /// Tall meadow grass, pale and dewy at the tips, in soft patches like an old home video: short sward where
+        /// the sheep have grazed, long pale meadow, and drifts of taller grass gone to seed with washed-orange tips,
+        /// a little bare ground between. Each patch its own faded shade, from teal-green to warm straw; every blade
+        /// a touch its own.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .9f, new Color(.5f, .56f, .42f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1999);
             const float st = 2f;
+            Color teal = new Color(.44f, .56f, .48f), straw = new Color(.68f, .64f, .46f), seed = new Color(.78f, .62f, .5f);
+            int sward = 0, meadow = 0, seeding = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .03f + 2f, pz * .03f + 5f) < .3f) continue;
+                if (WindMesh.Patch(px, pz, .03f, 2f) < .3f) continue;                      // a little bare ground between patches
+                var kind = WindMesh.Patch(px, pz, .013f, 6f); var tone = WindMesh.Patch(px, pz, .022f, 14f);
+                var r = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.48f, .56f, .4f), new Color(.66f, .64f, .46f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .5f + (float)rng.NextDouble() * .6f, col, Color.Lerp(col, Haze, .5f), rng, 4, .08f);
+                var col = Color.Lerp(teal, straw, Mathf.Clamp01((tone - .25f) * 2f)) * (.94f + r * .12f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .3f) { wm.Tuft(at, .18f + r * .14f, col, Color.Lerp(col, Haze, .4f), rng, 4, .07f, .1f); sward++; }
+                else if (kind < .7f) { wm.Tuft(at, .5f + r * .6f, col, Color.Lerp(col, Haze, .5f), rng, 4, .08f, .1f); meadow++; }
+                else
+                {
+                    wm.Tuft(at, .8f + r * .5f, col, Color.Lerp(col, seed, .55f), rng, 5, .07f, .1f);
+                    if (r < .3f) wm.Tuft(at + new Vector3(.45f, 0, .35f), .7f + r * .5f, col, Color.Lerp(col, seed, .45f), rng, 4, .07f, .1f);
+                    seeding++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Mist grass", ctx.Root, mat);
+            Debug.Log($"The Ambient Mists grass: {sward} grazed-sward tufts, {meadow} meadow tufts, {seeding} seeding-grass spots");
         }
     }
 }
