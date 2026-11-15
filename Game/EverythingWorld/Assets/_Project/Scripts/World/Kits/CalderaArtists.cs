@@ -183,7 +183,7 @@ namespace EverythingWorld.World
             z.mk.Box(SongGlow(z, "My Curse", Magenta, 3f), m + up * 3.3f, new Vector3(.12f, 6.6f, 1.2f), rot); halos.Add(m + up * 3.5f + z.front * 1f, 3f, Magenta, .5f); life.curse = m + up * 7f;
             z.solid.Box(obsidian, m + up * 3.5f, new Vector3(2.4f, 7f, 1.8f), rot);
             // The End of Heartache: a stone heart broken in two with light between
-            var h = z.At(1f, 12f) + up * 2.2f; var stone = WorldMaterials.Solid(new Color(.25f, .23f, .26f));
+            var h = z.At(1f, 12f) + up * 2.2f; var stone = WorldMaterials.Surface(new Color(.25f, .23f, .26f), Surface.Stone);
             foreach (var s in new[] { -1f, 1f }) { z.mk.Blob(stone, h + z.side * s * .9f + up * .4f, new Vector3(.9f, .9f, .6f), ctx.Rng, .1f); z.mk.Cone(stone, h + z.side * s * .45f - up * .3f, .9f, -1.5f, 4, s * 20f); }
             z.mk.Box(SongGlow(z, "The End of Heartache", new Color(1f, .3f, .4f), 3f), h, new Vector3(.08f, 2.6f, .5f), rot * Quaternion.Euler(0, 0, 8f)); halos.Add(h + z.front * .6f, 2f, new Color(1f, .3f, .4f), .6f);
             z.mk.Box(basalt, z.At(1f, 12f) + up * .5f, new Vector3(2.6f, 1f, 1.4f), rot); z.solid.Box(basalt, z.At(1f, 12f) + up * 1.6f, new Vector3(2.8f, 3.2f, 1.6f), rot);
@@ -252,7 +252,7 @@ namespace EverythingWorld.World
             for (var k = 0; k < 24; k++) { float a0 = k * Mathf.PI / 12f, a1 = (k + 1) * Mathf.PI / 12f; var p0 = ecl + (z.side * Mathf.Cos(a0) + up * Mathf.Sin(a0)) * 2f; var p1 = ecl + (z.side * Mathf.Cos(a1) + up * Mathf.Sin(a1)) * 2f; z.mk.Box(corona, (p0 + p1) / 2f - z.front * .15f, new Vector3(.25f, .25f, Vector3.Distance(p0, p1)), Quaternion.LookRotation(p1 - p0, z.front)); }
             halos.Add(ecl, 3.2f, Violet, .45f);
             // Demon of My Own: a horned figure
-            var dm = z.At(6f, -2f + 12f); var cloak = WorldMaterials.Solid(new Color(.08f, .06f, .1f));
+            var dm = z.At(6f, -2f + 12f); var cloak = WorldMaterials.Surface(new Color(.08f, .06f, .1f), Surface.Cloth);
             z.mk.Cone(cloak, dm, .8f, 2.4f, 8); z.mk.Blob(cloak, dm + up * 2.3f, new Vector3(.32f, .38f, .32f), ctx.Rng, 0f); foreach (var s in new[] { -1f, 1f }) z.mk.Prism(obsidian, dm + up * 2.5f + z.side * s * .2f, (up + z.side * s * .6f).normalized, .07f, .6f, 5, .1f);
             foreach (var s in new[] { -1f, 1f }) z.mk.Blob(SongGlow(z, "Demon of My Own", Magenta, 3f), dm + up * 2.35f + z.front * .28f + z.side * s * .1f, Vector3.one * .04f, ctx.Rng, 0f);
             ArtistBits.PostCollider(z.root, dm, 2.4f, .7f);
@@ -278,7 +278,7 @@ namespace EverythingWorld.World
                 foreach (var e in new[] { -1f, 1f }) z.mk.Box(gate, pil + z.side * e * .92f + z.front * .92f + up * 6.5f, new Vector3(.06f, 13f, .06f), rot);
                 // a gate leaf swung open
                 var hinge = pil - z.side * s * .9f; var lrot = rot * Quaternion.Euler(0, s * 70f, 0); var lc = hinge + lrot * new Vector3(-s * 1.7f, 4.5f, 0);
-                var iron = WorldMaterials.Solid(new Color(.1f, .1f, .12f), .7f);
+                var iron = WorldMaterials.Surface(new Color(.1f, .1f, .12f), Surface.Metal);
                 for (var b = 0; b < 7; b++) z.mk.Box(iron, lc + lrot * new Vector3((b - 3f) * .5f, 0, 0), new Vector3(.1f, 8.5f, .1f), lrot);
                 foreach (var y in new[] { -3.8f, 0f, 3.8f }) z.mk.Box(iron, lc + lrot * new Vector3(0, y, 0), new Vector3(3.4f, .14f, .12f), lrot);
                 for (var b = 0; b < 7; b++) z.mk.Cone(gate, lc + lrot * new Vector3((b - 3f) * .5f, 4.25f, 0), .08f, .5f, 4);
@@ -321,7 +321,7 @@ namespace EverythingWorld.World
         // ---------------------------------------------------------------- Dayseeker and Alexisonfire
         void Dayseeker(Plot z)
         {
-            var up = Vector3.up; var rot = z.Rot; var ctx = z.ctx; var stone = WorldMaterials.Solid(new Color(.22f, .22f, .25f));
+            var up = Vector3.up; var rot = z.Rot; var ctx = z.ctx; var stone = WorldMaterials.Surface(new Color(.22f, .22f, .25f), Surface.Stone);
             // Neon Grave: a headstone outlined in magenta neon over a glowing mound
             var gr = z.At(-6f, -3f); z.mk.Box(stone, gr + up * 1.3f, new Vector3(1.8f, 2.6f, .4f), rot); z.mk.Prism(stone, gr + up * 2.6f, z.front, .9f, .4f, 16);
             var neon = SongGlow(z, "Neon Grave", Magenta, 3f);
@@ -330,7 +330,7 @@ namespace EverythingWorld.World
             z.mk.Blob(SongGlow(z, "Neon Grave", Violet, .9f), gr + z.front * 1.8f + up * .1f, new Vector3(.9f, .25f, 1.6f), ctx.Rng, .1f);
             halos.Add(gr + up * 2f + z.front * .8f, 3f, Magenta, .5f); z.solid.Box(stone, gr + up * 1.6f, new Vector3(2f, 3.2f, .6f), rot);
             // Crawl Back To My Coffin: an open coffin glowing within, its lid leaning beside it
-            var cf = z.At(3f, -9f); var wood = WorldMaterials.Solid(new Color(.12f, .08f, .07f), .5f); var crot = Quaternion.LookRotation(z.side);
+            var cf = z.At(3f, -9f); var wood = WorldMaterials.Surface(new Color(.12f, .08f, .07f), Surface.Wood); var crot = Quaternion.LookRotation(z.side);
             z.mk.Box(wood, cf + up * .35f, new Vector3(.9f, .7f, 2.2f), crot); z.mk.Box(SongGlow(z, "Crawl Back", Cyan, 1.6f), cf + up * .71f, new Vector3(.7f, .02f, 2f), crot);
             z.mk.Box(wood, cf + z.front * 1f + up * .9f, new Vector3(.9f, .08f, 2.2f), crot * Quaternion.Euler(0, 0, 70f)); halos.Add(cf + up * 1f, 1.6f, Cyan, .5f); z.solid.Box(wood, cf + up * .6f, new Vector3(2f, 1.2f, 2.4f), crot);
             // Without Me: an empty swing under a crooked frame
@@ -339,7 +339,7 @@ namespace EverythingWorld.World
             z.mk.Box(dark, sw + up * 3f, new Vector3(2.6f, .12f, .12f), rot); foreach (var s in new[] { -.3f, .3f }) z.mk.Box(dark, sw + z.side * s + up * 2f, new Vector3(.02f, 2f, .02f), rot);
             z.mk.Box(SongGlow(z, "Without Me", Violet, 2f), sw + up * .95f, new Vector3(.7f, .06f, .3f), rot); halos.Add(sw + up * 1f, 1f, Violet, .5f);
             // Bloodlust: a patch of glowing red roses
-            var rs = z.At(-2f, 10f); var red = SongGlow(z, "Bloodlust", new Color(1f, .1f, .25f), 2f); var stem = WorldMaterials.Solid(new Color(.1f, .2f, .12f));
+            var rs = z.At(-2f, 10f); var red = SongGlow(z, "Bloodlust", new Color(1f, .1f, .25f), 2f); var stem = WorldMaterials.Surface(new Color(.1f, .2f, .12f), Surface.Foliage);
             for (var k = 0; k < 14; k++) { var p = rs + new Vector3(Mathf.Cos(k * 2.4f), 0, Mathf.Sin(k * 2.4f)) * (.4f + k * .1f); p.y = ctx.Ground(p.x, p.z); var hh = ctx.Range(.5f, .9f); z.mk.Prism(stem, p, up, .02f, hh, 4); z.mk.Blob(red, p + up * hh, Vector3.one * .09f, ctx.Rng, .2f); }
             halos.Add(rs + up * .8f, 2f, new Color(1f, .1f, .25f), .4f); ArtistBits.PostCollider(z.root, rs, 1f, 2.2f);
         }
@@ -348,7 +348,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var rot = z.Rot; var ctx = z.ctx;
             // Accidents: a wrecked car on its side, hazards blinking
-            var car = z.At(-5f, -6f); var paint = WorldMaterials.Solid(new Color(.3f, .32f, .36f), .5f); var crot = Quaternion.LookRotation(z.side) * Quaternion.Euler(0, 0, 80f);
+            var car = z.At(-5f, -6f); var paint = WorldMaterials.Surface(new Color(.3f, .32f, .36f), Surface.Painted); var crot = Quaternion.LookRotation(z.side) * Quaternion.Euler(0, 0, 80f);
             z.mk.Box(paint, car + up * 1f, new Vector3(1.7f, .7f, 4f), crot); z.mk.Box(paint, car + up * 1f + crot * new Vector3(0, .55f, -.2f), new Vector3(1.5f, .55f, 2f), crot);
             var haz = SongGlow(z, "Accidents", new Color(1f, .6f, .1f), 3f); foreach (var e in new[] { -1f, 1f }) { z.mk.Box(haz, car + up * 1f + crot * new Vector3(e * .6f, .1f, 2.01f), new Vector3(.2f, .12f, .02f), crot); }
             halos.Add(car + up * 1.2f + z.side * 2.2f, 1.6f, new Color(1f, .6f, .1f), .5f); life.hazards.Add(car + up * 1.2f + z.side * 2.1f); z.solid.Box(paint, car + up * 1f, new Vector3(2.2f, 2f, 4.2f), Quaternion.LookRotation(z.side));
@@ -359,10 +359,10 @@ namespace EverythingWorld.World
             halos.Add(hb + up * 9.6f, 3.6f, new Color(1f, .9f, .5f), .6f); ArtistBits.PostCollider(z.root, hb, 8f, .9f); life.bulb = hb + up * 9.6f;
             // Hey, It's Your Funeral Mama: a wreath on a stand
             var wr = z.At(4f, -9f); z.mk.Box(dark, wr + up * .8f, new Vector3(.08f, 1.6f, .08f), rot * Quaternion.Euler(-15f, 0, 0)); var fl = SongGlow(z, "Hey, It", new Color(1f, .95f, .85f), 1.4f);
-            for (var k = 0; k < 18; k++) { var a = k * Mathf.PI / 9f; z.mk.Blob(k % 3 == 0 ? fl : WorldMaterials.Solid(new Color(.15f, .25f, .15f)), wr + up * 1.9f + (z.side * Mathf.Cos(a) + up * Mathf.Sin(a)) * .65f, Vector3.one * .16f, ctx.Rng, .2f); }
+            for (var k = 0; k < 18; k++) { var a = k * Mathf.PI / 9f; z.mk.Blob(k % 3 == 0 ? fl : WorldMaterials.Surface(new Color(.15f, .25f, .15f), Surface.Foliage), wr + up * 1.9f + (z.side * Mathf.Cos(a) + up * Mathf.Sin(a)) * .65f, Vector3.one * .16f, ctx.Rng, .2f); }
             ArtistBits.PostCollider(z.root, wr, 2.4f, .6f);
             // Side Walk When She Walks: a strip of pavement under a street lamp
-            var sw = z.At(4f, 8f); z.mk.Box(WorldMaterials.Solid(new Color(.45f, .45f, .47f)), sw + up * .08f, new Vector3(1.8f, .16f, 6f), Quaternion.LookRotation(z.side));
+            var sw = z.At(4f, 8f); z.mk.Box(WorldMaterials.Surface(new Color(.45f, .45f, .47f), Surface.Stone), sw + up * .08f, new Vector3(1.8f, .16f, 6f), Quaternion.LookRotation(z.side));
             var lp = sw + z.front * 1.2f; z.mk.Prism(dark, lp, up, .08f, 4f, 6); z.mk.Box(dark, lp + up * 4f - z.front * .5f, new Vector3(.1f, .1f, 1f), rot);
             z.mk.Box(SongGlow(z, "Side Walk", new Color(1f, .85f, .55f), 2.6f), lp + up * 3.9f - z.front * 1f, new Vector3(.3f, .08f, .4f), rot); halos.Add(lp + up * 3.7f - z.front * 1f, 1.6f, new Color(1f, .85f, .55f), .7f); ArtistBits.PostCollider(z.root, lp, 4f, .1f);
         }

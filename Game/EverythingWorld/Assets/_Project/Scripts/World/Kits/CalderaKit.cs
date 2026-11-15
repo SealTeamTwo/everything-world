@@ -33,10 +33,10 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            obsidian = WorldMaterials.Solid(new Color(.07f, .07f, .09f), .8f); basalt = WorldMaterials.Solid(new Color(.17f, .17f, .19f), .3f);
-            ash = WorldMaterials.Solid(new Color(.52f, .52f, .55f)); ashDark = WorldMaterials.Solid(new Color(.3f, .3f, .33f));
-            steel = WorldMaterials.Solid(new Color(.4f, .42f, .46f), .7f); chain = WorldMaterials.Solid(new Color(.45f, .46f, .5f), .8f);
-            dark = WorldMaterials.Solid(new Color(.04f, .04f, .05f)); grille = WorldMaterials.Solid(new Color(.15f, .15f, .16f));
+            obsidian = WorldMaterials.Surface(new Color(.07f, .07f, .09f), Surface.Painted); basalt = WorldMaterials.Surface(new Color(.17f, .17f, .19f), Surface.Stone);
+            ash = WorldMaterials.Surface(new Color(.52f, .52f, .55f), Surface.Stone); ashDark = WorldMaterials.Surface(new Color(.3f, .3f, .33f), Surface.Stone);
+            steel = WorldMaterials.Surface(new Color(.4f, .42f, .46f), Surface.Metal); chain = WorldMaterials.Surface(new Color(.45f, .46f, .5f), Surface.Metal);
+            dark = WorldMaterials.Solid(new Color(.04f, .04f, .05f)); grille = WorldMaterials.Surface(new Color(.15f, .15f, .16f), Surface.Metal);
             lavaCyan = new Material(WorldMaterials.Glow(Cyan, 1.4f)) { name = "Neon lava cyan" };
             lavaViolet = new Material(WorldMaterials.Glow(Violet, 1.6f)) { name = "Neon lava violet" };
             crackM = new Material(WorldMaterials.Glow(Magenta, 1.2f)) { name = "Glowing cracks" };
@@ -552,7 +552,7 @@ namespace EverythingWorld.World
                 if (k == 0) continue;   // the open side
                 var mid = (a + b) / 2f; var len = Vector3.Distance(a, b);
                 foreach (var y in new[] { .2f, 1.1f, 2.1f }) mk.Box(chain, mid + up * y, new Vector3(.03f, .03f, len), Quaternion.LookRotation(b - a));
-                mk.Box(WorldMaterials.Solid(new Color(.35f, .36f, .4f), .6f), mid + up * 1.15f, new Vector3(.01f, 1.9f, len), Quaternion.LookRotation(b - a));
+                mk.Box(WorldMaterials.Surface(new Color(.35f, .36f, .4f), Surface.Metal), mid + up * 1.15f, new Vector3(.01f, 1.9f, len), Quaternion.LookRotation(b - a));
                 solid.Box(chain, mid + up * 1.1f, new Vector3(.2f, 2.2f, len), Quaternion.LookRotation(b - a));
             }
         }

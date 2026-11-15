@@ -37,10 +37,10 @@ namespace EverythingWorld.World
                         foreach (var s in new[] { -1f, 1f }) ArtistBits.PostCollider(z.root, p + z.front * s * 2.9f, 1.5f, .25f);
                     }
                     var belly = SongGlow(z, "Starving", Cyan, 1.2f); z.mk.Prism(belly, spine + up * .04f, up, 2.6f, .04f, 18); halos.Add(spine + up * 2f, 4f, Cyan, .25f);
-                    var lion = z.At(5f, -7f); var st = WorldMaterials.Solid(new Color(.35f, .33f, .35f));
+                    var lion = z.At(5f, -7f); var st = WorldMaterials.Surface(new Color(.35f, .33f, .35f), Surface.Stone);
                     z.mk.Box(st, lion + up * .5f, new Vector3(1.6f, 1f, 2.6f), rot); z.mk.Blob(st, lion + up * 1.4f + z.front * .7f, new Vector3(.7f, .8f, .7f), ctx.Rng, .15f); z.mk.Blob(SongGlow(z, "Lion Skin", new Color(1f, .75f, .3f), 1.4f), lion + up * 1.5f + z.front * .9f, new Vector3(1f, 1f, .5f), ctx.Rng, .3f); z.solid.Box(st, lion + up * 1f, new Vector3(1.8f, 2f, 2.8f), rot);
                     var pl = z.At(5f, 7f); var alien = SongGlow(z, "Introduced", Magenta, 1.8f);
-                    for (var k = 0; k < 7; k++) { var p = pl + new Vector3(Mathf.Cos(k * 2.3f), 0, Mathf.Sin(k * 2.3f)) * (.5f + k * .2f); p.y = ctx.Ground(p.x, p.z); var hh = ctx.Range(1f, 2.2f); z.mk.Prism(WorldMaterials.Solid(new Color(.15f, .2f, .25f)), p, up, .06f, hh, 5); z.mk.Blob(alien, p + up * hh, new Vector3(.3f, .2f, .3f), ctx.Rng, .3f); ArtistBits.PostCollider(z.root, p, hh, .35f); }
+                    for (var k = 0; k < 7; k++) { var p = pl + new Vector3(Mathf.Cos(k * 2.3f), 0, Mathf.Sin(k * 2.3f)) * (.5f + k * .2f); p.y = ctx.Ground(p.x, p.z); var hh = ctx.Range(1f, 2.2f); z.mk.Prism(WorldMaterials.Surface(new Color(.15f, .2f, .25f), Surface.Foliage), p, up, .06f, hh, 5); z.mk.Blob(alien, p + up * hh, new Vector3(.3f, .2f, .3f), ctx.Rng, .3f); ArtistBits.PostCollider(z.root, p, hh, .35f); }
                     halos.Add(pl + up * 1.6f, 2f, Magenta, .4f);
                     break;
                 }
@@ -62,8 +62,8 @@ namespace EverythingWorld.World
                     var md = z.At(-4f, -2f); z.mk.Blob(ashDark, md + up * .2f, new Vector3(1.4f, .5f, 2f), ctx.Rng, .2f);
                     z.mk.Box(steel, md + up * 1.2f + z.side * .4f, new Vector3(.06f, 1.6f, .06f), Quaternion.Euler(0, 0, -12f)); z.mk.Box(steel, md + up * .45f + z.side * .25f, new Vector3(.35f, .45f, .05f), Quaternion.Euler(0, 0, -12f));
                     z.mk.Prism(SongGlow(z, "Bury a Lie", Magenta, 1.4f), md + up * .02f, up, 1.8f, .03f, 14); z.solid.Box(ashDark, md + up * .4f, new Vector3(2.6f, .8f, 3.6f), rot);
-                    var ice = z.At(3f, -7f); z.mk.Box(SongGlow(z, "Frozen", new Color(.35f, .7f, 1f), .7f), ice + up * 1.1f, new Vector3(2f, 2.2f, 2f), rot * Quaternion.Euler(0, 20f, 6f)); z.mk.Box(WorldMaterials.Solid(new Color(.75f, .9f, 1f), .95f), ice + up * 2.25f, new Vector3(2.1f, .1f, 2.1f), rot * Quaternion.Euler(0, 20f, 6f)); halos.Add(ice + up * 1.2f, 2.2f, new Color(.6f, .9f, 1f), .4f); z.solid.Box(steel, ice + up * 1.1f, new Vector3(2.4f, 2.2f, 2.4f), rot);
-                    var wt = z.At(3f, 7f); var iron = WorldMaterials.Solid(new Color(.12f, .12f, .14f), .6f); z.mk.Prism(iron, wt, up, 1.4f, 2.2f, 8, .55f); z.mk.Box(iron, wt + up * 2.6f, new Vector3(.9f, .6f, .3f), rot);
+                    var ice = z.At(3f, -7f); z.mk.Box(SongGlow(z, "Frozen", new Color(.35f, .7f, 1f), .7f), ice + up * 1.1f, new Vector3(2f, 2.2f, 2f), rot * Quaternion.Euler(0, 20f, 6f)); z.mk.Box(WorldMaterials.Surface(new Color(.75f, .9f, 1f), Surface.Glass), ice + up * 2.25f, new Vector3(2.1f, .1f, 2.1f), rot * Quaternion.Euler(0, 20f, 6f)); halos.Add(ice + up * 1.2f, 2.2f, new Color(.6f, .9f, 1f), .4f); z.solid.Box(steel, ice + up * 1.1f, new Vector3(2.4f, 2.2f, 2.4f), rot);
+                    var wt = z.At(3f, 7f); var iron = WorldMaterials.Surface(new Color(.12f, .12f, .14f), Surface.Metal); z.mk.Prism(iron, wt, up, 1.4f, 2.2f, 8, .55f); z.mk.Box(iron, wt + up * 2.6f, new Vector3(.9f, .6f, .3f), rot);
                     z.mk.Box(SongGlow(z, "Heavier", Cyan, 1.6f), wt + up * 1.2f + z.front * 1.02f, new Vector3(.8f, .2f, .02f), rot); z.solid.Prism(iron, wt, up, 1.4f, 2.8f, 8);
                     break;
                 }
@@ -108,7 +108,7 @@ namespace EverythingWorld.World
                     z.mk.Prism(obsidian, c, up, .8f, 1.2f, 8); z.mk.Blob(SongGlow(z, "The Grey", new Color(.75f, .75f, .8f), 1.4f), c + up * 2.2f, Vector3.one * .9f, ctx.Rng, 0f); halos.Add(c + up * 2.2f, 2f, new Color(.8f, .8f, .85f), .4f); z.solid.Prism(obsidian, c, up, .8f, 2.8f, 8);
                     break;
                 case "I Prevail":
-                    { var st = WorldMaterials.Solid(new Color(.3f, .29f, .32f)); z.mk.Box(st, c + up * .4f, new Vector3(.6f, .8f, 1.1f), rot); z.mk.Box(st, c + up * 1.1f - z.front * .1f, new Vector3(.6f, .9f, .4f), rot * Quaternion.Euler(30f, 0, 0)); z.mk.Blob(st, c + up * 1.5f + z.front * .25f, Vector3.one * .22f, ctx.Rng, 0f);
+                    { var st = WorldMaterials.Surface(new Color(.3f, .29f, .32f), Surface.Stone); z.mk.Box(st, c + up * .4f, new Vector3(.6f, .8f, 1.1f), rot); z.mk.Box(st, c + up * 1.1f - z.front * .1f, new Vector3(.6f, .9f, .4f), rot * Quaternion.Euler(30f, 0, 0)); z.mk.Blob(st, c + up * 1.5f + z.front * .25f, Vector3.one * .22f, ctx.Rng, 0f);
                       z.mk.Prism(SongGlow(z, "Bow Down", Violet, 1.8f), c + up * .03f, up, 1.4f, .04f, 14); ArtistBits.PostCollider(z.root, c, 1.6f, .6f); halos.Add(c + up * .8f, 1.6f, Violet, .4f); }
                     break;
                 case "Wendy's":
