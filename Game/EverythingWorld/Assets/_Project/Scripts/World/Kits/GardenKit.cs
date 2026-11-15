@@ -32,9 +32,9 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            brick = WorldMaterials.Glow(new Color(.62f, .36f, .28f), .1f); brickD = WorldMaterials.Glow(new Color(.46f, .26f, .2f), .08f); wood = WorldMaterials.Glow(new Color(.56f, .4f, .26f), .1f); woodD = WorldMaterials.Glow(new Color(.36f, .26f, .18f), .08f); iron = WorldMaterials.Solid(new Color(.86f, .86f, .82f), .5f); dark = WorldMaterials.Solid(new Color(.06f, .06f, .07f)); white = WorldMaterials.Glow(new Color(.9f, .88f, .82f), .14f);
+            brick = WorldMaterials.Glow(new Color(.62f, .36f, .28f), .1f); brickD = WorldMaterials.Glow(new Color(.46f, .26f, .2f), .08f); wood = WorldMaterials.Glow(new Color(.56f, .4f, .26f), .1f); woodD = WorldMaterials.Glow(new Color(.36f, .26f, .18f), .08f); iron = WorldMaterials.Surface(new Color(.86f, .86f, .82f), Surface.Painted); dark = WorldMaterials.Solid(new Color(.06f, .06f, .07f)); white = WorldMaterials.Glow(new Color(.9f, .88f, .82f), .14f);
             leafM = WorldMaterials.Glow(Leaf, .12f); leafD = WorldMaterials.Glow(new Color(.18f, .36f, .2f), .1f); trunkM = WorldMaterials.Glow(new Color(.4f, .3f, .22f), .1f); soil = WorldMaterials.Glow(new Color(.34f, .24f, .18f), .08f);
-            lampM = new Material(WorldMaterials.Glow(Gold, 1.6f)) { name = "Garden lamps" }; glassM = new Material(WorldMaterials.Glow(new Color(.66f, .82f, .78f), .35f)) { name = "Garden glass" }; vinylM = WorldMaterials.Solid(Vinyl, .2f); dialM = new Material(WorldMaterials.Glow(new Color(1f, .7f, .3f), 1.3f)) { name = "Garden radio dials" };
+            lampM = new Material(WorldMaterials.Glow(Gold, 1.6f)) { name = "Garden lamps" }; glassM = new Material(WorldMaterials.Glow(new Color(.66f, .82f, .78f), .35f)) { name = "Garden glass" }; vinylM = WorldMaterials.Surface(Vinyl, Surface.Painted); dialM = new Material(WorldMaterials.Glow(new Color(1f, .7f, .3f), 1.3f)) { name = "Garden radio dials" };
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
