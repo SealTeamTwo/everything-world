@@ -542,18 +542,42 @@ namespace EverythingWorld.World
             var mat = WindMesh.Material(.3f, 1f, new Color(.5f, .5f, .35f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2001);
             const float st = 2.8f;
+            Color grey = new Color(.42f, .45f, .36f), tan = new Color(.62f, .57f, .38f), tipC = new Color(.85f, .8f, .6f);
+            int weeds = 0, rough = 0, tall = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (InPit(px, pz, 4f) || !ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 2f, pz * .04f + 5f) < .5f) continue;
+                if (Mathf.PerlinNoise(px * .04f + 2f, pz * .04f + 5f) < .5f) continue;          // bare gravel and spoil, as before
+                var kind = WindMesh.Patch(px, pz, .015f, 31f);      // spoil weeds, rough grass or tall ruderal weeds
+                var tone = WindMesh.Patch(px, pz, .028f, 32f);      // the patch's shade, dusty grey-green to dry tan
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.45f, .45f, .3f), new Color(.62f, .58f, .4f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .25f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, new Color(.85f, .8f, .6f), .3f), rng, 3, .05f);
+                var col = Color.Lerp(grey, tan, tone) * (.9f + r2 * .18f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .38f)
+                {
+                    // weeds on the spoil: low and patchy
+                    if (r1 < .7f) { wm.Tuft(at, .16f + r2 * .16f, col, Color.Lerp(col, tipC, .25f), rng, 3, .05f, .12f); weeds++; }
+                }
+                else if (kind < .72f)
+                {
+                    // rough grass: a clump with a smaller one beside it
+                    wm.Tuft(at, .28f + r2 * .3f, col, Color.Lerp(col, tipC, .3f), rng, 3, .05f, .12f);
+                    if (r1 < .45f) wm.Tuft(at + new Vector3(-.3f, 0, .3f), .22f + r1 * .2f, col, Color.Lerp(col, tipC, .3f), rng, 3, .05f, .12f);
+                    rough++;
+                }
+                else
+                {
+                    // tall weeds that took over the old workings: thin, waist high, going to seed
+                    var tc = Color.Lerp(col, new Color(.48f, .5f, .38f), .35f);
+                    wm.Tuft(at, .6f + r2 * .45f, tc, Color.Lerp(tc, tipC, .4f), rng, 4, .04f, .12f); tall++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Quarry scrub", ctx.Root, mat);
+            Debug.Log($"The Nu Metal Quarry scrub: {weeds} spoil weeds, {rough} rough-grass clumps, {tall} tall weeds");
         }
     }
 }
