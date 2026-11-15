@@ -42,7 +42,7 @@ namespace EverythingWorld.World
                 case "Caligula's Horse":
                 {
                     var petal = G(Gold, 1.8f);
-                    z.mk.Prism(WorldMaterials.Solid(new Color(.4f, .6f, .45f)), c - up * .2f, up, .12f, 3.4f, 6);
+                    z.mk.Prism(WorldMaterials.Surface(new Color(.4f, .6f, .45f), Surface.Foliage), c - up * .2f, up, .12f, 3.4f, 6);
                     for (var k = 0; k < 10; k++) { var a = k * 36f; var d = Quaternion.AngleAxis(a, up) * Quaternion.Euler(55f, 0, 0) * up; Crystal(z.mk, petal, c + up * 3.2f, d, .26f, 1.6f); }
                     z.mk.Blob(goldGlow, c + up * 3.3f, Vector3.one * .35f, ctx.Rng, 0f);
                     ArtistBits.PostCollider(z.root, c, 3.4f, .3f); halos.Add(c + up * 3.3f, 2.4f, Gold, .55f); break;
@@ -70,7 +70,7 @@ namespace EverythingWorld.World
                 {
                     var slab = c + up * 1.6f;
                     z.mk.Box(stoneLight, slab, new Vector3(3.4f, .3f, 2.6f), rot); Crystal(z.mk, crystal, slab - up * .15f, -up, .5f, 1.6f);
-                    var chair = WorldMaterials.Solid(new Color(.55f, .35f, .3f));
+                    var chair = WorldMaterials.Surface(new Color(.55f, .35f, .3f), Surface.Cloth);
                     z.mk.Box(chair, slab + up * .55f, new Vector3(1.2f, .5f, 1f), rot); z.mk.Box(chair, slab + up * 1.05f - z.front * .45f, new Vector3(1.2f, 1f, .25f), rot);
                     foreach (var s in new[] { -1f, 1f }) z.mk.Box(chair, slab + up * .8f + z.side * s * .55f, new Vector3(.2f, .5f, 1f), rot);
                     var lp = slab + z.side * 1.3f; z.mk.Prism(metal, lp, up, .04f, 1.6f, 6); z.mk.Prism(G(new Color(1f, .85f, .55f), 1.6f), lp + up * 1.5f, up, .3f, .4f, 8, .6f);
@@ -163,7 +163,7 @@ namespace EverythingWorld.World
                 }
                 case "The Omnific":
                 {
-                    var glassM = WorldMaterials.Solid(new Color(.8f, .9f, 1f), .95f);
+                    var glassM = WorldMaterials.Surface(new Color(.8f, .9f, 1f), Surface.Glass);
                     z.mk.Box(goldM, c + up * .5f, new Vector3(3f, 1f, 1.4f), rot); z.solid.Box(goldM, c + up * 1.1f, new Vector3(3f, 2.2f, 1.4f), rot);
                     foreach (var s in new[] { -1f, 1f }) z.mk.Box(glassM, c + up * 1.6f + z.front * s * .68f, new Vector3(3f, 1.2f, .03f), rot);
                     z.mk.Box(goldM, c + up * 2.25f, new Vector3(3.1f, .1f, 1.5f), rot);

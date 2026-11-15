@@ -31,14 +31,14 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            stone = WorldMaterials.Solid(new Color(.74f, .77f, .82f)); stoneLight = WorldMaterials.Solid(new Color(.76f, .79f, .84f));
-            slate = WorldMaterials.Solid(new Color(.13f, .14f, .19f), .5f);
+            stone = WorldMaterials.Surface(new Color(.74f, .77f, .82f), Surface.Stone); stoneLight = WorldMaterials.Surface(new Color(.76f, .79f, .84f), Surface.Stone);
+            slate = WorldMaterials.Surface(new Color(.13f, .14f, .19f), Surface.Stone);
             crystal = new Material(WorldMaterials.Glow(new Color(.78f, .92f, 1f), .55f)) { name = "Crystal" };
             crystalDeep = new Material(WorldMaterials.Glow(new Color(.45f, .7f, 1f), .7f)) { name = "Crystal deep" };
-            goldM = WorldMaterials.Solid(new Color(.95f, .76f, .3f), .85f);
+            goldM = WorldMaterials.Surface(new Color(.95f, .76f, .3f), Surface.Metal);
             fretM = new Material(WorldMaterials.Glow(Gold, .9f)) { name = "Frets" };
             pearlM = WorldMaterials.Glow(Pearl, 1.2f);
-            metal = WorldMaterials.Solid(new Color(.55f, .58f, .64f), .8f);
+            metal = WorldMaterials.Surface(new Color(.55f, .58f, .64f), Surface.Metal);
             dark = WorldMaterials.Solid(new Color(.08f, .09f, .12f));
             iceGlow = new Material(WorldMaterials.Glow(Ice, 1.8f)) { name = "Ice glow" };
             goldGlow = new Material(WorldMaterials.Glow(Gold, 2f)) { name = "Gold glow" };

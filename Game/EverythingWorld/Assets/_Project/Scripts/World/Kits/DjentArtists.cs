@@ -259,7 +259,7 @@ namespace EverythingWorld.World
             var up = Vector3.up; var odessa = Song(z, "Odessa");
             var foot = z.At(-6f, 0); var dir = (up * .9f + z.front * .35f).normalized; const float L = 16f, W = 1.9f;
             var rot = Quaternion.LookRotation(dir, z.front); var face = rot * Vector3.up;   // the fretboard faces forward and up
-            var wood = WorldMaterials.Solid(new Color(.18f, .12f, .1f), .4f);
+            var wood = WorldMaterials.Surface(new Color(.18f, .12f, .1f), Surface.Wood);
             z.mk.Box(wood, foot + dir * (L / 2f - 1f) - face * .25f, new Vector3(W, .5f, L), rot);
             z.mk.Box(slate, foot + dir * (L / 2f - 1f) - face * .62f, new Vector3(W + .2f, .3f, L), rot);
             // frets: spaced like a real neck (closer together up toward the body, which is in the ground here)
@@ -304,7 +304,7 @@ namespace EverythingWorld.World
         void SleepToken(Plot z)
         {
             var up = Vector3.up; var ctx = z.ctx; var id = Song(z, "The Summoning");
-            var c = z.At(-3f, 0); var black = WorldMaterials.Solid(new Color(.05f, .05f, .06f), .6f);
+            var c = z.At(-3f, 0); var black = WorldMaterials.Surface(new Color(.05f, .05f, .06f), Surface.Painted);
             z.mk.Prism(black, c - up * .3f, up, 7f, .45f, 32);
             var sigil = SongGlow(id, new Color(1f, .78f, .5f), 1.4f); life.sigil = sigil; life.sigilAt = c; c += up * .17f;
             for (var k = 0; k < 40; k++) { float a0 = k * Mathf.PI / 20f, a1 = (k + 1) * Mathf.PI / 20f; var p0 = c + new Vector3(Mathf.Cos(a0), 0, Mathf.Sin(a0)) * 5.2f + up * .0f; var p1 = c + new Vector3(Mathf.Cos(a1), 0, Mathf.Sin(a1)) * 5.2f; z.mk.Box(sigil, (p0 + p1) / 2f, new Vector3(.12f, .04f, Vector3.Distance(p0, p1) + .02f), Quaternion.LookRotation(p1 - p0)); }
