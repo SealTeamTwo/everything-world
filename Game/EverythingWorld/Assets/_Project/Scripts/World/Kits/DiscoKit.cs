@@ -410,25 +410,42 @@ namespace EverythingWorld.World
 
         Vector3 G0(Vector3 p) => ctx0.OnGround(p.x, p.z);
 
-        /// The lawns: short cool grass with pale tips, white and gold flowers.
+        /// The lawns, in patches the way a resort's grounds grow: kept lawns of short cool grass with pale tips,
+        /// flower lawns where every tuft in a drift is tipped the same (all white, all gold or all pale blue), and
+        /// longer soft grass left to grow in the far corners and down by the shore. Each patch its own shade, from a
+        /// deep sea blue-green to a fresher green; the kept lawns vary only a little, to stay neat.
         void Lawn(LandContext ctx)
         {
             var mat = WindMesh.Material(.22f, .8f, new Color(.3f, .5f, .46f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1976);
             Color[] flowers = { new Color(1f, .96f, .85f), new Color(1f, .82f, .4f), new Color(.8f, .9f, 1f) };
+            Color sea = new Color(.2f, .42f, .44f), fresh = new Color(.36f, .56f, .44f), pale = new Color(.8f, .9f, .95f);
             const float st = 2.6f;
+            int kept = 0, flowered = 0, longGrass = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || ctx.Ground(px, pz) < waterY + 2.2f || NearPath(px, pz, 2.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 2f, pz * .04f + 6f) < .38f) continue;
+                var gy = ctx.Ground(px, pz);
+                var kind = WindMesh.Patch(px, pz, .015f, 1f);                     // kept lawn or long grass
+                var isLong = kind > .62f || gy < waterY + 5f;                     // the far corners and the shore
+                if (WindMesh.Patch(px, pz, .04f, 2f) < (isLong ? .45f : .38f)) continue;
+                var tone = WindMesh.Patch(px, pz, .025f, 3f); var drift = WindMesh.Patch(px, pz, .06f, 4f);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.22f, .44f, .42f), new Color(.34f, .56f, .48f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .22f + (float)rng.NextDouble() * .25f, col, rng.NextDouble() < .2 ? flowers[rng.Next(flowers.Length)] : Color.Lerp(col, new Color(.8f, .9f, .95f), .4f), rng, 3, .05f);
+                var col = Color.Lerp(sea, fresh, tone) * (.94f + (float)rng.NextDouble() * .12f);
+                var at = new Vector3(px, gy - .04f, pz);
+                if (isLong) { wm.Tuft(at, .4f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, pale, .4f), rng, 4, .05f, .12f); longGrass++; }
+                else if (drift > .6f && rng.NextDouble() < .55)
+                {
+                    var fl = flowers[WindMesh.Pick(WindMesh.Patch(px, pz, .018f, 5f), flowers.Length)];
+                    wm.Tuft(at, .22f + (float)rng.NextDouble() * .2f, col, fl, rng, 3, .05f, .08f); flowered++;
+                }
+                else { wm.Tuft(at, .2f + (float)rng.NextDouble() * .2f, col, rng.NextDouble() < .06 ? flowers[rng.Next(flowers.Length)] : Color.Lerp(col, pale, .4f), rng, 3, .05f, .08f); kept++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Discotopia lawn", ctx.Root, mat);
+            Debug.Log($"Discotopia lawns: {kept} kept-lawn tufts, {flowered} in flower drifts, {longGrass} long-grass tufts");
         }
     }
 }
