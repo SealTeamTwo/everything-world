@@ -925,14 +925,17 @@ namespace EverythingWorld.World
 
         // ---------------------------------------------------------------- the long grass
         /// Meadows of long grass in drifts across the land, off the paths and out of the areas, in chunks so
-        /// the camera only draws what's in view. It all moves with the wind.
+        /// the camera only draws what's in view. It all moves with the wind. Within the drifts: short downland turf
+        /// where the sheep have grazed, the long golden grass, and drifts of one wildflower each (poppies,
+        /// cornflowers or daisies). Each patch has its own shade (cool sage to warm straw); every blade its own.
         void Grass(LandContext ctx)
         {
             var mat = WindMaterial(.55f, 1f);
             var chunks = new Dictionary<(int, int), WindMesh>();
             const float spacing = 2.15f;
             var rng = new System.Random(4242);
-            var tufts = 0;
+            var tufts = 0; int turf = 0, blooms = 0;
+            var paleTip = new Color(.94f, .91f, .78f);
             for (var x = ctx.MinX; x < ctx.MaxX; x += spacing)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += spacing)
             {
@@ -945,14 +948,21 @@ namespace EverythingWorld.World
                 var key = (Mathf.FloorToInt(px / 80f), Mathf.FloorToInt(pz / 80f));
                 if (!chunks.TryGetValue(key, out var wm)) chunks[key] = wm = new WindMesh();
                 var tall = Mathf.Lerp(.7f, 1.45f, Mathf.InverseLerp(.38f, .8f, n)) * (.8f + (float)rng.NextDouble() * .4f);
-                var tint = Color.Lerp(Sage * .95f, Straw, Mathf.Clamp01((float)rng.NextDouble() * .5f + .25f + (n - .38f) * .8f));
-                wm.Tuft(new Vector3(px, g - .05f, pz), tall, tint, rng);
-                var f = rng.NextDouble();
-                if (f < .09) wm.Flower(new Vector3(px + .3f, g - .05f, pz + .2f), tall * .85f, Flowers[(int)(f * 1000) % Flowers.Length], rng);
+                var tone = WindMesh.Patch(px, pz, .02f, 1f);               // each patch's own shade, sage to straw
+                var tint = Color.Lerp(Sage * .95f, Straw, Mathf.Clamp01(tone * .45f + (float)rng.NextDouble() * .2f + .15f + (n - .38f) * .8f));
+                var grazed = WindMesh.Patch(px, pz, .022f, 2f) < .3f;      // short turf where the sheep have been
+                if (grazed) { tall = .22f + (float)rng.NextDouble() * .18f; tint = Color.Lerp(tint, Sage, .4f); turf++; }
+                wm.Tuft(new Vector3(px, g - .05f, pz), tall, tint, Color.Lerp(tint, paleTip, grazed ? .2f : .3f), rng, 3, .1f, .12f);
+                var drift = WindMesh.Patch(px, pz, .05f, 3f) > .62f;       // a drift of one wildflower
+                if (rng.NextDouble() < (drift ? .3 : .03))
+                {
+                    var fl = drift ? Flowers[WindMesh.Pick(WindMesh.Patch(px, pz, .013f, 4f), Flowers.Length)] : Flowers[rng.Next(Flowers.Length)];
+                    wm.Flower(new Vector3(px + .3f, g - .05f, pz + .2f), tall * .85f, fl, rng); blooms++;
+                }
                 tufts++;
             }
             foreach (var kv in chunks) kv.Value.Build("Long grass", ctx.Root, mat);
-            Debug.Log($"The Indie Downs: {tufts} tufts of long grass in {chunks.Count} patches");
+            Debug.Log($"The Indie Downs: {tufts} tufts of long grass in {chunks.Count} patches ({turf} grazed turf), {blooms} wildflowers");
         }
     }
 }
