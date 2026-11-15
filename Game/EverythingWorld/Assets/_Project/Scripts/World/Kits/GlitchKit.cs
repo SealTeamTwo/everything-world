@@ -30,7 +30,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            tile = WorldMaterials.Glow(new Color(.12f, .14f, .16f), .06f); tileD = WorldMaterials.Glow(new Color(.07f, .08f, .1f), .04f); dark = WorldMaterials.Solid(new Color(.03f, .04f, .05f)); iron = WorldMaterials.Solid(new Color(.2f, .22f, .24f), .6f); white = WorldMaterials.Glow(new Color(.86f, .9f, .92f), .2f);
+            tile = WorldMaterials.Glow(new Color(.12f, .14f, .16f), .06f); tileD = WorldMaterials.Glow(new Color(.07f, .08f, .1f), .04f); dark = WorldMaterials.Solid(new Color(.03f, .04f, .05f)); iron = WorldMaterials.Surface(new Color(.2f, .22f, .24f), Surface.Metal); white = WorldMaterials.Glow(new Color(.86f, .9f, .92f), .2f);
             gridM = new Material(WorldMaterials.Glow(Term, 1.1f)) { name = "Glitch grid" }; lampM = new Material(WorldMaterials.Glow(White, 1.6f)) { name = "Glitch lamps" }; codeM = new Material(WorldMaterials.Glow(Term, 1.6f)) { name = "Glitch data" }; blockM = new Material(WorldMaterials.Glow(Cyan, .9f)) { name = "Glitch blocks" };
         }
 
