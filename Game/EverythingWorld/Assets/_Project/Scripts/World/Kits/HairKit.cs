@@ -465,26 +465,32 @@ namespace EverythingWorld.World
             halos.Add(g + up * 4f + face, 2f, Pink, .5f);
         }
 
-        /// Dry desert grass in tufts, sparse, with little yellow flowers.
+        /// Dry desert grass, sparse, in patches with plenty of bare desert between: big bunch-grass clumps, low wiry
+        /// scrub, and the odd wash where little yellow flowers come up together after rain. Each patch has its own
+        /// shade (dusty olive to sun-baked tan); every blade its own.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.2f, .8f, new Color(.7f, .58f, .38f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1987);
             const float step = 3f;
+            int bunch = 0, scrub = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 2f) || OnStrip(px, pz, 0f) || InNoGrass(px, pz, 0f) || !ctx.IsFree(px, pz, .5f)) continue;
-                if (Mathf.PerlinNoise(px * .03f + 2f, pz * .03f + 9f) < .45f) continue;
+                if (WindMesh.Patch(px, pz, .03f, 1f) < .47f) continue;     // bare desert
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.7f, .58f, .36f), new Color(.55f, .5f, .32f), (float)rng.NextDouble());
+                var col = Color.Lerp(new Color(.52f, .5f, .34f), new Color(.72f, .58f, .35f), Mathf.Clamp01(WindMesh.Patch(px, pz, .02f, 2f) * .8f + (float)rng.NextDouble() * .2f));
                 var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
-                wm.Tuft(at, .3f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, new Color(.95f, .85f, .55f), .4f), rng, 3, .07f);
-                if (rng.NextDouble() < .05) wm.Flower(at + new Vector3(.1f, 0, .1f), .3f, Gold, rng);
+                if (WindMesh.Patch(px, pz, .035f, 3f) > .5f) { wm.Tuft(at, .36f + (float)rng.NextDouble() * .36f, col, Color.Lerp(col, new Color(.95f, .85f, .55f), .4f), rng, 4, .06f, .12f); bunch++; }
+                else { wm.Tuft(at, .16f + (float)rng.NextDouble() * .16f, col * .92f, Color.Lerp(col, new Color(.95f, .85f, .55f), .25f), rng, 2, .08f, .12f); scrub++; }
+                var wash = WindMesh.Patch(px, pz, .05f, 4f) > .66f;
+                if (rng.NextDouble() < (wash ? .3 : .015)) { wm.Flower(at + new Vector3(.1f, 0, .1f), .26f + (float)rng.NextDouble() * .08f, Gold, rng); blooms++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Desert grass", ctx.Root, mat);
+            Debug.Log($"The Hair Metal Strip desert grass: {bunch} bunch-grass clumps, {scrub} scrub tufts, {blooms} flowers");
         }
     }
 }
