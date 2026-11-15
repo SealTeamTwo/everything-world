@@ -605,24 +605,57 @@ namespace EverythingWorld.World
             BoxCol(ctx.Root, g + Vector3.up * (h / 2f - .3f), new Vector3(1.1f, h, .7f), Quaternion.identity);
         }
 
+        /// The grass in patches, two ways for the two sides. Above the escarpment (math rock): short autumn turf,
+        /// tussocks, and thick rust clumps, with bare leafy ground between, each patch from dark rust to bright gold.
+        /// Below it (post-rock): wide stands of tall pale grass and lower windswept stretches, few gaps, each patch
+        /// from a cool misty grey-straw to warm pale gold. Every blade its own shade.
         void Grasses(LandContext ctx)
         {
             var mat = WindMesh.Material(.45f, 1f, new Color(.6f, .55f, .3f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2002);
             const float st = 2.2f;
+            Color rust = new Color(.5f, .32f, .15f), gold = new Color(.74f, .58f, .24f), mist = new Color(.64f, .62f, .5f), pale = new Color(.84f, .78f, .56f);
+            int turf = 0, tussock = 0, clump = 0, windswept = 0, stands = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.2f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || NearWater(px, pz, 2.2f)) continue;
                 var below = Below(px, pz);
-                if (Mathf.PerlinNoise(px * .03f + 5f, pz * .03f + 1f) < (below ? .2f : .45f)) continue;
+                if (WindMesh.Patch(px, pz, .03f, 5f) < (below ? .24f : .48f)) continue;   // bare ground between patches
+                var kind = WindMesh.Patch(px, pz, .014f, 15f); var tone = WindMesh.Patch(px, pz, .022f, 27f);
+                var r = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = below ? Color.Lerp(new Color(.68f, .62f, .42f), new Color(.85f, .8f, .6f), (float)rng.NextDouble()) : Color.Lerp(new Color(.5f, .42f, .2f), new Color(.75f, .45f, .18f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), below ? .8f + (float)rng.NextDouble() * .7f : .35f + (float)rng.NextDouble() * .35f, col, Color.Lerp(col, new Color(1f, .9f, .7f), .4f), rng, below ? 5 : 4, below ? .05f : .06f);
+                var t = Mathf.Clamp01((tone - .2f) * 1.7f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (below)
+                {
+                    var col = Color.Lerp(mist, pale, t) * (.94f + r * .12f); var tip = Color.Lerp(col, new Color(1f, .9f, .7f), .4f);
+                    if (kind < .35f) { wm.Tuft(at, .4f + r * .3f, col, tip, rng, 4, .05f, .1f); windswept++; }
+                    else
+                    {
+                        wm.Tuft(at, .8f + r * .7f, col, tip, rng, 5, .05f, .1f);
+                        if (r < .25f) wm.Tuft(at + new Vector3(.4f, 0, .35f), .7f + r * .6f, col, tip, rng, 4, .05f, .1f);
+                        stands++;
+                    }
+                }
+                else
+                {
+                    var col = Color.Lerp(rust, gold, t) * (.92f + r * .16f); var tip = Color.Lerp(col, new Color(1f, .9f, .7f), .4f);
+                    if (kind < .4f) { wm.Tuft(at, .22f + r * .18f, col, tip, rng, 4, .06f, .15f); turf++; }
+                    else if (kind < .7f) { wm.Tuft(at, .35f + r * .35f, col, tip, rng, 4, .06f, .15f); tussock++; }
+                    else
+                    {
+                        var cc = Color.Lerp(col, rust, .3f);
+                        wm.Tuft(at, .5f + r * .35f, cc, tip, rng, 5, .06f, .15f);
+                        if (r < .4f) wm.Tuft(at + new Vector3(-.4f, 0, .3f), .4f + r * .35f, cc, tip, rng, 4, .06f, .15f);
+                        clump++;
+                    }
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Escarpment grass", ctx.Root, mat);
+            Debug.Log($"The Math Rock Escarpment grass: above, {turf} turf, {tussock} tussocks, {clump} rust clumps; below, {windswept} windswept tufts, {stands} tall pale stands");
         }
     }
 }
