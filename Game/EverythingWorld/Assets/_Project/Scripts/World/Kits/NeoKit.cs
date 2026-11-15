@@ -379,24 +379,38 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Moss and small trailing leaves between the pots.
+        /// Moss and small trailing leaves between the pots, in patches the way an overgrown courtyard goes: low dark
+        /// moss carpets, trailing leaves with honey-coloured tips gathered in drifts, and little fern clumps escaped
+        /// from the pots, bare earth between. Each patch its own shade, deep blue-green to warm moss; every leaf its own.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.2f, .7f, new Color(.2f, .4f, .28f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1997);
             const float st = 2.6f;
+            Color deep = new Color(.14f, .32f, .28f), warm = new Color(.32f, .46f, .26f), honey = new Color(1f, .8f, .5f);
+            int moss = 0, leaves = 0, ferns = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 8f, pz * .04f + 4f) < .4f) continue;
+                if (WindMesh.Patch(px, pz, .04f, 8f) < .42f) continue;                     // bare earth between patches
+                var kind = WindMesh.Patch(px, pz, .018f, 4f); var tone = WindMesh.Patch(px, pz, .026f, 16f); var drift = WindMesh.Patch(px, pz, .05f, 22f);
+                var r = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.16f, .34f, .26f), new Color(.28f, .46f, .3f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .2f + (float)rng.NextDouble() * .3f, col, rng.NextDouble() < .1 ? new Color(1f, .8f, .5f) : Color.Lerp(col, new Color(.7f, .8f, .5f), .3f), rng, 3, .08f);
+                var col = Color.Lerp(deep, warm, Mathf.Clamp01((tone - .25f) * 2f)) * (.92f + r * .16f);
+                var tip = Color.Lerp(col, new Color(.7f, .8f, .5f), .3f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .4f) { var mc = col * .85f; wm.Tuft(at, .1f + r * .1f, mc, Color.Lerp(mc, new Color(.7f, .8f, .5f), .2f), rng, 3, .09f, .14f); moss++; }
+                else if (kind > .75f && rng.NextDouble() < .4)
+                {
+                    wm.Bracken(at, .35f + r * .25f, col, Color.Lerp(col, new Color(.6f, .72f, .4f), .3f), rng, 5); ferns++;
+                }
+                else { wm.Tuft(at, .2f + r * .3f, col, rng.NextDouble() < (drift > .6f ? .3 : .03) ? honey : tip, rng, 3, .08f, .14f); leaves++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Neo Soul moss", ctx.Root, mat);
+            Debug.Log($"The Neo Soul Quarter verges: {moss} moss tufts, {leaves} trailing-leaf tufts, {ferns} little ferns");
         }
     }
 }
