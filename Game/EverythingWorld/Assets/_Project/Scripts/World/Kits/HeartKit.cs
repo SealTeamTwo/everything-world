@@ -31,7 +31,7 @@ namespace EverythingWorld.World
         {
             // a dusk land: everything faintly self-lit so it never goes muddy
             boards = WorldMaterials.Glow(new Color(.66f, .54f, .46f), .16f); boardsDark = WorldMaterials.Glow(new Color(.46f, .38f, .36f), .14f); sand = WorldMaterials.Glow(new Color(.86f, .74f, .64f), .16f); woodM = WorldMaterials.Glow(new Color(.5f, .4f, .34f), .12f);
-            iron = WorldMaterials.Solid(new Color(.16f, .14f, .18f), .5f); dark = WorldMaterials.Solid(new Color(.08f, .07f, .1f)); white = WorldMaterials.Glow(new Color(.94f, .9f, .86f), .16f);
+            iron = WorldMaterials.Surface(new Color(.16f, .14f, .18f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .07f, .1f)); white = WorldMaterials.Glow(new Color(.94f, .9f, .86f), .16f);
             leafM = WorldMaterials.Glow(new Color(.34f, .5f, .42f), .14f); leafDark = WorldMaterials.Glow(new Color(.24f, .38f, .36f), .12f); trunkM = WorldMaterials.Glow(new Color(.42f, .32f, .28f), .1f);
             stripeA = WorldMaterials.Glow(Rose, .2f); stripeB = WorldMaterials.Glow(Cream, .2f);
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .76f, .5f), 1.1f)) { name = "Heartbreak windows" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .86f, .64f), 1.5f)) { name = "Heartbreak lamps" };
