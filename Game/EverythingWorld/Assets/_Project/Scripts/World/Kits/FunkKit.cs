@@ -36,9 +36,9 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            trunk = WorldMaterials.Solid(new Color(.36f, .26f, .4f)); leafDark = WorldMaterials.Solid(new Color(.1f, .36f, .28f)); leaf = WorldMaterials.Solid(new Color(.16f, .52f, .3f));
-            earth = WorldMaterials.Glow(new Color(.5f, .32f, .62f), .16f); stone = WorldMaterials.Solid(new Color(.3f, .28f, .36f)); chrome = WorldMaterials.Solid(new Color(.7f, .72f, .8f), .9f);   // (lanes, pads and walls here are faintly self-lit, so the night never swallows them)
-            dark = WorldMaterials.Solid(new Color(.06f, .05f, .09f)); white = WorldMaterials.Solid(new Color(.95f, .94f, .98f)); mirror = WorldMaterials.Solid(new Color(.85f, .88f, .95f), .95f); paveDark = WorldMaterials.Glow(new Color(.3f, .2f, .5f), .12f);
+            trunk = WorldMaterials.Surface(new Color(.36f, .26f, .4f), Surface.Bark); leafDark = WorldMaterials.Surface(new Color(.1f, .36f, .28f), Surface.Foliage); leaf = WorldMaterials.Surface(new Color(.16f, .52f, .3f), Surface.Foliage);
+            earth = WorldMaterials.Glow(new Color(.5f, .32f, .62f), .16f); stone = WorldMaterials.Surface(new Color(.3f, .28f, .36f), Surface.Stone); chrome = WorldMaterials.Surface(new Color(.7f, .72f, .8f), Surface.Metal);   // (lanes, pads and walls here are faintly self-lit, so the night never swallows them)
+            dark = WorldMaterials.Solid(new Color(.06f, .05f, .09f)); white = WorldMaterials.Solid(new Color(.95f, .94f, .98f)); mirror = WorldMaterials.Surface(new Color(.85f, .88f, .95f), Surface.Glass); paveDark = WorldMaterials.Glow(new Color(.3f, .2f, .5f), .12f);
             Color[] fc = { Purple, Lime, Orange };
             for (var i = 0; i < 3; i++) floraM[i] = new Material(WorldMaterials.Glow(fc[i], 2.2f)) { name = "Funk flora " + i };
             for (var i = 0; i < 4; i++) tileM[i] = new Material(WorldMaterials.Glow(Neon[i], 1f)) { name = "The One " + i };
@@ -254,7 +254,7 @@ namespace EverythingWorld.World
         /// A giant platform shoe left in the jungle, sole up enough to step or sit on.
         void PlatformShoe(MeshKit mk, MeshKit solid, Vector3 g, Vector3 face, int i)
         {
-            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var c = WorldMaterials.Solid(Neon[i % Neon.Length] * .75f, .5f); var sole = WorldMaterials.Solid(new Color(.9f, .85f, .7f));
+            var up = Vector3.up; var rot = Quaternion.LookRotation(face); var c = WorldMaterials.Surface(Neon[i % Neon.Length] * .75f, Surface.Painted); var sole = WorldMaterials.Surface(new Color(.9f, .85f, .7f), Surface.Painted);
             mk.Box(sole, g + up * .35f, new Vector3(1.3f, .7f, 3.2f), rot); solid.Box(sole, g + up * .35f, new Vector3(1.3f, .7f, 3.2f), rot); mk.Box(sole, g + up * 1f - face * 1f, new Vector3(1.2f, .7f, 1.1f), rot); solid.Box(sole, g + up * .7f - face * 1f, new Vector3(1.2f, 1.4f, 1.1f), rot);
             mk.Box(c, g + up * 1.1f + face * .5f, new Vector3(1.25f, .7f, 2f), rot * Quaternion.Euler(14f, 0, 0)); mk.Box(c, g + up * 1.9f - face * 1.1f, new Vector3(1.2f, 1.1f, .9f), rot); mk.Blob(GlowM(Gold, 1.4f), g + up * 1.5f + face * .2f, new Vector3(.2f, .2f, .2f), new System.Random(i), 0f);
             Interact.Seat(plife.transform, g + up * .72f + face * 1.3f, face, "Sit on the giant shoe");
