@@ -42,9 +42,9 @@ namespace EverythingWorld.World
             stone = WorldMaterials.Glow(new Color(.86f, .88f, .96f), .2f);
             stoneWarm = WorldMaterials.Glow(new Color(.96f, .9f, .8f), .2f);
             marble = WorldMaterials.Glow(new Color(.95f, .95f, 1f), .3f);
-            goldM = WorldMaterials.Solid(new Color(.92f, .72f, .26f), .8f);
-            chrome = WorldMaterials.Solid(new Color(.8f, .83f, .9f), .9f);
-            mirror = WorldMaterials.Solid(new Color(.9f, .92f, .98f), .95f);
+            goldM = WorldMaterials.Surface(new Color(.92f, .72f, .26f), Surface.Metal);
+            chrome = WorldMaterials.Surface(new Color(.8f, .83f, .9f), Surface.Metal);
+            mirror = WorldMaterials.Surface(new Color(.9f, .92f, .98f), Surface.Glass);
             dark = WorldMaterials.Solid(new Color(.1f, .1f, .16f));
             navy = WorldMaterials.Glow(new Color(.2f, .24f, .5f), .14f);
             bark = WorldMaterials.Glow(new Color(.9f, .9f, .95f), .16f);
