@@ -28,9 +28,24 @@ namespace EverythingWorld.World
             Tuft(at, h, col, Color.Lerp(col, new Color(.94f, .91f, .78f), .3f), rng);
 
         /// A tuft of grass blades: 'col' at the root (darkened), 'tipC' at the tips, 'blades' blades 'width' wide.
-        public void Tuft(Vector3 at, float h, Color col, Color tipC, System.Random rng, int blades = 3, float width = .1f)
+        /// 'jitter' (0 = none) gives each blade its own shade: a little lighter or darker, and a little bluer or
+        /// yellower (it draws extra random numbers only when it is above 0, so lands that don't use it are unchanged).
+        public void Tuft(Vector3 at, float h, Color col, Color tipC, System.Random rng, int blades = 3, float width = .1f, float jitter = 0f)
         {
             for (var k = 0; k < blades; k++)
+            {
+                if (jitter > 0f)
+                {
+                    var light = 1f + ((float)rng.NextDouble() - .5f) * 2f * jitter; var warm = ((float)rng.NextDouble() - .5f) * jitter;
+                    Color J(Color c) => new Color(c.r * light + warm * .6f, c.g * light + warm * .3f, c.b * light - warm * .7f);
+                    BladeOf(at, h, J(col), J(tipC), rng, width); continue;
+                }
+                BladeOf(at, h, col, tipC, rng, width);
+            }
+        }
+
+        void BladeOf(Vector3 at, float h, Color col, Color tipC, System.Random rng, float width)
+        {
             {
                 var a = (float)rng.NextDouble() * Mathf.PI * 2f;
                 var side = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * width;

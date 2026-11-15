@@ -636,7 +636,7 @@ namespace EverythingWorld.World
             var mat = WindMesh.Material(.3f, 1f, new Color(.32f, .5f, .3f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1971);
             const float step = 2f;
-            Color shade = new Color(.2f, .38f, .3f), sunny = new Color(.56f, .62f, .28f), straw = new Color(.86f, .8f, .5f);
+            Color shade = new Color(.2f, .38f, .3f), sunny = new Color(.56f, .62f, .28f), straw = new Color(.8f, .74f, .44f);
             Color[] flowers = { new Color(.95f, .95f, .9f), new Color(.6f, .55f, 1f), new Color(1f, .85f, .3f), new Color(.98f, .62f, .78f) };
             int lawn = 0, meadow = 0, tall = 0, ferns = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
@@ -664,8 +664,8 @@ namespace EverythingWorld.World
                 {
                     // a lawn: short, fine and bright, two little tufts per spot
                     var lc = Color.Lerp(col, sunny, .25f);
-                    wm.Tuft(at, .18f + r2 * .14f, lc, Color.Lerp(lc, new Color(.8f, .85f, .55f), .25f), rng, 3, .05f);
-                    wm.Tuft(at + new Vector3(.45f, 0, -.3f), .15f + r1 * .12f, lc, lc, rng, 3, .05f); lawn++;
+                    wm.Tuft(at, .18f + r2 * .14f, lc, Color.Lerp(lc, new Color(.8f, .85f, .55f), .25f), rng, 3, .05f, .16f);
+                    wm.Tuft(at + new Vector3(.45f, 0, -.3f), .15f + r1 * .12f, lc, lc, rng, 3, .05f, .16f); lawn++;
                     if (drift > .62f && rng.NextDouble() < .45)
                     {
                         // the drift's own flower, so a patch is all one kind
@@ -677,15 +677,15 @@ namespace EverythingWorld.World
                 else if (kind < .62f)
                 {
                     // a meadow: mixed heights, the odd flower
-                    wm.Tuft(at, .4f + r2 * .4f, col, Color.Lerp(col, new Color(.85f, .9f, .7f), .3f), rng, 4, .07f); meadow++;
+                    wm.Tuft(at, .4f + r2 * .4f, col, Color.Lerp(col, new Color(.85f, .9f, .7f), .3f), rng, 4, .07f, .16f); meadow++;
                     if (rng.NextDouble() < .07) { wm.Flower(at + new Vector3(.1f, 0, .1f), .35f, flowers[rng.Next(flowers.Length)], rng); blooms++; }
                 }
                 else
                 {
                     // tall grass going to seed: waist high, wide blades, pale straw tips
                     var tc = Color.Lerp(col, new Color(.5f, .52f, .3f), .3f);
-                    wm.Tuft(at, .85f + r2 * .5f, tc, Color.Lerp(tc, straw, .55f), rng, 5, .09f);
-                    if (r1 < .5f) wm.Tuft(at + new Vector3(-.5f, 0, .4f), .7f + r1 * .4f, tc, Color.Lerp(tc, straw, .4f), rng, 4, .08f);
+                    wm.Tuft(at, .85f + r2 * .5f, tc, Color.Lerp(tc, straw, .55f), rng, 5, .09f, .16f);
+                    if (r1 < .5f) wm.Tuft(at + new Vector3(-.5f, 0, .4f), .7f + r1 * .4f, tc, Color.Lerp(tc, straw, .4f), rng, 4, .08f, .16f);
                     tall++;
                 }
             }
