@@ -432,26 +432,52 @@ namespace EverythingWorld.World
 
         Vector3 G0(Vector3 p) => ctx0.OnGround(p.x, p.z);
 
-        /// The meadow: tall grass going gold, wildflowers in yellow, white and red.
+        /// The meadow, in patches: tall grass going gold, greener mixed meadow with the odd flower, and drifts of
+        /// wildflowers, each drift one colour (yellow, white, red or orange).
         void Meadow(LandContext ctx)
         {
             var mat = WindMesh.Material(.32f, 1f, new Color(.6f, .62f, .3f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1971);
             Color[] flowers = { new Color(1f, .85f, .3f), new Color(.98f, .96f, .9f), new Color(.85f, .25f, .3f), new Color(1f, .6f, .35f) };
             const float st = 2.6f;
+            Color green = new Color(.4f, .54f, .26f), gold = new Color(.82f, .7f, .32f), tipC = new Color(.95f, .86f, .5f);
+            int tall = 0, meadow = 0, drift = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || ctx.Ground(px, pz) < waterY + 2.2f || NearPath(px, pz, 2.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 var n = Mathf.PerlinNoise(px * .035f + 3f, pz * .035f + 8f); if (n < .34f) continue;
+                var kind = WindMesh.Patch(px, pz, .013f, 81f);      // tall gold grass, mixed meadow or a flower drift
+                var tone = WindMesh.Patch(px, pz, .024f, 82f);      // the patch's shade, green to gold
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.44f, .56f, .24f), new Color(.82f, .72f, .32f), (float)rng.NextDouble() * n * 1.3f);
-                var flower = rng.NextDouble() < .16;
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .3f + (float)rng.NextDouble() * .4f, col, flower ? flowers[rng.Next(flowers.Length)] : Color.Lerp(col, new Color(.95f, .86f, .5f), .4f), rng, 3, .05f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .35f)
+                {
+                    // tall grass going gold in the low sun
+                    var col = Color.Lerp(green, gold, .45f + tone * .55f) * (.92f + r2 * .16f);
+                    wm.Tuft(at, .55f + r2 * .45f, col, Color.Lerp(col, tipC, .45f), rng, 4, .05f, .14f); tall++;
+                }
+                else if (kind < .7f)
+                {
+                    // mixed meadow, greener, the odd flower
+                    var col = Color.Lerp(green, gold, tone * .6f) * (.92f + r2 * .16f);
+                    wm.Tuft(at, .3f + r1 * .35f, col, rng.NextDouble() < .08 ? flowers[rng.Next(flowers.Length)] : Color.Lerp(col, tipC, .4f), rng, 3, .05f, .14f); meadow++;
+                }
+                else
+                {
+                    // a wildflower drift: shorter grass, half its tips the drift's one flower
+                    var col = Color.Lerp(green, gold, tone * .8f) * (.92f + r2 * .16f);
+                    var fl = flowers[WindMesh.Pick(WindMesh.Patch(px, pz, .03f, 83f), flowers.Length)];
+                    wm.Tuft(at, .26f + r2 * .26f, col, r1 < .55f ? fl : Color.Lerp(col, tipC, .4f), rng, 3, .05f, .14f);
+                    if (r1 < .3f) wm.Tuft(at + new Vector3(.35f, 0, .3f), .22f + r2 * .2f, col, fl, rng, 2, .05f, .14f);
+                    drift++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Lowlands meadow", ctx.Root, mat);
+            Debug.Log($"The Soul Lowlands meadow: {tall} tall gold tufts, {meadow} mixed-meadow tufts, {drift} wildflower-drift tufts");
         }
     }
 }
