@@ -30,7 +30,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            asphalt = WorldMaterials.Glow(new Color(.28f, .27f, .3f), .12f); concrete = WorldMaterials.Glow(new Color(.66f, .64f, .62f), .12f); scaffold = WorldMaterials.Solid(new Color(.5f, .52f, .56f), .6f); woodM = WorldMaterials.Glow(new Color(.56f, .42f, .3f), .1f); canvas = WorldMaterials.Glow(new Color(.86f, .82f, .72f), .14f); iron = WorldMaterials.Solid(new Color(.18f, .18f, .2f), .5f); dark = WorldMaterials.Solid(new Color(.08f, .07f, .08f)); white = WorldMaterials.Glow(new Color(.95f, .93f, .9f), .14f);
+            asphalt = WorldMaterials.Glow(new Color(.28f, .27f, .3f), .12f); concrete = WorldMaterials.Glow(new Color(.66f, .64f, .62f), .12f); scaffold = WorldMaterials.Surface(new Color(.5f, .52f, .56f), Surface.Metal); woodM = WorldMaterials.Glow(new Color(.56f, .42f, .3f), .1f); canvas = WorldMaterials.Glow(new Color(.86f, .82f, .72f), .14f); iron = WorldMaterials.Surface(new Color(.18f, .18f, .2f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .07f, .08f)); white = WorldMaterials.Glow(new Color(.95f, .93f, .9f), .14f);
             leafM = WorldMaterials.Glow(new Color(.34f, .52f, .3f), .12f); trunkM = WorldMaterials.Glow(new Color(.4f, .3f, .24f), .1f); sand = WorldMaterials.Glow(new Color(.86f, .7f, .46f), .14f);
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .8f, .5f), 1.1f)) { name = "Studio windows" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .92f, .76f), 1.6f)) { name = "Studio lamps" }; onAirM = new Material(WorldMaterials.Glow(new Color(1f, .14f, .1f), 2f)) { name = "Studio on air" }; seaM = new Material(WorldMaterials.Glow(Sea, .6f)) { name = "Studio tank water" };
         }
