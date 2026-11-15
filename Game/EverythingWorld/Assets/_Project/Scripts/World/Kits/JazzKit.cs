@@ -476,24 +476,39 @@ namespace EverythingWorld.World
             }
         }
 
-        /// The verges: rain-silvered grass.
+        /// The verges: rain-silvered grass, in patches like an old photograph: short trimmed verge, rough dark long
+        /// grass, and patches where the rain has silvered every tip, wet bare ground between. Still black and white:
+        /// the patches differ only by brightness, and each blade by a touch (a small jitter, so no colour creeps in).
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .9f, new Color(.3f, .31f, .33f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1960);
             const float st = 2.6f;
+            Color dark = new Color(.15f, .16f, .18f), light = new Color(.32f, .33f, .35f);
+            int verge = 0, rough = 0, silvered = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || InRiver(px, pz, 1f) || NearPath(px, pz, 2.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 3f, pz * .04f + 9f) < .4f) continue;
+                if (WindMesh.Patch(px, pz, .04f, 3f) < .44f) continue;                     // wet bare ground between patches
+                var kind = WindMesh.Patch(px, pz, .016f, 7f); var tone = WindMesh.Patch(px, pz, .025f, 12f);
+                var r = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.17f, .18f, .2f), new Color(.3f, .31f, .33f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .24f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, Silver, rng.NextDouble() < .2 ? .75f : .3f), rng, 3, .05f);
+                var col = Color.Lerp(dark, light, Mathf.Clamp01((tone - .2f) * 1.7f)) * (.9f + r * .2f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .4f) { wm.Tuft(at, .16f + r * .16f, col, Color.Lerp(col, Silver, .3f), rng, 3, .05f, .06f); verge++; }
+                else if (kind < .72f) { var dc = col * .8f; wm.Tuft(at, .4f + r * .35f, dc, Color.Lerp(dc, Silver, .25f), rng, 4, .05f, .06f); rough++; }
+                else
+                {
+                    wm.Tuft(at, .26f + r * .3f, col, Color.Lerp(col, Silver, .72f), rng, 3, .05f, .06f);
+                    if (r < .4f) wm.Tuft(at + new Vector3(.35f, 0, -.3f), .22f + r * .3f, col, Color.Lerp(col, Silver, .6f), rng, 3, .05f, .06f);
+                    silvered++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Jazz Quarter verge", ctx.Root, mat);
+            Debug.Log($"The Old Jazz Quarter verges: {verge} trimmed tufts, {rough} rough-grass tufts, {silvered} rain-silvered spots");
         }
     }
 }
