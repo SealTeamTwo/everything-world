@@ -33,7 +33,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            stage = WorldMaterials.Glow(new Color(.3f, .28f, .32f), .08f); stone = WorldMaterials.Glow(new Color(.6f, .54f, .5f), .1f); path = WorldMaterials.Glow(new Color(.56f, .48f, .4f), .08f); iron = WorldMaterials.Solid(new Color(.2f, .2f, .22f), .6f); dark = WorldMaterials.Solid(new Color(.06f, .05f, .06f)); white = WorldMaterials.Glow(new Color(.88f, .86f, .84f), .16f);
+            stage = WorldMaterials.Glow(new Color(.3f, .28f, .32f), .08f); stone = WorldMaterials.Glow(new Color(.6f, .54f, .5f), .1f); path = WorldMaterials.Glow(new Color(.56f, .48f, .4f), .08f); iron = WorldMaterials.Surface(new Color(.2f, .2f, .22f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.06f, .05f, .06f)); white = WorldMaterials.Glow(new Color(.88f, .86f, .84f), .16f);
             leafM = WorldMaterials.Glow(new Color(.5f, .5f, .3f), .1f); trunkM = WorldMaterials.Glow(new Color(.36f, .28f, .24f), .1f);
             laserM = new Material(WorldMaterials.Glow(Laser, 2f)) { name = "Trance lasers" }; beamM = new Material(WorldMaterials.Glow(new Color(.6f, 1f, .7f), .5f)) { name = "Trance beams" }; lampM = new Material(WorldMaterials.Glow(Gold, 1.6f)) { name = "Trance lamps" }; sunM = new Material(WorldMaterials.Glow(new Color(1f, .6f, .36f), 1.4f)) { name = "Trance sun" };
         }
