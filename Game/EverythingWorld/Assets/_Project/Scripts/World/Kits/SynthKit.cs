@@ -283,24 +283,58 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Short dark grass with a few glowing tips.
+        /// Short dark grass with glowing tips, in patches: dark turf tipped violet, thinner ground between, and clusters
+        /// where the tips glow, each cluster one neon (the magenta clusters lying in bands, the cyan ones between them).
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .8f, new Color(.2f, .14f, .3f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1985);
             const float st = 2.8f;
+            Color dark = new Color(.14f, .1f, .24f), deep = new Color(.26f, .16f, .36f);
+            int turf = 0, thin = 0, glowing = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (Mathf.PerlinNoise(px * .04f + 8f, pz * .04f + 4f) < .46f) continue;
-                var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
-                if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.16f, .12f, .26f), new Color(.26f, .16f, .36f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .26f + (float)rng.NextDouble() * .3f, col, rng.NextDouble() < .12 ? (rng.NextDouble() < .5 ? Magenta : Cyan) : Color.Lerp(col, Violet, .5f), rng, 3, .07f);
+                var kind = WindMesh.Patch(px, pz, .016f, 101f);                                    // thin ground or turf
+                var glow = WindMesh.Patch(px, pz, .06f, 102f);                                     // small glowing clusters
+                var band = Mathf.Clamp01(Mathf.PerlinNoise(px * .008f + 47f, pz * .035f + 11f));    // magenta bands, cyan between
+                var tone = WindMesh.Patch(px, pz, .03f, 103f);
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
+                var col = Color.Lerp(dark, deep, tone) * (.92f + r2 * .16f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (glow > .66f)
+                {
+                    // a glowing cluster: most tips lit in the cluster's neon
+                    var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
+                    if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
+                    var neon = band > .5f ? Magenta : Cyan;
+                    wm.Tuft(at, .28f + r2 * .3f, col, r1 < .65f ? neon : Color.Lerp(col, Violet, .5f), rng, 3, .07f, .1f);
+                    if (r1 < .4f) wm.Tuft(at + new Vector3(.3f, 0, .25f), .2f + r2 * .2f, col, neon, rng, 2, .06f, .1f);
+                    glowing++;
+                }
+                else if (kind < .35f)
+                {
+                    // thin ground: a short wisp, every other spot
+                    if (r1 < .5f)
+                    {
+                        var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
+                        if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
+                        wm.Tuft(at, .16f + r2 * .16f, col, Color.Lerp(col, Violet, .4f), rng, 2, .06f, .1f); thin++;
+                    }
+                }
+                else
+                {
+                    // dark turf, tipped violet, the odd stray glow
+                    var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
+                    if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
+                    wm.Tuft(at, .24f + r2 * .3f, col, r1 < .05f ? (band > .5f ? Magenta : Cyan) : Color.Lerp(col, Violet, .5f), rng, 3, .07f, .1f); turf++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Synthwave grass", ctx.Root, mat);
+            Debug.Log($"The Synthwave Coast grass: {turf} turf tufts, {thin} thin wisps, {glowing} glowing-cluster tufts");
         }
     }
 }
