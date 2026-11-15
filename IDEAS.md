@@ -2,6 +2,18 @@
 
 Things to remember that aren't built or decided yet. Newest first.
 
+## The lobby game: the vision (2026-11-15)
+
+The world is a lobby: a place to exist in, enjoy and lose yourself in with friends, like a hangout spot. Games live inside the lobby; finishing or leaving one leaves you standing in the world, never at a menu. "Finished" is when the small moments (a drink on a bench with friends) feel fluid and immersive. Places stay put so they can be loved; what happens in them keeps changing (chance, rare events, surprise), because staleness is the main worry.
+
+- **A main activity per land:** a game inside the game, tied to the land's theme, distinct in every land. It starts and ends in the world (friends can wander up, join, watch or ignore it). Lots of work; worth it. Possible Hub link: a land's songs unlock in the Hub by completing its activity.
+- **Small activities everywhere:** getting a coffee or a drink, sitting, things to fiddle with. Flesh these out so they flow.
+- **Lands of other forms** (a friend's idea, case by case): underground or a metro station; a huge treetop forest city; one vast city; a land that is all interiors.
+- **Something extremely unique about each land.** Example, Classic Rock Kingdoms: each main artist holds a territory; where the borders meet, soldiers fight; the borders are the radio stations' edges and move in real time (on the shared clock, so friends see the same front line).
+- **Musical bypasses:** ways to travel between lands without passing through ones you don't want to hear (for example Bluegrass to Math Rock without djent or power metal). Could be a metro (ties in with the underground idea): lines and tunnels with their own music.
+- **Local MP3s** (the owner's, about a week out; never in the repo): lets the world follow the music itself (builds, drops, beats). Hold detailed song-moment work until then.
+- **Generated music** only between the real songs (the wilds, crossings, the sea, a fallback), never replacing the playlist.
+
 ## Owner's notes after a long two-player playtest, 2026-11-14
 
 - **The biggest issue: placement that doesn't make sense to a person walking around.** Examples: a large obstacle in the middle of a path, a house on a hillside half floating in the air, paths that go nowhere sensible. The photo tour shoots from flattering spots (arrival, artist fronts, high view) and the audit has no path or grounding checks, so these slip through. Some colliders are still missing too.
