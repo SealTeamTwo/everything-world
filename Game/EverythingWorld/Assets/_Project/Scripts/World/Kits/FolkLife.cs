@@ -34,7 +34,7 @@ namespace EverythingWorld.World
             clouds = gameObject.AddComponent<CloudLayer>();
             clouds.center = center; clouds.count = 45; clouds.span = 2400f; clouds.key = "folk";
             clouds.minHeight = 120f; clouds.maxHeight = 180f; clouds.size = 1.6f; clouds.speed = 2f; clouds.cover = .35f;
-            clouds.color = new Color(.95f, .97f, 1f);
+            clouds.color = new Color(.95f, .97f, 1f); clouds.shadows = true; clouds.shadowLand = Land;   // their shadows drift over the woods (only while you are here)
             steam = Particles("Steam", 500, new Color(.95f, .95f, .95f, .5f), .6f, 1.4f, false);
             var sm = steam.main; sm.startLifetime = new ParticleSystem.MinMaxCurve(2f, 3.5f); sm.startSpeed = new ParticleSystem.MinMaxCurve(1.5f, 3f);
             mist = Particles("Lake mist", 600, new Color(.92f, .95f, 1f, .26f), 12f, 24f, false);

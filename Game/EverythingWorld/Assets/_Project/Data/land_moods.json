@@ -382,9 +382,10 @@
    "land": "The Folk Woods",
    "sunPitch": 12, "sunYaw": 95, "sunIntensity": 1.15, "sunColor": "#FFF0D0",
    "skyLight": "#B8D4E8", "horizonLight": "#E8F0E8", "groundLight": "#506048",
-   "fogColor": "#CFE0E0", "fogStart": 60, "fogEnd": 900,
+   "fogColor": "#CFE0E0", "fogStart": 200, "fogEnd": 1400,
    "stars": 0, "sunShadows": true, "dailyWeather": true, "bloom": 0.8,
-   "weather": "", "weatherAmount": 0
+   "weather": "", "weatherAmount": 0,
+   "heightFog": 0.9, "heightFogColor": "#C6D9DA", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.004, "sunGlow": 0.7, "grade": 0.8
   },
   {
    "land": "The Yacht Rock Riviera",

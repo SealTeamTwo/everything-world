@@ -30,6 +30,7 @@ namespace EverythingWorld.World
         public static void SetSongRain(string land, float amount) { if (land != null) songRain[land] = amount; }
         float SongRain() => currentLand != null && songRain.TryGetValue(currentLand, out var r) ? r : 0f;
         Volume bloomVolume; Bloom bloomFx; float bloomNow;
+        ColorAdjustments gradeFx; SplitToning splitFx; Vignette vignetteFx;
 
         struct State
         {
@@ -38,6 +39,7 @@ namespace EverythingWorld.World
             public float snow, rain, stars, aurora, auroraChance;
             public bool sunShadows;
             public float bloom;
+            public float hf, hfBase, hfFall, hfDens, sunGlow, grade; public Color hfColor;
         }
 
         LandMoodSet set;
@@ -99,6 +101,8 @@ namespace EverythingWorld.World
                 ground = LandMood.Hex(m.groundLight, Color.grey), fog = LandMood.Hex(m.fogColor, Color.grey),
                 fogStart = m.fogStart, fogEnd = m.fogEnd, stars = m.stars, sunShadows = m.sunShadows,
                 aurora = m.aurora, auroraChance = m.auroraChance, bloom = m.bloom,
+                hf = m.heightFog, hfColor = LandMood.Hex(m.heightFogColor, Color.grey), hfBase = m.heightFogBase,
+                hfFall = m.heightFogFalloff, hfDens = m.heightFogDensity, sunGlow = m.sunGlow, grade = m.grade,
             };
             var amount = m.weatherAmount;
             if (m.dailyWeather)
@@ -132,6 +136,10 @@ namespace EverythingWorld.World
             current.rain = Mathf.Lerp(current.rain, Mathf.Max(target.rain, SongRain()), k);
             bloomNow = Mathf.MoveTowards(bloomNow, target.bloom, Time.deltaTime / 2f);
             current.stars = Mathf.Lerp(current.stars, target.stars, k);
+            current.hf = Mathf.Lerp(current.hf, target.hf, k); current.hfColor = Color.Lerp(current.hfColor, target.hfColor, k);
+            current.hfBase = Mathf.Lerp(current.hfBase, target.hfBase, k); current.hfFall = Mathf.Lerp(current.hfFall, target.hfFall, k);
+            current.hfDens = Mathf.Lerp(current.hfDens, target.hfDens, k); current.sunGlow = Mathf.Lerp(current.sunGlow, target.sunGlow, k);
+            current.grade = Mathf.Lerp(current.grade, target.grade, k);
             // some songs bring the aurora (the same songs for everyone on the station)
             var auroraGoal = target.aurora;
             if (target.auroraChance > 0 && SharedChance.CurrentSong(out var song, out _, out _) &&
@@ -158,6 +166,13 @@ namespace EverythingWorld.World
             RenderSettings.fogColor = Color.Lerp(current.fog, tintNow, tintAmountNow * .35f);
             RenderSettings.fogStartDistance = current.fogStart;
             RenderSettings.fogEndDistance = current.fogEnd;
+            // the low mist (the "Height fog" pass on the renderer, Shaders/HeightFog.shader)
+            var mist = Color.Lerp(current.hfColor, tintNow, tintAmountNow * .35f);
+            Shader.SetGlobalVector("_EW_FogColor", new Vector4(mist.r, mist.g, mist.b, current.hf));
+            var sunCol = sun != null ? sun.color : Color.white;
+            Shader.SetGlobalVector("_EW_FogSun", new Vector4(sunCol.r, sunCol.g, sunCol.b, current.sunGlow));
+            Shader.SetGlobalVector("_EW_FogParams", new Vector4(current.hfBase, Mathf.Max(.001f, current.hfFall), current.hfDens, .8f));
+            Shader.SetGlobalVector("_EW_SunDir", sun != null ? -sun.transform.forward : Vector3.up);
             if (cam != null)
             {
                 cam.clearFlags = CameraClearFlags.SolidColor;
@@ -208,12 +223,19 @@ namespace EverythingWorld.World
                 bloomFx.threshold.Override(1f);
                 bloomFx.scatter.Override(.7f);
                 bloomFx.intensity.Override(0f);
+                gradeFx = profile.Add<ColorAdjustments>(true); splitFx = profile.Add<SplitToning>(true); vignetteFx = profile.Add<Vignette>(true);
                 bloomVolume.profile = profile;
             }
             bloomFx.intensity.Override(bloomNow * 1.4f * BloomScale);
+            // richer colour for lands that ask (grade): more contrast and colour, warm highlights and cool shadows
+            // (a blue-yellow split, which reads well for colour-blind eyes), and a soft darkening at the edges
+            var g = current.grade;
+            gradeFx.contrast.Override(16f * g); gradeFx.saturation.Override(18f * g);
+            splitFx.shadows.Override(Color.Lerp(Color.grey, new Color(.44f, .48f, .62f), g)); splitFx.highlights.Override(Color.Lerp(Color.grey, new Color(1f, .86f, .64f), g)); splitFx.balance.Override(20f);
+            vignetteFx.intensity.Override(.22f * g); vignetteFx.smoothness.Override(.5f);
             // post-processing on for bloom, and while the sunglasses are on (their darkening is post-processing too:
             // switching it off here, where a place has no bloom, was why they seemed to do nothing)
-            cam.GetUniversalAdditionalCameraData().renderPostProcessing = bloomNow > .01f || EverythingWorld.Player.Sunglasses.Worn;
+            cam.GetUniversalAdditionalCameraData().renderPostProcessing = bloomNow > .01f || current.grade > .01f || EverythingWorld.Player.Sunglasses.Worn;
         }
 
         /// A soft round dot, see-through at the edges.

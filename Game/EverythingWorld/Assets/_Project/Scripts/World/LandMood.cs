@@ -27,6 +27,14 @@ namespace EverythingWorld.World
         public string weather = "";         // "", "snow" or "rain"
         public float weatherAmount;         // 0..1
         public float bloom;                 // 0..1: glowing things bloom (soft light spills round them) on this land
+        // Valheim-like air and colour (all off at 0, so a land without them looks as it always has):
+        public float heightFog;             // 0..1: mist that lies low and thickens with distance (the HeightFog shader)
+        public string heightFogColor = "#C8D8DC";
+        public float heightFogBase;         // metres above the sea where the mist is thickest
+        public float heightFogFalloff = .05f; // how fast it thins going up (per metre)
+        public float heightFogDensity = .01f; // how thick it is at its base (per metre of view)
+        public float sunGlow = .6f;         // 0..1: the mist glows the sun's colour looking toward the sun
+        public float grade;                 // 0..1: richer colour: a touch more contrast, warm lights and cool shadows, a soft vignette
 
         public static Color Hex(string s, Color fallback) =>
             !string.IsNullOrEmpty(s) && ColorUtility.TryParseHtmlString(s, out var c) ? c : fallback;

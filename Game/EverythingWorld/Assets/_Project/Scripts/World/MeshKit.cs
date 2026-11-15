@@ -21,10 +21,22 @@ namespace EverythingWorld.World
         {
             var n = Vector3.Cross(b - a, c - a);
             if (Vector3.Dot(n, (a + b + c) / 3f - inside) < 0) { (b, c) = (c, b); (ub, uc) = (uc, ub); }
+            if (ua == default && ub == default && uc == default) { ua = GrainUV(a, n); ub = GrainUV(b, n); uc = GrainUV(c, n); }
             if (!tris.TryGetValue(m, out var list)) tris[m] = list = new List<int>();
             list.Add(verts.Count); verts.Add(a); uvs.Add(ua);
             list.Add(verts.Count); verts.Add(b); uvs.Add(ub);
             list.Add(verts.Count); verts.Add(c); uvs.Add(uc);
+        }
+
+        /// Metres per repeat of the surface grain (WorldMaterials.Grain).
+        public const float GrainScale = 5f;
+        /// Texture coordinates for a face given none: projected from the world along the face's main axis (from
+        /// above for floors and roofs, from the side for walls), so the grain is even and continuous.
+        public static Vector2 GrainUV(Vector3 p, Vector3 n)
+        {
+            float ax = Mathf.Abs(n.x), ay = Mathf.Abs(n.y), az = Mathf.Abs(n.z);
+            var uv = ay >= ax && ay >= az ? new Vector2(p.x, p.z) : ax >= az ? new Vector2(p.z, p.y) : new Vector2(p.x, p.y);
+            return uv / GrainScale + new Vector2(.37f, .61f);   // (off the corner, so no face lands on the plain white texel)
         }
 
         /// A four-corner face (a, b, c, d in order round the edge) facing away from 'inside'.

@@ -25,6 +25,10 @@ namespace EverythingWorld.World
         public Texture2D coverAtlas;
         [Tooltip("Use the Toon Shaders Pro shader for built scenery, if it's imported.")]
         public bool toonShading = true;
+        [Tooltip("Blend the ground colours where two lands meet, over this many metres on each side, with a ragged edge, so one land doesn't stop against the next in a hard straight line. 0 = hard borders.")]
+        public float borderBlend = 40f;
+        [Tooltip("A faint, slightly pixelly grain on built scenery and the ground (Valheim-like), so big flat surfaces don't look like plastic. Off to compare.")]
+        public bool surfaceGrain = true;
         [Tooltip("Shimmering curtains where lands meet, at bridge ends and round artist-radio areas.")]
         public bool zoneFields = true;
         [Tooltip("Frames per second to aim for. Without a cap the editor runs the GPU flat out (loud fans).")]
@@ -92,7 +96,7 @@ namespace EverythingWorld.World
         void Awake()
         {
             Instance = this;
-            WorldMaterials.UseToon = toonShading;
+            WorldMaterials.UseToon = toonShading; WorldMaterials.UseGrain = surfaceGrain;
             IndoorSpaces.Clear();
             SurpriseSpots.Clear();
             if (GetComponent<SurpriseDirector>() == null) gameObject.AddComponent<SurpriseDirector>();
@@ -107,6 +111,7 @@ namespace EverythingWorld.World
                 if (kits[i] != null)
                     try { kits[i].ShapeGround(Data, i); } catch (System.Exception e) { Debug.LogException(e); }
             var t0 = Time.realtimeSinceStartup;
+            BorderMap();
             BuildTerrain();
             BuildSea();
             BuildBridges();
@@ -144,6 +149,7 @@ namespace EverythingWorld.World
             var verts = new List<Vector3>();
             var byMaterial = new Dictionary<Material, List<int>>();
             var corner = new Vector3[4];
+            var uv = new List<Vector2>();
             for (var r = r0; r < r0 + h; r++)
             for (var c = c0; c < c0 + w; c++)
             {
@@ -169,6 +175,8 @@ namespace EverythingWorld.World
 
             var mesh = new Mesh { name = $"Terrain {c0},{r0}", indexFormat = IndexFormat.UInt32 };
             mesh.SetVertices(verts);
+            foreach (var v in verts) uv.Add(MeshKit.GrainUV(v, Vector3.up));
+            mesh.SetUVs(0, uv);
             mesh.subMeshCount = byMaterial.Count;
             var mats = new Material[byMaterial.Count];
             var i = 0;
@@ -187,6 +195,43 @@ namespace EverythingWorld.World
             rend.shadowCastingMode = ShadowCastingMode.Off;
             go.AddComponent<MeshCollider>().sharedMesh = mesh;
             go.isStatic = true;
+        }
+
+        // ---------- where two lands meet ----------
+        byte[] borderOther; float[] borderDist;
+        /// For every ground point near a border with another land: which land is across it and how many grid
+        /// steps away (a spreading search from the border points, a few steps deep).
+        void BorderMap()
+        {
+            borderOther = null; if (borderBlend <= 0f) return;
+            int nx = Data.Nx, nz = Data.Nz, n = nx * nz; var reach = borderBlend / Data.Step;
+            borderOther = new byte[n]; borderDist = new float[n];
+            for (var i = 0; i < n; i++) { borderOther[i] = 255; borderDist[i] = float.MaxValue; }
+            var queue = new Queue<int>();
+            for (var r = 0; r < nz; r++)
+            for (var c = 0; c < nx; c++)
+            {
+                var a = Data.IslandIndexAtVertex(c, r); if (a == 255) continue;
+                foreach (var (dc, dr) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+                {
+                    int cc = c + dc, rr = r + dr; if (cc < 0 || rr < 0 || cc >= nx || rr >= nz) continue;
+                    var b = Data.IslandIndexAtVertex(cc, rr);
+                    if (b == 255 || b == a) continue;
+                    var k = r * nx + c; borderOther[k] = b; borderDist[k] = .5f; queue.Enqueue(k); break;
+                }
+            }
+            while (queue.Count > 0)
+            {
+                var k = queue.Dequeue(); int c = k % nx, r = k / nx; var a = Data.IslandIndexAtVertex(c, r);
+                if (borderDist[k] + 1f > reach) continue;
+                foreach (var (dc, dr) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+                {
+                    int cc = c + dc, rr = r + dr; if (cc < 0 || rr < 0 || cc >= nx || rr >= nz) continue;
+                    var kk = rr * nx + cc;
+                    if (Data.IslandIndexAtVertex(cc, rr) != a || borderDist[kk] <= borderDist[k] + 1f) continue;
+                    borderDist[kk] = borderDist[k] + 1f; borderOther[kk] = borderOther[k]; queue.Enqueue(kk);
+                }
+            }
         }
 
         int CellIsland(int c, int r)
@@ -223,7 +268,25 @@ namespace EverythingWorld.World
             return new Color(Mathf.Round(c.r * Q) / Q, Mathf.Round(c.g * Q) / Q, Mathf.Round(c.b * Q) / Q, 1f);
         }
 
+        /// The ground's colour, blended toward the next land's near a border: halfway at the border itself, fading
+        /// to this land's own colour 'borderBlend' metres in, with a ragged, patchy edge (like one kind of country
+        /// giving way to another) rather than a smooth gradient. The blend is in a few steps, so the ground keeps a
+        /// small number of materials.
         Color TerrainColor(float height, float slope, int island, int col, int row)
+        {
+            var own = OwnTerrainColor(height, slope, island, col, row);
+            if (borderOther == null || island < 0 || height < 1.6f) return own;
+            var k = Mathf.Clamp(row, 0, Data.Nz - 1) * Data.Nx + Mathf.Clamp(col, 0, Data.Nx - 1);
+            var other = borderOther[k]; if (other == 255 || other == island) return own;
+            var w = .5f * (1f - borderDist[k] * Data.Step / borderBlend);
+            if (w <= 0f) return own;
+            var jag = Mathf.PerlinNoise(col * .31f + 11.7f, row * .31f + 3.1f) - .5f;
+            var t = Mathf.Clamp01(w + jag * .45f);
+            t = Mathf.Round(t * 6f) / 6f; if (t <= 0f) return own;
+            return Color.Lerp(own, OwnTerrainColor(height, slope, other, col, row), t);
+        }
+
+        Color OwnTerrainColor(float height, float slope, int island, int col, int row)
         {
             if (height < -.2f) return Seabed;
             if (height < 1.6f || island < 0) return Sand;
