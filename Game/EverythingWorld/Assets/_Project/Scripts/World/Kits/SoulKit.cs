@@ -33,17 +33,17 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            brick = WorldMaterials.Solid(new Color(.74f, .47f, .36f)); brickDark = WorldMaterials.Solid(new Color(.52f, .3f, .23f));
-            wood = WorldMaterials.Solid(new Color(.6f, .42f, .27f)); woodDark = WorldMaterials.Solid(new Color(.36f, .24f, .16f)); boardM = WorldMaterials.Solid(new Color(.7f, .56f, .4f));
-            white = WorldMaterials.Solid(new Color(.97f, .96f, .92f)); cream = WorldMaterials.Solid(Cream); iron = WorldMaterials.Solid(new Color(.14f, .13f, .13f), .5f); dark = WorldMaterials.Solid(new Color(.08f, .07f, .07f));
-            gold = WorldMaterials.Solid(new Color(.85f, .64f, .22f), .6f); velvet = WorldMaterials.Solid(Velvet); waterBlue = WorldMaterials.Solid(River, .7f);
+            brick = WorldMaterials.Surface(new Color(.74f, .47f, .36f), World.Surface.Stone); brickDark = WorldMaterials.Surface(new Color(.52f, .3f, .23f), World.Surface.Stone);
+            wood = WorldMaterials.Surface(new Color(.6f, .42f, .27f), World.Surface.Wood); woodDark = WorldMaterials.Surface(new Color(.36f, .24f, .16f), World.Surface.Wood); boardM = WorldMaterials.Surface(new Color(.7f, .56f, .4f), World.Surface.Wood);
+            white = WorldMaterials.Solid(new Color(.97f, .96f, .92f)); cream = WorldMaterials.Surface(Cream, World.Surface.Painted); iron = WorldMaterials.Surface(new Color(.14f, .13f, .13f), World.Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .07f, .07f));
+            gold = WorldMaterials.Surface(new Color(.85f, .64f, .22f), World.Surface.Metal); velvet = WorldMaterials.Surface(Velvet, World.Surface.Cloth); waterBlue = WorldMaterials.Solid(River, .7f);
             lampM = new Material(WorldMaterials.Glow(Gold, 1.5f)) { name = "Soul lamps" };
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .82f, .5f), 1.1f)) { name = "Soul windows" };
             for (var i = 0; i < 3; i++) bulbM[i] = new Material(WorldMaterials.Glow(new Color(1f, .86f, .55f), 1.6f)) { name = "Soul bulbs " + i };
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
-        Material Paint(int i) => WorldMaterials.Solid(Pastel[((i % Pastel.Length) + Pastel.Length) % Pastel.Length]);
+        Material Paint(int i) => WorldMaterials.Surface(Pastel[((i % Pastel.Length) + Pastel.Length) % Pastel.Length], World.Surface.Painted);
         static bool HasStation(IslandWorldData.Artist a) => a.stationId != 0;
         static float Foot(IslandWorldData.Artist a)
         {
@@ -258,22 +258,22 @@ namespace EverythingWorld.World
         /// A spreading oak: a short thick trunk, a broad canopy catching the gold light.
         void Oak(LandContext ctx, MeshKit mk, Vector3 g, float s, System.Random rng)
         {
-            var up = Vector3.up; var bark = WorldMaterials.Solid(new Color(.34f, .25f, .18f));
+            var up = Vector3.up; var bark = WorldMaterials.Surface(new Color(.34f, .25f, .18f), World.Surface.Bark);
             mk.Prism(bark, g - up * .3f, up, .34f * s, 3.2f * s, 7, .7f); ArtistBits.PostCollider(ctx.Root, g, 3f * s, .36f * s);
             for (var k = 0; k < 4; k++)
             {
                 var a = k * 90f + (float)rng.NextDouble() * 40f; var d = Quaternion.Euler(0, a, 0) * Vector3.forward;
-                var leaf = WorldMaterials.Solid(Color.Lerp(new Color(.36f, .5f, .2f), new Color(.62f, .62f, .22f), (float)rng.NextDouble()));
+                var leaf = WorldMaterials.Surface(Color.Lerp(new Color(.36f, .5f, .2f), new Color(.62f, .62f, .22f), (float)rng.NextDouble()), World.Surface.Foliage);
                 mk.Blob(leaf, g + up * (4.2f * s + (float)rng.NextDouble() * .8f) + d * 1.9f * s, new Vector3(2.6f, 1.7f, 2.6f) * s, rng, .22f);
             }
-            mk.Blob(WorldMaterials.Solid(new Color(.5f, .58f, .22f)), g + up * 5.4f * s, new Vector3(2.8f, 1.8f, 2.8f) * s, rng, .2f);
+            mk.Blob(WorldMaterials.Surface(new Color(.5f, .58f, .22f), World.Surface.Foliage), g + up * 5.4f * s, new Vector3(2.8f, 1.8f, 2.8f) * s, rng, .2f);
         }
 
         /// A magnolia: dark glossy leaves, big white blossoms.
         void Magnolia(LandContext ctx, MeshKit mk, Vector3 g, float s, System.Random rng)
         {
-            var up = Vector3.up; mk.Prism(WorldMaterials.Solid(new Color(.4f, .32f, .26f)), g - up * .3f, up, .2f * s, 2.6f * s, 6, .7f); ArtistBits.PostCollider(ctx.Root, g, 2.4f * s, .22f * s);
-            var leaf = WorldMaterials.Solid(new Color(.2f, .38f, .22f)); var c = g + up * 3.8f * s; mk.Blob(leaf, c, new Vector3(1.9f, 2.1f, 1.9f) * s, rng, .2f);
+            var up = Vector3.up; mk.Prism(WorldMaterials.Surface(new Color(.4f, .32f, .26f), World.Surface.Bark), g - up * .3f, up, .2f * s, 2.6f * s, 6, .7f); ArtistBits.PostCollider(ctx.Root, g, 2.4f * s, .22f * s);
+            var leaf = WorldMaterials.Surface(new Color(.2f, .38f, .22f), World.Surface.Foliage); var c = g + up * 3.8f * s; mk.Blob(leaf, c, new Vector3(1.9f, 2.1f, 1.9f) * s, rng, .2f);
             for (var k = 0; k < 9; k++) { var d = Quaternion.Euler((float)rng.NextDouble() * 120f - 60f, k * 40f, 0) * Vector3.forward; mk.Blob(white, c + Vector3.Scale(d, new Vector3(1.8f, 2f, 1.8f) * s), Vector3.one * .26f * s, rng, .15f); }
         }
 
@@ -288,7 +288,7 @@ namespace EverythingWorld.World
         // ---------------------------------------------------------------- the lanes to the artists
         void Paths(LandContext ctx, MeshKit mk, MeshKit solid)
         {
-            var up = Vector3.up; var walk = 10; var lamps = new List<Vector3>(); var earth = WorldMaterials.Solid(new Color(.86f, .74f, .52f));   // pale sandy lanes, against the brick of the town
+            var up = Vector3.up; var walk = 10; var lamps = new List<Vector3>(); var earth = WorldMaterials.Surface(new Color(.86f, .74f, .52f), World.Surface.Stone);   // pale sandy lanes, against the brick of the town
             // the big buildings a lane goes round (the artists' areas are handled in RoundAreas too)
             var blockers = new List<(Vector2 c, float r)> { (theatre2, 18.5f), (chapel2, 11f) };
             // Main Street's lanes leave between the shops: each gate is a gap between two lots, and the lane walks straight
@@ -405,7 +405,7 @@ namespace EverythingWorld.World
             var foot = LowUnder(ctx, g - f.Fwd * .2f, (D + 3f) / 2f + .2f); var fh = g.y + .7f - foot; var fc = new Vector3(g.x, foot - .2f + fh / 2f, g.z) - f.Fwd * .2f;
             mk.Box(brickDark, fc, new Vector3(W + .4f, fh, D + 3f), f.r); solid.Box(brickDark, fc, new Vector3(W + .4f, fh, D + 3f), f.r);
             mk.Box(paint, f.P(0, H / 2f + .2f, -1.2f), new Vector3(W, H, D), f.r); solid.Box(paint, f.P(0, H / 2f + .2f, -1.2f), new Vector3(W, H, D), f.r);
-            foreach (var e in new[] { -1f, 1f }) mk.Box(WorldMaterials.Solid(new Color(.5f, .52f, .54f), .5f), f.P(e * W / 4f, H + .95f, -.5f), new Vector3(W / 2f + .5f, .1f, D + 3.2f), f.r * Quaternion.Euler(0, 0, -e * 28f));
+            foreach (var e in new[] { -1f, 1f }) mk.Box(WorldMaterials.Surface(new Color(.5f, .52f, .54f), World.Surface.Metal), f.P(e * W / 4f, H + .95f, -.5f), new Vector3(W / 2f + .5f, .1f, D + 3.2f), f.r * Quaternion.Euler(0, 0, -e * 28f));
             mk.Prism(paint, f.P(0, H + .2f, D / 2f - 1.25f), f.Fwd, W / 2f, .08f, 3); mk.Prism(paint, f.P(0, H + .2f, -D / 2f - 1.25f), f.Fwd, W / 2f, .08f, 3);
             mk.Box(white, f.P(-1.2f, 1.25f, D / 2f - 1.18f), new Vector3(.95f, 2.1f, .06f), f.r); mk.Box(windowM, f.P(1.2f, 1.7f, D / 2f - 1.18f), new Vector3(1.2f, 1.2f, .06f), f.r); mk.Box(white, f.P(1.2f, 1.7f, D / 2f - 1.16f), new Vector3(.06f, 1.2f, .06f), f.r);
             foreach (var e in new[] { -1f, 1f }) { mk.Box(white, f.P(e * (W / 2f - .15f), 1.3f, D / 2f + .5f), new Vector3(.14f, 2.3f, .14f), f.r); ArtistBits.PostCollider(ctx.Root, f.P(e * (W / 2f - .15f), 0, D / 2f + .5f), 2.4f, .1f); }
@@ -425,7 +425,7 @@ namespace EverythingWorld.World
         void PicnicTable(MeshKit mk, Vector3 g, Vector3 face)
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
-            mk.Box(wood, g + up * .76f, new Vector3(1.9f, .06f, .8f), rot); mk.Box(WorldMaterials.Solid(new Color(.85f, .25f, .25f)), g + up * .795f, new Vector3(1.5f, .01f, .82f), rot);
+            mk.Box(wood, g + up * .76f, new Vector3(1.9f, .06f, .8f), rot); mk.Box(WorldMaterials.Surface(new Color(.85f, .25f, .25f), World.Surface.Cloth), g + up * .795f, new Vector3(1.5f, .01f, .82f), rot);
             foreach (var e in new[] { -1f, 1f }) { mk.Box(wood, g + up * .45f + face * e * .75f, new Vector3(1.9f, .06f, .3f), rot); Interact.Bench(tlife.transform, g + up * .5f + face * e * .75f - side * .5f, g + up * .5f + face * e * .75f + side * .5f, -face * e); mk.Box(woodDark, g + up * .38f + side * e * .75f, new Vector3(.08f, .76f, 1.7f), rot); }
             BoxCol(rootT, g + up * .4f, new Vector3(1.9f, .8f, 1.8f), rot);
         }
