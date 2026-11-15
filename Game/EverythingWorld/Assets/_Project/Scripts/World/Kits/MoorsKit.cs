@@ -527,28 +527,54 @@ namespace EverythingWorld.World
                     }
         }
 
+        /// The moor in patches: short sheep-bitten turf, grey-green moor grass and thick tussocks, bare peat between,
+        /// going dark heather-brown up high as before, with heather in drifts of one colour each. The farm fields stay
+        /// bright green, with buttercups gathered in drifts. Each patch its own shade, cool grey-green to warm straw;
+        /// every blade its own.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, 1f, new Color(.4f, .47f, .32f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1997);
             const float step = 2.3f; Color[] flowers = { new Color(.7f, .5f, .9f), new Color(.62f, .45f, .8f), new Color(1f, .85f, .25f) };
+            int turf = 0, moor = 0, tussocks = 0, field = 0, heather = 0, buttercups = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .03f + 7f, pz * .03f + 3f) < .32f) continue;
+                var inField = InField(px, pz);
+                if (WindMesh.Patch(px, pz, .03f, 7f) < (inField ? .2f : .36f)) continue;   // bare peat between patches
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var gh = ctx.Ground(px, pz); var inField = InField(px, pz); var r0 = (float)rng.NextDouble();
-                var col = inField ? Color.Lerp(new Color(.6f, .78f, .3f), new Color(.78f, .86f, .38f), r0)
-                    : Color.Lerp(Color.Lerp(new Color(.45f, .54f, .34f), new Color(.6f, .62f, .42f), r0), Color.Lerp(new Color(.25f, .22f, .27f), new Color(.36f, .28f, .36f), r0), Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(33f, 44f, gh)));
+                var gh = ctx.Ground(px, pz); var r0 = (float)rng.NextDouble();
+                var kind = WindMesh.Patch(px, pz, .014f, 12f); var t = Mathf.Clamp01((WindMesh.Patch(px, pz, .022f, 18f) - .25f) * 2f) * .7f + r0 * .3f;
+                var drift = WindMesh.Patch(px, pz, .02f, 0f);
                 var at = new Vector3(px, gh - .04f, pz);
-                if (inField && rng.NextDouble() < .25) wm.Flower(at + new Vector3(-.1f, 0, .1f), .25f, new Color(1f, .9f, .2f), rng);   // buttercups
-                wm.Tuft(at, .4f + (float)rng.NextDouble() * .45f, col, Color.Lerp(col, new Color(.8f, .8f, .65f), .3f), rng, 4, .06f);
-                if (rng.NextDouble() < (Mathf.PerlinNoise(px * .02f + 1f, pz * .02f + 9f) > .55f ? .45 : .06)) wm.Flower(at + new Vector3(.1f, 0, .1f), .3f, flowers[rng.Next(flowers.Length)], rng);   // heather in drifts
+                if (inField)
+                {
+                    var fc = Color.Lerp(new Color(.58f, .76f, .32f), new Color(.8f, .86f, .38f), t);
+                    if (rng.NextDouble() < (drift > .5f ? .4 : .08)) { wm.Flower(at + new Vector3(-.1f, 0, .1f), .25f, new Color(1f, .9f, .2f), rng); buttercups++; }   // buttercups
+                    wm.Tuft(at, .4f + r0 * .45f, fc, Color.Lerp(fc, new Color(.8f, .8f, .65f), .3f), rng, 4, .06f, .1f); field++;
+                    continue;
+                }
+                var col = Color.Lerp(Color.Lerp(new Color(.42f, .52f, .38f), new Color(.62f, .62f, .4f), t), Color.Lerp(new Color(.25f, .22f, .27f), new Color(.36f, .28f, .36f), t), Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(33f, 44f, gh)));
+                var tip = Color.Lerp(col, new Color(.8f, .8f, .65f), .3f);
+                if (kind < .35f) { wm.Tuft(at, .2f + r0 * .16f, col, tip, rng, 4, .06f, .15f); turf++; }
+                else if (kind < .7f) { wm.Tuft(at, .4f + r0 * .45f, col, tip, rng, 4, .06f, .15f); moor++; }
+                else
+                {
+                    var tc = col * .92f;
+                    wm.Tuft(at, .55f + r0 * .35f, tc, tip, rng, 5, .07f, .15f);
+                    if (r0 < .4f) wm.Tuft(at + new Vector3(.4f, 0, -.35f), .45f + r0 * .35f, tc, tip, rng, 4, .07f, .15f);
+                    tussocks++;
+                }
+                if (rng.NextDouble() < (drift > .55f ? .45 : .06))   // heather in drifts, each drift one colour
+                {
+                    wm.Flower(at + new Vector3(.1f, 0, .1f), .3f, flowers[WindMesh.Pick(Mathf.Clamp01((WindMesh.Patch(px, pz, .025f, 33f) - .2f) * 1.67f), flowers.Length)], rng); heather++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Moors grass", ctx.Root, mat);
+            Debug.Log($"The Alt Rock Moors grass: {turf} turf, {moor} moor-grass tufts, {tussocks} tussocks, {heather} heather, {field} field tufts, {buttercups} buttercups");
         }
     }
 }
