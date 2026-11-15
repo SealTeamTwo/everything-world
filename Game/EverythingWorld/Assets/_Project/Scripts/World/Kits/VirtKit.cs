@@ -363,12 +363,15 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Moor grass, silver-green, thinning out up the mountain.
+        /// Moor grass, silver-green, thinning out up the mountain, in patches: tussocky moor grass, low dusky heather, and
+        /// short turf the sheep keep cropped; each patch its own shade from silver-blue to moss.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.4f, .8f, new Color(.4f, .5f, .38f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1991);
             const float st = 2.4f;
+            Color silver = new Color(.4f, .5f, .44f), mossy = new Color(.48f, .54f, .38f);
+            int tussock = 0, heather = 0, turf = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
@@ -376,12 +379,37 @@ namespace EverythingWorld.World
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 var gy = ctx.Ground(px, pz); if (gy > snowLine - 10f) continue; if (gy > baseY + Hm * .3f && rng.NextDouble() < .6f) continue;
                 if (Mathf.PerlinNoise(px * .04f + 3f, pz * .04f + 4f) < .35f) continue;
+                var kind = WindMesh.Patch(px, pz, .014f, 131f);     // moor grass, heather or cropped turf
+                var tone = WindMesh.Patch(px, pz, .025f, 132f);     // the patch's shade, silver-blue to moss
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.38f, .48f, .36f), new Color(.5f, .54f, .42f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, gy - .04f, pz), .3f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, Snow, .4f), rng, 3, .08f);
+                var col = Color.Lerp(silver, mossy, tone) * (.92f + r2 * .16f);
+                var at = new Vector3(px, gy - .04f, pz);
+                if (kind < .42f)
+                {
+                    // tussocky moor grass, silver at the tips
+                    wm.Tuft(at, .35f + r2 * .4f, col, Color.Lerp(col, Snow, .4f), rng, 3, .08f, .12f);
+                    if (r1 < .3f) wm.Tuft(at + new Vector3(.35f, 0, -.3f), .3f + r1 * .3f, col, Color.Lerp(col, Snow, .4f), rng, 3, .08f, .12f);
+                    tussock++;
+                }
+                else if (kind < .72f)
+                {
+                    // heather: low and dusky, purple coming through
+                    var hc = Color.Lerp(col, Heather, .35f);
+                    wm.Tuft(at, .2f + r2 * .14f, hc, Color.Lerp(hc, Heather, .4f), rng, 3, .07f, .12f);
+                    if (r1 < .4f) wm.Tuft(at + new Vector3(-.35f, 0, .3f), .18f + r1 * .1f, hc, Color.Lerp(hc, Heather, .4f), rng, 2, .07f, .12f);
+                    heather++;
+                }
+                else
+                {
+                    // sheep-cropped turf: short and greener
+                    var tc = Color.Lerp(col, Moss, .4f);
+                    wm.Tuft(at, .14f + r2 * .12f, tc, Color.Lerp(tc, Snow, .25f), rng, 3, .06f, .12f); turf++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Virt grass", ctx.Root, mat);
+            Debug.Log($"Mount Virtuoso grass: {tussock} moor-grass tussocks, {heather} heather spots, {turf} turf tufts");
         }
     }
 }
