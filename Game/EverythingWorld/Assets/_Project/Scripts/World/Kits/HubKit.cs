@@ -137,6 +137,9 @@ namespace EverythingWorld.World
         // ---------------------------------------------------------------- ground cover
         /// A short, kept lawn through the park, golden-green, with the odd daisy; past the ring of covers the
         /// grass is left to grow into a wild golden meadow with buttercups, down to the shore. Off the paths.
+        /// Both grow in patches: the lawn is warmer where the sun lies on it and cooler in the hollows, with little
+        /// gatherings of daisies; the meadow has stands of tall seeding grass, softer mixed grass, drifts where it's
+        /// all buttercups or all daisies, and short thin grass on bare ground. Each blade a touch its own shade.
         void GroundCover(LandContext ctx)
         {
             var lawnMat = WindMesh.Material(.16f, .8f, Grass);
@@ -144,7 +147,7 @@ namespace EverythingWorld.World
             var lawn = new Dictionary<(int, int), WindMesh>(); var meadow = new Dictionary<(int, int), WindMesh>();
             var rng = new System.Random(1717);
             const float step = 1.5f, reach = 260f;
-            var count = 0;
+            var count = 0; int tall = 0, soft = 0, drifts = 0, thin = 0;
             for (var x = center.x - reach; x < center.x + reach; x += step)
             for (var z = center.z - reach; z < center.z + reach; z += step)
             {
@@ -164,23 +167,49 @@ namespace EverythingWorld.World
                 var set = wild ? meadow : lawn;
                 if (!set.TryGetValue(key, out var wm)) set[key] = wm = new WindMesh();
                 var at = new Vector3(px, g - .03f, pz);
+                var tone = WindMesh.Patch(px, pz, .025f, 11f);                    // warm where the sun lies, cooler in the hollows
+                var kind = WindMesh.Patch(px, pz, .016f, 12f);                    // which kind of meadow grows here
+                var drift = WindMesh.Patch(px, pz, .07f, 13f);                    // flower drifts
+                var rr = (float)rng.NextDouble();
+                Color daisy = new Color(.97f, .96f, .9f), buttercup = new Color(.98f, .85f, .2f);
                 if (wild)
                 {
-                    var col = Color.Lerp(new Color(.6f, .62f, .36f), new Color(.82f, .72f, .42f), (float)rng.NextDouble());
-                    wm.Tuft(at, .55f + (float)rng.NextDouble() * .55f, col, rng);
-                    if (rng.NextDouble() < .05) wm.Flower(at + new Vector3(.25f, 0, .2f), .5f, rng.NextDouble() < .6 ? new Color(.98f, .85f, .2f) : new Color(.97f, .96f, .9f), rng);
+                    var col = Color.Lerp(new Color(.56f, .6f, .38f), new Color(.82f, .72f, .42f), Mathf.Clamp01(tone * .75f + rr * .25f));
+                    if (kind > .6f)
+                    {
+                        // tall seeding grass, standing in stands, with straw tips
+                        wm.Tuft(at, .8f + rr * .55f, col, Color.Lerp(col, new Color(.84f, .76f, .5f), .5f), rng, 4, .09f, .14f); tall++;
+                    }
+                    else if (kind < .3f)
+                    {
+                        // short thin grass over bare ground
+                        if (rr < .4f) continue;
+                        wm.Tuft(at, .22f + rr * .2f, col * .92f, Color.Lerp(col, new Color(.8f, .74f, .5f), .35f), rng, 3, .05f, .12f); thin++;
+                    }
+                    else
+                    {
+                        wm.Tuft(at, .5f + rr * .45f, col, Color.Lerp(col, new Color(.94f, .91f, .78f), .3f), rng, 3, .1f, .14f); soft++;
+                        // a drift is all one flower: buttercups or daisies, by the patch
+                        if (drift > .62f && rng.NextDouble() < .5)
+                        {
+                            var fl = WindMesh.Patch(px, pz, .02f, 14f) < .55f ? buttercup : daisy;
+                            for (var k = 0; k < 2; k++) wm.Flower(at + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f), .42f + (float)rng.NextDouble() * .12f, fl, rng);
+                            drifts += 2;
+                        }
+                    }
                 }
                 else
                 {
-                    var col = Color.Lerp(new Color(.5f, .6f, .33f), new Color(.66f, .66f, .38f), (float)rng.NextDouble());
-                    wm.Tuft(at, .25f + (float)rng.NextDouble() * .2f, col, Color.Lerp(col, new Color(.86f, .82f, .55f), .45f), rng, 3, .07f);
-                    if (rng.NextDouble() < .025) wm.Flower(at + new Vector3(.2f, 0, .15f), .22f, rng.NextDouble() < .7 ? new Color(.97f, .96f, .9f) : new Color(.98f, .85f, .2f), rng);
+                    var col = Color.Lerp(new Color(.48f, .58f, .35f), new Color(.68f, .67f, .38f), Mathf.Clamp01(tone * .8f + rr * .2f));
+                    wm.Tuft(at, .25f + rr * .2f, col, Color.Lerp(col, new Color(.86f, .82f, .55f), .45f), rng, 3, .07f, .1f);
+                    if (drift > .7f && rng.NextDouble() < .2) { wm.Flower(at + new Vector3(.2f, 0, .15f), .22f, daisy, rng); drifts++; }
+                    else if (rng.NextDouble() < .012) wm.Flower(at + new Vector3(.2f, 0, .15f), .22f, rng.NextDouble() < .7 ? daisy : buttercup, rng);
                 }
                 count++;
             }
             foreach (var kv in lawn) kv.Value.Build("Lawn", ctx.Root, lawnMat);
             foreach (var kv in meadow) kv.Value.Build("Meadow", ctx.Root, meadowMat);
-            Debug.Log($"The Everything Hub: {count} tufts of lawn and meadow");
+            Debug.Log($"The Everything Hub: {count} tufts of lawn and meadow ({tall} tall stands, {soft} soft meadow, {thin} thin, {drifts} drift flowers)");
         }
 
         // ---------------------------------------------------------------- the plaza and the dais
