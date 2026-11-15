@@ -174,10 +174,10 @@ namespace EverythingWorld.World
             // the ship's bow on an iceberg ("My Heart Will Go On")
             var ice = z.At(-1f, 11.5f); var iceM = SongGlow(mhwgo, new Color(.65f, .85f, 1f), .6f);
             z.mk.Blob(iceM, ice + up * 1.2f, new Vector3(3.2f, 2f, 2.6f), ctx.Rng, .35f); z.mk.Prism(iceM, ice + up * 2f, up, 1.2f, 3f, 5, .1f);
-            var hull = WorldMaterials.Solid(new Color(.1f, .1f, .12f));
+            var hull = WorldMaterials.Surface(new Color(.1f, .1f, .12f), World.Surface.Painted);
             var bowDir = (z.front * .8f + up * .35f).normalized;
             z.mk.Prism(hull, ice + up * 1.5f - z.front * 1.5f, bowDir, 1.6f, 6f, 3, .05f, Quaternion.LookRotation(z.front).eulerAngles.y + 180f);
-            z.mk.Box(WorldMaterials.Solid(new Color(.6f, .1f, .1f)), ice + up * 1.6f - z.front * 1.2f, new Vector3(2.2f, .5f, 2.5f), Quaternion.LookRotation(bowDir));
+            z.mk.Box(WorldMaterials.Surface(new Color(.6f, .1f, .1f), World.Surface.Painted), ice + up * 1.6f - z.front * 1.2f, new Vector3(2.2f, .5f, 2.5f), Quaternion.LookRotation(bowDir));
             var tip = ice + up * 1.5f - z.front * 1.5f + bowDir * 5.4f;
             z.mk.Box(goldM, tip + up * .9f, new Vector3(.05f, .05f, 1.6f), Quaternion.LookRotation(z.side));
             BoxCol(z.root, ice + up * 1.4f, new Vector3(5f, 2.8f, 4.2f), z.Rot);
@@ -189,7 +189,7 @@ namespace EverythingWorld.World
         void Bridear(Plot z)
         {
             var up = Vector3.up; var ctx = z.ctx; var rot = z.Rot;
-            var lacquer = WorldMaterials.Solid(new Color(.75f, .12f, .1f));
+            var lacquer = WorldMaterials.Surface(new Color(.75f, .12f, .1f), World.Surface.Painted);
             // the stage and the great gate over it
             var s = z.At(-9f, 0);
             z.mk.Box(rockDark, s + up * .6f, new Vector3(12f, 1.2f, 6f), rot); z.solid.Box(rockDark, s + up * .6f, new Vector3(12f, 1.2f, 6f), rot);
@@ -258,7 +258,7 @@ namespace EverythingWorld.World
             halos.Add(sign + z.front * .6f, 2.4f, Pink, .5f);
             // leaving work first: a little office desk with its lamp left on, the chair pushed back
             var desk = z.At(-1f, -4.5f); var lamp = SongGlow(z, "お先に", new Color(1f, .9f, .6f), 2f);
-            var grey = WorldMaterials.Solid(new Color(.55f, .56f, .58f));
+            var grey = WorldMaterials.Surface(new Color(.55f, .56f, .58f), World.Surface.Painted);
             z.mk.Box(grey, desk + up * .75f, new Vector3(1.6f, .08f, .8f), rot); foreach (var e in new[] { -1f, 1f }) z.mk.Box(grey, desk + up * .37f + z.side * e * .75f, new Vector3(.06f, .75f, .75f), rot);
             z.mk.Box(rockDark, desk + up * 1.05f - z.front * .2f, new Vector3(.6f, .45f, .05f), rot); z.mk.Box(GlowM(new Color(.5f, .7f, 1f), 1.2f), desk + up * 1.05f - z.front * .17f, new Vector3(.52f, .38f, .02f), rot);
             z.mk.Prism(iron, desk + up * .8f + z.side * .6f, up, .03f, .45f, 6); z.mk.Prism(lamp, desk + up * 1.2f + z.side * .6f, up, .14f, .14f, 8, .5f);
@@ -272,14 +272,14 @@ namespace EverythingWorld.World
             var up = Vector3.up; var ctx = z.ctx; var rot = z.Rot;
             // "Nippon Manju": a giant steamed bun on a plate
             var bun = z.At(-3.5f, -2.2f);
-            z.mk.Prism(WorldMaterials.Solid(new Color(.92f, .92f, .95f)), bun + up * .3f, up, 2.4f, .2f, 20);
-            z.mk.Blob(WorldMaterials.Solid(new Color(.98f, .94f, .86f)), bun + up * 1.2f, new Vector3(1.9f, 1.1f, 1.9f), ctx.Rng, .05f);
+            z.mk.Prism(WorldMaterials.Surface(new Color(.92f, .92f, .95f), World.Surface.Painted), bun + up * .3f, up, 2.4f, .2f, 20);
+            z.mk.Blob(WorldMaterials.Surface(new Color(.98f, .94f, .86f), World.Surface.Painted), bun + up * 1.2f, new Vector3(1.9f, 1.1f, 1.9f), ctx.Rng, .05f);
             z.mk.Prism(SongGlow(z, "Nippon Manju", Pink, 1.8f), bun + up * 2.25f, up, .3f, .05f, 12);
             BoxCol(z.root, bun + up * 1f, new Vector3(3.6f, 2f, 3.6f), rot); halos.Add(bun + up * 2.4f, 2.4f, Pink, .4f);
             // "Haten ni raimei": a taiko drum marked with a lightning bolt
             var drum = z.At(-3.5f, 3.2f); var drumRot = Quaternion.LookRotation(z.side);
-            z.mk.Prism(WorldMaterials.Solid(new Color(.55f, .2f, .12f)), drum + up * 1.5f - z.side * .9f, z.side, 1.2f, 1.8f, 16, 1f);
-            foreach (var e in new[] { -1f, 1f }) z.mk.Prism(WorldMaterials.Solid(new Color(.95f, .9f, .78f)), drum + up * 1.5f + z.side * e * .92f, z.side * e, 1.15f, .03f, 16);
+            z.mk.Prism(WorldMaterials.Surface(new Color(.55f, .2f, .12f), World.Surface.Painted), drum + up * 1.5f - z.side * .9f, z.side, 1.2f, 1.8f, 16, 1f);
+            foreach (var e in new[] { -1f, 1f }) z.mk.Prism(WorldMaterials.Surface(new Color(.95f, .9f, .78f), World.Surface.Cloth), drum + up * 1.5f + z.side * e * .92f, z.side * e, 1.15f, .03f, 16);
             var bolt = SongGlow(z, "Haten", new Color(1f, .95f, .4f), 2.2f);
             var bf = drum + up * 1.5f + z.side * .96f;
             z.mk.Box(bolt, bf + up * .35f + z.front * .1f, new Vector3(.03f, .8f, .2f), drumRot * Quaternion.Euler(0, 0, 0) * Quaternion.Euler(25f, 0, 0));
@@ -295,7 +295,7 @@ namespace EverythingWorld.World
             // "Driver's High": a red sports car on a launch ramp, speed lines behind it
             var ramp = z.At(-3f, -1f); var rr = Quaternion.LookRotation(z.side) * Quaternion.Euler(-14f, 0, 0);
             z.mk.Box(iron, ramp + up * .6f, new Vector3(3f, .2f, 6f), rr); z.solid.Box(iron, ramp + up * .6f, new Vector3(3f, .6f, 6f), rr);
-            var car = ramp + up * 1.5f + z.side * .4f; var cr = rr; var red = WorldMaterials.Solid(new Color(.8f, .1f, .1f), .9f);
+            var car = ramp + up * 1.5f + z.side * .4f; var cr = rr; var red = WorldMaterials.Surface(new Color(.8f, .1f, .1f), World.Surface.Painted);
             z.mk.Box(red, car, new Vector3(1.9f, .6f, 4.2f), cr); z.mk.Box(red, car + cr * new Vector3(0, .5f, -.3f), new Vector3(1.6f, .45f, 1.8f), cr);
             z.mk.Box(rockDark, car + cr * new Vector3(0, .5f, -.3f), new Vector3(1.64f, .32f, 1.6f), cr);
             foreach (var e in new[] { -.6f, .6f }) z.mk.Box(SongGlow(z, "Driver", new Color(1f, .95f, .8f), 2.4f), car + cr * new Vector3(e, .05f, 2.11f), new Vector3(.35f, .15f, .03f), cr);
@@ -315,12 +315,12 @@ namespace EverythingWorld.World
         void Nemophila(Plot z)
         {
             var up = Vector3.up; var ctx = z.ctx;
-            var blue = WorldMaterials.Solid(new Color(.45f, .7f, 1f)); var blueGlow = GlowM(new Color(.5f, .75f, 1f), .9f);
+            var blue = WorldMaterials.Surface(new Color(.45f, .7f, 1f), World.Surface.Foliage); var blueGlow = GlowM(new Color(.5f, .75f, 1f), .9f);
             var f = z.At(-3f, 0);
             for (var k = 0; k < 140; k++)
             {
                 var a = ctx.Range(0, Mathf.PI * 2f); var r = Mathf.Sqrt(ctx.Range(0f, 1f)) * 4.6f; var p = ctx.OnGround(f.x + Mathf.Cos(a) * r, f.z + Mathf.Sin(a) * r);
-                z.mk.Prism(WorldMaterials.Solid(new Color(.2f, .35f, .2f)), p, up, .02f, .3f, 4);
+                z.mk.Prism(WorldMaterials.Surface(new Color(.2f, .35f, .2f), World.Surface.Foliage), p, up, .02f, .3f, 4);
                 z.mk.Blob(k % 5 == 0 ? blueGlow : blue, p + up * .33f, new Vector3(.12f, .05f, .12f), ctx.Rng, 0f);
             }
             halos.Add(f + up * .5f, 4.6f, new Color(.5f, .75f, 1f), .2f);
@@ -341,7 +341,7 @@ namespace EverythingWorld.World
         void Babymetal(Plot z)
         {
             var up = Vector3.up; var ctx = z.ctx; var rot = z.Rot;
-            var red = WorldMaterials.Solid(new Color(.8f, .1f, .1f)); var white = WorldMaterials.Solid(new Color(.95f, .94f, .92f));
+            var red = WorldMaterials.Surface(new Color(.8f, .1f, .1f), World.Surface.Painted); var white = WorldMaterials.Surface(new Color(.95f, .94f, .92f), World.Surface.Painted);
             // the fox shrine: a small red gate, two white foxes with glowing eyes either side of a little altar
             var sh = z.At(-4.5f, -2f);
             foreach (var e in new[] { -1f, 1f }) { z.mk.Prism(red, sh + z.side * e * 1.4f - up * .2f, up, .16f, 3.2f, 8); ArtistBits.PostCollider(z.root, sh + z.side * e * 1.4f, 3f, .18f); }
@@ -361,7 +361,7 @@ namespace EverythingWorld.World
             }
             // "Gimme Chocolate!!": a giant heart-shaped box of chocolates, lid tipped back
             var box = z.At(-1f, 4.5f); var pink = SongGlow(z, "Gimme Chocolate", Pink, 1.2f);
-            var choc = WorldMaterials.Solid(new Color(.3f, .15f, .08f));
+            var choc = WorldMaterials.Surface(new Color(.3f, .15f, .08f), World.Surface.Painted);
             var yaw = Quaternion.LookRotation(z.front).eulerAngles.y;
             foreach (var e in new[] { -1f, 1f }) z.mk.Prism(pink, box + z.side * e * .55f, up, 1.1f, .6f, 16);
             z.mk.Prism(pink, box - z.front * .6f, up, 1.5f, .6f, 4, 1f, yaw + 45f);
@@ -388,7 +388,7 @@ namespace EverythingWorld.World
             ArtistBits.Label(z.labels, "THE DRUNKEN DUCK", sign + z.front * .05f, z.front, .1f, Ink, TextAnchor.MiddleCenter);
             var mug = t + up * (H + 3.4f); var drink = SongGlow(z, "Drink", Gold, 1.4f);
             z.mk.Prism(wood, mug - up * .8f, up, 1.2f, 2.4f, 12); foreach (var y in new[] { -.5f, .9f }) z.mk.Prism(iron, mug + up * y, up, 1.24f, .14f, 12);
-            z.mk.Blob(WorldMaterials.Solid(new Color(.98f, .96f, .9f)), mug + up * 1.7f, new Vector3(1.3f, .5f, 1.3f), ctx.Rng, .2f);
+            z.mk.Blob(WorldMaterials.Surface(new Color(.98f, .96f, .9f), World.Surface.Painted), mug + up * 1.7f, new Vector3(1.3f, .5f, 1.3f), ctx.Rng, .2f);
             z.mk.Prism(drink, mug + up * 1.56f, up, 1.1f, .02f, 12);
             z.mk.Box(wood, mug + z.side * 1.5f, new Vector3(.3f, 1.6f, .4f), rot);
             halos.Add(mug + up * 1f, 2.8f, Gold, .4f);
@@ -401,7 +401,7 @@ namespace EverythingWorld.World
             if (hasCove)
             {
                 var sea = new Vector3(seaDir2.x, 0, seaDir2.y); var dAt = new Vector3(cove2.x, ctx.Data.layout.waterLevel, cove2.y) + sea * 22f - Vector3.Cross(up, sea) * 10f;
-                var dk = new MeshKit(); var yellow = WorldMaterials.Solid(new Color(1f, .85f, .1f)); var orange = WorldMaterials.Solid(new Color(1f, .5f, .1f));
+                var dk = new MeshKit(); var yellow = WorldMaterials.Surface(new Color(1f, .85f, .1f), World.Surface.Painted); var orange = WorldMaterials.Surface(new Color(1f, .5f, .1f), World.Surface.Painted);
                 dk.Blob(yellow, up * 1.2f, new Vector3(3.2f, 2f, 4f), ctx.Rng, 0f); dk.Blob(yellow, up * 3.6f + Vector3.forward * 1.8f, new Vector3(1.8f, 1.8f, 1.8f), ctx.Rng, 0f);
                 dk.Box(orange, up * 3.3f + Vector3.forward * 3.6f, new Vector3(1.2f, .35f, 1.2f), Quaternion.identity);
                 foreach (var e in new[] { -.7f, .7f }) dk.Blob(WorldMaterials.Solid(new Color(.05f, .05f, .05f)), up * 4f + Vector3.forward * 3.2f + Vector3.right * e, Vector3.one * .2f, ctx.Rng, 0f);
@@ -449,7 +449,7 @@ namespace EverythingWorld.World
             var top = pole + up * (PH + .2f) + z.side * .8f;
             for (var k = 0; k < 10; k++) { var a = k * Mathf.PI / 5f; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)); z.mk.Tri(canopy, top + up * 1.2f, top + d * 3.2f - up * (.4f + (k % 3) * .3f), top + new Vector3(Mathf.Cos(a + Mathf.PI / 5f), 0, Mathf.Sin(a + Mathf.PI / 5f)) * 3.2f - up * (.4f + ((k + 1) % 3) * .3f), top + up * 3f); z.mk.Tri(canopy, top + up * 1.2f, top + new Vector3(Mathf.Cos(a + Mathf.PI / 5f), 0, Mathf.Sin(a + Mathf.PI / 5f)) * 3.2f - up * (.4f + ((k + 1) % 3) * .3f), top + d * 3.2f - up * (.4f + (k % 3) * .3f), top - up * 3f); }
             for (var k = 0; k < 6; k++) { var a = k * Mathf.PI / 3f; var e = top + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * 3f - up * .6f; var b = pole + up * 4.5f + z.front * .3f; z.mk.Box(cloth, (e + b) / 2f, new Vector3(.02f, .02f, Vector3.Distance(e, b)), Quaternion.LookRotation(b - e)); }
-            var olive = WorldMaterials.Solid(new Color(.3f, .33f, .2f));
+            var olive = WorldMaterials.Surface(new Color(.3f, .33f, .2f), World.Surface.Foliage);
             for (var k = 0; k < 5; k++) { var p = pole + z.side * ((k % 3 - 1) * 1.1f) + z.front * (1.4f + (k / 3) * 1.1f) + up * (.4f + (k / 3) * 0f); z.mk.Box(olive, ctx.OnGround(p.x, p.z) + up * .4f, new Vector3(1f, .8f, 1f), Quaternion.Euler(0, k * 17f, 0) * rot); BoxCol(z.root, ctx.OnGround(p.x, p.z) + up * .4f, new Vector3(1f, .8f, 1f), Quaternion.Euler(0, k * 17f, 0) * rot); }
             halos.Add(top, 3.2f, new Color(1f, .85f, .6f), .25f);
             Banner(ctx, z.mk, z.At(-3.5f, -4f), z.front, bannerRed, 5f);

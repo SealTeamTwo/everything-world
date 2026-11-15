@@ -31,13 +31,13 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            rock = WorldMaterials.Solid(new Color(.3f, .27f, .3f)); rockDark = WorldMaterials.Solid(new Color(.16f, .14f, .17f));
-            wallStone = WorldMaterials.Solid(new Color(.38f, .34f, .36f)); wallDark = WorldMaterials.Solid(new Color(.22f, .19f, .21f));
-            wood = WorldMaterials.Solid(new Color(.4f, .27f, .18f)); woodDark = WorldMaterials.Solid(new Color(.22f, .15f, .11f));
-            goldM = WorldMaterials.Solid(new Color(.95f, .72f, .25f), .85f); iron = WorldMaterials.Solid(new Color(.25f, .25f, .28f), .6f);
-            snow = WorldMaterials.Solid(new Color(.95f, .86f, .86f));
-            bannerRed = WorldMaterials.Solid(new Color(.65f, .1f, .12f)); bannerPurple = WorldMaterials.Solid(new Color(.35f, .15f, .55f));
-            cloth = WorldMaterials.Solid(new Color(.88f, .84f, .74f));
+            rock = WorldMaterials.Surface(new Color(.3f, .27f, .3f), World.Surface.Stone); rockDark = WorldMaterials.Surface(new Color(.16f, .14f, .17f), World.Surface.Stone);
+            wallStone = WorldMaterials.Surface(new Color(.38f, .34f, .36f), World.Surface.Stone); wallDark = WorldMaterials.Surface(new Color(.22f, .19f, .21f), World.Surface.Stone);
+            wood = WorldMaterials.Surface(new Color(.4f, .27f, .18f), World.Surface.Wood); woodDark = WorldMaterials.Surface(new Color(.22f, .15f, .11f), World.Surface.Wood);
+            goldM = WorldMaterials.Surface(new Color(.95f, .72f, .25f), World.Surface.Metal); iron = WorldMaterials.Surface(new Color(.25f, .25f, .28f), World.Surface.Metal);
+            snow = WorldMaterials.Surface(new Color(.95f, .86f, .86f), World.Surface.Stone);
+            bannerRed = WorldMaterials.Surface(new Color(.65f, .1f, .12f), World.Surface.Cloth); bannerPurple = WorldMaterials.Surface(new Color(.35f, .15f, .55f), World.Surface.Cloth);
+            cloth = WorldMaterials.Surface(new Color(.88f, .84f, .74f), World.Surface.Cloth);
             fireM = new Material(WorldMaterials.Glow(Fire, 2.2f)) { name = "Fire" };
             emberM = new Material(WorldMaterials.Glow(Ember, 1.6f)) { name = "Embers" };
             lanternM = new Material(WorldMaterials.Glow(new Color(1f, .72f, .4f), 1.8f)) { name = "Lantern" };
@@ -318,7 +318,7 @@ namespace EverythingWorld.World
             { var lo = Lowest(ctx, s, 4.1f); if (s.y - lo > .05f) mk.Box(rock, s - up * ((s.y - lo) / 2f - .05f), new Vector3(8f, s.y - lo + .1f, 1.6f), rot); }   // its foot reaches the lowest ground under it
             mk.Box(rockDark, s + up * 3.8f, new Vector3(8.6f, .5f, 2f), rot);
             ArtistBits.Label(ctx.Root, "THE POWER METAL PEAKS", s + up * 1.9f + toCastle * .82f, toCastle, .46f, Gold, TextAnchor.MiddleCenter);
-            var steel = WorldMaterials.Solid(new Color(.75f, .76f, .8f), .9f);
+            var steel = WorldMaterials.Surface(new Color(.75f, .76f, .8f), World.Surface.Metal);
             mk.Box(steel, s + up * 6.2f, new Vector3(.7f, 5f, .12f), rot); mk.Prism(steel, s + up * 8.7f, up, .36f, .9f, 4, .02f, 45f);
             mk.Box(goldM, s + up * 8.9f, new Vector3(2.6f, .3f, .3f), rot); mk.Box(woodDark, s + up * 9.8f, new Vector3(.3f, 1.6f, .3f), rot); mk.Blob(goldM, s + up * 10.7f, Vector3.one * .3f, ctx.Rng, 0f);
             halos.Add(s + up * 2f + toCastle * 1.6f, 4.6f, Fire, .3f);
@@ -380,7 +380,7 @@ namespace EverythingWorld.World
             // braziers along the inside of the walls
             for (var k = 0; k < 8; k++) { var a = gateA + Mathf.PI / 8f + k * Mathf.PI / 4f; Brazier(ctx, mk, ctx.OnGround(c.x + Mathf.Cos(a) * (R - 4f), c.z + Mathf.Sin(a) * (R - 4f))); }
             // the dragon: a scaled body spiralling up round the keep, wings spread, head out over the battlements
-            var scale = WorldMaterials.Solid(new Color(.38f, .1f, .12f), .6f); var belly = WorldMaterials.Solid(new Color(.75f, .5f, .25f));
+            var scale = WorldMaterials.Surface(new Color(.38f, .1f, .12f), World.Surface.Painted); var belly = WorldMaterials.Surface(new Color(.75f, .5f, .25f), World.Surface.Painted);
             var eye = new Material(GlowM(new Color(1f, .85f, .2f), 3f)) { name = "Dragon eyes" }; life.dragonEyes = eye;
             Vector3 Coil(float t) { var a = gateA + Mathf.PI + t * Mathf.PI * 3.2f; var r = KW * .72f + 1.6f; return c + new Vector3(Mathf.Cos(a) * r, 2f + t * (keepH - 1f), Mathf.Sin(a) * r); }
             var steps = 60;
@@ -412,8 +412,8 @@ namespace EverythingWorld.World
                     if (j < 3)
                     {
                         var tip2 = root + wDir * (9f - (j + 1) * 1.2f) + up * (3f - (j + 1) * 1.6f) - headDir * (j + 1) * 1.4f;
-                        mk.Tri(WorldMaterials.Solid(new Color(.55f, .15f, .14f)), root, tip, tip2, root - up * 3f);
-                        mk.Tri(WorldMaterials.Solid(new Color(.55f, .15f, .14f)), root, tip2, tip, root + up * 3f);
+                        mk.Tri(WorldMaterials.Surface(new Color(.55f, .15f, .14f), World.Surface.Painted), root, tip, tip2, root - up * 3f);
+                        mk.Tri(WorldMaterials.Surface(new Color(.55f, .15f, .14f), World.Surface.Painted), root, tip2, tip, root + up * 3f);
                     }
                 }
             }
@@ -447,13 +447,13 @@ namespace EverythingWorld.World
                 }
             ArtistBits.PointLight(ctx.Root, p1 + up * 3f, new Color(1f, .7f, .4f), 18f, 1.8f);
             // the ship, at anchor off the end of the pier, side on
-            var ship = p1 + sea * 14f + sd * 4f; ship.y = water; var sr = Quaternion.LookRotation(sd); var hull = WorldMaterials.Solid(new Color(.12f, .09f, .08f));
+            var ship = p1 + sea * 14f + sd * 4f; ship.y = water; var sr = Quaternion.LookRotation(sd); var hull = WorldMaterials.Surface(new Color(.12f, .09f, .08f), World.Surface.Wood);
             var sk = new MeshKit();
             const float SL = 26f;
             sk.Box(hull, up * .6f, new Vector3(6f, 3.4f, SL), Quaternion.identity);
             sk.Prism(hull, up * .6f + Vector3.forward * SL / 2f, Vector3.forward, 3f, 5f, 4, .05f, 45f);   // the bow
             sk.Box(hull, up * 3.2f - Vector3.forward * (SL / 2f - 3f), new Vector3(6.2f, 2.4f, 6f), Quaternion.identity);   // the stern castle
-            sk.Box(WorldMaterials.Solid(new Color(.55f, .4f, .2f)), up * 2.35f, new Vector3(5.6f, .1f, SL - 1f), Quaternion.identity);
+            sk.Box(WorldMaterials.Surface(new Color(.55f, .4f, .2f), World.Surface.Wood), up * 2.35f, new Vector3(5.6f, .1f, SL - 1f), Quaternion.identity);
             for (var k = 0; k < 6; k++) foreach (var e in new[] { -1f, 1f }) sk.Box(GlowM(new Color(1f, .7f, .35f), 2f), new Vector3(e * 3.02f, 1.3f, (k - 2.5f) * 3.6f), new Vector3(.05f, .5f, .7f), Quaternion.identity);
             foreach (var (z, h) in new[] { (-6f, 15f), (2f, 19f), (9f, 14f) })
             {
@@ -496,7 +496,7 @@ namespace EverythingWorld.World
         /// cove; torches along them.
         void Paths(LandContext ctx, MeshKit mk, MeshKit solid)
         {
-            var path = WorldMaterials.Solid(new Color(.42f, .37f, .34f));
+            var path = WorldMaterials.Surface(new Color(.42f, .37f, .34f), World.Surface.Stone);
             var posts = new List<Vector3>(); var walk = 1;
             void Lay(Vector3 join, Vector3 to, float stopShort, string artist)
             {
@@ -592,7 +592,7 @@ namespace EverythingWorld.World
 
         void Pines(LandContext ctx, MeshKit mk, Vector3 at)
         {
-            var needles = WorldMaterials.Solid(new Color(.1f, .17f, .13f)); var n = ctx.Rng.Next(2, 6);
+            var needles = WorldMaterials.Surface(new Color(.1f, .17f, .13f), World.Surface.Foliage); var n = ctx.Rng.Next(2, 6);
             for (var k = 0; k < n; k++)
             {
                 var q = ctx.OnGround(at.x + ctx.Range(-5f, 5f), at.z + ctx.Range(-5f, 5f)); var h = ctx.Range(6f, 13f);
@@ -613,7 +613,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var tilt = Quaternion.Euler(ctx.Range(-8f, 8f), ctx.Range(0, 180f), ctx.Range(-8f, 8f));
             mk.Blob(rock, at + up * .4f, new Vector3(1.3f, .9f, 1.1f), ctx.Rng, .3f);
-            var steel = WorldMaterials.Solid(new Color(.78f, .8f, .84f), .9f);
+            var steel = WorldMaterials.Surface(new Color(.78f, .8f, .84f), World.Surface.Metal);
             mk.Box(steel, at + up * 1.8f, new Vector3(.22f, 2.6f, .05f), tilt);
             mk.Box(goldM, at + up * 3.1f, new Vector3(1f, .14f, .14f), tilt); mk.Box(woodDark, at + up * 3.5f, new Vector3(.14f, .7f, .14f), tilt);
             mk.Blob(GlowM(new Color(.5f, .8f, 1f), 2.2f), at + up * 3.9f, Vector3.one * .14f, ctx.Rng, 0f); halos.Add(at + up * 3.9f, 1.2f, new Color(.5f, .8f, 1f), .5f);
@@ -645,7 +645,7 @@ namespace EverythingWorld.World
         /// A stone lantern (toro): a stacked granite lantern with a warm light in its window.
         void StoneLantern(LandContext ctx, MeshKit mk, Vector3 at)
         {
-            var up = Vector3.up; var g = WorldMaterials.Solid(new Color(.5f, .48f, .45f));
+            var up = Vector3.up; var g = WorldMaterials.Surface(new Color(.5f, .48f, .45f), World.Surface.Stone);
             mk.Prism(g, at - up * .1f, up, .45f, .3f, 6); mk.Prism(g, at + up * .2f, up, .16f, .9f, 6);
             mk.Box(g, at + up * 1.25f, new Vector3(.75f, .5f, .75f), Quaternion.identity);
             mk.Box(lanternM, at + up * 1.25f, new Vector3(.4f, .3f, .78f), Quaternion.identity);
@@ -656,7 +656,7 @@ namespace EverythingWorld.World
 
         void Cherry(LandContext ctx, MeshKit mk, Vector3 at)
         {
-            var up = Vector3.up; var h = ctx.Range(4f, 6f); var blossom = WorldMaterials.Solid(new Color(1f, .7f, .82f));
+            var up = Vector3.up; var h = ctx.Range(4f, 6f); var blossom = WorldMaterials.Surface(new Color(1f, .7f, .82f), World.Surface.Foliage);
             mk.Prism(woodDark, at - up * .3f, (up + new Vector3(ctx.Range(-.2f, .2f), 0, ctx.Range(-.2f, .2f))).normalized, .22f, h * .75f, 6, .7f);
             for (var k = 0; k < 4; k++)
             {
