@@ -311,24 +311,32 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Long, seeding summer grass, gold at the tips.
+        /// A garden gone wild, in patches: the last of an old mown lawn, long seeding summer grass gold at the tips,
+        /// and tall stands gone fully to seed, with bare dusty earth between. Each patch has its own shade (cool green
+        /// to warm yellow-green); every blade its own.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .8f, new Color(.4f, .54f, .3f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2001);
             const float st = 2.2f;
+            int lawn = 0, seeding = 0, tall = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.2f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 6f, pz * .04f + 1f) < .35f) continue;
+                if (WindMesh.Patch(px, pz, .04f, 1f) < .35f) continue;     // bare dusty earth
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.36f, .52f, .28f), new Color(.56f, .58f, .32f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .4f + (float)rng.NextDouble() * .5f, col, Color.Lerp(col, Gold, .5f), rng, 4, .08f);
+                var col = Color.Lerp(new Color(.32f, .5f, .32f), new Color(.58f, .58f, .3f), Mathf.Clamp01(WindMesh.Patch(px, pz, .022f, 2f) * .8f + (float)rng.NextDouble() * .2f));
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                var kind = WindMesh.Patch(px, pz, .016f, 3f);
+                if (kind < .3f) { wm.Tuft(at, .18f + (float)rng.NextDouble() * .14f, col, Color.Lerp(col, Gold, .2f), rng, 3, .06f, .14f); lawn++; }
+                else if (kind < .66f) { wm.Tuft(at, .4f + (float)rng.NextDouble() * .5f, col, Color.Lerp(col, Gold, .5f), rng, 4, .08f, .14f); seeding++; }
+                else { wm.Tuft(at, .75f + (float)rng.NextDouble() * .4f, col * .96f, Color.Lerp(col, Gold, .62f), rng, 5, .07f, .14f); tall++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Garden grass", ctx.Root, mat);
+            Debug.Log($"The Sample Gardens grass: {lawn} old-lawn tufts, {seeding} seeding tufts, {tall} tall seed stands");
         }
     }
 }
