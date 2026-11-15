@@ -22,21 +22,21 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            bark = WorldMaterials.Solid(new Color(.9f, .89f, .86f));
-            barkMark = WorldMaterials.Solid(new Color(.16f, .16f, .17f));
-            leafGold = WorldMaterials.Solid(new Color(.84f, .72f, .4f));
-            leafPale = WorldMaterials.Solid(new Color(.64f, .68f, .47f));
-            snowTop = WorldMaterials.Solid(new Color(.94f, .95f, .98f));
-            logs = WorldMaterials.Solid(new Color(.6f, .42f, .28f));
-            darkWood = WorldMaterials.Solid(new Color(.36f, .27f, .21f));
-            planks = WorldMaterials.Solid(new Color(.46f, .4f, .36f));
-            stone = WorldMaterials.Solid(new Color(.52f, .53f, .57f));
-            ice = WorldMaterials.Solid(new Color(.7f, .83f, .92f), .85f);
-            board = WorldMaterials.Solid(new Color(.22f, .17f, .14f));
-            iron = WorldMaterials.Solid(new Color(.12f, .12f, .13f));
-            candle = WorldMaterials.Solid(new Color(.95f, .92f, .82f));
-            canoeRed = WorldMaterials.Solid(new Color(.62f, .2f, .16f));
-            canoeGreen = WorldMaterials.Solid(new Color(.24f, .4f, .3f));
+            bark = WorldMaterials.Surface(new Color(.9f, .89f, .86f), Surface.Bark);
+            barkMark = WorldMaterials.Surface(new Color(.16f, .16f, .17f), Surface.Bark);
+            leafGold = WorldMaterials.Surface(new Color(.84f, .72f, .4f), Surface.Foliage);
+            leafPale = WorldMaterials.Surface(new Color(.64f, .68f, .47f), Surface.Foliage);
+            snowTop = WorldMaterials.Surface(new Color(.94f, .95f, .98f), Surface.Stone);
+            logs = WorldMaterials.Surface(new Color(.6f, .42f, .28f), Surface.Wood);
+            darkWood = WorldMaterials.Surface(new Color(.36f, .27f, .21f), Surface.Wood);
+            planks = WorldMaterials.Surface(new Color(.46f, .4f, .36f), Surface.Wood);
+            stone = WorldMaterials.Surface(new Color(.52f, .53f, .57f), Surface.Stone);
+            ice = WorldMaterials.Surface(new Color(.7f, .83f, .92f), Surface.Glass);
+            board = WorldMaterials.Surface(new Color(.22f, .17f, .14f), Surface.Wood);
+            iron = WorldMaterials.Surface(new Color(.12f, .12f, .13f), Surface.Metal);
+            candle = WorldMaterials.Surface(new Color(.95f, .92f, .82f), Surface.Painted);
+            canoeRed = WorldMaterials.Surface(new Color(.62f, .2f, .16f), Surface.Painted);
+            canoeGreen = WorldMaterials.Surface(new Color(.24f, .4f, .3f), Surface.Painted);
         }
 
         public override bool Ground(float height, float slope, float patch, out Color color)
@@ -234,7 +234,7 @@ namespace EverythingWorld.World
         /// side. Lantern posts stand along them, never two close together.
         void Paths(LandContext ctx, MeshKit mk, Vector3 from)
         {
-            var trodden = WorldMaterials.Solid(new Color(.72f, .74f, .8f));
+            var trodden = WorldMaterials.Surface(new Color(.72f, .74f, .8f), Surface.Stone);
             var glow = WorldMaterials.Glow(LanternGlass, 1.4f);
             var posts = new List<Vector3>();
             var network = new List<Vector3> { from };                 // points already on a path
@@ -541,7 +541,7 @@ namespace EverythingWorld.World
             area.artistName = a.name; area.stationId = a.stationId; area.radius = a.r; area.glowColor = LanternGlass;
 
             var glows = new List<Renderer>();
-            Clearing(ctx, mk, WorldMaterials.Solid(new Color(.78f, .8f, .86f)), center, a.tier == "shrine" ? 7f : a.tier == "monument" ? 9f : 15f);
+            Clearing(ctx, mk, WorldMaterials.Surface(new Color(.78f, .8f, .86f), Surface.Stone), center, a.tier == "shrine" ? 7f : a.tier == "monument" ? 9f : 15f);
             if (a.tier == "shrine")
             {
                 ArtistBits.Plaque(mk, solid, labels, a, center, front, darkWood, board, Ink);
@@ -712,7 +712,7 @@ namespace EverythingWorld.World
             mk.Box(stone, P(w / 2 - 1f, wallH + 1.8f, -d / 2 + 1.5f), new Vector3(.9f, 2.8f, .9f), rot);   // chimney
             // inside: the covers on the back wall, a rug, a warm light
             ArtistBits.CoverWall(pictures, labels, ctx, a, P(0, 1.75f, -d / 2 + .22f), front, 5, .62f, 15, true, Ink);
-            mk.Box(WorldMaterials.Solid(new Color(.55f, .2f, .18f)), P(0, .12f, .5f), new Vector3(3.2f, .02f, 2.2f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.55f, .2f, .18f), Surface.Cloth), P(0, .12f, .5f), new Vector3(3.2f, .02f, 2.2f), rot);
             ArtistBits.PointLight(labels.parent, P(0, 2.4f, -1f), new Color(1f, .7f, .42f), 9f, 1.6f, true);
         }
     }

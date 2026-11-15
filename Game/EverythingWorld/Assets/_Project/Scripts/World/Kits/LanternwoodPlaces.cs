@@ -164,8 +164,8 @@ namespace EverythingWorld.World
             var c = shore + toHall * (d / 2f + 2f);
             var (lo, hi) = Footprint(ctx, c, rot, w + .6f, d + .6f);
             var floor = Mathf.Max(hi, lakeLevel + .3f) + .2f;
-            var weathered = WorldMaterials.Solid(new Color(.52f, .55f, .6f));
-            var slate = WorldMaterials.Solid(new Color(.26f, .28f, .33f));
+            var weathered = WorldMaterials.Surface(new Color(.52f, .55f, .6f), Surface.Wood);
+            var slate = WorldMaterials.Surface(new Color(.26f, .28f, .33f), Surface.Stone);
             Vector3 P(float x, float y, float z) => new Vector3(c.x, floor, c.z) + rot * new Vector3(x, y, z);
             void Wall(Vector3 at, Vector3 size) { mk.Box(weathered, at, size, rot); solid.Box(weathered, at, size, rot); }
 
@@ -233,7 +233,7 @@ namespace EverythingWorld.World
             Bench(ctx, mk, solid, end, faceLake, end.y + .09f);
             // the plaque by the land-side door, and a path to it from the plot
             ArtistBits.Plaque(mk, solid, labels, a, Ground(ctx, P(2.6f, 0, -d / 2 - 2.6f)), -faceLake, darkWood, board, Ink, 1.7f);
-            var trodden = WorldMaterials.Solid(new Color(.72f, .74f, .8f));
+            var trodden = WorldMaterials.Surface(new Color(.72f, .74f, .8f), Surface.Stone);
             var pts = new List<Vector3>();
             var from = Ground(ctx, hallC); var to = P(0, 0, -d / 2 - 1f);
             for (var f = 0f; f <= 1f; f += .08f) { var q = Vector3.Lerp(from, to, f); pts.Add(ctx.OnGround(q.x, q.z)); }
@@ -250,7 +250,7 @@ namespace EverythingWorld.World
             var baseY = ctx.Ground(center.x, center.z);
             var deckY = baseY + H;
             Vector3 P(float x, float y, float z) => new Vector3(center.x, deckY, center.z) + rot * new Vector3(x, y, z);
-            var warm = WorldMaterials.Solid(new Color(.64f, .46f, .32f));
+            var warm = WorldMaterials.Surface(new Color(.64f, .46f, .32f), Surface.Wood);
             void Both(Material m, Vector3 at, Vector3 size, Quaternion r) { mk.Box(m, at, size, r); solid.Box(m, at, size, r); }
 
             // four big birches carry the platform and grow up through it
@@ -369,7 +369,7 @@ namespace EverythingWorld.World
             float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
             var scarves = new[] { new Color(.75f, .15f, .15f), new Color(.15f, .45f, .25f), new Color(.2f, .3f, .65f), new Color(.85f, .6f, .15f) };
             var coal = WorldMaterials.Solid(new Color(.08f, .08f, .09f));
-            var carrot = WorldMaterials.Solid(new Color(.95f, .45f, .1f));
+            var carrot = WorldMaterials.Surface(new Color(.95f, .45f, .1f), Surface.Painted);
             var placed = 0;
             for (var tries = 0; tries < 200 && placed < 7; tries++)
             {
@@ -390,7 +390,7 @@ namespace EverythingWorld.World
                 mk.Prism(carrot, head + facing * new Vector3(0, -.02f, .32f) * big, facing * Vector3.forward, .06f, .35f, 5, .1f);
                 foreach (var s in new[] { -1f, 1f })
                     mk.Prism(darkWood, at + Vector3.up * 1.55f * big + facing * Vector3.right * s * .45f, facing * new Vector3(s, .6f, 0), .03f, .9f, 4, .5f);
-                mk.Box(WorldMaterials.Solid(scarves[rng.Next(scarves.Length)]), head - Vector3.up * .36f * big, new Vector3(.6f, .14f, .6f) * big, facing);
+                mk.Box(WorldMaterials.Surface(scarves[rng.Next(scarves.Length)], Surface.Cloth), head - Vector3.up * .36f * big, new Vector3(.6f, .14f, .6f) * big, facing);
                 solid.Box(snowTop, at + Vector3.up * 1f, new Vector3(2.6f, 2f, 1.4f), facing);     // wide enough for the stick arms
                 clear.Add(new Vector3(at.x, 2.5f, at.z));
                 placed++;
