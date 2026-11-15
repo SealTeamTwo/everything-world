@@ -155,7 +155,7 @@ namespace EverythingWorld.World
             ArtistBits.Label(z.labels, "¿y las novias?", w.P(0, 3f, .22f), fr, .2f, Ink, TextAnchor.MiddleCenter);
             // "Me Porto Bonito": giant pink sunglasses on a stand, and a mirror
             var sg = z.At(4f, -6f); z.mk.Prism(iron, sg - up * .2f, up, .05f, 2.2f, 5); ArtistBits.PostCollider(z.root, sg, 2f, .07f); foreach (var e in new[] { -1f, 1f }) { z.mk.Prism(SongGlow(mp, Fuchsia, 1f), sg + up * 2.4f + sd * e * .55f - fr * .05f, fr, .45f, .1f, 16); z.mk.Prism(Paint(new Color(.2f, .2f, .3f)), sg + up * 2.4f + sd * e * .55f + fr * .01f, fr, .38f, .02f, 16); } z.mk.Box(Paint(Fuchsia), sg + up * 2.5f, new Vector3(.3f, .08f, .08f), rot);
-            var mi = z.At(4f, 6f); z.mk.Box(Paint(Marigold), mi + up * 1.2f, new Vector3(1.1f, 2.2f, .08f), rot * Quaternion.Euler(0, -20f, 0)); z.mk.Box(WorldMaterials.Solid(new Color(.8f, .9f, 1f), .95f), mi + up * 1.2f + (rot * Quaternion.Euler(0, -20f, 0)) * Vector3.forward * .05f, new Vector3(.9f, 2f, .02f), rot * Quaternion.Euler(0, -20f, 0)); BoxCol(z.root, mi + up * 1.2f, new Vector3(1.1f, 2.2f, .2f), rot);
+            var mi = z.At(4f, 6f); z.mk.Box(Paint(Marigold), mi + up * 1.2f, new Vector3(1.1f, 2.2f, .08f), rot * Quaternion.Euler(0, -20f, 0)); z.mk.Box(WorldMaterials.Surface(new Color(.8f, .9f, 1f), Surface.Glass), mi + up * 1.2f + (rot * Quaternion.Euler(0, -20f, 0)) * Vector3.forward * .05f, new Vector3(.9f, 2f, .02f), rot * Quaternion.Euler(0, -20f, 0)); BoxCol(z.root, mi + up * 1.2f, new Vector3(1.1f, 2.2f, .2f), rot);
             z.area.glowLight = ArtistBits.PointLight(z.root, w.P(0, 3f, 3f), new Color(1f, .6f, .8f), 20f, 1.8f);
             Shot(z.ctx, "the wall of hearts", z.At(10f, 3f) + up * 2f, w.P(0, 1.6f, 0));
         }

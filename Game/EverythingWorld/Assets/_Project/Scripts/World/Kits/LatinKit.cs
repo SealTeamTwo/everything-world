@@ -33,13 +33,13 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            cobble = WorldMaterials.Solid(new Color(.74f, .62f, .5f)); cobbleDark = WorldMaterials.Solid(new Color(.56f, .46f, .38f)); tile = WorldMaterials.Solid(Terra); woodM = WorldMaterials.Solid(new Color(.5f, .34f, .22f)); iron = WorldMaterials.Solid(new Color(.16f, .14f, .14f), .5f); dark = WorldMaterials.Solid(new Color(.08f, .06f, .06f)); white = WorldMaterials.Solid(new Color(.98f, .94f, .88f));
-            leafM = WorldMaterials.Solid(new Color(.24f, .54f, .26f)); leafDark = WorldMaterials.Solid(new Color(.16f, .4f, .22f)); purpleM = WorldMaterials.Glow(Jacaranda, .3f); trunkM = WorldMaterials.Solid(new Color(.42f, .32f, .24f));
+            cobble = WorldMaterials.Surface(new Color(.74f, .62f, .5f), Surface.Stone); cobbleDark = WorldMaterials.Surface(new Color(.56f, .46f, .38f), Surface.Stone); tile = WorldMaterials.Surface(Terra, Surface.Stone); woodM = WorldMaterials.Surface(new Color(.5f, .34f, .22f), Surface.Wood); iron = WorldMaterials.Surface(new Color(.16f, .14f, .14f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .06f, .06f)); white = WorldMaterials.Solid(new Color(.98f, .94f, .88f));
+            leafM = WorldMaterials.Surface(new Color(.24f, .54f, .26f), Surface.Foliage); leafDark = WorldMaterials.Surface(new Color(.16f, .4f, .22f), Surface.Foliage); purpleM = WorldMaterials.Glow(Jacaranda, .3f); trunkM = WorldMaterials.Surface(new Color(.42f, .32f, .24f), Surface.Bark);
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .74f, .4f), 1.1f)) { name = "Latin windows" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .8f, .5f), 1.5f)) { name = "Latin lamps" }; seaGlow = new Material(WorldMaterials.Glow(Turquoise, .6f)) { name = "Latin sea glow" };
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
-        Material Paint(Color c) => WorldMaterials.Solid(c);
+        Material Paint(Color c) => WorldMaterials.Surface(c, Surface.Painted);
         static bool HasStation(IslandWorldData.Artist a) => a.stationId != 0;
         static float Foot(IslandWorldData.Artist a) => a.name == "Shakira" ? 14f : a.name == "Bad Bunny" || a.name == "Los Lobos" || a.name == "Natalia Lafourcade" ? 10f : 8.5f;
 
