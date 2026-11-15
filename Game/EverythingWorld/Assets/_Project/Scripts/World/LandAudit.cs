@@ -13,12 +13,14 @@ namespace EverythingWorld.World
     /// - empty stretches of the land with nothing built on them;
     /// - how much light there is;
     /// - surfaces that lie on top of each other with different materials, which flicker and fight in play
-    ///   ("z-fighting": a floor laid on another floor, a sign inside a wall, two walls in the same place).
+    ///   ("z-fighting": a floor laid on another floor, a sign inside a wall, two walls in the same place);
+    /// - seats with something where a sitter's body would be (a tree through a bench).
     /// It writes a report and a top-down picture for each land to Logs/LandAudit/ in the Unity project (not
     /// committed), and a one-line summary to the console. The picture: dark blue water, grey other lands, this
     /// land shaded by height, scenery as dark specks, yellow cells for empty stretches, orange dots for lights,
     /// artist rings (gold for radio stations, white otherwise, red when something's wrong), a cyan cross where
-    /// you arrive, red squares where something has no collider, and magenta squares where surfaces overlap.
+    /// you arrive, red squares where something has no collider, magenta squares where surfaces overlap, and
+    /// bright green squares where a seat is blocked.
     public static class LandAudit
     {
         const float BandLow = .45f, BandHigh = 2f, Probe = .3f, Px = 2f;
@@ -130,6 +132,7 @@ namespace EverythingWorld.World
             clusters.Sort((a, b) => b.points.CompareTo(a.points));
 
             var overlaps = Overlaps(ctx);
+            var blocked = BlockedSeats(ctx);
 
             // ---------------------------------------------------------------- the artists
             var artists = ctx.Artists;
@@ -219,6 +222,9 @@ namespace EverythingWorld.World
                 sb.AppendLine($"  {o.what}: {Where(o.At)}, {o.At.y - data.HeightAt(o.At.x, o.At.z):0.0} m up, about {o.area:0.0} m2");
             }
             sb.AppendLine();
+            sb.AppendLine($"BLOCKED SEATS: {blocked.Count} seats with something where you'd sit" + (blocked.Count > 0 ? ":" : "."));
+            for (var i = 0; i < blocked.Count && i < 40; i++) sb.AppendLine($"  {blocked[i].what}: {Where(blocked[i].at)}");
+            sb.AppendLine();
             sb.AppendLine($"ARTISTS ({problems.Count} with problems):");
             foreach (var l in artistLines) sb.AppendLine(l);
             sb.AppendLine();
@@ -235,10 +241,11 @@ namespace EverythingWorld.World
             try { walker = ", " + WalkerAudit.Run(data, ctx, land, sb, Where, Path.Combine(dir, file + "_walk.png")); } catch (System.Exception e) { Debug.LogException(e); }
             File.WriteAllText(Path.Combine(dir, file + ".txt"), sb.ToString());
             if (collidersAll != null) File.WriteAllText(Path.Combine(dir, file + "_colliders.txt"), collidersAll);
-            Picture(data, ctx, scenery, empty, cell, lightAt, clusters, overlaps, problems, Path.Combine(dir, file + ".png"));
+            var inThings = new List<Vector3>(); foreach (var b in blocked) inThings.Add(b.at);
+            Picture(data, ctx, scenery, empty, cell, lightAt, clusters, overlaps, inThings, problems, Path.Combine(dir, file + ".png"));
             try { Photo(ctx, dir, file); } catch (System.Exception e) { Debug.LogWarning("Land audit photo failed: " + e.Message); }
-            var summary = $"Land audit, {land}: {clusters.Count} things without a collider, {overlaps.Count} overlapping surfaces, {problems.Count} artists with problems, {emptyPct:0}% empty, {lights} lights{walker}. Report: Logs/LandAudit/{file}.txt";
-            if (clusters.Count > 0 || problems.Count > 0 || emptyPct > 25f) Debug.LogWarning(summary); else Debug.Log(summary);
+            var summary = $"Land audit, {land}: {clusters.Count} things without a collider, {overlaps.Count} overlapping surfaces, {blocked.Count} blocked seats, {problems.Count} artists with problems, {emptyPct:0}% empty, {lights} lights{walker}. Report: Logs/LandAudit/{file}.txt";
+            if (clusters.Count > 0 || problems.Count > 0 || blocked.Count > 0 || emptyPct > 25f) Debug.LogWarning(summary); else Debug.Log(summary);
         }
 
         /// A photo of the whole land from straight above (north up, no fog), plus where every artist is, for
@@ -402,6 +409,102 @@ namespace EverythingWorld.World
             return result;
         }
 
+        static string NameOf(Transform t) => t.parent != null ? t.parent.name + " / " + t.name : t.name;
+
+        static bool Moving(Transform t)
+        {
+            for (; t != null; t = t.parent) if (t.GetComponent<Resident>() != null || t.GetComponent<Carryable>() != null) return true;
+            return false;
+        }
+
+        /// Seats with something where a sitter's body would be. The space checked is the torso and head of someone
+        /// sitting there (from 0.4 m to 1.1 m above the seat, 0.44 m wide, from just in front of a backrest to 0.22 m
+        /// forward): a tree, post, wall or prop crossing it. Not checked: the legs and the space in front (tables and
+        /// bar counters belong there), see-through things, leaves, grass, people, things you can carry, and a thin
+        /// pole up the seat's middle (a carousel's or a gondola's, a swing's rope). A ride's or car's own roof or
+        /// cabin can still show up here: those are meant.
+        static List<(Vector3 at, string what)> BlockedSeats(LandContext ctx)
+        {
+            var result = new List<(Vector3, string)>();
+            var seats = ctx.Root.GetComponentsInChildren<Seat>(true);
+            if (seats.Length == 0) return result;
+            // each seat's box, in its own frame; a 2 m grid to find the seats near a triangle
+            var lo = new Vector3(-.22f, .4f, -.05f); var hi = new Vector3(.22f, 1.1f, .22f);
+            var grid = new Dictionary<(int, int), List<int>>();
+            for (var i = 0; i < seats.Length; i++)
+            {
+                var p = seats[i].transform.position; var k = (Mathf.FloorToInt(p.x / 2f), Mathf.FloorToInt(p.z / 2f));
+                if (!grid.TryGetValue(k, out var l)) grid[k] = l = new List<int>(); l.Add(i);
+            }
+            var hit = new string[seats.Length];
+            foreach (var mf in ctx.Root.GetComponentsInChildren<MeshFilter>())
+            {
+                if (mf.name.StartsWith("Soft")) continue;
+                var rend = mf.GetComponent<MeshRenderer>(); var mesh = mf.sharedMesh;
+                if (rend == null || !rend.enabled || mesh == null || !mesh.isReadable || Moving(mf.transform)) continue;
+                var bb = rend.bounds; var near = false;
+                for (var x = Mathf.FloorToInt((bb.min.x - 1f) / 2f); x <= Mathf.FloorToInt((bb.max.x + 1f) / 2f) && !near; x++)
+                    for (var z = Mathf.FloorToInt((bb.min.z - 1f) / 2f); z <= Mathf.FloorToInt((bb.max.z + 1f) / 2f) && !near; z++) near = grid.ContainsKey((x, z));
+                if (!near) continue;
+                var mats = rend.sharedMaterials; var verts = mesh.vertices; var tf = mf.transform;
+                for (var s = 0; s < mesh.subMeshCount; s++)
+                {
+                    var m = s < mats.Length ? mats[s] : null;
+                    if (m == null || m.renderQueue >= 2450 || (m.shader != null && (m.shader.name.Contains("Particles") || m.shader.name.Contains("Halo") || m.shader.name.Contains("Wind")))) continue;
+                    var tris = mesh.GetTriangles(s);
+                    for (var i = 0; i < tris.Length; i += 3)
+                    {
+                        Vector3 a = tf.TransformPoint(verts[tris[i]]), c1 = tf.TransformPoint(verts[tris[i + 1]]), c2 = tf.TransformPoint(verts[tris[i + 2]]);
+                        var tlo = Vector3.Min(a, Vector3.Min(c1, c2)); var thi = Vector3.Max(a, Vector3.Max(c1, c2));
+                        for (var x = Mathf.FloorToInt((tlo.x - 1f) / 2f); x <= Mathf.FloorToInt((thi.x + 1f) / 2f); x++)
+                        for (var z = Mathf.FloorToInt((tlo.z - 1f) / 2f); z <= Mathf.FloorToInt((thi.z + 1f) / 2f); z++)
+                        {
+                            if (!grid.TryGetValue((x, z), out var list)) continue;
+                            foreach (var si in list)
+                            {
+                                if (hit[si] != null) continue;
+                                var st = seats[si].transform;
+                                Vector3 la = st.InverseTransformPoint(a), lb = st.InverseTransformPoint(c1), lc = st.InverseTransformPoint(c2);
+                                bool Pole(Vector3 q) => q.x * q.x + q.z * q.z < .08f * .08f;
+                                if (Pole(la) && Pole(lb) && Pole(lc)) continue;   // a pole up the middle of a ride's seat
+                                if (TriBox(la, lb, lc, (lo + hi) / 2f, (hi - lo) / 2f)) hit[si] = NameOf(tf) + " (" + m.name.Replace(" (Instance)", "") + ")";
+                            }
+                        }
+                    }
+                }
+            }
+            for (var i = 0; i < seats.Length; i++)
+                if (hit[i] != null) result.Add((seats[i].transform.position, "seat in " + NameOf(seats[i].transform.parent != null ? seats[i].transform.parent : seats[i].transform) + " has " + hit[i] + " through it"));
+            return result;
+        }
+
+        /// Does a triangle cross a box (centre c, half-size e, both in the box's frame)? The separating-axis test.
+        static bool TriBox(Vector3 a, Vector3 b, Vector3 d, Vector3 c, Vector3 e)
+        {
+            Vector3 v0 = a - c, v1 = b - c, v2 = d - c;
+            for (var i = 0; i < 3; i++)
+                if (Mathf.Min(v0[i], Mathf.Min(v1[i], v2[i])) > e[i] || Mathf.Max(v0[i], Mathf.Max(v1[i], v2[i])) < -e[i]) return false;
+            Vector3 f0 = v1 - v0, f1 = v2 - v1, f2 = v0 - v2;
+            var n = Vector3.Cross(f0, f1);
+            if (n.sqrMagnitude < 1e-12f) return false;
+            if (!AxisOverlaps(n, v0, v1, v2, e)) return false;
+            foreach (var f in new[] { f0, f1, f2 })
+                foreach (var ax in new[] { Vector3.right, Vector3.up, Vector3.forward })
+                {
+                    var axis = Vector3.Cross(ax, f);
+                    if (axis.sqrMagnitude < 1e-10f) continue;
+                    if (!AxisOverlaps(axis, v0, v1, v2, e)) return false;
+                }
+            return true;
+        }
+
+        static bool AxisOverlaps(Vector3 axis, Vector3 v0, Vector3 v1, Vector3 v2, Vector3 e)
+        {
+            float p0 = Vector3.Dot(axis, v0), p1 = Vector3.Dot(axis, v1), p2 = Vector3.Dot(axis, v2);
+            var r = e.x * Mathf.Abs(axis.x) + e.y * Mathf.Abs(axis.y) + e.z * Mathf.Abs(axis.z);
+            return !(Mathf.Min(p0, Mathf.Min(p1, p2)) > r || Mathf.Max(p0, Mathf.Max(p1, p2)) < -r);
+        }
+
         /// Which way a face points, in words (helps find the two pieces in the code).
         static string Facing(Vector3 n)
         {
@@ -482,7 +585,7 @@ namespace EverythingWorld.World
             new Vector2Int(Mathf.RoundToInt((p.x - ctx.MinX + 40f) / Px), Mathf.RoundToInt((ctx.MaxZ + 40f - p.z) / Px));
 
         static void Picture(IslandWorldData data, LandContext ctx, HashSet<(int, int)> scenery, HashSet<(int, int)> empty, float cell,
-                            List<Vector3> lights, List<Cluster> bare, List<Overlap> overlaps, HashSet<string> problems, string path)
+                            List<Vector3> lights, List<Cluster> bare, List<Overlap> overlaps, List<Vector3> inThings, HashSet<string> problems, string path)
         {
             int w = Mathf.CeilToInt((ctx.MaxX - ctx.MinX + 80f) / Px), h = Mathf.CeilToInt((ctx.MaxZ - ctx.MinZ + 80f) / Px);
             if (w <= 0 || h <= 0 || w > 4000 || h > 4000) return;
@@ -526,6 +629,7 @@ namespace EverythingWorld.World
                     if (x >= 0 && y >= 0 && x < w && y < h) px[(h - 1 - y) * w + x] = new Color(.2f, 1f, 1f);
             foreach (var c in bare) Dot(c.At, 2, new Color(1f, 0f, 0f), true);
             foreach (var o in overlaps) Dot(o.At, 2, new Color(1f, 0f, 1f), true);
+            foreach (var o in inThings) Dot(o, 3, new Color(.3f, 1f, .2f), true);
             var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
             tex.SetPixels32(px); tex.Apply();
             File.WriteAllBytes(path, tex.EncodeToPNG());
