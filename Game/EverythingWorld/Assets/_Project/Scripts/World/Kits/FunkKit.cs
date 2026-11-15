@@ -395,26 +395,37 @@ namespace EverythingWorld.World
 
         Vector3 G0(Vector3 p) => ctx0.OnGround(p.x, p.z);
 
-        /// The jungle floor: ferns and broad dark leaves that sway, with glowing tips in the colour of that part of the jungle.
+        /// The jungle floor in patches, with glowing tips in the colour of that part of the jungle (purple, lime,
+        /// orange): beds of broad dark leaves, thickets of thin glowing grass where the groove is strongest, low dark
+        /// ground leaves, and bare black earth between. Each patch has its own shade (deep blue-green to a warmer
+        /// green) and glows more or less brightly; every blade has its own shade.
         void Undergrowth(LandContext ctx)
         {
             var mat = WindMesh.Material(.28f, .8f, new Color(.08f, .26f, .16f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1979);
             Color[] tips = { new Color(.75f, .45f, 1f), new Color(.5f, 1f, .5f), new Color(1f, .6f, .25f) };
             const float st = 2.4f;
+            int leaves = 0, glowGrass = 0, low = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || ctx.Ground(px, pz) < waterY + 2.2f || NearPath(px, pz, 2.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .05f + 1f, pz * .05f + 4f) < .3f) continue;
+                if (WindMesh.Patch(px, pz, .05f, 1f) < .3f) continue;      // bare black earth
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var kind = Mathf.Clamp(Mathf.FloorToInt(Mathf.PerlinNoise(px * .012f + 5f, pz * .012f + 9f) * 2.999f), 0, 2);
-                var col = Color.Lerp(new Color(.05f, .2f, .14f), new Color(.1f, .32f, .18f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .4f + (float)rng.NextDouble() * .5f, col, rng.NextDouble() < .35 ? tips[kind] : Color.Lerp(col, tips[kind], .25f), rng, 3, .07f);
+                var kind = WindMesh.Pick(WindMesh.Patch(px, pz, .012f, 2f), 3);
+                var col = Color.Lerp(new Color(.04f, .19f, .16f), new Color(.11f, .32f, .16f), Mathf.Clamp01(WindMesh.Patch(px, pz, .025f, 3f) * .8f + (float)rng.NextDouble() * .2f));
+                var glow = .15f + WindMesh.Patch(px, pz, .035f, 4f) * .45f;          // how many tips glow full in this patch
+                var tip = rng.NextDouble() < glow ? tips[kind] : Color.Lerp(col, tips[kind], .25f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                var form = WindMesh.Patch(px, pz, .03f, 5f);
+                if (form < .38f) { wm.Tuft(at, .5f + (float)rng.NextDouble() * .5f, col, tip, rng, 3, .12f, .1f); leaves++; }
+                else if (form < .66f) { wm.Tuft(at, .4f + (float)rng.NextDouble() * .45f, col, tip, rng, 4, .05f, .1f); glowGrass++; }
+                else { wm.Tuft(at, .18f + (float)rng.NextDouble() * .16f, col * .9f, Color.Lerp(col, tip, .6f), rng, 2, .1f, .1f); low++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Tropics undergrowth", ctx.Root, mat);
+            Debug.Log($"The Funk Tropics undergrowth: {leaves} broad-leaf clumps, {glowGrass} glowing grass tufts, {low} ground leaves");
         }
     }
 }
