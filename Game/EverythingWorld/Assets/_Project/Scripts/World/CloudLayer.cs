@@ -17,17 +17,22 @@ namespace EverythingWorld.World
         public float minCover = .25f;             // the clearest an hour can be
         public float cover = -1f;                 // set 0..1 to choose the cloudiness yourself (-1 = by the hour)
         public bool shadows;
-        public string shadowLand;                 // if set, the shadows only fall while you're in this land (the clouds drift over neighbours too, whose ground went black under them)
+        public string shadowLand;
+        /// The land these clouds belong to: they form only over it and melt away as they drift over another land
+        /// (each land has its own sky, and neighbours' clouds piled up over each other). Found from 'center' if left empty.
+        public string land;                 // if set, the shadows only fall while you're in this land (the clouds drift over neighbours too, whose ground went black under them)
         bool shadowsOn;
         readonly List<MeshRenderer> renderers = new List<MeshRenderer>();
         public Color color = new Color(1f, .97f, .93f);
 
-        class Cloud { public Transform t; public Vector2 home; public float height, scale; public int rank; }
+        class Cloud { public Transform t; public Vector2 home; public float height, scale, own = 1f, reach; public int rank; }
         readonly List<Cloud> clouds = new List<Cloud>();
 
         void Start()
         {
             var rng = new System.Random(SharedChance.Key(key).GetHashCode());
+            data = IslandWorldBuilder.Instance != null ? IslandWorldBuilder.Instance.Data : null;
+            if (string.IsNullOrEmpty(land) && data != null) land = data.IslandAt(center.x, center.z)?.name;
             var white = WorldMaterials.Solid(color);
             var root = new GameObject("Clouds").transform; root.SetParent(transform, false);
             for (var i = 0; i < count; i++)
@@ -52,10 +57,12 @@ namespace EverythingWorld.World
                 clouds.Add(new Cloud
                 {
                     t = t, home = new Vector2((float)rng.NextDouble() * span, (float)rng.NextDouble() * span),
-                    height = Mathf.Lerp(minHeight, maxHeight, (float)rng.NextDouble()), rank = i,
+                    height = Mathf.Lerp(minHeight, maxHeight, (float)rng.NextDouble()), rank = i, reach = length * .5f + 26f * size,
                 });
             }
         }
+
+        IslandWorldData data;
 
         float Wrap(double v) => (float)(((v % span) + span) % span - span / 2f);
 
@@ -80,6 +87,7 @@ namespace EverythingWorld.World
             var now = SharedChance.Now;
             var wind = Wind;
             var c = cover >= 0f ? cover : minCover + (1f - minCover) * (float)SharedChance.Value(SharedChance.Key(key + "-clouds"), SharedChance.Hour);
+            var cam = Camera.main; var eye = cam != null ? cam.transform.position : new Vector3(0f, -1e6f, 0f);
             foreach (var cl in clouds)
             {
                 var x = Wrap(cl.home.x + wind.x * speed * now);
@@ -87,9 +95,19 @@ namespace EverythingWorld.World
                 var edge = Mathf.Clamp01((span / 2f - Mathf.Max(Mathf.Abs(x), Mathf.Abs(z))) / (span * .11f));
                 var goal = (cl.rank + .5f) / count < c ? 1f : 0f;
                 cl.scale = Mathf.MoveTowards(cl.scale, goal, Time.deltaTime / 30f);
-                var s = cl.scale * edge;
+                var pos = new Vector3(center.x + x, center.y + cl.height, center.z + z);
+                // only over its own land: over another land (or open sea) it melts away over a few seconds
+                if (data != null && !string.IsNullOrEmpty(land))
+                {
+                    var over = data.IslandAt(pos.x, pos.z);
+                    cl.own = Mathf.MoveTowards(cl.own, over != null && over.name == land ? 1f : 0f, Time.deltaTime / 6f);
+                }
+                // close up a cloud is a big flat slab, so it thins away as you fly up into it (not when you're well below it)
+                var h = new Vector2(pos.x - eye.x, pos.z - eye.z).magnitude / Mathf.Max(1f, cl.reach); var v = (pos.y - eye.y) / (20f * size + 30f);
+                var near = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1f, 1.7f, Mathf.Sqrt(h * h + v * v)));
+                var s = cl.scale * edge * cl.own * near;
                 cl.t.gameObject.SetActive(s > .01f);
-                cl.t.position = new Vector3(center.x + x, center.y + cl.height, center.z + z);
+                cl.t.position = pos;
                 cl.t.localScale = Vector3.one * Mathf.Max(.01f, s);
             }
         }
