@@ -72,7 +72,7 @@ namespace EverythingWorld.World
             var full = new List<Vector2> { near }; full.AddRange(way);
             var pts = Smooth(ctx, full, false, 2.5f); PlaceBend(ctx, pts); FollowGround(ctx, pts); if (pts.Count < 2) return pts;
             Strip(mk, pts, asphalt, 4.4f, .07f);
-            var line = WorldMaterials.Solid(new Color(.95f, .85f, .4f)); var up = Vector3.up;
+            var line = WorldMaterials.Surface(new Color(.95f, .85f, .4f), Surface.Painted); var up = Vector3.up;
             for (var i = 1; i < pts.Count; i += 2) { var a = pts[i - 1]; var b = pts[i]; mk.Box(line, (a + b) / 2f + up * .085f, new Vector3(.15f, .02f, Vector3.Distance(a, b) * .6f), Quaternion.LookRotation(b - a)); }
             var n = 0;
             for (var i = 5; i < pts.Count; i += 11) { var d = pts[i] - pts[i - 1]; d.y = 0; if (d.sqrMagnitude < .01f) continue; d.Normalize(); var lp = pts[i] + Vector3.Cross(up, d) * (n++ % 2 == 0 ? 3.1f : -3.1f); if (ctx.IsLand(lp.x, lp.z, 2f)) Lamp(ctx, mk, ctx.Root, ctx.OnGround(lp.x, lp.z)); }
@@ -102,7 +102,7 @@ namespace EverythingWorld.World
         /// A parked car with its lights on: sit in it.
         void Car(MeshKit mk, MeshKit solid, Vector3 at, Vector3 dir, Color paint, bool convertible)
         {
-            var up = Vector3.up; var g = G(at); var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(up, dir); var body = WorldMaterials.Solid(paint, .7f);
+            var up = Vector3.up; var g = G(at); var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(up, dir); var body = WorldMaterials.Surface(paint, Surface.Painted);
             mk.Box(body, g + up * .65f, new Vector3(1.9f, .6f, 4.4f), rot); if (!convertible) { mk.Box(body, g + up * 1.5f - dir * .3f, new Vector3(1.7f, .08f, 1.9f), rot); foreach (var e in new[] { -1f, 1f }) foreach (var z in new[] { -1.2f, .6f }) mk.Box(body, g + up * 1.2f + side * e * .82f + dir * z, new Vector3(.07f, .6f, .07f), rot); }
             else mk.Box(GlowM(new Color(.7f, .85f, 1f), .3f), g + up * 1.15f + dir * .65f, new Vector3(1.7f, .5f, .05f), rot * Quaternion.Euler(-20f, 0, 0));
             mk.Box(dark, g + up * .9f - dir * .35f, new Vector3(1.6f, .12f, 1.5f), rot);
@@ -131,11 +131,11 @@ namespace EverythingWorld.World
             }
             Folk(G(f.P(-9f + 6f + .45f, 0, -3f - .3f)) + up * .5f, -f.Fwd, Resident.Pose.Sit, new[] { "Shh. This is the part where he holds the note.", "Seen it four hundred times. He holds the note every time.", "Get in the next car, the speaker's better." }, Fan(), null, .5f);
             // the snack shack by the entrance: popcorn that glows, a counter
-            var sh = new PlaceFrame(G(f.P(11f, 0, 10f)), -f.Right); mk.Box(white, sh.P(0, 1.4f, -1f), new Vector3(4f, 2.8f, 2.4f), sh.r); solid.Box(white, sh.P(0, 1.4f, -1f), new Vector3(4f, 2.8f, 2.4f), sh.r); for (var s = 0; s < 8; s++) mk.Box(WorldMaterials.Solid(s % 2 == 0 ? new Color(.85f, .15f, .15f) : new Color(.95f, .95f, .95f), .3f), sh.P(-1.75f + s * .5f, 2.95f, 0), new Vector3(.5f, .08f, 4.2f), sh.r);
+            var sh = new PlaceFrame(G(f.P(11f, 0, 10f)), -f.Right); mk.Box(white, sh.P(0, 1.4f, -1f), new Vector3(4f, 2.8f, 2.4f), sh.r); solid.Box(white, sh.P(0, 1.4f, -1f), new Vector3(4f, 2.8f, 2.4f), sh.r); for (var s = 0; s < 8; s++) mk.Box(WorldMaterials.Surface(s % 2 == 0 ? new Color(.85f, .15f, .15f) : new Color(.95f, .95f, .95f), Surface.Cloth), sh.P(-1.75f + s * .5f, 2.95f, 0), new Vector3(.5f, .08f, 4.2f), sh.r);
             mk.Box(dark, sh.P(0, 1.7f, .22f), new Vector3(3.2f, 1.2f, .04f), sh.r); mk.Box(metal, sh.P(0, 1.05f, .5f), new Vector3(3.6f, .08f, .7f), sh.r); Col(sh.P(0, .55f, .5f), new Vector3(3.6f, 1.1f, .7f), sh.r);
             mk.Box(GlowM(new Color(1f, .9f, .5f), 2f), sh.P(-1f, 1.45f, .5f), new Vector3(.5f, .7f, .4f), sh.r); halos.Add(sh.P(-1f, 1.5f, .8f), 1f, new Color(1f, .9f, .5f), .6f); ArtistBits.Label(ctx.Root, "POPCORN · SODA · ENCORES", sh.P(0, 2.55f, .24f), sh.Fwd, .15f, new Color(.8f, .12f, .12f), TextAnchor.MiddleCenter);
             Folk(sh.P(.6f, 0, 1.6f), -sh.Fwd, Resident.Pose.Stand, new[] { "Large popcorn. It's a three-hour film about a four-minute song.", "Is this the queue? There's always a queue." }, Fan());
-            for (var k = 0; k < 3; k++) { var pm = new MeshKit(); pm.Prism(WorldMaterials.Solid(k == 1 ? new Color(.95f, .95f, .95f) : new Color(.85f, .15f, .15f)), Vector3.zero, Vector3.up, .1f, .26f, 6, 1.4f); pm.Blob(WorldMaterials.Glow(new Color(1f, .93f, .6f), .3f), new Vector3(0, .3f, 0), Vector3.one * .13f, ctx.Rng, .3f); var go = pm.BuildSingle("Popcorn", plife.transform, false); go.transform.position = sh.P(.3f + k * .45f, 1.1f, .5f); Interact.Carry(go, "a tub of popcorn", .3f, g.y - 10f); }
+            for (var k = 0; k < 3; k++) { var pm = new MeshKit(); pm.Prism(WorldMaterials.Surface(k == 1 ? new Color(.95f, .95f, .95f) : new Color(.85f, .15f, .15f), Surface.Painted), Vector3.zero, Vector3.up, .1f, .26f, 6, 1.4f); pm.Blob(WorldMaterials.Glow(new Color(1f, .93f, .6f), .3f), new Vector3(0, .3f, 0), Vector3.one * .13f, ctx.Rng, .3f); var go = pm.BuildSingle("Popcorn", plife.transform, false); go.transform.position = sh.P(.3f + k * .45f, 1.1f, .5f); Interact.Carry(go, "a tub of popcorn", .3f, g.y - 10f); }
             ArtistBits.PointLight(ctx.Root, sh.P(0, 2.4f, 1.5f), new Color(1f, .85f, .6f), 9f, 1.4f);
             Marquee(mk, f.P(7f, 0, 17f), f.Fwd, "RIDGE DRIVE-IN\nNOW SHOWING: THE ENCORE", 4.2f, .16f);
             Lane(ctx, mk, f.P(0, 0, 13f)); Ring(g, 20f);
@@ -146,7 +146,7 @@ namespace EverythingWorld.World
         void Arcade(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var g = ctx.OnGround(ArcadeAt.x, ArcadeAt.y); var f = new PlaceFrame(g, FaceTo(g, Nearest(roadPts, g))); const float W = 12f, D = 8f, H = 3.4f, T = .3f, Door = HumanScale.DoorWidth + .5f;
-            var fo = new PlaceFrame(g + up * .25f, f.Fwd); var wallM = WorldMaterials.Solid(new Color(.14f, .13f, .2f)); var carpet = WorldMaterials.Solid(new Color(.2f, .12f, .3f));
+            var fo = new PlaceFrame(g + up * .25f, f.Fwd); var wallM = WorldMaterials.Surface(new Color(.14f, .13f, .2f), Surface.Painted); var carpet = WorldMaterials.Surface(new Color(.2f, .12f, .3f), Surface.Cloth);
             mk.Box(stone, g - up * .35f, new Vector3(W + .6f, 1.2f, D + .6f), f.r);
             void Wall(Vector3 p, Vector3 s) { mk.Box(wallM, p, s, f.r); solid.Box(wallM, p, s, f.r); }
             mk.Box(carpet, fo.P(0, -.03f, 0), new Vector3(W - T, .1f, D - T), f.r); solid.Box(carpet, fo.P(0, -.15f, 0), new Vector3(W, .3f, D), f.r);
@@ -164,7 +164,7 @@ namespace EverythingWorld.World
             for (var k = 0; k < 6; k++)
             {
                 var back = k < 4; var cf = back ? new PlaceFrame(fo.P(-3.6f + k * 1.6f, 0, -D / 2f + T + .45f), f.Fwd) : new PlaceFrame(fo.P(-W / 2f + T + .45f, 0, -.4f + (k - 4) * 1.7f), f.Right);
-                mk.Box(WorldMaterials.Solid(cab[k], .4f), cf.P(0, .95f, 0), new Vector3(.8f, 1.9f, .8f), cf.r); mk.Box(dark, cf.P(0, 1.0f, .42f), new Vector3(.7f, .1f, .25f), cf.r * Quaternion.Euler(-15f, 0, 0)); Col(cf.P(0, .95f, .05f), new Vector3(.8f, 1.9f, .9f), cf.r);
+                mk.Box(WorldMaterials.Surface(cab[k], Surface.Painted), cf.P(0, .95f, 0), new Vector3(.8f, 1.9f, .8f), cf.r); mk.Box(dark, cf.P(0, 1.0f, .42f), new Vector3(.7f, .1f, .25f), cf.r * Quaternion.Euler(-15f, 0, 0)); Col(cf.P(0, .95f, .05f), new Vector3(.8f, 1.9f, .9f), cf.r);
                 var sm = new Material(WorldMaterials.Glow(cab[(k + 2) % 6], .8f)) { name = "Arcade screen" }; var sk = new MeshKit(); sk.Box(sm, Vector3.zero, new Vector3(.6f, .5f, .02f), Quaternion.identity); var sgo = sk.BuildSingle("Arcade cabinet " + games[k], plife.transform, false); sgo.transform.SetPositionAndRotation(cf.P(0, 1.45f, .41f), cf.r);
                 ArtistBits.Label(ctx.Root, games[k], cf.P(0, 1.82f, .41f), cf.Fwd, .055f, Ink, TextAnchor.MiddleCenter);
                 var idx = plife.screens.Count; plife.screens.Add((sm, cab[(k + 2) % 6], -10f)); var kk = k; var plays = 0;
@@ -223,7 +223,7 @@ namespace EverythingWorld.World
                 var tp = G(tc + f.Fwd * z); mk.Box(wood, tp + up * .75f, new Vector3(5f, .07f, .8f), f.r); foreach (var e in new[] { -2.2f, 2.2f }) mk.Box(metal, tp + up * .37f + f.Right * e, new Vector3(.06f, .74f, .7f), f.r); Col(tp + up * .4f, new Vector3(5f, .8f, .8f), f.r);
                 var bp = tp + f.Fwd * Mathf.Sign(z) * .85f; mk.Box(wood, bp + up * .45f, new Vector3(5f, .06f, .35f), f.r); foreach (var e in new[] { -2.2f, 2.2f }) mk.Box(metal, bp + up * .22f + f.Right * e, new Vector3(.06f, .45f, .3f), f.r); Col(bp + up * .25f, new Vector3(5f, .5f, .35f), f.r);
                 for (var s = 0; s < 3; s++) if (!(z < 0 && s == 1)) Interact.Seat(plife.transform, bp + up * .5f + f.Right * (-1.6f + s * 1.6f), -f.Fwd * Mathf.Sign(z), "Sit at the catering table");
-                for (var s = 0; s < 3; s++) mk.Prism(WorldMaterials.Solid(Paint[(s + (z > 0 ? 2 : 0)) % Paint.Length]), tp + up * .79f + f.Right * (-1.5f + s * 1.5f), up, .16f, .03f, 10);
+                for (var s = 0; s < 3; s++) mk.Prism(WorldMaterials.Surface(Paint[(s + (z > 0 ? 2 : 0)) % Paint.Length], Surface.Painted), tp + up * .79f + f.Right * (-1.5f + s * 1.5f), up, .16f, .03f, 10);
             }
             Folk(G(tc - f.Fwd * 1.95f) + up * .5f, f.Fwd, Resident.Pose.Sit, new[] { "Load-in was at six. In 1983. We're nearly set up.", "Chili again. It's always chili. I love the chili.", "If it's got wheels or a jack plug, it's my problem." }, Fan(Residents.Tool.Mug), null, .5f);
             // road cases, stacked: some to shove
@@ -236,7 +236,7 @@ namespace EverythingWorld.World
             Folk(G(sp - f.Right * 1.2f), f.Right, Resident.Pose.Stand, new[] { "Keep it on the singer. There's no singer back here? Keep it on the chili, then.", "Thirty years on this lamp. Never once seen the show; I'm always looking at the light." }, Fan());
             // a guitar tech at a rack of guitars
             var gr = G(f.P(-10f, 0, -4f)); mk.Box(dark, gr + up * .12f, new Vector3(3.2f, .24f, .7f), f.r); mk.Box(metal, gr + up * 1f - f.Fwd * .2f, new Vector3(3.2f, .05f, .05f), f.r); foreach (var e in new[] { -1.55f, 1.55f }) mk.Box(metal, gr + up * .6f + f.Right * e - f.Fwd * .2f, new Vector3(.05f, 1f, .05f), f.r); Col(gr + up * .6f, new Vector3(3.2f, 1.2f, .7f), f.r);
-            for (var k = 0; k < 5; k++) { var gp = gr + f.Right * (-1.3f + k * .65f) + up * .3f; var gc = WorldMaterials.Solid(Paint[k % Paint.Length], .7f); var gq = f.r * Quaternion.Euler(-8f, 0, 0); mk.Box(gc, gp + up * .2f, new Vector3(.36f, .46f, .07f), gq); mk.Box(wood, gp + up * .8f - f.Fwd * .08f, new Vector3(.07f, .8f, .04f), gq); }
+            for (var k = 0; k < 5; k++) { var gp = gr + f.Right * (-1.3f + k * .65f) + up * .3f; var gc = WorldMaterials.Surface(Paint[k % Paint.Length], Surface.Painted); var gq = f.r * Quaternion.Euler(-8f, 0, 0); mk.Box(gc, gp + up * .2f, new Vector3(.36f, .46f, .07f), gq); mk.Box(wood, gp + up * .8f - f.Fwd * .08f, new Vector3(.07f, .8f, .04f), gq); }
             var tech = Fan(Residents.Tool.Rod); Folk(G(gr + f.Fwd * 1.1f), -f.Fwd, Resident.Pose.Work, new[] { "Five guitars. He plays one. The other four are for throwing.", "E, A, D, G, B, E. Then he detunes it on purpose. Artists.", "Don't touch the white one. Okay, touch it. Don't tell him." }, tech).workRate = .8f;
             ArtistBits.PointLight(ctx.Root, G(tc) + up * 2.3f, new Color(1f, .85f, .6f), 14f, 1.6f); Lamp(ctx, mk, ctx.Root, G(f.P(9f, 0, -5f)));
             Marquee(mk, f.P(6.5f, 0, 12f), f.Fwd, "BACKSTAGE\nALL ACCESS (TONIGHT ONLY)", 4f, .15f);
@@ -249,7 +249,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var g = ctx.OnGround(LighterAt.x, LighterAt.y); var f = new PlaceFrame(g, FaceTo(g, new Vector3(center.x, 0, center.z)));
             // a lighter as tall as a house: chrome case, a thumb wheel, a flame that catches when you flick it
-            var b = G(f.P(-2.5f, 0, -2f)); mk.Box(metal, b + up * 2.4f, new Vector3(1.8f, 4.8f, .9f), f.r); solid.Box(metal, b + up * 2.4f, new Vector3(1.8f, 4.8f, .9f), f.r); mk.Box(WorldMaterials.Solid(new Color(.75f, .15f, .15f), .6f), b + up * 1.9f, new Vector3(1.84f, 3.6f, .94f), f.r);
+            var b = G(f.P(-2.5f, 0, -2f)); mk.Box(metal, b + up * 2.4f, new Vector3(1.8f, 4.8f, .9f), f.r); solid.Box(metal, b + up * 2.4f, new Vector3(1.8f, 4.8f, .9f), f.r); mk.Box(WorldMaterials.Surface(new Color(.75f, .15f, .15f), Surface.Painted), b + up * 1.9f, new Vector3(1.84f, 3.6f, .94f), f.r);
             mk.Box(metal, b + up * 5.1f - f.Right * .3f, new Vector3(1f, .6f, .7f), f.r); mk.Prism(dark, b + up * 5.1f + f.Right * .55f - f.Fwd * .2f, f.Fwd, .3f, .4f, 12);
             var flameM = new Material(WorldMaterials.Glow(Flame, .05f)) { name = "Giant lighter flame" }; var fk = new MeshKit(); fk.Cone(flameM, Vector3.zero, .45f, 1.9f, 7); fk.Cone(flameM, new Vector3(0, 0, 0), .3f, -.3f, 7);
             var fgo = fk.BuildSingle("Soft lighter flame", plife.transform, false); fgo.transform.position = b + up * 5.5f - f.Right * .3f; plife.flameM = flameM; plife.flame = fgo.transform; plife.flameLight = ArtistBits.PointLight(ctx.Root, b + up * 6.6f - f.Right * .3f, Flame, 45f, 0f);
