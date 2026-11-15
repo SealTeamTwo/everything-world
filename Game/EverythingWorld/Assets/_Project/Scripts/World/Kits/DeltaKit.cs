@@ -36,11 +36,11 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            dustM = WorldMaterials.Solid(new Color(.86f, .74f, .52f)); plank = WorldMaterials.Solid(Planks[0]); plankDark = WorldMaterials.Solid(Planks[3]);
-            tin = WorldMaterials.Solid(new Color(.66f, .67f, .66f), .7f); rustM = WorldMaterials.Solid(Rust); iron = WorldMaterials.Solid(new Color(.16f, .15f, .15f), .5f); dark = WorldMaterials.Solid(new Color(.07f, .06f, .06f));
+            dustM = WorldMaterials.Surface(new Color(.86f, .74f, .52f), Surface.Stone); plank = WorldMaterials.Surface(Planks[0], Surface.Wood); plankDark = WorldMaterials.Surface(Planks[3], Surface.Wood);
+            tin = WorldMaterials.Surface(new Color(.66f, .67f, .66f), Surface.Metal); rustM = WorldMaterials.Surface(Rust, Surface.Metal); iron = WorldMaterials.Surface(new Color(.16f, .15f, .15f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.07f, .06f, .06f));
             white = WorldMaterials.Solid(new Color(.93f, .91f, .84f)); cottonM = WorldMaterials.Solid(new Color(.97f, .96f, .92f));
-            leafM = WorldMaterials.Solid(new Color(.4f, .46f, .24f)); leafDry = WorldMaterials.Solid(new Color(.56f, .5f, .26f)); trunkM = WorldMaterials.Solid(new Color(.34f, .27f, .2f)); mossM = WorldMaterials.Solid(new Color(.52f, .56f, .44f));
-            steel = WorldMaterials.Solid(new Color(.4f, .4f, .42f), .8f);
+            leafM = WorldMaterials.Surface(new Color(.4f, .46f, .24f), Surface.Foliage); leafDry = WorldMaterials.Surface(new Color(.56f, .5f, .26f), Surface.Foliage); trunkM = WorldMaterials.Surface(new Color(.34f, .27f, .2f), Surface.Bark); mossM = WorldMaterials.Surface(new Color(.52f, .56f, .44f), Surface.Foliage);
+            steel = WorldMaterials.Surface(new Color(.4f, .4f, .42f), Surface.Metal);
             bulbM = new Material(WorldMaterials.Glow(Bulb, 2f)) { name = "Delta bulbs" };
             neonM = new Material(WorldMaterials.Glow(Blues, 2.4f)) { name = "Delta neon" };
             bottleM = new Material(WorldMaterials.Glow(new Color(.2f, .4f, 1f), .9f)) { name = "Delta bottles" };
@@ -231,7 +231,7 @@ namespace EverythingWorld.World
         /// a window. 'f' sits on the ground at its middle, facing the way the porch looks. Returns the porch floor frame.
         PlaceFrame Shack(LandContext ctx, MeshKit mk, MeshKit solid, PlaceFrame f, float W, float D, int i, bool rusty = false, bool lit = false)
         {
-            var up = Vector3.up; const float H = 2.7f, lift = .5f; var wall = WorldMaterials.Solid(Planks[i % Planks.Length]); var roof = rusty ? rustM : tin; var fz = D / 2f;
+            var up = Vector3.up; const float H = 2.7f, lift = .5f; var wall = WorldMaterials.Surface(Planks[i % Planks.Length], Surface.Wood); var roof = rusty ? rustM : tin; var fz = D / 2f;
             // piers (and posts under the porch's front) each reach down to their own ground
             void Pier(float x, float zz) { var q = f.P(x, 0, zz); var b = Mathf.Min(f.o.y - .3f, ctx.Ground(q.x, q.z) - .3f); var t = f.o.y + lift; mk.Box(plankDark, new Vector3(q.x, (b + t) / 2f, q.z), new Vector3(.4f, t - b, .4f), f.r); }
             foreach (var (x, zz) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) Pier(x * (W / 2f - .3f), zz * (D / 2f - .3f));
@@ -242,7 +242,7 @@ namespace EverythingWorld.World
             const float pd = 2.2f; mk.Box(plankDark, f.P(0, lift - .06f, fz + pd / 2f), new Vector3(W, .12f, pd), f.r); solid.Box(plankDark, f.P(0, lift / 2f, fz + pd / 2f), new Vector3(W, lift, pd), f.r); { var sq = f.P(0, 0, fz + pd + .3f); var sb = Mathf.Min(f.o.y + .06f, ctx.Ground(sq.x, sq.z) - .1f); var stp = f.o.y + lift * .75f - .06f; mk.Box(plankDark, new Vector3(sq.x, (sb + stp) / 2f, sq.z), new Vector3(1.6f, stp - sb, .6f), f.r); }   // the step reaches down to the ground in front solid.Box(plankDark, f.P(0, lift / 4f, fz + pd + .3f), new Vector3(1.6f, lift / 2f, .6f), f.r);
             mk.Box(roof, f.P(0, lift + H - .28f, fz + pd / 2f + .1f), new Vector3(W + .5f, .06f, pd + .5f), f.r * Quaternion.Euler(9f, 0, 0)); foreach (var e in new[] { -1f, 1f }) { mk.Prism(plankDark, f.P(e * (W / 2f - .2f), lift, fz + pd - .2f), up, .07f, H - .5f, 4); ArtistBits.PostCollider(ctx.Root, f.P(e * (W / 2f - .2f), lift, fz + pd - .2f), H - .5f, .1f); }
             var dx = (i % 2 == 0 ? -1f : 1f) * W * .2f; mk.Box(dark, f.P(dx, lift + 1.05f, fz + .02f), new Vector3(.95f, 2.1f, .05f), f.r);
-            mk.Box(lit ? (Material)bulbM : WorldMaterials.Solid(new Color(.16f, .17f, .2f), .8f), f.P(-dx * 1.3f, lift + 1.5f, fz + .02f), new Vector3(.9f, .9f, .05f), f.r); mk.Box(plankDark, f.P(-dx * 1.3f, lift + 1.5f, fz + .04f), new Vector3(.06f, .9f, .05f), f.r); mk.Box(plankDark, f.P(-dx * 1.3f, lift + 1.5f, fz + .04f), new Vector3(.9f, .06f, .05f), f.r);
+            mk.Box(lit ? (Material)bulbM : WorldMaterials.Surface(new Color(.16f, .17f, .2f), Surface.Glass), f.P(-dx * 1.3f, lift + 1.5f, fz + .02f), new Vector3(.9f, .9f, .05f), f.r); mk.Box(plankDark, f.P(-dx * 1.3f, lift + 1.5f, fz + .04f), new Vector3(.06f, .9f, .05f), f.r); mk.Box(plankDark, f.P(-dx * 1.3f, lift + 1.5f, fz + .04f), new Vector3(.9f, .06f, .05f), f.r);
             return new PlaceFrame(f.P(0, lift, fz + pd / 2f), f.Fwd);
         }
 
@@ -263,7 +263,7 @@ namespace EverythingWorld.World
         /// A dead tree, bleached and bare.
         void DeadTree(LandContext ctx, MeshKit mk, Vector3 g, float s, System.Random rng, Material m = null)
         {
-            var up = Vector3.up; m = m ?? WorldMaterials.Solid(new Color(.6f, .56f, .48f)); mk.Prism(m, g - up * .3f, up, .2f * s, 3f * s, 6, .6f); ArtistBits.PostCollider(ctx.Root, g, 2.8f * s, .22f * s);
+            var up = Vector3.up; m = m ?? WorldMaterials.Surface(new Color(.6f, .56f, .48f), Surface.Bark); mk.Prism(m, g - up * .3f, up, .2f * s, 3f * s, 6, .6f); ArtistBits.PostCollider(ctx.Root, g, 2.8f * s, .22f * s);
             for (var k = 0; k < 4; k++) { var d = (Quaternion.Euler(0, k * 90f + (float)rng.NextDouble() * 60f, 0) * Vector3.forward + up * (.6f + (float)rng.NextDouble() * .7f)).normalized; var b = g + up * (2f + k * .25f) * s; var len = (1.6f + (float)rng.NextDouble() * 1.3f) * s; mk.Prism(m, b, d, .07f * s, len, 4, .3f); mk.Prism(m, b + d * len * .55f, (d + Quaternion.Euler(0, 80f, 0) * d * .7f).normalized, .04f * s, len * .55f, 3, .3f); }
         }
 
@@ -279,7 +279,7 @@ namespace EverythingWorld.World
         void Scarecrow(LandContext ctx, MeshKit mk, Vector3 g, Vector3 face, System.Random rng)
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); mk.Prism(trunkM, g - up * .3f, up, .05f, 2.5f, 4); mk.Box(trunkM, g + up * 1.6f, new Vector3(1.9f, .07f, .07f), rot * Quaternion.Euler(0, 0, (float)rng.NextDouble() * 10f - 5f));
-            mk.Box(WorldMaterials.Solid(Planks[rng.Next(Planks.Length)] * .7f), g + up * 1.2f, new Vector3(.6f, .95f, .22f), rot); mk.Blob(WorldMaterials.Solid(new Color(.76f, .68f, .5f)), g + up * 1.98f, Vector3.one * .19f, rng, .1f); mk.Prism(dark, g + up * 2.1f, up, .34f, .03f, 8); mk.Prism(dark, g + up * 2.12f, up, .19f, .2f, 8, .8f);
+            mk.Box(WorldMaterials.Surface(Planks[rng.Next(Planks.Length)] * .7f, Surface.Cloth), g + up * 1.2f, new Vector3(.6f, .95f, .22f), rot); mk.Blob(WorldMaterials.Surface(new Color(.76f, .68f, .5f), Surface.Cloth), g + up * 1.98f, Vector3.one * .19f, rng, .1f); mk.Prism(dark, g + up * 2.1f, up, .34f, .03f, 8); mk.Prism(dark, g + up * 2.12f, up, .19f, .2f, 8, .8f);
             foreach (var e in new[] { -1f, 1f }) mk.Box(leafDry, g + up * 1.52f + rot * Vector3.right * e * .95f, new Vector3(.2f, .3f, .08f), rot); ArtistBits.PostCollider(ctx.Root, g, 2.2f, .2f);
         }
 
@@ -447,7 +447,7 @@ namespace EverythingWorld.World
         void EmptyShack(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 g, Vector3 face, int i, System.Random rng)
         {
             var f = new PlaceFrame(g, face); var po = Shack(ctx, mk, solid, f, 5f, 4f, i + 1, true);
-            if (i % 3 == 0) Rocker(mk, po.P(1.4f, 0, 0), po.Fwd); else if (i % 3 == 1) Guitar(mk, po.P(-1.6f, 0, -.9f), po.r, WorldMaterials.Solid(new Color(.5f, .34f, .2f)), rng); else mk.Box(rustM, po.P(1.5f, .25f, -.4f), new Vector3(.5f, .5f, .5f), po.r);
+            if (i % 3 == 0) Rocker(mk, po.P(1.4f, 0, 0), po.Fwd); else if (i % 3 == 1) Guitar(mk, po.P(-1.6f, 0, -.9f), po.r, WorldMaterials.Surface(new Color(.5f, .34f, .2f), Surface.Wood), rng); else mk.Box(rustM, po.P(1.5f, .25f, -.4f), new Vector3(.5f, .5f, .5f), po.r);
             noGrass.Add(new Vector3(g.x, 5.5f, g.z));
         }
 
