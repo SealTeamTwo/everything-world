@@ -838,25 +838,41 @@ namespace EverythingWorld.World
             var lmp = at + sd * 1.6f - d * .4f; RoadLamp(ctx, mk, ctx.OnGround(lmp.x, lmp.z), -sd);
         }
 
+        /// The forest floor in patches, with bare needle litter between: deep beds of sword fern, low wet moss carpets,
+        /// and rank wet grass in the clearings. Each patch has its own shade, from a cold blue-green in the deep shade
+        /// to a duller yellow-green; every blade its own.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.25f, 1f, new Color(.2f, .32f, .2f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1991);
             const float step = 2.6f;
+            int ferns = 0, moss = 0, wet = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.8f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || InRiver(px, pz, 1.5f)) continue;
-                var n = Mathf.PerlinNoise(px * .04f + 5f, pz * .04f + 1f); if (n < .38f) continue;
+                var n = WindMesh.Patch(px, pz, .04f, 1f); if (n < .38f) continue;   // bare needle litter
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
                 var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
-                var col = Color.Lerp(new Color(.14f, .26f, .15f), new Color(.26f, .38f, .2f), (float)rng.NextDouble());
-                if (n > .55f && rng.NextDouble() < .55) wm.Bracken(at, .7f + (float)rng.NextDouble() * .6f, col, Color.Lerp(col, new Color(.35f, .5f, .25f), .4f), rng, 6);
-                else wm.Tuft(at, .3f + (float)rng.NextDouble() * .3f, col * .9f, col, rng, 3, .07f);
+                var col = Color.Lerp(new Color(.12f, .24f, .18f), new Color(.27f, .37f, .19f), Mathf.Clamp01(WindMesh.Patch(px, pz, .025f, 2f) * .8f + (float)rng.NextDouble() * .2f));
+                var bed = WindMesh.Patch(px, pz, .028f, 3f);
+                if (bed > .55f && rng.NextDouble() < .62)
+                {
+                    // a fern bed: the deeper in, the bigger the ferns
+                    wm.Bracken(at, .6f + (bed - .55f) * 1.2f + (float)rng.NextDouble() * .5f, col, Color.Lerp(col, new Color(.35f, .5f, .25f), .4f), rng, 5 + rng.Next(3)); ferns++;
+                }
+                else if (WindMesh.Patch(px, pz, .02f, 4f) < .5f)
+                {
+                    // a low wet moss carpet, a little brighter
+                    var mc = Color.Lerp(col, new Color(.3f, .42f, .22f), .3f);
+                    wm.Tuft(at, .12f + (float)rng.NextDouble() * .1f, mc * .9f, mc, rng, 3, .09f, .12f); moss++;
+                }
+                else { wm.Tuft(at, .35f + (float)rng.NextDouble() * .35f, col * .9f, col, rng, 4, .06f, .12f); wet++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Rainwood ferns", ctx.Root, mat);
+            Debug.Log($"The Grunge Rainwood floor: {ferns} ferns, {moss} moss tufts, {wet} wet-grass tufts");
         }
     }
 }
