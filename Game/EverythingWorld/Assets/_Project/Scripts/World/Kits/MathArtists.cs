@@ -74,7 +74,7 @@ namespace EverythingWorld.World
             if (z.below)
             {
                 // a clearing of mown grass ringed with low stones
-                z.mk.Prism(WorldMaterials.Solid(new Color(.48f, .52f, .3f)), z.c - up * .3f, up, reach * .62f, .36f, 20);
+                z.mk.Prism(WorldMaterials.Surface(new Color(.48f, .52f, .3f), Surface.Foliage), z.c - up * .3f, up, reach * .62f, .36f, 20);
                 for (var k = 0; k < 14; k++) { var an = k * Mathf.PI / 7f; var p = ctx.OnGround(z.c.x + Mathf.Cos(an) * reach * .66f, z.c.z + Mathf.Sin(an) * reach * .66f); if (Vector3.Dot((p - z.c).normalized, front) > .85f) continue; z.mk.Blob(stone, p + up * .15f, new Vector3(.45f, .3f, .4f), ctx.Rng, .3f); }
             }
             else
@@ -145,18 +145,18 @@ namespace EverythingWorld.World
             z.mk.Box(woodDark, deck + toSea * 1.6f + up * 1.45f, new Vector3(9f, .08f, .12f), dRot); z.solid.Box(woodDark, deck + toSea * 1.6f + up * .9f, new Vector3(9f, 1.2f, .2f), dRot);
             Bench(ctx, z.mk, deck + up * .45f, toSea, false);
             // "Ashes in the Snow": a pale bare tree, ash drifting down round it
-            var tree = z.At(-6f, -7f); var pale = WorldMaterials.Solid(new Color(.88f, .87f, .85f));
+            var tree = z.At(-6f, -7f); var pale = WorldMaterials.Surface(new Color(.88f, .87f, .85f), Surface.Bark);
             z.mk.Prism(pale, tree - up * .3f, up, .35f, 5f, 6, .6f);
             for (var k = 0; k < 7; k++) { var d = (Quaternion.Euler(0, k * 51f, 0) * Quaternion.Euler(40f + (k % 3) * 8f, 0, 0) * up).normalized; z.mk.Prism(pale, tree + up * (3f + k * .3f), d, .12f, 3.4f - k * .2f, 5, .2f); }
             z.mk.Blob(SongGlow(z, "Ashes in the Snow", Mist, 1.2f), tree + up * 6.8f, Vector3.one * .3f, ctx.Rng, 0f);
             ArtistBits.PostCollider(z.root, tree, 4f, .4f); life.ashTree = tree + up * 6f;
             // "Gerbera": a patch of bright daisies
             var gb = z.At(3f, -9f); var petals = SongGlow(z, "Gerbera", new Color(1f, .45f, .35f), .8f);
-            for (var k = 0; k < 26; k++) { var a = ctx.Range(0, Mathf.PI * 2f); var r = Mathf.Sqrt(ctx.Range(0f, 1f)) * 2.2f; var p = ctx.OnGround(gb.x + Mathf.Cos(a) * r, gb.z + Mathf.Sin(a) * r); z.mk.Prism(WorldMaterials.Solid(new Color(.3f, .45f, .2f)), p, up, .025f, .5f, 4); z.mk.Prism(k % 4 == 0 ? WorldMaterials.Solid(new Color(1f, .85f, .3f)) : petals, p + up * .5f, up, .16f, .03f, 10); }
+            for (var k = 0; k < 26; k++) { var a = ctx.Range(0, Mathf.PI * 2f); var r = Mathf.Sqrt(ctx.Range(0f, 1f)) * 2.2f; var p = ctx.OnGround(gb.x + Mathf.Cos(a) * r, gb.z + Mathf.Sin(a) * r); z.mk.Prism(WorldMaterials.Surface(new Color(.3f, .45f, .2f), Surface.Foliage), p, up, .025f, .5f, 4); z.mk.Prism(k % 4 == 0 ? WorldMaterials.Surface(new Color(1f, .85f, .3f), Surface.Foliage) : petals, p + up * .5f, up, .16f, .03f, 10); }
             halos.Add(gb + up * .6f, 2.4f, new Color(1f, .5f, .4f), .3f);
             // "Winter Daphne": low shrubs with small white flowers
             var wd = SongGlow(z, "Winter Daphne", new Color(1f, .92f, .95f), 1.2f);
-            for (var k = 0; k < 4; k++) { var p = z.At(-2f - k * 1.6f, 8f + (k % 2) * 1.2f); z.mk.Blob(WorldMaterials.Solid(new Color(.2f, .32f, .2f)), p + up * .45f, new Vector3(.8f, .55f, .8f), ctx.Rng, .3f); BoxCol(z.root, p + up * .45f, new Vector3(1.5f, 1f, 1.5f), Quaternion.identity); for (var j = 0; j < 6; j++) z.mk.Blob(wd, p + up * .8f + new Vector3(ctx.Range(-.6f, .6f), ctx.Range(-.1f, .2f), ctx.Range(-.6f, .6f)), Vector3.one * .1f, ctx.Rng, 0f); }
+            for (var k = 0; k < 4; k++) { var p = z.At(-2f - k * 1.6f, 8f + (k % 2) * 1.2f); z.mk.Blob(WorldMaterials.Surface(new Color(.2f, .32f, .2f), Surface.Foliage), p + up * .45f, new Vector3(.8f, .55f, .8f), ctx.Rng, .3f); BoxCol(z.root, p + up * .45f, new Vector3(1.5f, 1f, 1.5f), Quaternion.identity); for (var j = 0; j < 6; j++) z.mk.Blob(wd, p + up * .8f + new Vector3(ctx.Range(-.6f, .6f), ctx.Range(-.1f, .2f), ctx.Range(-.6f, .6f)), Vector3.one * .1f, ctx.Rng, 0f); }
             halos.Add(z.At(-4f, 8.5f) + up * .8f, 3f, Mist, .3f);
             // "Dream Odyssey": a small boat on a still pool
             var pool = z.At(-9f, 3f); var dream = SongGlow(z, "Dream Odyssey", new Color(.55f, .75f, 1f), .5f);
@@ -199,7 +199,7 @@ namespace EverythingWorld.World
             var st = z.At(1f, 9f); var pot = SongGlow(z, "potage", new Color(1f, .6f, .25f), 1.6f);
             z.mk.Box(metal, st + up * .45f, new Vector3(.9f, .9f, .7f), rot); BoxCol(z.root, st + up * .45f, new Vector3(.9f, .9f, .7f), rot);
             z.mk.Prism(pot, st + up * .9f, up, .05f, .02f, 10);
-            z.mk.Prism(WorldMaterials.Solid(new Color(.75f, .25f, .2f)), st + up * .92f, up, .34f, .45f, 12); z.mk.Prism(WorldMaterials.Solid(new Color(.9f, .75f, .4f)), st + up * 1.36f, up, .3f, .02f, 12);
+            z.mk.Prism(WorldMaterials.Surface(new Color(.75f, .25f, .2f), Surface.Painted), st + up * .92f, up, .34f, .45f, 12); z.mk.Prism(WorldMaterials.Surface(new Color(.9f, .75f, .4f), Surface.Painted), st + up * 1.36f, up, .3f, .02f, 12);
             life.steamAt.Add(st + up * 1.4f); halos.Add(st + up * .9f, 1f, new Color(1f, .6f, .25f), .5f);
             // "artsick": an easel with a painting
             var ea = z.At(4.5f, -7f); var paint = SongGlow(z, "artsick", new Color(1f, .5f, .7f), 1f);
@@ -220,7 +220,7 @@ namespace EverythingWorld.World
             // a small wooden stage under a big autumn tree hung with string lights
             var s = z.At(-6f, 0);
             z.mk.Box(wood, s + up * .4f, new Vector3(7f, .8f, 4.4f), rot); z.solid.Box(wood, s + up * .4f, new Vector3(7f, .8f, 4.4f), rot);
-            foreach (var e in new[] { -1.8f, 1.8f }) { z.mk.Box(woodDark, s + up * 1.25f + z.side * e - z.front * 1.2f, new Vector3(.8f, .9f, .5f), rot); z.mk.Box(WorldMaterials.Solid(new Color(.2f, .2f, .2f)), s + up * 1.25f + z.side * e - z.front * .94f, new Vector3(.7f, .7f, .02f), rot); }
+            foreach (var e in new[] { -1.8f, 1.8f }) { z.mk.Box(woodDark, s + up * 1.25f + z.side * e - z.front * 1.2f, new Vector3(.8f, .9f, .5f), rot); z.mk.Box(WorldMaterials.Surface(new Color(.2f, .2f, .2f), Surface.Cloth), s + up * 1.25f + z.side * e - z.front * .94f, new Vector3(.7f, .7f, .02f), rot); }
             z.mk.Prism(metal, s + up * .8f + z.front * 1f, up, .03f, 1.4f, 6);
             var tree = z.At(-9.5f, 4f); AutumnTree(ctx, z.mk, tree, 11f);
             var branchA = tree + up * 6.5f; StringLights(z.mk, branchA, s + up * 4f - z.side * 3.6f + z.front * 2f, 1.2f); StringLights(z.mk, branchA, s + up * 4f + z.side * 3.4f + z.front * 2f, 1.4f);
@@ -231,8 +231,8 @@ namespace EverythingWorld.World
             foreach (var (e, h) in new[] { (-1f, 6.4f), (1f, 5f) }) { var p = z.At(2f, e * 7f); z.mk.Prism(woodDark, p - up * .2f, up, .07f, h, 6); z.mk.Blob(tm, p + up * (h + .5f), Vector3.one * .55f, ctx.Rng, 0f); halos.Add(p + up * (h + .5f), 1.8f, new Color(.95f, .95f, .85f), .5f); ArtistBits.PostCollider(z.root, p, h, .1f); }
             // "サニーボーイ・ラプソディ" (Sunny Boy Rhapsody): a tall sunflower
             var sf = z.At(4f, -3f); var sun = SongGlow(z, "サニーボーイ", new Color(1f, .8f, .15f), 1.4f);
-            z.mk.Prism(WorldMaterials.Solid(new Color(.3f, .45f, .15f)), sf - up * .1f, up, .06f, 2.8f, 6);
-            z.mk.Prism(WorldMaterials.Solid(new Color(.3f, .18f, .1f)), sf + up * 2.85f - z.front * .05f, z.front, .3f, .1f, 12);
+            z.mk.Prism(WorldMaterials.Surface(new Color(.3f, .45f, .15f), Surface.Foliage), sf - up * .1f, up, .06f, 2.8f, 6);
+            z.mk.Prism(WorldMaterials.Surface(new Color(.3f, .18f, .1f), Surface.Foliage), sf + up * 2.85f - z.front * .05f, z.front, .3f, .1f, 12);
             for (var k = 0; k < 12; k++) { var a = k * 30f; z.mk.Box(sun, sf + up * 2.85f + Quaternion.AngleAxis(a, z.front) * up * .45f, new Vector3(.14f, .35f, .03f), Quaternion.LookRotation(z.front, Quaternion.AngleAxis(a, z.front) * up)); }
             ArtistBits.PostCollider(z.root, sf, 2.6f, .12f);
             // "エソテリック" (esoteric): a ring of stones round a strange glyph

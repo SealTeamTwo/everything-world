@@ -32,16 +32,16 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            wood = WorldMaterials.Solid(new Color(.55f, .38f, .24f)); woodDark = WorldMaterials.Solid(new Color(.3f, .2f, .14f));
-            stone = WorldMaterials.Solid(new Color(.55f, .53f, .5f)); bark = WorldMaterials.Solid(new Color(.28f, .2f, .16f));
-            leafPile = WorldMaterials.Solid(new Color(.85f, .45f, .15f)); metal = WorldMaterials.Solid(new Color(.7f, .72f, .75f), .85f);
+            wood = WorldMaterials.Surface(new Color(.55f, .38f, .24f), Surface.Wood); woodDark = WorldMaterials.Surface(new Color(.3f, .2f, .14f), Surface.Wood);
+            stone = WorldMaterials.Surface(new Color(.55f, .53f, .5f), Surface.Stone); bark = WorldMaterials.Surface(new Color(.28f, .2f, .16f), Surface.Bark);
+            leafPile = WorldMaterials.Surface(new Color(.85f, .45f, .15f), Surface.Foliage); metal = WorldMaterials.Surface(new Color(.7f, .72f, .75f), Surface.Metal);
             waterM = new Material(WorldMaterials.Glow(new Color(.35f, .6f, .8f), .25f)) { name = "Stream" };
             foamM = new Material(WorldMaterials.Glow(new Color(.92f, .96f, 1f), .7f)) { name = "Foam" };
             fallM = new Material(WorldMaterials.Glow(new Color(.85f, .93f, 1f), .9f)) { name = "Falls" };
             bulbM = new Material(WorldMaterials.Glow(Warm, 2.2f)) { name = "String lights" };
             lanternM = new Material(WorldMaterials.Glow(Warm, 1.6f)) { name = "Lanterns" };
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .75f, .42f), 1.6f)) { name = "Windows" };
-            grassPale = WorldMaterials.Solid(new Color(.78f, .72f, .52f)); cloth = WorldMaterials.Solid(new Color(.9f, .87f, .8f));
+            grassPale = WorldMaterials.Surface(new Color(.78f, .72f, .52f), Surface.Foliage); cloth = WorldMaterials.Surface(new Color(.9f, .87f, .8f), Surface.Cloth);
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
@@ -323,9 +323,9 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var col = LeafC[ctx.Rng.Next(LeafC.Length)];
             mk.Prism(bark, at - up * .3f, (up + new Vector3(ctx.Range(-.1f, .1f), 0, ctx.Range(-.1f, .1f))).normalized, h * .05f + .1f, h * .6f, 6, .7f);
-            var m = WorldMaterials.Solid(col);
-            for (var k = 0; k < 4; k++) mk.Blob(k == 3 ? WorldMaterials.Solid(LeafC[(ctx.Rng.Next(LeafC.Length))]) : m, at + up * h * (.74f + k * .06f) + new Vector3(ctx.Range(-1f, 1f), 0, ctx.Range(-1f, 1f)) * h * .12f, Vector3.one * h * ctx.Range(.16f, .21f), ctx.Rng, .3f);
-            var fallen = WorldMaterials.Solid(Color.Lerp(col, new Color(.5f, .3f, .15f), .3f));
+            var m = WorldMaterials.Surface(col, Surface.Foliage);
+            for (var k = 0; k < 4; k++) mk.Blob(k == 3 ? WorldMaterials.Surface(LeafC[(ctx.Rng.Next(LeafC.Length))], Surface.Foliage) : m, at + up * h * (.74f + k * .06f) + new Vector3(ctx.Range(-1f, 1f), 0, ctx.Range(-1f, 1f)) * h * .12f, Vector3.one * h * ctx.Range(.16f, .21f), ctx.Rng, .3f);
+            var fallen = WorldMaterials.Surface(Color.Lerp(col, new Color(.5f, .3f, .15f), .3f), Surface.Foliage);
             for (var k = 0; k < 6; k++) { var a = k * Mathf.PI / 3f + ctx.Range(0f, .8f); var r = ctx.Range(.5f, h * .3f); var q = ctx.OnGround(at.x + Mathf.Cos(a) * r, at.z + Mathf.Sin(a) * r); mk.Blob(fallen, q + up * .01f, new Vector3(ctx.Range(.4f, .8f), .03f, ctx.Range(.4f, .8f)), ctx.Rng, .3f); }
             ArtistBits.PostCollider(ctx.Root, at, h * .45f, h * .05f + .15f);
         }
@@ -460,7 +460,7 @@ namespace EverythingWorld.World
         /// them, and where a path crosses the escarpment a set of timber steps.
         void Paths(LandContext ctx, MeshKit mk, MeshKit solid)
         {
-            var path = WorldMaterials.Solid(new Color(.5f, .4f, .3f));
+            var path = WorldMaterials.Surface(new Color(.5f, .4f, .3f), Surface.Stone);
             var posts = new List<Vector3>(); var walk = 1;
             void Lay(Vector3 join, Vector3 to, float stopShort, string artist)
             {
@@ -490,7 +490,7 @@ namespace EverythingWorld.World
                         var tc = (tl + tr) / 2f; tc.y = Mathf.Max(tc.y, ctx.Ground(mid.x, mid.z)) + .2f;
                         mk.Box(woodDark, tc, new Vector3(across.magnitude + .2f, .07f, .3f), Quaternion.LookRotation(Vector3.ProjectOnPlane(along, tup), tup));
                     }
-                    if (i % 2 == 0) foreach (var s in new[] { -1f, 1f }) { var lp = pts[i] + side * s * (PathW / 2f + .3f); mk.Blob(WorldMaterials.Solid(LeafC[(i + (s > 0 ? 1 : 0)) % LeafC.Length]), ctx.OnGround(lp.x, lp.z) + Vector3.up * .03f, new Vector3(.4f, .04f, .35f), ctx.Rng, .4f); }
+                    if (i % 2 == 0) foreach (var s in new[] { -1f, 1f }) { var lp = pts[i] + side * s * (PathW / 2f + .3f); mk.Blob(WorldMaterials.Surface(LeafC[(i + (s > 0 ? 1 : 0)) % LeafC.Length], Surface.Foliage), ctx.OnGround(lp.x, lp.z) + Vector3.up * .03f, new Vector3(.4f, .04f, .35f), ctx.Rng, .4f); }
                 }
                 foreach (var p in pts) Remember(p, walk);
                 for (var i = 7; i < pts.Count; i += 12)
@@ -551,7 +551,7 @@ namespace EverythingWorld.World
                     if (roll < .05f) { LoneTree(ctx, mk, p); lone++; }
                     else if (roll < .09f) { StandingStone(ctx, mk, p); stones++; }
                     else if (roll < .12f) { if (Tilt(ctx, px, pz, 2f) < .8f) { Bench(ctx, mk, p, -toSea, false); benches++; } }
-                    else if (roll < .14f) { for (var k = 0; k < 4; k++) mk.Prism(WorldMaterials.Solid(new Color(.75f, .7f, .62f)), p + new Vector3(ctx.Range(-1f, 1f), .15f, ctx.Range(-1f, 1f)), Quaternion.Euler(0, ctx.Range(0, 180f), 0) * Vector3.forward, .12f, ctx.Range(1.5f, 3f), 5); }
+                    else if (roll < .14f) { for (var k = 0; k < 4; k++) mk.Prism(WorldMaterials.Surface(new Color(.75f, .7f, .62f), Surface.Wood), p + new Vector3(ctx.Range(-1f, 1f), .15f, ctx.Range(-1f, 1f)), Quaternion.Euler(0, ctx.Range(0, 180f), 0) * Vector3.forward, .12f, ctx.Range(1.5f, 3f), 5); }
                 }
             }
             Debug.Log($"The Math Rock Escarpment: {trees} tree clumps, {leaves} leaf piles, {benches} benches, {chimes} wind chimes, {sheds} sheds, {strings} string lights, {bikes} bikes, {lone} lone trees, {stones} standing stones");
@@ -571,7 +571,7 @@ namespace EverythingWorld.World
             var up = Vector3.up; var face = new Vector3(center.x - g.x, 0, center.z - g.z).normalized; var rot = Quaternion.LookRotation(face); var sd = Vector3.Cross(up, face);
             var lo = g.y; foreach (var (x, z) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) lo = Mathf.Min(lo, ctx.Ground(g.x + sd.x * x * 1.8f + face.x * z * 1.5f, g.z + sd.z * x * 1.8f + face.z * z * 1.5f));
             mk.Box(stone, new Vector3(g.x, lo + (g.y - lo) / 2f, g.z), new Vector3(3.8f, g.y - lo + .4f, 3.2f), rot);
-            var paint = WorldMaterials.Solid(new[] { new Color(.6f, .25f, .2f), new Color(.35f, .45f, .5f), new Color(.75f, .7f, .55f) }[ctx.Rng.Next(3)]);
+            var paint = WorldMaterials.Surface(new[] { new Color(.6f, .25f, .2f), new Color(.35f, .45f, .5f), new Color(.75f, .7f, .55f) }[ctx.Rng.Next(3)], Surface.Painted);
             mk.Box(paint, g + up * 1.4f, new Vector3(3.6f, 2.8f, 3f), rot); solid.Box(paint, g + up * 1.4f, new Vector3(3.6f, 2.8f, 3f), rot);
             mk.GableRoof(woodDark, g + up * 2.8f, new Vector3(3.6f, 0, 4.2f), 1.2f, rot);
             mk.Box(windowM, g + face * 1.52f + up * 1.6f + sd * .8f, new Vector3(.8f, .7f, .04f), rot);
@@ -582,7 +582,7 @@ namespace EverythingWorld.World
         void Bike(LandContext ctx, MeshKit mk, Vector3 g)
         {
             var up = Vector3.up; var dir = Quaternion.Euler(0, ctx.Range(0, 360f), 0) * Vector3.forward; var sd = Vector3.Cross(up, dir);
-            var frame = WorldMaterials.Solid(new[] { new Color(.2f, .45f, .6f), new Color(.7f, .2f, .15f), new Color(.85f, .75f, .3f) }[ctx.Rng.Next(3)]);
+            var frame = WorldMaterials.Surface(new[] { new Color(.2f, .45f, .6f), new Color(.7f, .2f, .15f), new Color(.85f, .75f, .3f) }[ctx.Rng.Next(3)], Surface.Painted);
             mk.Box(woodDark, g + up * .6f - sd * .3f, new Vector3(.12f, 1.2f, .12f), Quaternion.identity); ArtistBits.PostCollider(ctx.Root, g - sd * .3f, 1.1f, .1f);
             var tilt = Quaternion.LookRotation(dir) * Quaternion.Euler(0, 0, 12f);
             foreach (var e in new[] { -.55f, .55f }) { var w = g + dir * e + up * .35f; for (var k = 0; k < 10; k++) { var a = k * Mathf.PI / 5f; mk.Box(WorldMaterials.Solid(new Color(.1f, .1f, .1f)), w + tilt * new Vector3(0, Mathf.Sin(a), Mathf.Cos(a)) * .33f, new Vector3(.04f, .12f, .12f), tilt * Quaternion.Euler(-a * Mathf.Rad2Deg, 0, 0)); } }
@@ -594,7 +594,7 @@ namespace EverythingWorld.World
             var up = Vector3.up; var h = ctx.Range(6f, 10f);
             mk.Prism(bark, g - up * .3f, up, .3f, h * .55f, 6, .6f);
             for (var k = 0; k < 6; k++) { var d = (Quaternion.Euler(0, k * 60f + ctx.Range(-15f, 15f), 0) * Quaternion.Euler(ctx.Range(30f, 55f), 0, 0) * up).normalized; mk.Prism(bark, g + up * h * (.4f + k * .03f), d, .1f, h * ctx.Range(.25f, .4f), 5, .3f); }
-            if (ctx.Chance(.5f)) mk.Blob(WorldMaterials.Solid(LeafC[2]), g + up * h * .7f, Vector3.one * h * .15f, ctx.Rng, .3f);
+            if (ctx.Chance(.5f)) mk.Blob(WorldMaterials.Surface(LeafC[2], Surface.Foliage), g + up * h * .7f, Vector3.one * h * .15f, ctx.Rng, .3f);
             ArtistBits.PostCollider(ctx.Root, g, h * .5f, .35f);
         }
 
