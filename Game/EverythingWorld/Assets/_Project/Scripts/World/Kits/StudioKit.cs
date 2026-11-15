@@ -289,24 +289,50 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Scrubby grass between the stages.
+        /// Scrubby grass between the stages, in patches: neat mown verges the groundskeepers look after, dry backlot scrub,
+        /// and tall weeds nobody has cut since the last picture wrapped.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .8f, new Color(.52f, .58f, .38f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1940);
             const float st = 2.8f;
+            Color green = new Color(.42f, .54f, .34f), dry = new Color(.64f, .6f, .4f);
+            int mown = 0, scrub = 0, weeds = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (Mathf.PerlinNoise(px * .04f + 8f, pz * .04f + 4f) < .5f) continue;
+                var kind = WindMesh.Patch(px, pz, .015f, 91f);      // mown verge, backlot scrub or tall weeds
+                var tone = WindMesh.Patch(px, pz, .028f, 92f);      // the patch's shade, green to dry
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.46f, .54f, .34f), new Color(.62f, .6f, .4f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .24f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, Cream, .4f), rng, 3, .08f);
+                var col = Color.Lerp(green, dry, tone) * (.92f + r2 * .16f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .35f)
+                {
+                    // a mown verge: short, even and greener
+                    var lc = Color.Lerp(col, green, .4f);
+                    wm.Tuft(at, .14f + r2 * .1f, lc, Color.Lerp(lc, Cream, .25f), rng, 3, .06f, .1f);
+                    if (r1 < .3f) wm.Tuft(at + new Vector3(.4f, 0, -.35f), .12f + r1 * .08f, lc, Color.Lerp(lc, Cream, .2f), rng, 2, .06f, .1f);
+                    mown++;
+                }
+                else if (kind < .75f)
+                {
+                    // dry backlot scrub
+                    wm.Tuft(at, .24f + r2 * .3f, col, Color.Lerp(col, Cream, .4f), rng, 3, .08f, .14f); scrub++;
+                }
+                else
+                {
+                    // tall weeds, thin and seedy
+                    var wc = Color.Lerp(col, dry, .3f);
+                    wm.Tuft(at, .5f + r2 * .4f, wc, Color.Lerp(wc, Cream, .35f), rng, 4, .04f, .14f); weeds++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Studio grass", ctx.Root, mat);
+            Debug.Log($"Studio Lot Island grass: {mown} mown-verge spots, {scrub} scrub tufts, {weeds} tall weeds");
         }
     }
 }
