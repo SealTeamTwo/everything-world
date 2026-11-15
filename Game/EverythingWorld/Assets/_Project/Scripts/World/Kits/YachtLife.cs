@@ -42,16 +42,16 @@ namespace EverythingWorld.World
                 foreach (var s in new[] { -1f, 1f }) { mk.Tri(gull, new Vector3(0, 0, .25f), new Vector3(s * .8f, .2f, -.05f), new Vector3(0, 0, -.25f), Vector3.up); mk.Tri(gull, new Vector3(0, 0, .25f), new Vector3(0, 0, -.25f), new Vector3(s * .8f, .2f, -.05f), Vector3.down); }
                 gulls.Add(mk.BuildSingle("Gull", transform, false).transform);
             }
-            var jk = new MeshKit(); var grey = WorldMaterials.Solid(new Color(.55f, .58f, .62f), .7f);
+            var jk = new MeshKit(); var grey = WorldMaterials.Surface(new Color(.55f, .58f, .62f), World.Surface.Metal);
             jk.Prism(grey, new Vector3(0, 0, -4f), Vector3.forward, .7f, 7f, 10, .4f);
             jk.Tri(grey, new Vector3(-4f, 0, -1f), new Vector3(0, 0, 1.5f), new Vector3(0, 0, -2.5f), Vector3.up); jk.Tri(grey, new Vector3(4f, 0, -1f), new Vector3(0, 0, -2.5f), new Vector3(0, 0, 1.5f), Vector3.up);
             jk.Tri(grey, new Vector3(-4f, 0, -1f), new Vector3(0, 0, -2.5f), new Vector3(0, 0, 1.5f), Vector3.down); jk.Tri(grey, new Vector3(4f, 0, -1f), new Vector3(0, 0, 1.5f), new Vector3(0, 0, -2.5f), Vector3.down);
             jk.Tri(grey, new Vector3(0, 0, -3.5f), new Vector3(0, 2f, -4f), new Vector3(0, 0, -2.5f), Vector3.right); jk.Tri(grey, new Vector3(0, 0, -3.5f), new Vector3(0, 0, -2.5f), new Vector3(0, 2f, -4f), Vector3.left);
             jk.Prism(WorldMaterials.Glow(new Color(1f, .6f, .25f), 2.6f), new Vector3(0, 0, -4.1f), Vector3.back, .45f, .2f, 10);
             jet = jk.BuildSingle("Jet", transform, false).transform; jet.gameObject.SetActive(false);
-            var gk = new MeshKit(); var hull = WorldMaterials.Solid(new Color(.95f, .95f, .93f), .7f);
+            var gk = new MeshKit(); var hull = WorldMaterials.Surface(new Color(.95f, .95f, .93f), World.Surface.Painted);
             gk.Box(hull, new Vector3(0, .5f, 0), new Vector3(2.2f, 1f, 7f), Quaternion.identity); gk.Box(new Material(WorldMaterials.Solid(new Color(.95f, .9f, .85f))), new Vector3(0, 5f, .3f), new Vector3(.06f, 7f, 4f), Quaternion.identity);
-            gk.Box(WorldMaterials.Solid(new Color(.8f, .82f, .85f), .9f), new Vector3(0, 5.5f, 1.8f), new Vector3(.12f, 10f, .12f), Quaternion.identity);
+            gk.Box(WorldMaterials.Surface(new Color(.8f, .82f, .85f), World.Surface.Metal), new Vector3(0, 5.5f, 1.8f), new Vector3(.12f, 10f, .12f), Quaternion.identity);
             glider = gk.BuildSingle("Gliding sailboat", transform, false).transform; glider.gameObject.SetActive(false);
             SunsetStart();
         }
