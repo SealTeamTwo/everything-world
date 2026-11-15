@@ -32,10 +32,10 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            asphalt = WorldMaterials.Solid(new Color(.3f, .3f, .32f)); walk = WorldMaterials.Solid(new Color(.72f, .7f, .66f)); concrete = WorldMaterials.Solid(new Color(.62f, .6f, .57f));
-            steelEl = WorldMaterials.Solid(new Color(.2f, .32f, .28f), .5f); iron = WorldMaterials.Solid(new Color(.14f, .14f, .16f), .5f); dark = WorldMaterials.Solid(new Color(.07f, .07f, .08f)); white = WorldMaterials.Solid(new Color(.95f, .94f, .9f));
-            woodM = WorldMaterials.Solid(new Color(.5f, .36f, .24f)); chain = WorldMaterials.Solid(new Color(.6f, .62f, .64f), .7f); glassM = WorldMaterials.Solid(new Color(.2f, .26f, .32f), .9f);
-            leafM = WorldMaterials.Solid(new Color(.28f, .5f, .26f)); trunkM = WorldMaterials.Solid(new Color(.34f, .26f, .2f)); sandM = WorldMaterials.Solid(new Color(.9f, .82f, .62f));
+            asphalt = WorldMaterials.Surface(new Color(.3f, .3f, .32f), Surface.Stone); walk = WorldMaterials.Surface(new Color(.72f, .7f, .66f), Surface.Stone); concrete = WorldMaterials.Surface(new Color(.62f, .6f, .57f), Surface.Stone);
+            steelEl = WorldMaterials.Surface(new Color(.2f, .32f, .28f), Surface.Metal); iron = WorldMaterials.Surface(new Color(.14f, .14f, .16f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.07f, .07f, .08f)); white = WorldMaterials.Solid(new Color(.95f, .94f, .9f));
+            woodM = WorldMaterials.Surface(new Color(.5f, .36f, .24f), Surface.Wood); chain = WorldMaterials.Surface(new Color(.6f, .62f, .64f), Surface.Metal); glassM = WorldMaterials.Surface(new Color(.2f, .26f, .32f), Surface.Glass);
+            leafM = WorldMaterials.Surface(new Color(.28f, .5f, .26f), Surface.Foliage); trunkM = WorldMaterials.Surface(new Color(.34f, .26f, .2f), Surface.Bark); sandM = WorldMaterials.Surface(new Color(.9f, .82f, .62f), Surface.Stone);
             // the windows are dark glass by day; "Empire State of Mind" lights every one of them
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .85f, .5f), .12f)) { name = "Boom windows" };
             bulbM = new Material(WorldMaterials.Glow(new Color(1f, .9f, .6f), 1.4f)) { name = "Boom bulbs" }; goldM = new Material(WorldMaterials.Glow(Gold, .9f)) { name = "Boom gold" };
@@ -43,7 +43,7 @@ namespace EverythingWorld.World
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
-        Material Paint(Color c) => WorldMaterials.Solid(c);
+        Material Paint(Color c, Surface kind = Surface.Painted) => WorldMaterials.Surface(c, kind);   // painted unless said (brownstone walls are stone)
         static bool HasStation(IslandWorldData.Artist a) => a.stationId != 0;
         static float Foot(IslandWorldData.Artist a)
         {
