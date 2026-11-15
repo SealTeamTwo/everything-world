@@ -134,13 +134,13 @@ namespace EverythingWorld.World
                 z.mk.Box(rope, (a + b) / 2f, new Vector3(.05f, b.y - a.y, .05f), Quaternion.identity);
                 z.solid.Box(rope, (a + b) / 2f, new Vector3(.12f, b.y - a.y, .12f), Quaternion.identity);
             }
-            z.mk.Box(WorldMaterials.Solid(Soft(z.a, 0)), seat, new Vector3(width + .3f, .12f, grand ? 1.1f : .5f), Quaternion.LookRotation(z.front));
+            z.mk.Box(WorldMaterials.Surface(Soft(z.a, 0), Surface.Cloth), seat, new Vector3(width + .3f, .12f, grand ? 1.1f : .5f), Quaternion.LookRotation(z.front));
             z.solid.Box(wood, seat, new Vector3(width + .3f, .3f, grand ? 1.1f : .5f), Quaternion.LookRotation(z.front));
             if (grand)
             {
                 CoverBoard(z, z.At(2.2f, -4.5f), z.front, 1f);
                 Plaque(z, 3f, 4.2f);
-                var blanket = WorldMaterials.Solid(Soft(z.a, 1));
+                var blanket = WorldMaterials.Surface(Soft(z.a, 1), Surface.Cloth);
                 z.mk.Box(blanket, z.At(2.5f, 1.5f) + Vector3.up * .03f, new Vector3(3.4f, .05f, 2.6f), Quaternion.LookRotation(z.front) * Quaternion.Euler(0, 14, 0));
             }
         }
@@ -151,7 +151,7 @@ namespace EverythingWorld.World
             var c = z.At(-2f, 0);
             var rot = Quaternion.LookRotation(z.front);
             const float W = 8f, D = 7f, H = 3.6f;
-            var sheetA = WorldMaterials.Solid(Soft(z.a, 0)); var sheetB = WorldMaterials.Solid(new Color(.95f, .86f, .9f));
+            var sheetA = WorldMaterials.Surface(Soft(z.a, 0), Surface.Cloth); var sheetB = WorldMaterials.Surface(new Color(.95f, .86f, .9f), Surface.Cloth);
             // a ridge pole on two chair-backs, sheets draped either side down to the ground
             foreach (var s in new[] { -1f, 1f })
             {
@@ -173,7 +173,7 @@ namespace EverythingWorld.World
             z.solid.Box(sheetB, c - z.front * (D / 2f) + Vector3.up * H / 2f, new Vector3(W * .9f, H, .2f), rot);
             for (var i = 0; i < 4; i++)
             {
-                z.mk.Blob(WorldMaterials.Solid(Pastel[i % Pastel.Length]), c + z.side * (i - 1.5f) * 1.3f - z.front * 1.8f + Vector3.up * .35f, new Vector3(.7f, .4f, .6f), z.ctx.Rng, .1f);
+                z.mk.Blob(WorldMaterials.Surface(Pastel[i % Pastel.Length], Surface.Cloth), c + z.side * (i - 1.5f) * 1.3f - z.front * 1.8f + Vector3.up * .35f, new Vector3(.7f, .4f, .6f), z.ctx.Rng, .1f);
                 z.solid.Box(fabric, c + z.side * (i - 1.5f) * 1.3f - z.front * 1.8f + Vector3.up * .35f, new Vector3(1.3f, .75f, 1.1f), rot);
             }
             ArtistBits.CoverWall(z.pictures, z.labels, z.ctx, z.a, c - z.front * (D / 2f - .08f) + Vector3.up * 1.9f, z.front, 3, .75f, 3, true, Ink);
@@ -186,7 +186,7 @@ namespace EverythingWorld.World
         {
             var a = z.At(-1.5f, -3f); var b = z.At(-1.5f, 3f);
             foreach (var p in new[] { a, b }) BigTree(z, p - z.side * Mathf.Sign(Vector3.Dot(p - z.center, z.side)) * 0f, .8f, false);
-            var cloth = WorldMaterials.Solid(Soft(z.a, 0));
+            var cloth = WorldMaterials.Surface(Soft(z.a, 0), Surface.Cloth);
             var pa = a + Vector3.up * 1.7f; var pb = b + Vector3.up * 1.7f;
             for (var i = 0; i < 10; i++)
             {
@@ -201,7 +201,7 @@ namespace EverythingWorld.World
         void Beanbag(Area z)
         {
             var c = z.At(-.5f, 1f);
-            z.mk.Blob(WorldMaterials.Solid(Soft(z.a, 0)), c + Vector3.up * .45f, new Vector3(.9f, .55f, .9f), z.ctx.Rng, .2f);
+            z.mk.Blob(WorldMaterials.Surface(Soft(z.a, 0), Surface.Cloth), c + Vector3.up * .45f, new Vector3(.9f, .55f, .9f), z.ctx.Rng, .2f);
             z.solid.Box(fabric, c + Vector3.up * .4f, new Vector3(1.6f, .8f, 1.6f), Quaternion.identity);
             var lamp = z.At(-1f, 2.4f);
             z.mk.Prism(iron, lamp, Vector3.up, .05f, 1.9f, 6);
@@ -215,7 +215,7 @@ namespace EverythingWorld.World
             for (var i = 0; i < 6; i++)
             {
                 var p = z.At(-.5f + (i % 3 - 1) * .4f, (i - 2.5f) * .7f) + Vector3.up * (.35f + (i / 3) * .5f);
-                z.mk.Blob(WorldMaterials.Solid(i % 2 == 0 ? Soft(z.a, i) : Pastel[i % Pastel.Length]), p, new Vector3(.8f, .35f, .55f), z.ctx.Rng, .12f);
+                z.mk.Blob(WorldMaterials.Surface(i % 2 == 0 ? Soft(z.a, i) : Pastel[i % Pastel.Length], Surface.Cloth), p, new Vector3(.8f, .35f, .55f), z.ctx.Rng, .12f);
             }
             z.solid.Box(fabric, z.At(-.5f, 0) + Vector3.up * .6f, new Vector3(2.4f, 1.2f, 4.6f), Quaternion.LookRotation(z.front));
         }
@@ -242,7 +242,7 @@ namespace EverythingWorld.World
         void Plush(Area z)
         {
             var c = z.At(-.8f, 1.2f);
-            var fur = WorldMaterials.Solid(Color.Lerp(Soft(z.a, 0), new Color(.85f, .72f, .62f), .5f));
+            var fur = WorldMaterials.Surface(Color.Lerp(Soft(z.a, 0), new Color(.85f, .72f, .62f), .5f), Surface.Cloth);
             z.mk.Blob(fur, c + Vector3.up * .9f, new Vector3(1f, 1f, .85f), z.ctx.Rng, .08f);
             z.mk.Blob(fur, c + Vector3.up * 2.2f + z.front * .1f, new Vector3(.75f, .7f, .7f), z.ctx.Rng, .06f);
             foreach (var s in new[] { -1f, 1f })

@@ -33,16 +33,16 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            wood = WorldMaterials.Solid(new Color(.6f, .47f, .38f));
-            darkWood = WorldMaterials.Solid(new Color(.3f, .23f, .22f));
-            iron = WorldMaterials.Solid(new Color(.22f, .2f, .26f));
+            wood = WorldMaterials.Surface(new Color(.6f, .47f, .38f), Surface.Wood);
+            darkWood = WorldMaterials.Surface(new Color(.3f, .23f, .22f), Surface.Wood);
+            iron = WorldMaterials.Surface(new Color(.22f, .2f, .26f), Surface.Metal);
             board = WorldMaterials.Solid(new Color(.18f, .15f, .22f));
-            fabric = WorldMaterials.Solid(new Color(.92f, .88f, .94f));
-            rope = WorldMaterials.Solid(new Color(.75f, .68f, .58f));
-            bark = WorldMaterials.Solid(new Color(.33f, .27f, .3f));
-            leafA = WorldMaterials.Solid(new Color(.36f, .4f, .5f));
-            leafB = WorldMaterials.Solid(new Color(.44f, .42f, .58f));
-            track = WorldMaterials.Solid(new Color(.8f, .76f, .88f));
+            fabric = WorldMaterials.Surface(new Color(.92f, .88f, .94f), Surface.Cloth);
+            rope = WorldMaterials.Surface(new Color(.75f, .68f, .58f), Surface.Cloth);
+            bark = WorldMaterials.Surface(new Color(.33f, .27f, .3f), Surface.Bark);
+            leafA = WorldMaterials.Surface(new Color(.36f, .4f, .5f), Surface.Foliage);
+            leafB = WorldMaterials.Surface(new Color(.44f, .42f, .58f), Surface.Foliage);
+            track = WorldMaterials.Surface(new Color(.8f, .76f, .88f), Surface.Stone);
         }
 
         public override bool Ground(float height, float slope, float patch, out Color color)
@@ -301,11 +301,11 @@ namespace EverythingWorld.World
             float lo = float.MaxValue;
             for (var i = -2; i <= 2; i++) for (var j = -2; j <= 2; j++) { var p = c + side * i * W / 4f + along * j * L / 4f; lo = Mathf.Min(lo, ctx.Ground(p.x, p.z)); }
             var baseY = lo;
-            var frame = WorldMaterials.Solid(new Color(.55f, .42f, .36f));
-            var sheet = WorldMaterials.Solid(new Color(.93f, .9f, .96f));
-            var duvet = WorldMaterials.Solid(new Color(.78f, .66f, .9f));
-            var duvetB = WorldMaterials.Solid(new Color(.86f, .74f, .94f));
-            var pillow = WorldMaterials.Solid(new Color(.97f, .95f, .93f));
+            var frame = WorldMaterials.Surface(new Color(.55f, .42f, .36f), Surface.Wood);
+            var sheet = WorldMaterials.Surface(new Color(.93f, .9f, .96f), Surface.Cloth);
+            var duvet = WorldMaterials.Surface(new Color(.78f, .66f, .9f), Surface.Cloth);
+            var duvetB = WorldMaterials.Surface(new Color(.86f, .74f, .94f), Surface.Cloth);
+            var pillow = WorldMaterials.Surface(new Color(.97f, .95f, .93f), Surface.Cloth);
             Vector3 P(float x, float y, float z) => new Vector3(c.x, baseY, c.z) + side * x + Vector3.up * y + along * z;
             foreach (var (sx, sz) in new[] { (-1f, -1f), (1f, -1f), (-1f, 1f), (1f, 1f) })
                 mk.Box(frame, P(sx * (W / 2f - 1f), 1.2f, sz * (L / 2f - 1f)), new Vector3(1.6f, 2.4f + .5f, 1.6f), rot);
@@ -353,9 +353,9 @@ namespace EverythingWorld.World
                     // where the ground under the bottom book falls below the bed's floor, a footing of more books reaches down to it
                     var stairLo = baseY;
                     for (var u = -1; u <= 1; u++) for (var w = -4; w <= 4; w++) { var q = c2 + side * u * 3.2f + along * w * footprint.z / 8.2f; stairLo = Mathf.Min(stairLo, ctx.Ground(q.x, q.z)); }
-                    if (stairLo < baseY - .05f) { var fh = baseY - stairLo + .2f; mk.Box(WorldMaterials.Solid(spines[(i + 2) % spines.Length]), new Vector3(c2.x, baseY - fh / 2f + .1f, c2.z), new Vector3(footprint.x, fh, footprint.z), spin); }
+                    if (stairLo < baseY - .05f) { var fh = baseY - stairLo + .2f; mk.Box(WorldMaterials.Surface(spines[(i + 2) % spines.Length], Surface.Painted), new Vector3(c2.x, baseY - fh / 2f + .1f, c2.z), new Vector3(footprint.x, fh, footprint.z), spin); }
                 }
-                mk.Box(WorldMaterials.Solid(spines[i % spines.Length]), c2, footprint, spin);
+                mk.Box(WorldMaterials.Surface(spines[i % spines.Length], Surface.Painted), c2, footprint, spin);
                 mk.Box(pages, c2 + side * .06f + along * .08f, new Vector3(footprint.x + .1f, rise * .7f, footprint.z - .4f), spin);   // .06 sideways: at .05 the top book's pages met its cover's side
             }
             var bottom = farEdge; bottom.y = ctx.Ground(bottom.x, bottom.z) - .2f;          // the slope starts where the first book does
@@ -364,7 +364,7 @@ namespace EverythingWorld.World
             solid.Box(pages, (topStep + bottom) / 2f, new Vector3(6f, .4f, Vector3.Distance(topStep, bottom) + .4f), ramp);
             // giant headphones lying on the duvet
             var hp = P(-3f, H + 2.4f, -8f);
-            var band = WorldMaterials.Solid(new Color(.25f, .22f, .3f), .4f);
+            var band = WorldMaterials.Surface(new Color(.25f, .22f, .3f), Surface.Painted);
             for (var i = 0; i < 16; i++)
             {
                 float a0 = Mathf.PI * i / 16f, a1 = Mathf.PI * (i + 1) / 16f;
@@ -375,7 +375,7 @@ namespace EverythingWorld.World
             {
                 solid.Prism(band, hp + side * s * 3.2f - Vector3.up * .5f, Vector3.up, 1.3f, 1.1f, 8);
                 mk.Prism(band, hp + side * s * 3.2f - Vector3.up * .5f, Vector3.up, 1.3f, .9f, 14);
-                mk.Prism(WorldMaterials.Solid(new Color(.82f, .7f, .92f)), hp + side * s * 3.2f + Vector3.up * .4f, Vector3.up, 1f, .12f, 14);
+                mk.Prism(WorldMaterials.Surface(new Color(.82f, .7f, .92f), Surface.Cloth), hp + side * s * 3.2f + Vector3.up * .4f, Vector3.up, 1f, .12f, 14);
             }
             // the bedside table and its lamp: the warm light at the heart of the field
             // the table stands on the lowest ground under its corners (its uphill side sinks into the grass)
@@ -457,7 +457,7 @@ namespace EverythingWorld.World
                     {
                         var h = ctx.Range(3.5f, 6.5f);
                         p.y = Low(p, 1.1f);
-                        var metal = WorldMaterials.Solid(new Color(.7f, .66f, .8f), .5f);
+                        var metal = WorldMaterials.Surface(new Color(.7f, .66f, .8f), Surface.Metal);
                         mk.Prism(metal, p, Vector3.up, 1.1f, h * .22f, 12, .7f);
                         var glass = WorldMaterials.Glow(color, 1.5f);
                         mk.Prism(glass, p + Vector3.up * h * .22f, Vector3.up, .8f, h * .6f, 12, .55f);
@@ -513,7 +513,7 @@ namespace EverythingWorld.World
                         p.y = standing ? Mathf.Min(p.y, ctx.Ground((p + Vector3.Cross(Vector3.up, face) * r * .6f).x, (p + Vector3.Cross(Vector3.up, face) * r * .6f).z), ctx.Ground((p - Vector3.Cross(Vector3.up, face) * r * .6f).x, (p - Vector3.Cross(Vector3.up, face) * r * .6f).z)) : Low(p, r * .8f);
                         var rot = standing ? Quaternion.LookRotation(face) : Quaternion.LookRotation(Vector3.up, face);
                         var c = p + Vector3.up * (standing ? r * 1.05f : th * .5f + .05f);
-                        var mat = WorldMaterials.Solid(color);
+                        var mat = WorldMaterials.Surface(color, Surface.Cloth);
                         var pts = new Vector3[10];
                         for (var k = 0; k < 10; k++) { var a = k * Mathf.PI / 5f + Mathf.PI / 2f; var rr = k % 2 == 0 ? r : r * .48f; pts[k] = new Vector3(Mathf.Cos(a) * rr, Mathf.Sin(a) * rr, 0); }
                         for (var k = 0; k < 10; k++)
