@@ -663,7 +663,8 @@ namespace EverythingWorld.World
         }
 
         /// A lamp post with gig posters (covers of this land's songs) wrapped round it.
-        void LampPost(LandContext ctx, MeshKit mk, MeshKit pictures, Vector3 at, Vector3 facing, int posters)
+        /// A lamp post with gig posters: random covers from the land, or the artist's own when it stands in their area.
+        void LampPost(LandContext ctx, MeshKit mk, MeshKit pictures, Vector3 at, Vector3 facing, int posters, IslandWorldData.Artist own = null)
         {
             mk.Prism(iron, at, Vector3.up, .1f, 4.2f, 8);
             ArtistBits.PostCollider(ctx.Root, at, 4.2f, .15f);
@@ -675,7 +676,7 @@ namespace EverythingWorld.World
             var pic = WorldMaterials.Picture(ctx.CoverAtlas);
             for (var i = 0; i < posters; i++)
             {
-                var cover = RandomCover(ctx);
+                var cover = own != null ? (own.songList != null && own.songList.Length > 0 ? own.songList[(i + 1) % own.songList.Length].cover : -1) : RandomCover(ctx);
                 if (cover < 0) break;
                 var n = (i % 2 == 0 ? facing : -facing); n.y = 0; n.Normalize();
                 var r = Vector3.Cross(n, Vector3.up);

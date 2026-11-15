@@ -336,6 +336,22 @@ namespace EverythingWorld.World
                 mk.Blob(i % 2 == 0 ? duvet : duvetB, at, size, ctx.Rng, .15f);
                 solid.Box(duvet, at, new Vector3(size.x * 1.5f, size.y * 1.4f, size.z * 1.5f), rot);
             }
+            // the duvet slipping off one side right down to the grass: walk (or run and jump) up it onto the bed
+            {
+                var top = P(W / 2f - 1.5f, H - .2f, -3f); var foot = P(W / 2f + 13f, 0, -3f); foot.y = ctx.Ground(foot.x, foot.z) - .05f;
+                var run2 = foot - top; var lenR = run2.magnitude; var fwdR = run2 / lenR; var rightR = Vector3.Cross(Vector3.up, fwdR).normalized;
+                var slope = Quaternion.LookRotation(fwdR, Vector3.Cross(fwdR, rightR));
+                var mid = (top + foot) / 2f;
+                mk.Box(duvet, mid, new Vector3(9f, .5f, lenR + 1f), slope);
+                solid.Box(duvet, mid, new Vector3(9f, .5f, lenR + 1f), slope);
+                for (var k = 0; k < 6; k++)   // rumples
+                {
+                    var t = (k + .5f) / 6f; var rp = Vector3.Lerp(top, foot, t) + (slope * Vector3.up) * .3f + along * ctx.Range(-3f, 3f);
+                    mk.Blob(k % 2 == 0 ? duvetB : duvet, rp, new Vector3(ctx.Range(1.6f, 2.6f), .35f, ctx.Range(1.2f, 2f)), ctx.Rng, .15f);
+                }
+                mk.Blob(duvetB, foot + Vector3.up * .25f + side * 1f, new Vector3(5f, .5f, 5.5f), ctx.Rng, .15f);   // the end crumpled on the grass
+                solid.Box(duvet, foot + Vector3.up * .1f + side * 1f, new Vector3(5f, .2f, 5.5f), rot);
+            }
             // a staircase of giant books at the foot of the bed, with a smooth slope hidden under it to walk up
             var steps = 8; const float rise = .82f, run = 1.7f;
             var spines = new[] { new Color(.62f, .5f, .82f), new Color(.92f, .62f, .74f), new Color(.6f, .76f, .86f), new Color(.95f, .82f, .58f), new Color(.72f, .84f, .7f) };

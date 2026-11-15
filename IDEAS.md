@@ -18,7 +18,22 @@ Things to remember that aren't built or decided yet. Newest first.
 - Boom Bap Harbour: the railroad imagery.
 - Afrobeat Coast: the colour theory.
 
-**Fixes (things that look or work wrong):**
+**Fixes (things that look or work wrong):** all done 2026-11-15 (checked by the photo tour, not yet in play), except the Funk-to-Afrobeat bridge, which is a real shortcut and was left. How they were fixed:
+- **Bridges:** bridge ends no longer land on cut-off islets (`islandmap.py`). Five moved, including the Hub's bridge, which now reaches the Prog Marches.
+- **Hub:** the terminal, riddle and colour station face the middle, clear of the stands. The seat cue is a soft, turning circle.
+- **Benches:** every bench seats two (`Interact.Bench`).
+- **Flicker:** tiny height offsets wherever two surfaces met.
+- **Suns:** the other lands' suns show only inside their own land (`LandOnly`).
+- **Trails and climbs:**
+  - The Fens trails wind round slopes and stay out of the sea.
+  - The Virtuoso climb is one smooth deck.
+- **Other:**
+  - The Bayou bridges stay low and only cross water.
+  - Bluegrass creek bed carved wider.
+  - The sunken pool's water is solid.
+  - The beach has a collider.
+  - The bed has a duvet slope.
+  - The Jam banners and buses are tie-dye.
 - **Hub:**
   - The bridge towards Prog Marches goes halfway, glitches, then lands in the Djent Spires (snapshots 603, 604). There should be more bridges from the Hub.
   - "Choose your light" runs into the stands and faces an odd way. Turn it, the terminal and the riddle to face the centre.

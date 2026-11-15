@@ -10,6 +10,7 @@ Shader "Everything World/Interact Glow"
         _Color ("Colour (alpha = strength)", Color) = (1, 1, 1, 1)
         _Fill ("Fill", Range(0, 1)) = 0.15
         _Rim ("Rim", Range(0, 3)) = 1
+        _VertexAlpha ("Use the mesh's vertex alpha (the soft seat circle)", Range(0, 1)) = 0
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Blend onto the scene (One = added light, OneMinusSrcAlpha = its true colour)", Float) = 1
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull (Front = an outline drawn from a slightly bigger copy)", Float) = 0
     }
@@ -32,11 +33,11 @@ Shader "Everything World/Interact Glow"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _Color;
-                float _Fill, _Rim, _DstBlend, _Cull;
+                float _Fill, _Rim, _DstBlend, _Cull, _VertexAlpha;
             CBUFFER_END
 
-            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
-            struct Varyings { float4 positionCS : SV_POSITION; float3 normalWS : TEXCOORD0; float3 viewWS : TEXCOORD1; };
+            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 color : COLOR; };
+            struct Varyings { float4 positionCS : SV_POSITION; float3 normalWS : TEXCOORD0; float3 viewWS : TEXCOORD1; float fade : TEXCOORD2; };
 
             Varyings vert(Attributes i)
             {
@@ -45,6 +46,7 @@ Shader "Everything World/Interact Glow"
                 o.positionCS = TransformWorldToHClip(ws);
                 o.normalWS = TransformObjectToWorldNormal(i.normalOS);
                 o.viewWS = _WorldSpaceCameraPos - ws;
+                o.fade = lerp(1.0, i.color.a, _VertexAlpha);
                 return o;
             }
 
@@ -52,7 +54,7 @@ Shader "Everything World/Interact Glow"
             {
                 float ndv = abs(dot(normalize(i.normalWS), normalize(i.viewWS)));
                 float rim = (1.0 - ndv) * (1.0 - ndv);
-                float a = saturate(_Color.a * (_Fill + _Rim * rim));
+                float a = saturate(_Color.a * (_Fill + _Rim * rim)) * i.fade;
                 return half4(_Color.rgb * a, a);   // premultiplied: right for both blends
             }
             ENDHLSL

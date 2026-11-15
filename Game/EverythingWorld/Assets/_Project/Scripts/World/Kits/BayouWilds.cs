@@ -287,7 +287,7 @@ namespace EverythingWorld.World
             {
                 var dd = Mathf.Min(d, total);
                 var q = RoundAreas(ctx, from + dir * dd + side * Mathf.Sin(dd / total * Mathf.PI * 2f) * 4f, from, dir, null, 3f);
-                var g = ctx.Ground(q.x, q.z); var over = WaterAt(q.x, q.z, 2f, out var s);
+                var g = ctx.Ground(q.x, q.z); var over = WaterAt(q.x, q.z, 1.2f, out var s);
                 pts.Add(new Vector3(q.x, over ? Mathf.Max(g, s + .7f) : g, q.z)); wet.Add(over);
                 if (dd >= total) break;
             }

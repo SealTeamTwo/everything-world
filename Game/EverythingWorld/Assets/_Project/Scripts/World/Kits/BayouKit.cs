@@ -639,7 +639,7 @@ namespace EverythingWorld.World
                     q = RoundAreas(ctx, q, from, dir, next.name, 3f);   // round other artists' areas, not across them
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
                     var g = ctx.Ground(q.x, q.z);
-                    var over = WaterAt(q.x, q.z, 2.5f, out var s);
+                    var over = WaterAt(q.x, q.z, 1.2f, out var s);   // only where the road is really over water (2.5 m turned roads along a bank into long bridges)
                     pts.Add(new Vector3(q.x, over ? Mathf.Max(g, s + .7f) : g, q.z)); wet.Add(over);
                     if (dd >= end) break;
                 }
@@ -669,7 +669,7 @@ namespace EverythingWorld.World
         /// A plank bridge on posts, rails both sides, ramps down to the ground at each end.
         void Bridge(LandContext ctx, MeshKit mk, MeshKit solid, List<Vector3> run)
         {
-            var up = Vector3.up; var topY = 0f; foreach (var p in run) topY = Mathf.Max(topY, p.y);
+            var up = Vector3.up; var topY = 0f; for (var i = run.Count > 2 ? 1 : 0; i < (run.Count > 2 ? run.Count - 1 : run.Count); i++) topY = Mathf.Max(topY, run[i].y);   // from the points over water, not the banks it starts and ends on (a high bank lifted the whole deck into the air)
             var pts = new List<Vector3>();
             for (var i = 0; i < run.Count; i++)
             {

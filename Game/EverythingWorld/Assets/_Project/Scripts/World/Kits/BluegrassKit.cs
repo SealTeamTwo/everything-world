@@ -176,8 +176,11 @@ namespace EverythingWorld.World
                     var x = col * data.Step; if (x < minX - 40f || x > maxX + 40f) continue;
                     var i = r * data.Nx + col; if (data.islandIds[i] != index) continue;
                     var d = CreekDist(x, z, out var bed); if (d > bank) continue;
-                    if (d < 0f) data.heights[i] = Mathf.Min(data.heights[i], bed - Mathf.Clamp01(-d / 3f) * .4f);
-                    else data.heights[i] = Mathf.Min(data.heights[i], Mathf.Lerp(bed + 1.6f, data.heights[i], Mathf.SmoothStep(0f, 1f, d / bank)));
+                    // the bed reaches half a ground cell past the water's edge: the creek is narrower than the 8 m ground
+                    // grid, so where no grid point fell inside it the ground stayed above the water and hid it in stretches
+                    const float edge = 4.5f;
+                    if (d < edge) data.heights[i] = Mathf.Min(data.heights[i], bed - Mathf.Clamp01(-d / 3f) * .4f);
+                    else data.heights[i] = Mathf.Min(data.heights[i], Mathf.Lerp(bed + 1.6f, data.heights[i], Mathf.SmoothStep(0f, 1f, (d - edge) / (bank - edge))));
                 }
             }
         }

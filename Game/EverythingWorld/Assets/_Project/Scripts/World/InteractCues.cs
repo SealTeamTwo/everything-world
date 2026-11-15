@@ -4,7 +4,7 @@ using UnityEngine;
 namespace EverythingWorld.World
 {
     /// Shows what you can do something with, as you come near it (within about 11 m), by colour and by shape:
-    /// - somewhere to sit: a blue square glowing on the seat;
+    /// - somewhere to sit: a soft, see-through blue circle on the seat, wispy at its edge, slowly turning;
     /// - something to use: the thing glows yellow with a yellow outline, a yellow diamond turning above it;
     /// - something to pick up: the thing glows white with a white outline, a small white ball above it;
     /// - someone to talk to: a deep pink speech bubble over their head.
@@ -26,7 +26,7 @@ namespace EverythingWorld.World
         readonly Dictionary<Interactable, Cue> cues = new Dictionary<Interactable, Cue>();
         readonly List<Cue> shown = new List<Cue>();
         readonly Collider[] found = new Collider[512];
-        Material glow, solid, outline; Mesh square, diamond, ball, bubble; MaterialPropertyBlock block; float nextScan; int scan; Transform eye;
+        Material glow, solid, outline, soft; Mesh square, diamond, ball, bubble; MaterialPropertyBlock block; float nextScan; int scan; Transform eye;
         static readonly int ColorId = Shader.PropertyToID("_Color"), FillId = Shader.PropertyToID("_Fill"), RimId = Shader.PropertyToID("_Rim");
 
         public static Color ColorOf(Interactable it) => it is Seat ? SitColor : it is Carryable ? CarryColor : it is Resident ? TalkColor : UseColor;
@@ -37,9 +37,10 @@ namespace EverythingWorld.World
             if (shader == null) { Debug.LogWarning("Interact Glow shader not found: no cues."); enabled = false; return; }
             glow = new Material(shader) { name = "Interact glow" }; glow.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.One);
             solid = new Material(shader) { name = "Interact marker" }; solid.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            soft = new Material(solid) { name = "Interact seat circle" }; soft.SetFloat("_VertexAlpha", 1f);
             outline = new Material(solid) { name = "Interact outline" }; outline.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Front); block = new MaterialPropertyBlock();
             var cam = GetComponentInChildren<Camera>(); eye = cam != null ? cam.transform : transform;
-            square = Flat(new[] { new Vector3(-.5f, 0, -.5f), new Vector3(-.5f, 0, .5f), new Vector3(.5f, 0, .5f), new Vector3(.5f, 0, -.5f) }, new[] { 0, 1, 2, 0, 2, 3 }, Vector3.up);
+            square = SoftCircle();
             // a speech bubble: a rectangle with a little tail at the bottom left, in the x-y plane
             bubble = Flat(new[] { new Vector3(-.5f, -.3f, 0), new Vector3(-.5f, .3f, 0), new Vector3(.5f, .3f, 0), new Vector3(.5f, -.3f, 0), new Vector3(-.3f, -.3f, 0), new Vector3(-.05f, -.3f, 0), new Vector3(-.32f, -.58f, 0) }, new[] { 0, 1, 2, 0, 2, 3, 4, 5, 6 }, Vector3.back);
             diamond = Octahedron();
@@ -50,6 +51,27 @@ namespace EverythingWorld.World
         {
             var ns = new Vector3[v.Length]; for (var i = 0; i < ns.Length; i++) ns[i] = n;
             var m = new Mesh { name = "Cue shape", vertices = v, triangles = t, normals = ns }; m.RecalculateBounds(); return m;
+        }
+
+        /// The seat cue: a disc fading out from a faint middle through a brighter ring to nothing at a ragged,
+        /// wispy edge (each spoke reaches a different distance), drawn flat with its alpha in the vertex colours.
+        static Mesh SoftCircle()
+        {
+            const int n = 40; var v = new List<Vector3> { Vector3.zero }; var c = new List<Color> { new Color(1, 1, 1, .32f) }; var t = new List<int>();
+            for (var k = 0; k < n; k++)
+            {
+                var a = k * Mathf.PI * 2f / n; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
+                var wisp = .5f + .09f * Mathf.Sin(a * 3f + 1f) + .06f * Mathf.Sin(a * 7f + 2f) + .04f * Mathf.Sin(a * 11f);
+                v.Add(d * .3f); c.Add(new Color(1, 1, 1, .62f));
+                v.Add(d * wisp); c.Add(new Color(1, 1, 1, 0f));
+            }
+            for (var k = 0; k < n; k++)
+            {
+                int i0 = 1 + 2 * k, o0 = i0 + 1, i1 = 1 + 2 * ((k + 1) % n), o1 = i1 + 1;
+                t.AddRange(new[] { 0, i1, i0, i0, i1, o1, i0, o1, o0 });
+            }
+            var ns = new Vector3[v.Count]; for (var i = 0; i < ns.Length; i++) ns[i] = Vector3.up;
+            var m = new Mesh { name = "Cue circle", vertices = v.ToArray(), colors = c.ToArray(), triangles = t.ToArray(), normals = ns }; m.RecalculateBounds(); return m;
         }
 
         static Mesh Octahedron()
@@ -83,8 +105,8 @@ namespace EverythingWorld.World
             }
             var m = new GameObject("Cue marker"); m.transform.SetParent(transform.parent, false);   // not a child of the thing: it must not turn or scale with it
             m.AddComponent<MeshFilter>().sharedMesh = c.kind == 0 ? square : c.kind == 1 ? diamond : c.kind == 2 ? ball : bubble;
-            var rr = m.AddComponent<MeshRenderer>(); rr.sharedMaterial = solid; rr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; rr.receiveShadows = false; rr.enabled = false;
-            m.transform.localScale = c.kind == 0 ? new Vector3(.34f, 1f, .34f) : c.kind == 1 ? Vector3.one * .2f : c.kind == 2 ? Vector3.one * .075f : Vector3.one * .34f;
+            var rr = m.AddComponent<MeshRenderer>(); rr.sharedMaterial = c.kind == 0 ? soft : solid; rr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; rr.receiveShadows = false; rr.enabled = false;
+            m.transform.localScale = c.kind == 0 ? new Vector3(.62f, 1f, .62f) : c.kind == 1 ? Vector3.one * .2f : c.kind == 2 ? Vector3.one * .075f : Vector3.one * .34f;
             c.marker = m.transform; c.markerR = rr;
             return c;
         }
@@ -132,10 +154,11 @@ namespace EverythingWorld.World
                 // the glow is light enough that the thing keeps its own colours (a black cat stays black); the outline does the telling
                 if (c.shells.Count > 0) { block.SetColor(ColorId, new Color(col.r, col.g, col.b, a)); block.SetFloat(FillId, .06f + .2f * beat); block.SetFloat(RimId, 1.2f); foreach (var r in c.shells) if (r != null) r.SetPropertyBlock(block); }
                 if (c.outlines.Count > 0) { block.SetColor(ColorId, new Color(dim.r, dim.g, dim.b, a)); block.SetFloat(FillId, 1f); block.SetFloat(RimId, 0f); foreach (var r in c.outlines) if (r != null) r.SetPropertyBlock(block); }
-                var mcol = Color.Lerp(col, dim, .35f); block.SetColor(ColorId, new Color(mcol.r, mcol.g, mcol.b, a)); block.SetFloat(FillId, 1f); block.SetFloat(RimId, 0f); c.markerR.SetPropertyBlock(block);
+                var mcol = Color.Lerp(col, dim, .35f); if (c.kind == 0) { mcol = Color.Lerp(col, Color.white, .15f); a *= .8f + .2f * beat; }   // the seat circle breathes gently instead of flashing
+                block.SetColor(ColorId, new Color(mcol.r, mcol.g, mcol.b, a)); block.SetFloat(FillId, 1f); block.SetFloat(RimId, 0f); c.markerR.SetPropertyBlock(block);
                 switch (c.kind)
                 {
-                    case 0: c.marker.SetPositionAndRotation(c.it.transform.position + Vector3.up * .03f, c.it.transform.rotation); break;
+                    case 0: c.marker.SetPositionAndRotation(c.it.transform.position + Vector3.up * .03f, c.it.transform.rotation * Quaternion.Euler(0, t * 12f, 0)); break;
                     case 1: c.marker.SetPositionAndRotation(new Vector3(at.x, top + .3f + .04f * Mathf.Sin(t * 2f), at.z), Quaternion.Euler(0, t * 70f, 0)); break;
                     case 2: c.marker.position = new Vector3(at.x, top + .18f + .03f * Mathf.Sin(t * 2f + at.x), at.z); break;
                     default:

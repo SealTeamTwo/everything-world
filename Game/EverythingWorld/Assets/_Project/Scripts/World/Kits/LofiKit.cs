@@ -171,8 +171,10 @@ namespace EverythingWorld.World
         bool Open(LandContext ctx, float x, float z, float pad) =>
             ctx.IsLand(x, z, 5f) && !InFootprint(ctx, x, z, pad) && !NearPath(x, z, pad + 2f) && !InNoGrass(x, z, pad);
 
+        int strips;
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
+            lift += (strips++ % 5) * .012f;   // each path a hair higher than the last, so where two cross they don't flicker
             var n = pts.Count; var L = new Vector3[n]; var Rr = new Vector3[n];
             Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
             for (var i = 0; i < n; i++)

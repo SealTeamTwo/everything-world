@@ -25,6 +25,30 @@ namespace EverythingWorld.World
         };
 
         static readonly Color Warm = new Color(1f, .78f, .45f), Ink = new Color(1f, .96f, .88f);
+        /// A tie-dye panel (the owner: tie-dye, not rainbow flags): a cloth of one colour with a swirl of the dye
+        /// colours on both faces, spiralling out from an off-centre knot, in small squares so it reads in low poly.
+        /// 'rot' faces the panel (its forward is the cloth's normal); w across, h up.
+        void TieDye(MeshKit m, Vector3 c, Quaternion rot, float w, float h, float thick, int seed, bool backing = true)
+        {
+            seed = Mathf.Abs(seed); var right = rot * Vector3.right; var upv = rot * Vector3.up; var fwd = rot * Vector3.forward;
+            if (backing) m.Box(WorldMaterials.Surface(Dye[seed % Dye.Length], Surface.Cloth), c, new Vector3(w, h, thick), rot);
+            int nx = Mathf.Max(3, Mathf.RoundToInt(w / .3f)), ny = Mathf.Max(2, Mathf.RoundToInt(h / .3f));
+            float kx = ((seed * 37) % 11 / 10f - .5f) * w * .35f, ky = ((seed * 53) % 7 / 6f - .5f) * h * .3f, size = Mathf.Max(w, h), twist = seed % 2 == 0 ? 1f : -1f;
+            for (var i = 0; i < nx; i++)
+                for (var j = 0; j < ny; j++)
+                {
+                    float u0 = -w / 2f + i * w / nx, u1 = u0 + w / nx, v0 = -h / 2f + j * h / ny, v1 = v0 + h / ny;
+                    float du = (u0 + u1) / 2f - kx, dv = (v0 + v1) / 2f - ky;
+                    var band = twist * Mathf.Atan2(dv, du) / (Mathf.PI * 2f) * 3f + Mathf.Sqrt(du * du + dv * dv) / size * 7f + seed;
+                    var mat = WorldMaterials.Surface(Dye[((Mathf.FloorToInt(band) % Dye.Length) + Dye.Length) % Dye.Length], Surface.Cloth);
+                    foreach (var face in new[] { -1f, 1f })
+                    {
+                        var o = c + fwd * face * (thick / 2f + .006f);
+                        m.Quad(mat, o + right * u0 + upv * v0, o + right * u1 + upv * v0, o + right * u1 + upv * v1, o + right * u0 + upv * v1, c);
+                    }
+                }
+        }
+
         static readonly Color[] Dye = { new Color(1f, .3f, .35f), new Color(1f, .62f, .2f), new Color(1f, .9f, .25f), new Color(.3f, .85f, .45f), new Color(.25f, .6f, 1f), new Color(.7f, .4f, 1f) };
         const float TrailW = 3f;
 
@@ -277,7 +301,7 @@ namespace EverythingWorld.World
             ArtistBits.Label(ctx.Root, "THE JAM BAND COMMONWEALTH", gate + up * 6.2f - face * .12f, -face, .38f, Ink, TextAnchor.MiddleCenter);
             ArtistBits.Label(ctx.Root, "THE JAM BAND COMMONWEALTH", gate + up * 6.2f + face * .12f, face, .38f, Ink, TextAnchor.MiddleCenter);   // lettered on the back too, so it isn't blank walking out
             StringLights(mk, gate + up * 7f - side * 5f, gate + up * 7f + side * 5f, Warm, 14);
-            for (var k = 0; k < 3; k++) { var tp = gate + side * ((k - 1) * 3.2f) + up * 4.6f; for (var b = 0; b < 5; b++) mk.Box(WorldMaterials.Surface(Dye[(b + k * 2) % Dye.Length], Surface.Cloth), tp - up * b * .4f, new Vector3(1.6f, .4f, .04f + (b % 2) * .01f), rot); }
+            for (var k = 0; k < 3; k++) { var tp = gate + side * ((k - 1) * 3.2f) + up * 4.6f; TieDye(mk, tp - up * .8f, rot, 1.6f, 2f, .04f, k * 7 + 3); }
             var hut = c + face * 4f + side * 9f;
             mk.Box(wood, hut + up * 1.4f, new Vector3(3f, 2.8f, 2.6f), rot); solid.Box(wood, hut + up * 1.4f, new Vector3(3f, 2.8f, 2.6f), rot);
             mk.GableRoof(WorldMaterials.Surface(new Color(.45f, .3f, .22f), Surface.Wood), hut + up * 2.8f, new Vector3(3.6f, 0, 3.4f), 1f, rot);
@@ -367,7 +391,7 @@ namespace EverythingWorld.World
                 foreach (var a in new[] { -1f, 1f }) foreach (var b in new[] { -1f, 1f }) { var pp = p + dir * a * 1.9f + side * s * b * 1.9f; var pg = ctx.Ground(pp.x, pp.z); var ph = p.y + 2.5f - pg; pp.y = pg; mk.Prism(metal, pp - up * .2f, up, .04f, ph + .2f, 6); ArtistBits.PostCollider(ctx.Root, pp, ph, .06f); }   // each pole on its own ground, up to the canopy
                 mk.Box(WorldMaterials.Surface(col, Surface.Cloth), p + up * 2.5f, new Vector3(4f, .12f, 4f), trot);
                 mk.Cone(WorldMaterials.Surface(col, Surface.Cloth), p + up * 2.55f, 2.8f, .9f, 4, 45f);
-                for (var b = 0; b < 6; b++) mk.Box(WorldMaterials.Surface(Dye[(b + k) % Dye.Length], Surface.Cloth), p + side * s * 2f + up * (.5f + b * .32f), new Vector3(3.6f, .32f, .03f + (b % 2) * .01f), trot);
+                TieDye(mk, p + side * s * 2f + up * 1.3f, trot, 3.6f, 1.92f, .03f, k * 5 + (s > 0 ? 2 : 0));
                 solid.Box(wood, p + side * s * 2f + up * 1.2f, new Vector3(3.6f, 1.9f, .12f), trot);   // the striped back cloth
                 mk.Box(wood, p + up * .45f - side * s * .8f, new Vector3(3f, .9f, .8f), trot); solid.Box(wood, p + up * .45f - side * s * .8f, new Vector3(3f, .9f, .8f), trot);
                 if (k == 2 && s > 0) { mk.Box(GlowM(new Color(1f, .5f, .15f), 2f), p + up * .95f - side * s * .8f, new Vector3(1.4f, .05f, .6f), trot); ArtistBits.Label(ctx.Root, "GRILLED CHEESE $5", p + up * 2.1f - side * s * 2.05f, -side * s, .2f, Ink, TextAnchor.MiddleCenter); }
@@ -379,7 +403,7 @@ namespace EverythingWorld.World
             foreach (var e in new[] { -1f, 1f })
             {
                 var bp = ctx.OnGround(c.x + dir.x * e * 25f, c.z + dir.z * e * 25f); var brot = Quaternion.LookRotation(side);
-                for (var b = 0; b < 5; b++) mk.Box(WorldMaterials.Surface(Dye[(b + (e > 0 ? 2 : 0)) % Dye.Length], Surface.Cloth), bp + up * (.9f + b * .38f), new Vector3(2.4f + (b % 2) * .03f, .39f, 6f + (b % 2) * .03f), brot);   // alternate stripes step out 15 mm, more than Box's growth can take back
+                mk.Box(WorldMaterials.Surface(Dye[e > 0 ? 4 : 1], Surface.Painted), bp + up * 1.67f, new Vector3(2.4f, 1.95f, 6f), brot); foreach (var bs in new[] { -1f, 1f }) TieDye(mk, bp + up * 1.67f + brot * Vector3.right * bs * 1.2f, Quaternion.LookRotation(brot * Vector3.right * bs), 5.8f, 1.85f, 0f, e > 0 ? 11 : 4, false);   // alternate stripes step out 15 mm, more than Box's growth can take back
                 mk.Box(white, bp + up * 2.9f, new Vector3(2.4f, .5f, 6f), brot);
                 mk.Box(WorldMaterials.Surface(new Color(.15f, .2f, .3f), Surface.Glass), bp + up * 2.3f, new Vector3(2.48f, .7f, 5f), brot);
                 foreach (var s in new[] { -1f, 1f }) foreach (var z in new[] { -2f, 2f }) mk.Prism(dark, bp + dir * s * 1.1f + side * z + up * .45f, dir * s, .45f, .25f, 12);

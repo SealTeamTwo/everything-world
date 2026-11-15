@@ -143,6 +143,8 @@ namespace EverythingWorld.World
                 {
                     float x = ctx.Range(ctx.MinX, ctx.MaxX), z = ctx.Range(ctx.MinZ, ctx.MaxZ);
                     if (!Open(ctx, x, z, 9f) || !NearPath(x, z, 18f)) continue;
+                    var inRing = false; foreach (var ar in ctx.Artists) if (Vector2.Distance(new Vector2(x, z), new Vector2(ar.x, ar.z)) < ar.r + 10f) inRing = true;
+                    if (inRing) continue;   // outside every artist's music (the farmhouse once stood in Widespread Panic's)
                     var far = true; foreach (var p in placed) if (Vector2.Distance(new Vector2(x, z), new Vector2(p.x, p.z)) < 45f) far = false;
                     if (!far) continue;
                     best = ctx.OnGround(x, z); found = true;

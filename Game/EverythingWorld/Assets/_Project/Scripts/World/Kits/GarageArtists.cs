@@ -71,15 +71,15 @@ namespace EverythingWorld.World
             var outside = fz + face * 3.2f; outside = ctx.OnGround(outside.x, outside.z);   // the car or van outside stands on the ground, not at the raised floor's height
             switch (a.name)
             {
-                case "Arctic Monkeys": Soundwave(ctx, mk, fz + face * .2f + up * (H + 1.8f), face, side, W); Car(ctx, mk, solid, outside + side * (W / 2f + 1f) + face * 1f, streetDir, new Color(.08f, .08f, .1f), true); JacketHook(ctx, mk, c - face * (D / 2f - .5f) + side * (W / 2f - 1.2f) + up * 1.7f, face); break;
+                case "Arctic Monkeys": Soundwave(ctx, mk, fz + face * .2f + up * (H + 1.8f), face, side, W); Car(ctx, mk, solid, outside - side * (W / 2f + 1f) + face * 1f, streetDir, new Color(.08f, .08f, .1f), true); JacketHook(ctx, mk, c - face * (D / 2f - .5f) + side * (W / 2f - 1.2f) + up * 1.7f, face); break;
                 case "Kings of Leon": foreach (var x in new[] { -1f, 1f }) BurnBarrel(ctx, mk, outside + side * x * (W / 2f + .8f)); break;
                 case "The Killers": VegasFrame(ctx, mk, fz + face * .2f, face, side, doorW, doorH); break;
                 case "The Black Keys": PianoKeys(ctx, mk, fz + face * .2f + up * (H + 1.6f), face, side); break;
                 case "Silversun Pickups": NeonEye(ctx, mk, c + up * (H + 1.8f) + face * (D / 2f - 1f), face, side); break;
-                case "The Kooks": Van(ctx, mk, solid, outside + side * (W / 2f + 1.5f), streetDir); break;
+                case "The Kooks": Van(ctx, mk, solid, outside - side * (W / 2f + 1.5f), streetDir); break;   // the other side from the plaque
                 case "The Strokes": Pennant(ctx, mk, fz + face * .2f + side * (W / 2f - .8f) + up * (H - .6f), face, side); break;
                 case "The Voidz": Glitch(ctx, labels, mk, signAt + up * 1.6f, face, a.name); break;
-                case "Cage The Elephant": Car(ctx, mk, solid, outside + side * (W / 2f + 1f), streetDir, new Color(.55f, .12f, .1f), true); break;
+                case "Cage The Elephant": Car(ctx, mk, solid, outside - side * (W / 2f + 1f), streetDir, new Color(.55f, .12f, .1f), true); break;
                 default: if (Mathf.Abs(a.name.GetHashCode()) % 2 == 0) Couch(ctx, mk, solid, outside - side * (W / 2f + .5f), face); else BurnBarrel(ctx, mk, outside + side * (W / 2f + .8f)); break;
             }
             area.glowRenderers = new Renderer[0];

@@ -169,6 +169,7 @@ namespace EverythingWorld.World
                 var along = Vector3.Cross(Vector3.up, dir);
                 mk.Prism(darkWood, seat - along * .9f, along, .25f, 1.8f, 7);
                 solid.Box(darkWood, seat, new Vector3(1.8f, .5f, .5f), Quaternion.LookRotation(dir));
+                if (plife != null) Interact.Bench(plife.transform, seat + Vector3.up * .27f - along * .5f, seat + Vector3.up * .27f + along * .5f, -dir);   // sit on the log, facing the fire
             }
             // bunting between two poles
             var a0 = fire + face * 9f + Vector3.Cross(Vector3.up, face) * 5f; a0 = ctx.OnGround(a0.x, a0.z);

@@ -446,14 +446,26 @@ namespace EverythingWorld.World
                 // from the nearest point of the fen's network
                 Vector3 from = center; var bd = float.MaxValue;
                 foreach (var (p, _) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(s.x, s.z)); if (d < bd) { bd = d; from = p; } }
-                var dir = new Vector3(s.x - from.x, 0, s.z - from.z); var len = dir.magnitude - 9f; dir.Normalize();
-                var pts = new List<Vector3>();
+                var dir = new Vector3(s.x - from.x, 0, s.z - from.z); dir.Normalize();
                 var side = Vector3.Cross(Vector3.up, dir);
-                for (var d = 2f; d < len; d += 3f)
+                // straight out of the fen, then up the hill on the gentlest line toward the spot, winding (switchbacks)
+                // where it's steep, never into water (they used to go straight up any slope and dip under the sea)
+                var pts = new List<Vector3>(); var q = new Vector3(from.x, 0, from.z); var heading = dir;
+                for (var step = 0; step < 260; step++)
                 {
-                    var q = from + dir * d + side * Mathf.Sin(d * .03f) * 6f;
-                    if (InMarsh(q.x, q.z, -2f) && !OnIsland(q.x, q.z)) continue;          // the trail starts where the water ends
-                    pts.Add(ctx.OnGround(q.x, q.z));
+                    var toS = new Vector3(s.x - q.x, 0, s.z - q.z); if (toS.magnitude < 9f) break; toS.Normalize();
+                    if (pts.Count == 0) { q += toS * 3f; if (!(InMarsh(q.x, q.z, -2f) && !OnIsland(q.x, q.z)) && ctx.Ground(q.x, q.z) > .4f) pts.Add(ctx.OnGround(q.x, q.z)); continue; }
+                    var h0 = ctx.Ground(q.x, q.z); var bestQ = Vector3.zero; var bestCost = float.MaxValue;
+                    for (var ang = -75f; ang <= 75f; ang += 15f)
+                    {
+                        var d2 = Quaternion.Euler(0, ang, 0) * toS; var c2 = q + d2 * 3f; var h2 = ctx.Ground(c2.x, c2.z);
+                        if (h2 < .4f || (InMarsh(c2.x, c2.z, -2f) && !OnIsland(c2.x, c2.z))) continue;
+                        var grade = Mathf.Abs(h2 - h0) / 3f;
+                        var cost = Mathf.Max(0f, grade - .2f) * 30f + Mathf.Abs(ang) * .01f + (1f - Vector3.Dot(d2, heading)) * .6f;
+                        if (cost < bestCost) { bestCost = cost; bestQ = c2; }
+                    }
+                    if (bestCost == float.MaxValue) break;
+                    heading = (bestQ - q).normalized; q = bestQ; pts.Add(ctx.OnGround(q.x, q.z));
                 }
                 if (pts.Count < 3) continue;
                 Strip(mk, solid, pts, dirt);

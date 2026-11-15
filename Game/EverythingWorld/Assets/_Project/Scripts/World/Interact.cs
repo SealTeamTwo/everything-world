@@ -110,11 +110,13 @@ namespace EverythingWorld.World
             var s = go.AddComponent<Seat>(); s.facing = facing; s.verb = verb; return s;
         }
 
-        /// Seats along a bench: 'a' and 'b' are the ends of the seat surface, one place every 0.7 m.
+        /// Seats along a bench: 'a' and 'b' are the ends of the seat surface, one place every 0.7 m and at least two on a bench 0.8 m or longer.
         public static void Bench(Transform parent, Vector3 a, Vector3 b, Vector3 facing)
         {
-            var n = Mathf.Max(1, Mathf.FloorToInt(Vector3.Distance(a, b) / .7f));
-            for (var i = 0; i < n; i++) Seat(parent, Vector3.Lerp(a, b, (i + .5f) / n), facing);
+            // one place every 0.7 m, but an ordinary bench seats at least two (the owner's wish, 2026-11-15), .6 m apart or more
+            var len = Vector3.Distance(a, b); var n = Mathf.Max(len >= .8f ? 2 : 1, Mathf.FloorToInt(len / .7f));
+            var gap = Mathf.Max(len / n, .6f);
+            for (var i = 0; i < n; i++) Seat(parent, Vector3.Lerp(a, b, len < .01f ? .5f : Mathf.Clamp01(.5f + (i - (n - 1) / 2f) * gap / len)), facing);
         }
 
         /// Makes a built object a toy. It needs a collider: give 'size' to add a trigger box round it.

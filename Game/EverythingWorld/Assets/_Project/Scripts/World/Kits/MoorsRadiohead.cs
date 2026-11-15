@@ -113,6 +113,7 @@ namespace EverythingWorld.World
             // the water: a glassy dark sheet you can see the village through
             var water = Glass(ctx.Root, new Vector3(pool2.x, waterY - .05f, pool2.y), new Vector3(PoolR * 2f, .1f, PoolR * 2f), new Color(.08f, .22f, .28f, .45f));
             life.water = water; life.pool = new Vector3(pool2.x, waterY, pool2.y);
+            solid.Box(stone, new Vector3(pool2.x, waterY - .3f, pool2.y), new Vector3(PoolR * 2f, .5f, PoolR * 2f), Quaternion.identity);   // you walk on the glassy water over the drowned village (jumping in, you were stuck at the bottom)
             ArtistBits.PointLight(ctx.Root, c + up * 2f, new Color(.4f, .9f, .85f), 18f, 1.2f);
             { var back = new Vector3(pool2.x - center.x, 0, pool2.y - center.z).normalized; var cam = new Vector3(pool2.x, waterY + 1.2f, pool2.y) - back * (PoolR + .5f); var mark = new GameObject("Shot: the sunken pool").transform; mark.SetParent(ctx.Root, false); mark.SetPositionAndRotation(cam, Quaternion.LookRotation(back + Vector3.down * .25f)); }
         }

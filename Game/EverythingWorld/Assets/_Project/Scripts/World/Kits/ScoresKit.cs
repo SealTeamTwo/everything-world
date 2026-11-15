@@ -155,8 +155,10 @@ namespace EverythingWorld.World
         bool Open(LandContext ctx, float x, float z, float pad) =>
             ctx.IsLand(x, z, 5f) && !InFootprint(ctx, x, z, pad) && !NearPath(x, z, pad + 2f) && !InNoGrass(x, z, pad);
 
+        int strips;
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
+            lift += (strips++ % 5) * .012f;   // each path a hair higher than the last, so where two cross they don't flicker
             // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
             // middle is higher), so on a side slope it follows the ground instead of burying one edge and lifting the other.
             var n = pts.Count; var lanes = Mathf.Max(1, Mathf.CeilToInt(w / 1.2f)); var V = new Vector3[n, lanes + 1];

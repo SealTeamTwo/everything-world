@@ -394,6 +394,24 @@ for g, a, b in pairs:
     if (a, b) in links: continue
     if hops(a).get(b, 99) >= 4: links.add((a, b)); added.append((a, b, 'shortcut'))
 for a, b, why in added: print('extra crossing:', ART[SCN[a]['id']]['name'], '<->', ART[SCN[b]['id']]['name'], f'{GAP[a, b]:.0f} m', why)
+# Bridge ends never land on a little islet cut off by water from everything else (the Hub's bridge to the Prog
+# Marches used to land on a sandbar, 2026-11-15). An end counts as stranded when the whole stretch of land under it,
+# whichever islands it spans, is under about 4 hectares. Which islands are joined doesn't change, so towers stay put.
+_alab, _an = ndi.label(land); _asz = np.bincount(_alab.ravel())
+main_pts, main_tree = [], []
+for i in range(K):
+    keep = _asz[_alab[(coast_pts[i][:, 1] // CELL).astype(int), (coast_pts[i][:, 0] // CELL).astype(int)]] >= 1000
+    p = coast_pts[i][keep] if keep.sum() >= 8 else coast_pts[i]
+    main_pts.append(p); main_tree.append(cKDTree(p))
+def on_main(i, p): return main_tree[i].query(p)[0] < 1e-6
+for (a, b) in list(ENDS):
+    if on_main(a, ENDS[(a, b)][0]) and on_main(b, ENDS[(a, b)][1]): continue
+    d, j = main_tree[b].query(main_pts[a]); order = np.argsort(d)
+    for k in order[:200:2]:
+        p, q = main_pts[a][k], main_pts[b][j[k]]
+        if crossing_ok(p, q, a, b):
+            if not np.allclose(p, ENDS[(a, b)][0]) or not np.allclose(q, ENDS[(a, b)][1]): print('bridge end moved to the main land:', ART[SCN[a]['id']]['name'], '<->', ART[SCN[b]['id']]['name'], round(float(np.hypot(*(p - ENDS[(a, b)][0]))) * MPP), round(float(np.hypot(*(q - ENDS[(a, b)][1]))) * MPP))
+            ENDS[(a, b)] = (p, q); break
 bridges = []
 for a, b in sorted(links):
     p, q = ENDS[(a, b)]
@@ -404,12 +422,13 @@ for a, b in sorted(links):
     bridges.append(dict(a=a, b=b, k=kind, p=[round(float(v), 1) for v in (*p2, *q2)]))
 hub_c = np.array([hub_x, hub_y])
 for i in near_hub:
-    q = coast_pts[i][np.argmin(np.hypot(*(coast_pts[i] - hub_c).T))]
+    q = main_pts[i][np.argmin(np.hypot(*(main_pts[i] - hub_c).T))]
     u = (q - hub_c) / np.hypot(*(q - hub_c)); p = hub_c + u * (hub_rc * CELL - 2)
     if not crossing_ok(p, q, HUB, i): continue
     p2, q2 = p - u * 7, q + u * 7
     bridges.append(dict(a=HUB, b=i, k='causeway' if np.hypot(*(q - p)) > 120 else 'bridge', p=[round(float(v), 1) for v in (*p2, *q2)]))
 print('bridges', collections.Counter(b['k'] for b in bridges))
+if os.environ.get('BRIDGES_ONLY'): sys.exit()
 assert len(links) >= K - 1
 
 # towers: one per realm, on its best-connected island, toward the middle of the realm

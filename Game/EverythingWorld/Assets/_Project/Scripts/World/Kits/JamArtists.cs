@@ -392,7 +392,7 @@ namespace EverythingWorld.World
                 var h = Mathf.Abs(n.GetHashCode());
                 z.mk.Box(wood, c + up * .3f, new Vector3(6f, .6f, 4f), rot); z.solid.Box(wood, c + up * .3f, new Vector3(6f, .6f, 4f), rot);
                 foreach (var s in new[] { -1f, 1f }) { z.mk.Prism(wood, c + z.side * s * 2.8f - z.front * 1.8f, up, .1f, 4.2f, 6); ArtistBits.PostCollider(z.root, c + z.side * s * 2.8f - z.front * 1.8f, 4.2f, .12f); }
-                for (var b = 0; b < 8; b++) z.mk.Box(WorldMaterials.Surface(Dye[(b + h) % Dye.Length], Surface.Painted), c - z.front * 1.8f + up * (.8f + b * .4f), new Vector3(5.5f, .4f, .04f + (b % 2) * .01f), rot);
+                TieDye(z.mk, c - z.front * 1.8f + up * 2.2f, rot, 5.5f, 3.2f, .04f, h);
                 StringLights(z.mk, c + z.side * -2.8f + up * 4f - z.front * 1.8f, c + z.side * 2.8f + up * 4f - z.front * 1.8f, Warm, 8);
             }
         }

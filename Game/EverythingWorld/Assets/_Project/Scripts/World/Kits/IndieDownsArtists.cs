@@ -193,7 +193,7 @@ namespace EverythingWorld.World
                     House(ctx, z.mk, z.solid, ctx.OnGround(at.x, at.z), front, 8f, 7.5f, 5f, Pastels[s < 0 ? 1 : 2], Doors[s < 0 ? 0 : 3], s < 0 ? slate : terracotta);
             }
             Bike(z.mk, z.solid, z.At(d / 2f - 2f + .9f, -w / 2f + 1.2f), z.side, Pastels[3]);
-            LampPost(ctx, z.mk, z.pictures, z.At(d / 2f - 2f + 2.6f, w / 2f - .8f), front, 2);
+            LampPost(ctx, z.mk, z.pictures, z.At(d / 2f - 2f + 2.6f, -w / 2f + .8f), front, 2, z.a);   // on the other side from the plaque, with their own covers
         }
 
         /// A floor you can stand on at floorY, on a foundation that reaches down to the ground.
@@ -447,7 +447,7 @@ namespace EverythingWorld.World
                     z.solid.Box(wood, z.At(-1.6f, 0) + Vector3.up * .55f, new Vector3(6f, 1.1f, .2f), Quaternion.LookRotation(front));
                     Bike(z.mk, z.solid, z.At(-1.1f, -1.3f), side, Color.Lerp(accent, Cream, .3f));
                     Bike(z.mk, z.solid, z.At(-1.1f, 1.5f), side, Pastels[4]);
-                    LampPost(ctx, z.mk, z.pictures, z.At(1.2f, 3.4f), front, 2);
+                    LampPost(ctx, z.mk, z.pictures, z.At(1.2f, 3.4f), front, 2, z.a);
                     CoverBoard(z, z.At(.5f, -3.6f), front, 2);
                     Plaque(z, 2.6f, 0f);
                     break;

@@ -126,7 +126,7 @@ namespace EverythingWorld.World
                 var col = Color.Lerp(new Color(1f, .3f, .6f), SunGold, (float)k / bands); var m = new Material(GlowM(col, 1.8f)) { name = "Synthwave sun band" }; life.sunBands.Add((m, col * 1.17f));
                 mk.Quad(m, at + up * y0 - side * W(y0), at + up * y0 + side * W(y0), at + up * y1 + side * W(y1), at + up * y1 - side * W(y1), at - face);
             }
-            mk.Build("The striped sun", ctx.Root, false); life.sunAt = at;
+            var sunGo = mk.Build("The striped sun", ctx.Root, false); if (sunGo != null) LandOnly.Add(sunGo, ctx.Island.name); life.sunAt = at;   // seen only from this land
         }
     }
 

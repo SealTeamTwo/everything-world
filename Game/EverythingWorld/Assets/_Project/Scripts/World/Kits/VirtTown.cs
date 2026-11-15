@@ -83,7 +83,8 @@ namespace EverythingWorld.World
             var up = Vector3.up; if (climb.Count < 2) return;
             // a path from the terrace to the foot of the climb
             var foot = climb[0]; var c = ctx.OnGround(center.x, center.z); var lead = new List<Vector3>(); var dir = new Vector3(foot.x - c.x, 0, foot.z - c.z); var len = dir.magnitude; dir /= Mathf.Max(.01f, len); var lside = Vector3.Cross(up, dir); for (var d = 9.5f; d < len; d += 2f) { var p = AroundArtists(ctx, c + dir * d, c, dir, lside, null); lead.Add(ctx.OnGround(p.x, p.z)); } lead.Add(ctx.OnGround(foot.x, foot.z)); if (lead.Count > 1) { Strip(mk, lead, path, ClimbW, .1f, ctx); foreach (var p in lead) Remember(p, 1); }
-            var pts = new List<Vector3>(); for (var k = 0; k < climb.Count; k += 2) pts.Add(ctx.OnGround(climb[k].x, climb[k].z)); Strip(mk, pts, path, ClimbW, .12f, ctx); foreach (var p in pts) Remember(p, 1);
+            var pts = new List<Vector3>(); for (var k = 0; k < climb.Count; k += 2) pts.Add(new Vector3(climb[k].x, Mathf.Max(climb[k].y, ctx.Ground(climb[k].x, climb[k].z) - .1f), climb[k].z));
+            ClimbDeck(mk, solid, pts); foreach (var p in pts) Remember(p, 1);
             // lanterns on the uphill side, a rope rail on the drop side
             var peak = new Vector3(peak2.x, 0, peak2.y);
             for (var i = 3; i < pts.Count; i += 3)
@@ -97,11 +98,32 @@ namespace EverythingWorld.World
             Shot(ctx, "on the climb", pts[pts.Count / 3] + up * 2f, pts[pts.Count / 3 + 8] + up * 2f);
         }
 
+        /// The climb as one smooth deck at the climb's own height (it used to copy the coarse ground under it and broke
+        /// into steps and slabs), with a lip of rock down its edges so no gap shows, and a collider to walk on.
+        void ClimbDeck(MeshKit mk, MeshKit solid, List<Vector3> pts)
+        {
+            var n = pts.Count; if (n < 2) return; var L = new Vector3[n]; var R = new Vector3[n]; const float lift = .15f, skirt = 1.4f;
+            Vector3 Flat(Vector3 v) { v.y = 0; return v.normalized; }
+            for (var i = 0; i < n; i++)
+            {
+                var a = i > 0 ? Flat(pts[i] - pts[i - 1]) : Flat(pts[1] - pts[0]); var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
+                var t = (a + b).normalized; var sd = Vector3.Cross(Vector3.up, t); var miter = 1f / Mathf.Max(.6f, Vector3.Dot(sd, Vector3.Cross(Vector3.up, b)));
+                L[i] = pts[i] + Vector3.up * lift - sd * (ClimbW / 2f * miter); R[i] = pts[i] + Vector3.up * lift + sd * (ClimbW / 2f * miter);
+            }
+            for (var i = 0; i + 1 < n; i++)
+            {
+                var below = (pts[i] + pts[i + 1]) / 2f - Vector3.up * 3f;
+                mk.Quad(path, L[i], R[i], R[i + 1], L[i + 1], below); solid.Quad(path, L[i], R[i], R[i + 1], L[i + 1], below);
+                foreach (var (e0, e1) in new[] { (L[i], L[i + 1]), (R[i], R[i + 1]) })
+                    mk.Quad(rockD, e0, e1, e1 - Vector3.up * skirt, e0 - Vector3.up * skirt, (pts[i] + pts[i + 1]) / 2f);
+            }
+        }
+
         // ---------------------------------------------------------------- the Summit
         void Summit(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var top = ctx.OnGround(peak2.x, peak2.y); var rng = new System.Random(9); var last = climb[climb.Count - 1]; var face = new Vector3(last.x - top.x, 0, last.z - top.z).normalized; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
-            mk.Prism(rockD, top - up * .3f, up, 11f, .36f, 18); for (var k = 0; k < 8; k++) Remember(top + Quaternion.Euler(0, k * 45f, 0) * face * 9f, 1);
+            mk.Prism(rockD, top - up * .3f, up, 11f, .36f, 18); solid.Prism(rockD, top - up * .3f, up, 11f, .36f, 18); for (var k = 0; k < 8; k++) Remember(top + Quaternion.Euler(0, k * 45f, 0) * face * 9f, 1);
             // the wall of amps
             var aw = top - face * 6f; for (var x = -3; x <= 3; x++) for (var y = 0; y < 3; y++) { var ap = aw + side * x * 1.3f + up * (y * 1.1f + .55f); mk.Box(dark, ap, new Vector3(1.24f, 1.04f, .9f), rot); mk.Box(Paint(new Color(.26f, .24f, .22f)), ap + face * .46f, new Vector3(1.1f, .9f, .02f), rot); if (y == 2) mk.Box(ampM, ap + up * .3f + face * .47f, new Vector3(.6f, .06f, .01f), rot); } solid.Box(dark, aw + up * 1.7f, new Vector3(9.2f, 3.4f, .9f), rot);
             // the lightning rod

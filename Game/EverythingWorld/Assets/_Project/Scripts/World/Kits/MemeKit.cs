@@ -265,7 +265,7 @@ namespace EverythingWorld.World
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
-                for (var i = 0; i + 1 < pts.Count; i++) Strip(mk, new List<Vector3> { pts[i], pts[i + 1] }, i % 2 == 0 ? checkA : checkB, PathW, .13f, ctx);
+                for (var i = 0; i + 1 < pts.Count; i++) Strip(mk, new List<Vector3> { pts[i], pts[i + 1] }, i % 2 == 0 ? checkA : checkB, PathW, .13f + (walk % 4) * .012f + (i % 2) * .006f, ctx);   // each path, and each other square, a hair higher, so overlaps don't flicker
                 foreach (var p in pts) Remember(p, walk);
                 for (var i = 6; i < pts.Count; i += 10, n++)
                 {
@@ -322,7 +322,7 @@ namespace EverythingWorld.World
                 }
                 else if (roll < .38f) { Palm(ctx, mk, p, .9f + s * .6f, rng); palms++; }
                 else if (roll < .48f) { Bubble(mk, p + up * (2f + s * 8f), .6f + s * 1.2f); bubbles++; }
-                else if (roll < .54f) { if (!Open(ctx, px, pz, 6f) || Rise(ctx, px, pz, 3.4f) > .4f) continue; mk.Prism(marble, p - up * .1f, up, 3.4f, .4f, 20); mk.Prism(aquaM, p + up * .28f, up, 3.1f, .02f, 20); BoxCol(ctx.Root, p + up * .15f, new Vector3(6.8f, .3f, 6.8f), Quaternion.identity); var dk = new MeshKit(); Dolphin(dk, Vector3.zero, Paint(new Color(.6f, .7f, .86f))); var dol = dk.BuildSingle("Dolphin", ctx.Root, false); dol.transform.position = p; life.dolphins.Add((dol.transform, p, pools)); noGrass.Add(new Vector3(p.x, 3.8f, p.z)); pools++; }
+                else if (roll < .54f) { if (!Open(ctx, px, pz, 6f) || Rise(ctx, px, pz, 3.4f) > .4f) continue; mk.Prism(marble, p - up * .1f, up, 3.4f, .4f, 20); mk.Prism(aquaM, p + up * .32f, up, 3.1f, .02f, 20); BoxCol(ctx.Root, p + up * .15f, new Vector3(6.8f, .3f, 6.8f), Quaternion.identity); var dk = new MeshKit(); Dolphin(dk, Vector3.zero, Paint(new Color(.6f, .7f, .86f))); var dol = dk.BuildSingle("Dolphin", ctx.Root, false); dol.transform.position = p; life.dolphins.Add((dol.transform, p, pools)); noGrass.Add(new Vector3(p.x, 3.8f, p.z)); pools++; }
                 else if (roll < .6f) { p.y = LowUnder(ctx, p, .6f * (1f + s)); Monitor(ctx, mk, p, f, 1f + s); monitors++; }
                 else if (roll < .65f) { p.y = LowUnder(ctx, p, .6f); LoneDoor(ctx, mk, p, f); doors++; }
                 else if (roll < .72f) { if (Rise(ctx, px, pz, 4.2f) > 1.2f) continue; Checker(mk, p, Quaternion.LookRotation(f), 6, 1.4f, .03f, ctx); noGrass.Add(new Vector3(p.x, 5f, p.z)); checks++; }

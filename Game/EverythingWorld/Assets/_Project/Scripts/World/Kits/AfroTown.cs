@@ -208,7 +208,7 @@ namespace EverythingWorld.World
         void Beach(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = ctx.OnGround(beach2.x, beach2.y); var rng = new System.Random(88);
-            mk.Prism(sand, c - up * .26f, up, 21f, .34f, 28); for (var d = roadL; d <= roadL + 4f; d += 2f) Remember(G(ctx, 0, -d), 1); for (var k = 0; k < 16; k++) { var rp = c + Quaternion.Euler(0, k * 22.5f, 0) * U * 21f; Remember(ctx.OnGround(rp.x, rp.z), 2); }   // its rim: lanes leave from there, never across the fires
+            mk.Prism(sand, c - up * .26f, up, 21f, .34f, 28); solid.Prism(sand, c - up * .26f, up, 21f, .34f, 20); for (var d = roadL; d <= roadL + 4f; d += 2f) Remember(G(ctx, 0, -d), 1); for (var k = 0; k < 16; k++) { var rp = c + Quaternion.Euler(0, k * 22.5f, 0) * U * 21f; Remember(ctx.OnGround(rp.x, rp.z), 2); }   // its rim: lanes leave from there, never across the fires
             // three bonfires with logs round them
             var fires = new[] { c + U * 9f - R * 3f, c - U * 10f - R * 1f, c - R * 13f + U * 1f }; var fi = 0;
             foreach (var fp in fires)

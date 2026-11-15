@@ -70,7 +70,11 @@ namespace EverythingWorld.World
                 default: Generic(z); break;
             }
             // the island's own things: glowing stone, covers, plaque, lamp
-            GlowStone(z, z.At(-z.R * .55f, -z.R * .5f));
+            // the stone stands off every path that reaches the island (it used to block one by Arab Strap)
+            var stoneAt = z.At(-z.R * .55f, -z.R * .5f);
+            foreach (var (fw, rt) in new[] { (-.55f, -.5f), (-.55f, .5f), (.1f, -.7f), (.1f, .7f), (-.75f, 0f) })
+            { var t = z.At(z.R * fw, z.R * rt); if (!NearPath(t.x, t.z, 4f)) { stoneAt = t; break; } }
+            GlowStone(z, stoneAt);
             Board(z, z.At(z.R - 6.5f, -4.2f), front);
             ArtistBits.Plaque(z.mk, z.solid, labels, a, z.At(z.R - 4f, 3.2f), front, wood, black, Ink, 1.5f);
             z.glows.Add(Lamp(ctx, z.mk, root, z.At(z.R - 2.5f, -2.4f), Glows[Mathf.Abs(a.name.GetHashCode()) % Glows.Length]));
