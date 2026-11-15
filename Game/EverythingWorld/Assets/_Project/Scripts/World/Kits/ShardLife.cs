@@ -18,6 +18,8 @@ namespace EverythingWorld.World
         public Vector3 center, stageFwd = Vector3.forward, coreHome;
         public string chromaSong, blackoutSong, lunarSong, starSong, bassSong, tearSong, colorSong, monsterSong, lightSong;
         public Material shards, shards2, lamps, cones, pool, coreM; public Transform core; public float played = -99f;
+        /// The caves (ShardCaves.cs): the sky goes dark while you're inside one.
+        public ShardCaveMap caves; Vector3 lastCam;
         public List<(Transform t, Vector3 home, float ph)> woofers = new List<(Transform, Vector3, float)>();
         public List<(Transform t, float ph)> lasers = new List<(Transform, float)>(), orbiters = new List<(Transform, float)>();
         public List<(Transform t, Vector3 home)> spinners = new List<(Transform, Vector3)>();
@@ -85,17 +87,21 @@ namespace EverythingWorld.World
             var wob = .5f + .5f * Mathf.Sin(beatT * Mathf.PI * 2f * rate); var kick = Mathf.Exp(-beat * 7f);
             var since = t - played; var drop = since < 4f ? Mathf.Clamp01(1f - since / 4f) : 0f; var drive = Mathf.Clamp01(.35f + energy * .65f + drop + bass * .5f);
             var dark = blackout * (Mathf.Repeat(now * 2.3f, 1f) < .08f ? 0f : 1f);
+            var camNow = Camera.main; var camAt = camNow != null ? camNow.transform.position : Vector3.zero;
+            var inCave = here && caves != null && camNow != null && caves.Inside(camAt); var jumped = (camAt - lastCam).sqrMagnitude > 900f; lastCam = camAt;
+            if (caves != null) { SkyDirector.SetLocalNight(Land, inCave ? .7f : 0f); if (jumped && here && SkyDirector.Instance != null) SkyDirector.Instance.SnapLocalNight(); }
 
             if (shards != null) shards.SetColor("_EmissionColor", (chroma > .1f ? Color.HSVToRGB(Mathf.Repeat(now * .3f, 1f), .7f, 1f) * 1.4f : color > .1f ? new Color(.2f, .4f, 1f) * 1.4f : shardBase) * ((.5f + wob * .9f * drive + drop * 2f) * (1f - dark * .85f)));
             if (shards2 != null) shards2.SetColor("_EmissionColor", (chroma > .1f ? Color.HSVToRGB(Mathf.Repeat(now * .3f + .5f, 1f), .7f, 1f) * 1.4f : color > .1f ? new Color(1f, .86f, .2f) * 1.4f : monster > .1f ? new Color(.6f, 1f, .2f) * 1.4f : shard2Base) * ((.5f + (1f - wob) * .9f * drive + drop * 2f) * (1f - dark * .85f)));
+            if (lunar > .01f) { var silver = new Color(.85f, .9f, 1f) * 1.6f; if (shards != null) shards.SetColor("_EmissionColor", Color.Lerp(shards.GetColor("_EmissionColor"), silver, lunar * .8f)); if (shards2 != null) shards2.SetColor("_EmissionColor", Color.Lerp(shards2.GetColor("_EmissionColor"), silver, lunar * .8f)); }
             if (lamps != null) lamps.SetColor("_EmissionColor", lampBase * (.9f + kick * .3f + drop));
             if (cones != null) cones.SetColor("_EmissionColor", coneBase * (.4f + kick * 1.6f * drive + drop));
             if (pool != null) pool.SetColor("_EmissionColor", poolBase * (.7f + wob * .5f + drop));
-            if (coreM != null) coreM.SetColor("_EmissionColor", coreBase * (.8f + wob * .5f + drop * 2f + light));
+            if (coreM != null) coreM.SetColor("_EmissionColor", coreBase * (.8f + wob * .5f + drop * 2f + light + lunar * 1.8f));
 
             foreach (var (tr, home, ph) in woofers) if (tr != null) { var k = Mathf.Exp(-Mathf.Repeat(beatT + ph * .1f, 1f) * 7f); tr.position = home + tr.forward * k * .25f * drive; }
             for (var i = 0; i < lasers.Count; i++) { var (tr, ph) = lasers[i]; if (tr == null) continue; tr.gameObject.SetActive(dark < .5f); tr.rotation = Quaternion.LookRotation(Quaternion.Euler(-14f - Mathf.Sin(now * .9f + ph) * 12f, Mathf.Sin(now * (.6f + rate * .15f) + ph) * 55f, 0) * stageFwd); }
-            coreAngle += dt * (8f + energy * 20f + drop * 120f + bass * 30f);
+            coreAngle += dt * (8f + energy * 20f + drop * 120f + bass * 30f + lunar * 25f);
             if (core != null) { core.position = coreHome + Vector3.up * Mathf.Sin(t * .5f) * .8f; core.rotation = Quaternion.Euler(0, coreAngle, 0); }
             foreach (var (tr, ph) in orbiters) if (tr != null) { var a = coreAngle * Mathf.Deg2Rad * .7f + ph; tr.position = coreHome + new Vector3(Mathf.Cos(a) * 9f, Mathf.Sin(a * 2f + ph) * 2f, Mathf.Sin(a) * 9f); tr.rotation = Quaternion.Euler(a * 40f, a * 70f, 0); }
             for (var i = 0; i < spinners.Count; i++) { var (tr, home) = spinners[i]; if (tr == null) continue; tr.position = home + Vector3.up * Mathf.Sin(t + i) * .2f; tr.Rotate(0, dt * (30f + kick * 60f), 0, Space.World); }
@@ -120,10 +126,10 @@ namespace EverythingWorld.World
             {
                 nextFall = t + .05f;
                 var p = cp + new Vector3(Random.Range(-16f, 16f), Random.Range(.5f, 5f), Random.Range(-16f, 16f));
-                if (IndoorSpaces.Contains(p)) return;
+                var indoors = IndoorSpaces.Contains(p) || (caves != null && caves.Inside(p));
                 if (Random.value < .2f + drop * .6f) dots.Emit(new ParticleSystem.EmitParams { position = p, velocity = new Vector3(Random.Range(-.3f, .3f), Random.Range(.1f, .5f) + drop * 2f, Random.Range(-.3f, .3f)), startColor = Random.value < .5f ? new Color(.3f, .9f, 1f) : new Color(1f, .3f, .8f), startSize = .06f, startLifetime = 4f }, 1);
-                if (tear > .05f && Random.value < tear) for (var k = 0; k < 3; k++) dots.Emit(new ParticleSystem.EmitParams { position = cp + new Vector3(Random.Range(-16f, 16f), Random.Range(6f, 10f), Random.Range(-16f, 16f)), velocity = new Vector3(wind.x, -9f, wind.y), startColor = new Color(.5f, .7f, 1f, .5f), startSize = .04f, startLifetime = 1.2f }, 1);
-                if (star > .05f && Random.value < star) dots.Emit(new ParticleSystem.EmitParams { position = cp + new Vector3(Random.Range(-16f, 16f), Random.Range(8f, 14f), Random.Range(-16f, 16f)), velocity = new Vector3(Random.Range(-.2f, .2f), -1.4f, Random.Range(-.2f, .2f)), startColor = new Color(.9f, .95f, 1f), startSize = .12f, startLifetime = 8f }, 1);
+                if (!indoors && tear > .05f && Random.value < tear) for (var k = 0; k < 3; k++) dots.Emit(new ParticleSystem.EmitParams { position = cp + new Vector3(Random.Range(-16f, 16f), Random.Range(6f, 10f), Random.Range(-16f, 16f)), velocity = new Vector3(wind.x, -9f, wind.y), startColor = new Color(.5f, .7f, 1f, .5f), startSize = .04f, startLifetime = 1.2f }, 1);
+                if ((!indoors || star > .05f) && star > .05f && Random.value < star) dots.Emit(new ParticleSystem.EmitParams { position = cp + new Vector3(Random.Range(-16f, 16f), Random.Range(8f, 14f), Random.Range(-16f, 16f)), velocity = new Vector3(Random.Range(-.2f, .2f), -1.4f, Random.Range(-.2f, .2f)), startColor = new Color(.9f, .95f, 1f), startSize = .12f, startLifetime = 8f }, 1);
             }
         }
     }

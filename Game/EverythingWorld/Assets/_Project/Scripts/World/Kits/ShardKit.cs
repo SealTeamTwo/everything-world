@@ -36,7 +36,7 @@ namespace EverythingWorld.World
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
         Material Paint(Color c) => WorldMaterials.Glow(c, .14f);
         static bool HasStation(IslandWorldData.Artist a) => a.stationId != 0;
-        static float Foot(IslandWorldData.Artist a) => a.name == "Virtual Riot" ? 15f : a.name == "Bassnectar" ? 13f : 8f;
+        float Foot(IslandWorldData.Artist a) => a.name == "Virtual Riot" ? (caved ? 30f : 15f) : a.name == "Bassnectar" ? 13f : 8f;
 
         public override bool Ground(float height, float slope, float patch, out Color color)
         {
@@ -60,6 +60,14 @@ namespace EverythingWorld.World
             streetL = 0f;
             for (var k = 0; k < 8; k++) { var dir = new Vector2(Mathf.Sin(k * Mathf.PI / 4f), Mathf.Cos(k * Mathf.PI / 4f)); var len = 40f; while (len < 110f && Inside(heart2 + dir * (len + 22f), 28f) && Inside(heart2 - dir * 28f, 22f)) len += 10f; if (len > streetL) { streetL = len; D2 = dir; } }
             S2 = new Vector2(-D2.y, D2.x); plazaY = Mathf.Max(data.HeightAt(heart2.x, heart2.y), waterY + 6f);
+            // the cave system (ShardCaves.cs); if it doesn't fit, the old open canyon below
+            caved = LayOutCaves(data, index, isl);
+            if (caved)
+            {
+                foreach (var a in data.layout.artists) if (a.sceneId == isl.sceneId) a.r = Mathf.Max(a.r, Foot(a) + 6f);
+                ShapeMountain(data, index, isl);
+                return;
+            }
             var keep = new List<string>();
             void Put(string name, float d, float s, float room) { var p = P2(d, s); if (!Inside(p, room)) return; foreach (var a in data.layout.artists) if (a.sceneId == isl.sceneId && a.name == name) { a.x = p.x; a.z = p.y; keep.Add(name); } }
             Put("Virtual Riot", 6f, -58f, 24f); Put("Bassnectar", 4f, 54f, 22f);
@@ -107,9 +115,8 @@ namespace EverythingWorld.World
             Remember(ctx.OnGround(center.x, center.z), 0);
             TownStart(ctx);
             DropZone(ctx, mk, solid);
-            Rift(ctx, mk, solid);
-            Core(ctx, mk, solid);
-            Paths(ctx, mk, solid);
+            if (caved) { caveClear.Clear(); PlanHall(); BuildCaves(ctx, mk, solid); }
+            else { Rift(ctx, mk, solid); Core(ctx, mk, solid); Paths(ctx, mk, solid); }
             Wilds(ctx, mk, solid);
             mk.Build("The Dubstep Shards", ctx.Root, false);
             solid.BuildCollider("The Dubstep Shards walls", ctx.Root);
@@ -150,7 +157,7 @@ namespace EverythingWorld.World
         }
 
         bool Open(LandContext ctx, float x, float z, float pad) =>
-            ctx.IsLand(x, z, 5f) && !InFootprint(ctx, x, z, pad) && !NearPath(x, z, pad + 2f) && !InNoGrass(x, z, pad);
+            ctx.IsLand(x, z, 5f) && !InFootprint(ctx, x, z, pad) && !NearPath(x, z, pad + 2f) && !InNoGrass(x, z, pad) && !InCaveZone(x, z, pad + 4f);
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
@@ -275,7 +282,7 @@ namespace EverythingWorld.World
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
-                if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
+                if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || InCaveZone(px, pz, 1.5f)) continue;
                 if (Mathf.PerlinNoise(px * .05f + 1f, pz * .05f + 9f) < .55f) continue;
                 var kind = WindMesh.Patch(px, pz, .02f, 71f);                                    // clusters or wisps
                 var band = Mathf.Clamp01(Mathf.PerlinNoise(px * .045f + 13f, pz * .009f + 29f));  // long fault-line bands, stretched along x

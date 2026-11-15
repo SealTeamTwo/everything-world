@@ -34,8 +34,8 @@ namespace EverythingWorld.World
             {
                 var list = new List<(string, string, string)>();
                 void Add(string artist, string title, string where) { var id = Find(artist, title); if (id != null) list.Add((id, title, where)); }
-                Add("Skrillex", "Scary Monsters", "Skrillex"); Add("Bassnectar", "Bass Head", "Bassnectar"); Add("Virtual Riot", "CHROMA", "Virtual Riot"); Add("Virtual Riot", "Blackout", "Virtual Riot"); Add("Virtual Riot", "Lunar", "Virtual Riot");
-                Add("NGHTMRE", "Teardrop", "NGHTMRE"); Add("Skybreak", "Into The Light", "Skybreak"); Add("Panda Eyes", "Colorblind", "Panda Eyes"); Add("Virtual Riot", "Stargarden", "Virtual Riot");
+                Add("Skrillex", "Scary Monsters", "Skrillex"); Add("Bassnectar", "Bass Head", "Bassnectar"); Add("Virtual Riot", "CHROMA", "@chroma"); Add("Virtual Riot", "Blackout", "@blackout"); Add("Virtual Riot", "Lunar", "@the moon hall");
+                Add("NGHTMRE", "Teardrop", "NGHTMRE"); Add("Skybreak", "Into The Light", "Skybreak"); Add("Panda Eyes", "Colorblind", "Panda Eyes"); Add("Virtual Riot", "Stargarden", "@stargarden"); Add("Virtual Riot", "Rewrite", "@rewrite"); Add("Virtual Riot", "Different World", "@different world");
                 return list.ToArray();
             }
         }
@@ -70,7 +70,7 @@ namespace EverythingWorld.World
             z.mk.Prism(rockD, z.c - up * .3f, up, reach * .85f, .36f, 24); for (var k = 0; k < 14; k++) { var d = Quaternion.Euler(0, k * 360f / 14f, 0) * front; if (Vector3.Angle(d, front) < 30f) continue; Shard(root, z.mk, z.ctx.OnGround((z.c + d * reach * .8f).x, (z.c + d * reach * .8f).z), 1f + (k % 3) * .6f, .3f, d * .3f, k % 2 == 0 ? shardM : shardM2, z.solid); }
             switch (a.name)
             {
-                case "Virtual Riot": Riot(z); break;
+                case "Virtual Riot": if (caved) RiotHall(z); else Riot(z); break;
                 case "Bassnectar": Nectar(z); break;
                 default: Others(z, Slab(z)); break;
             }
