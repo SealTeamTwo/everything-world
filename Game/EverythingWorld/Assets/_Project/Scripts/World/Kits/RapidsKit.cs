@@ -34,7 +34,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            stone = WorldMaterials.Glow(new Color(.46f, .42f, .38f), .1f); stoneD = WorldMaterials.Glow(new Color(.34f, .32f, .31f), .08f); path = WorldMaterials.Glow(new Color(.48f, .42f, .34f), .08f); wood = WorldMaterials.Glow(new Color(.52f, .38f, .26f), .1f); woodD = WorldMaterials.Glow(new Color(.36f, .26f, .18f), .08f); iron = WorldMaterials.Solid(new Color(.2f, .2f, .22f), .5f); dark = WorldMaterials.Solid(new Color(.06f, .06f, .07f)); white = WorldMaterials.Glow(new Color(.88f, .88f, .86f), .14f);
+            stone = WorldMaterials.Glow(new Color(.46f, .42f, .38f), .1f); stoneD = WorldMaterials.Glow(new Color(.34f, .32f, .31f), .08f); path = WorldMaterials.Glow(new Color(.48f, .42f, .34f), .08f); wood = WorldMaterials.Glow(new Color(.52f, .38f, .26f), .1f); woodD = WorldMaterials.Glow(new Color(.36f, .26f, .18f), .08f); iron = WorldMaterials.Surface(new Color(.2f, .2f, .22f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.06f, .06f, .07f)); white = WorldMaterials.Glow(new Color(.88f, .88f, .86f), .14f);
             leafM = WorldMaterials.Glow(Leaf, .12f); willowM = WorldMaterials.Glow(new Color(.44f, .6f, .34f), .12f); trunkM = WorldMaterials.Glow(new Color(.36f, .28f, .22f), .1f);
             waterM = new Material(WorldMaterials.Glow(Water, .7f)) { name = "Rapids water" }; foamM = new Material(WorldMaterials.Glow(Foam, .9f)) { name = "Rapids foam" }; lampM = new Material(WorldMaterials.Glow(Gold, 1.6f)) { name = "Rapids lamps" };
         }
