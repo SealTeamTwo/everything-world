@@ -34,13 +34,17 @@ namespace EverythingWorld.Player
         /// Which palette colour (shared with other players as one small number).
         public int Index { get; private set; }
 
-        Transform orb, beam, glowDisc, pattern, pattern2; Material orbMat, coreMat, beamMat, discMat, lineMat, lineMat2; Light lamp; MeshRenderer orbR, coreR; ParticleSystem wisps;
+        Transform orb, beam, glowDisc, pattern, pattern2, beacon; Material orbMat, coreMat, beamMat, discMat, lineMat, lineMat2, beaconMat; Light lamp; MeshRenderer orbR, coreR; ParticleSystem wisps;
+        /// A friend (another player's orb, not a showcase): drawn bigger and brighter than the world's lanterns, with a
+        /// stronger beam to the ground and, from a way off, a tall column of their colour rising into the sky.
+        bool Friend => !isLocal && !display;
         Vector3 at; float seed;
 
         void Awake()
         {
             if (isLocal) Local = this;
             seed = Random.value * 10f;
+            if (Friend) radius *= 1.35f;
             var root = new GameObject(isLocal ? "My orb" : "Orb").transform; root.SetParent(null, false);
             if (!isLocal) root.SetParent(transform, false);
             orb = root;
@@ -61,11 +65,13 @@ namespace EverythingWorld.Player
             if (!isLocal) wisps = Wisps();
             lamp = new GameObject("Orb light").AddComponent<Light>(); lamp.transform.SetParent(orb, false); lamp.type = LightType.Point; lamp.range = 5f; lamp.intensity = .7f; lamp.shadows = LightShadows.None;
             if (isLocal) lamp.transform.localPosition = new Vector3(0, .2f, .3f);
+            if (Friend) { lamp.range = 9f; lamp.intensity = 1.6f; }   // a friend lights up the ground round them
             // the faint beam to the ground, and the glow where it lands
             beamMat = Additive("Orb beam", BeamTexture()); discMat = Additive("Orb glow", DiscTexture());
             beam = Quad("Beam", beamMat, root.parent == null ? null : root.parent); glowDisc = Quad("Ground glow", discMat, root.parent == null ? null : root.parent);
             if (display) { lamp.enabled = false; beam.gameObject.SetActive(false); glowDisc.gameObject.SetActive(false); }
             if (!isLocal) glasses = Glasses(root.parent);
+            if (Friend) { beaconMat = Additive("Friend beacon", BeaconTexture()); beacon = Quad("Beacon", beaconMat, root.parent); beacon.gameObject.SetActive(false); }
             SetColor(isLocal ? Load() : Color);
         }
 
@@ -109,7 +115,7 @@ namespace EverythingWorld.Player
             return ps;
         }
 
-        void OnDestroy() { if (orb != null) Destroy(orb.gameObject); if (beam != null) Destroy(beam.gameObject); if (glowDisc != null) Destroy(glowDisc.gameObject); }
+        void OnDestroy() { if (orb != null) Destroy(orb.gameObject); if (beam != null) Destroy(beam.gameObject); if (glowDisc != null) Destroy(glowDisc.gameObject); if (beacon != null) Destroy(beacon.gameObject); }
 
         Color Load()
         {
@@ -128,10 +134,11 @@ namespace EverythingWorld.Player
         public void SetColor(Color c)
         {
             Color = c;
-            orbMat.SetColor("_BaseColor", c); orbMat.SetColor("_EmissionColor", c * 1.2f * .65f);
-            coreMat.SetColor("_BaseColor", c); coreMat.SetColor("_EmissionColor", Color.Lerp(c, Color.white, .35f) * 3f * .65f);
+            var glow = Friend ? 1.1f : .65f;   // friends glow brighter than a lantern, so bloom picks them out
+            orbMat.SetColor("_BaseColor", c); orbMat.SetColor("_EmissionColor", c * 1.2f * glow);
+            coreMat.SetColor("_BaseColor", c); coreMat.SetColor("_EmissionColor", Color.Lerp(c, Color.white, .35f) * 3f * glow);
             lamp.color = c;
-            beamMat.SetColor("_BaseColor", new Color(c.r, c.g, c.b, .16f)); discMat.SetColor("_BaseColor", new Color(c.r, c.g, c.b, .5f));
+            beamMat.SetColor("_BaseColor", new Color(c.r, c.g, c.b, Friend ? .4f : .16f)); discMat.SetColor("_BaseColor", new Color(c.r, c.g, c.b, .5f));
             var d = Deep(c); lineMat.SetColor("_BaseColor", new Color(d.r, d.g, d.b, .95f)); lineMat2.SetColor("_BaseColor", new Color(d.r, d.g, d.b, .6f));
             if (wisps != null) { var m = wisps.main; m.startColor = new ParticleSystem.MinMaxGradient(Color.Lerp(c, Color.white, .4f), Color.Lerp(c, d, .5f)); }
         }
@@ -157,9 +164,27 @@ namespace EverythingWorld.Player
             }
             var top = p - Vector3.up * radius * .7f; var len = Mathf.Max(.01f, top.y - ground.y);
             var cam = Camera.main; var face = cam != null ? cam.transform.position - (top + ground) / 2f : Vector3.forward; face.y = 0; if (face.sqrMagnitude < .001f) face = Vector3.forward;
-            beam.SetPositionAndRotation((top + ground) / 2f, Quaternion.LookRotation(face.normalized)); beam.localScale = new Vector3(.12f, len, 1f);
+            beam.SetPositionAndRotation((top + ground) / 2f, Quaternion.LookRotation(face.normalized)); beam.localScale = new Vector3(Friend ? .2f : .12f, len, 1f);
             glowDisc.gameObject.SetActive(hitSomething);
-            if (hitSomething) { glowDisc.SetPositionAndRotation(ground + Vector3.up * .03f, Quaternion.Euler(90f, 0, 0)); glowDisc.localScale = Vector3.one * (.9f + Mathf.Sin(t * 2.2f) * .05f); }
+            if (hitSomething) { glowDisc.SetPositionAndRotation(ground + Vector3.up * .03f, Quaternion.Euler(90f, 0, 0)); glowDisc.localScale = Vector3.one * (Friend ? 1.5f : .9f) * (1f + Mathf.Sin(t * 2.2f) * .05f); }
+            if (beacon != null) Beacon(p, cam);
+        }
+
+        /// The column of light over a friend: none close by (their orb is enough), fading in from 25 m to 70 m, and
+        /// widening with distance so it stays a few pixels wide however far they are. It breathes slowly.
+        void Beacon(Vector3 p, Camera cam)
+        {
+            if (cam == null) { beacon.gameObject.SetActive(false); return; }
+            var to = p - cam.transform.position; var dist = to.magnitude;
+            var fade = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(25f, 70f, dist));
+            beacon.gameObject.SetActive(fade > .01f);
+            if (fade <= .01f) return;
+            const float height = 160f;
+            var face = -to; face.y = 0f; if (face.sqrMagnitude < .001f) face = Vector3.forward;
+            beacon.SetPositionAndRotation(p + Vector3.up * (radius + height / 2f), Quaternion.LookRotation(face.normalized));
+            beacon.localScale = new Vector3(Mathf.Clamp(dist * .005f, .3f, 6f), height, 1f);
+            var c = Color.Lerp(Color, Color.white, .25f);
+            beaconMat.SetColor("_BaseColor", new Color(c.r, c.g, c.b, fade * (.75f + .15f * Mathf.Sin((Time.time + seed) * 1.3f))));
         }
 
         // ---------------------------------------------------------------- sunglasses on other players' orbs
@@ -173,7 +198,7 @@ namespace EverythingWorld.Player
             shownFacing = facingSet ? Mathf.LerpAngle(shownFacing, facing, 1f - Mathf.Exp(-10f * Time.deltaTime)) : facing; facingSet = true;
             var turn = Quaternion.Euler(0f, shownFacing, 0f); var e = Mathf.SmoothStep(0f, 1f, shadesT);
             glasses.SetPositionAndRotation(p + turn * new Vector3(0f, radius * .18f + (1f - e) * .35f, radius * .93f), turn * Quaternion.Euler((1f - e) * -40f, 0f, 0f));
-            glasses.localScale = Vector3.one * Mathf.Lerp(.6f, 1f, e);
+            glasses.localScale = Vector3.one * Mathf.Lerp(.6f, 1f, e) * (radius / .24f);
         }
 
         static Transform Glasses(Transform parent)
@@ -254,6 +279,19 @@ namespace EverythingWorld.Player
             {
                 var across = 1f - Mathf.Abs((x + .5f) / w * 2f - 1f); var v = (y + .5f) / h;
                 var a = across * across * Mathf.Lerp(.25f, 1f, v) * Mathf.Clamp01((1f - v) * 12f);
+                t.SetPixel(x, y, new Color(1, 1, 1, a));
+            }
+            t.Apply(); return t;
+        }
+
+        /// The friend's sky column: soft across, brightest at the bottom, fading out high up (and just over the orb).
+        static Texture2D BeaconTexture()
+        {
+            const int w = 16, h = 128; var t = new Texture2D(w, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (var y = 0; y < h; y++) for (var x = 0; x < w; x++)
+            {
+                var across = 1f - Mathf.Abs((x + .5f) / w * 2f - 1f); var v = (y + .5f) / h;
+                var a = Mathf.Pow(across, 1.5f) * Mathf.Pow(1f - v, 1.4f) * Mathf.Clamp01(v * 60f);
                 t.SetPixel(x, y, new Color(1, 1, 1, a));
             }
             t.Apply(); return t;

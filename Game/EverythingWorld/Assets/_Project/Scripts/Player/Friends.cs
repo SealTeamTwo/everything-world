@@ -83,7 +83,7 @@ namespace EverythingWorld.Player
                 var p = r.shown; var to = p - from; var dist = to.magnitude;
                 var inView = Vector3.Dot(cam.transform.forward, to) > 0f;
                 var blocked = dist > .6f && Physics.Linecast(from, p - to / dist * .5f, ~0, QueryTriggerInteraction.Ignore);
-                if (inView && !blocked && dist < 25f) continue;   // plainly there
+                if (inView && !blocked && dist < 20f) continue;   // plainly there
                 var sp = cam.WorldToScreenPoint(p + Vector3.up * .25f);
                 var at = new Vector2(sp.x, Screen.height - sp.y);
                 var centre = new Vector2(Screen.width / 2f, Screen.height / 2f);
@@ -248,7 +248,10 @@ namespace EverythingWorld.Player
             foreach (var kv in remotes)
             {
                 var r = kv.Value; if (Time.time - r.seen > Forget) { stale.Add(kv.Key); continue; }
-                r.shown = Glide(r); r.orb.Place(r.shown); r.label.transform.position = r.shown + Vector3.up * .55f;
+                r.shown = Glide(r); r.orb.Place(r.shown); r.label.transform.position = r.shown + Vector3.up * .7f;
+                // the name grows with distance, so it stays readable until the on-screen tag takes over
+                var cam = Camera.main; var d = cam != null ? Vector3.Distance(cam.transform.position, r.shown) : 0f;
+                r.label.transform.localScale = Vector3.one * Mathf.Clamp(d / 7f, 1f, 3f);
             }
             foreach (var k in stale) { Destroy(remotes[k].go); remotes.Remove(k); }
         }
