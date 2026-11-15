@@ -131,8 +131,8 @@ namespace EverythingWorld.World
         {
             if (!hasStreet) return;
             var up = Vector3.up;
-            var road = WorldMaterials.Solid(new Color(.19f, .2f, .22f), .8f);
-            var pave = WorldMaterials.Solid(new Color(.42f, .42f, .42f));
+            var road = WorldMaterials.Surface(new Color(.19f, .2f, .22f), Surface.Stone);
+            var pave = WorldMaterials.Surface(new Color(.42f, .42f, .42f), Surface.Stone);
             var lampM = GlowM(Sodium, 2.4f);
             const float seg = 4f;
             bool SegOk(Vector3 a, Vector3 b) => ctx.IsLand(a.x, a.z, 3f) && ctx.IsLand(b.x, b.z, 3f) && Mathf.Abs(ctx.Ground(a.x, a.z) - ctx.Ground(b.x, b.z)) < 2f && !InRing(ctx, a, 1f) && !InRing(ctx, b, 1f);
@@ -243,9 +243,9 @@ namespace EverythingWorld.World
             }
             if (hi - lo > 3f || !ctx.IsFree(c.x, c.z, 4f)) return false;
             var floor = hi + .3f; var b = new Vector3(c.x, floor, c.z);
-            var wallM = WorldMaterials.Solid(HouseC[i % HouseC.Length]);
-            var roofM = WorldMaterials.Solid(RoofC[(i / 3) % RoofC.Length]);
-            var foundM = WorldMaterials.Solid(new Color(.36f, .35f, .34f));
+            var wallM = WorldMaterials.Surface(HouseC[i % HouseC.Length], Surface.Painted);
+            var roofM = WorldMaterials.Surface(RoofC[(i / 3) % RoofC.Length], Surface.Stone);
+            var foundM = WorldMaterials.Surface(new Color(.36f, .35f, .34f), Surface.Stone);
             var fh = floor - lo + .4f;
             mk.Box(foundM, b - up * (fh / 2f), new Vector3(W + .2f, fh, D + .2f), rot);
             mk.Box(wallM, b + up * Hh / 2f, new Vector3(W, Hh, D), rot);
@@ -254,7 +254,7 @@ namespace EverythingWorld.World
             // the front: door, porch light, steps, two windows
             var front = b + face * (D / 2f + .02f);
             var doorX = ctx.Chance(.5f) ? -W * .22f : W * .22f;
-            mk.Box(WorldMaterials.Solid(Color.Lerp(HouseC[(i + 3) % HouseC.Length], new Color(.2f, .2f, .22f), .6f)), front + side * doorX + up * 1.05f, new Vector3(1f, 2.1f, .06f), rot);
+            mk.Box(WorldMaterials.Surface(Color.Lerp(HouseC[(i + 3) % HouseC.Length], new Color(.2f, .2f, .22f), .6f), Surface.Painted), front + side * doorX + up * 1.05f, new Vector3(1f, 2.1f, .06f), rot);
             mk.Box(foundM, front + side * doorX + face * .5f + up * -.1f, new Vector3(1.6f, .4f, 1f), rot);
             solid.Box(foundM, front + side * doorX + face * .5f - up * .2f, new Vector3(1.6f, .6f, 1f), rot);
             var lit = ctx.Range(0f, 1f);
@@ -269,18 +269,18 @@ namespace EverythingWorld.World
             Material win;
             if (lit < .3f) win = GlowM(new Color(1f, .82f, .5f), 1.8f);
             else if (lit < .42f) win = tv;
-            else win = WorldMaterials.Solid(new Color(.12f, .14f, .18f), .9f);
+            else win = WorldMaterials.Surface(new Color(.12f, .14f, .18f), Surface.Glass);
             mk.Box(win, front + side * winX + winY, new Vector3(1.8f, 1.1f, .05f), rot);
             if (lit < .42f) halos.Add(front + side * winX + winY + face * .6f, 1.2f, lit < .3f ? new Color(1f, .82f, .5f) : TvBlue, .35f);
             // the driveway and the mailbox at the pavement
             var drive = side * (W / 2f + (hasGarage ? 2.7f : 1.6f));
             var dStart = c + drive + face * (D / 2f - 1f); var dEnd = c + drive + face * (D / 2f + 4.6f);
             var dMid = (dStart + dEnd) / 2f; var dLen = Vector3.Distance(dStart, dEnd);
-            GroundPatch(ctx, mk, WorldMaterials.Solid(new Color(.38f, .38f, .37f)), dMid, face, hasGarage ? 4.4f : 2.8f, dLen, .09f);   // on the ground, not level across the slope
+            GroundPatch(ctx, mk, WorldMaterials.Surface(new Color(.38f, .38f, .37f), Surface.Stone), dMid, face, hasGarage ? 4.4f : 2.8f, dLen, .09f);   // on the ground, not level across the slope
             noGrass.Add(new Vector3(dMid.x, 2.6f, dMid.z));
             var mb = c - drive * .2f + face * (D / 2f + 4.2f) + side * (doorX > 0 ? -1f : 1f) * 1.2f; mb = ctx.OnGround(mb.x, mb.z);
             mk.Prism(wood, mb - up * .2f, up, .05f, 1.25f, 6);
-            mk.Box(WorldMaterials.Solid(i % 4 == 0 ? new Color(.6f, .15f, .12f) : new Color(.25f, .27f, .3f)), mb + up * 1.15f, new Vector3(.25f, .25f, .45f), rot);
+            mk.Box(WorldMaterials.Surface(i % 4 == 0 ? new Color(.6f, .15f, .12f) : new Color(.25f, .27f, .3f), Surface.Painted), mb + up * 1.15f, new Vector3(.25f, .25f, .45f), rot);
             ArtistBits.PostCollider(ctx.Root, mb, 1.2f, .12f);
             if (hasGarage)
             {
@@ -293,17 +293,17 @@ namespace EverythingWorld.World
                 mk.Box(wallM, gb - face * (gd / 2f - .1f) + up * gh / 2f, new Vector3(gw, gh, .2f), rot);
                 foreach (var sx in new[] { -1f, 1f }) mk.Box(wallM, gb + side * sx * (gw / 2f - .1f) + up * gh / 2f, new Vector3(.2f, gh, gd - .4f), rot);
                 mk.Box(wallM, gb + up * (gh + .1f), new Vector3(gw, .2f, gd), rot);
-                mk.Box(WorldMaterials.Solid(new Color(.85f, .84f, .8f)), gb + face * (gd / 2f - .2f) + up * (gh - .25f), new Vector3(gw - .4f, .5f, .3f), rot);   // the rolled-up door
+                mk.Box(WorldMaterials.Surface(new Color(.85f, .84f, .8f), Surface.Painted), gb + face * (gd / 2f - .2f) + up * (gh - .25f), new Vector3(gw - .4f, .5f, .3f), rot);   // the rolled-up door
                 foreach (var sx in new[] { -1f, 1f }) solid.Box(wallM, gb + side * sx * (gw / 2f - .1f) + up * gh / 2f, new Vector3(.2f, gh, gd), rot);
                 solid.Box(wallM, gb - face * (gd / 2f - .1f) + up * gh / 2f, new Vector3(gw, gh, .2f), rot);
                 var warm = new Color(1f, .78f, .45f);
-                mk.Box(WorldMaterials.Solid(new Color(.5f, .18f, .16f)), gb + up * .02f, new Vector3(3f, .03f, 2.4f), rot);
+                mk.Box(WorldMaterials.Surface(new Color(.5f, .18f, .16f), Surface.Cloth), gb + up * .02f, new Vector3(3f, .03f, 2.4f), rot);
                 mk.Box(dark, gb - face * 2.1f + side * 1.4f + up * .45f, new Vector3(.8f, .9f, .45f), rot);
                 mk.Box(GlowM(new Color(1f, .3f, .2f), 2f), gb - face * 1.86f + side * 1.4f + up * .75f, new Vector3(.08f, .08f, .02f), rot);
                 var kit = gb - face * 1.6f - side * .9f;
                 solid.Box(dark, gb - face * 2.1f + side * 1.4f + up * .45f, new Vector3(.8f, .9f, .45f), rot); solid.Box(dark, kit + up * .5f, new Vector3(1.6f, 1f, 1.2f), rot);
-                mk.Prism(WorldMaterials.Solid(new Color(.85f, .85f, .88f)), kit + up * .05f - face * .25f, face, .38f, .5f, 12);
-                mk.Prism(metal, kit + side * .6f, up, .02f, 1.1f, 5); mk.Prism(WorldMaterials.Solid(new Color(.8f, .7f, .3f), .9f), kit + side * .6f + up * 1.1f, up, .28f, .02f, 12);
+                mk.Prism(WorldMaterials.Surface(new Color(.85f, .85f, .88f), Surface.Painted), kit + up * .05f - face * .25f, face, .38f, .5f, 12);
+                mk.Prism(metal, kit + side * .6f, up, .02f, 1.1f, 5); mk.Prism(WorldMaterials.Surface(new Color(.8f, .7f, .3f), Surface.Metal), kit + side * .6f + up * 1.1f, up, .28f, .02f, 12);
                 var bulb = gb + up * (gh - .3f);
                 mk.Blob(GlowM(warm, 2.6f), bulb, Vector3.one * .12f, ctx.Rng, 0f);
                 halos.Add(bulb + face * 1f, 2.2f, warm, .6f);
@@ -319,8 +319,8 @@ namespace EverythingWorld.World
                 if (ctx.IsLand(q.x, q.z, 3f) && !OnSubRoad(q.x, q.z, 1f) && !InRing(ctx, q, 2f))
                 {
                     q = ctx.OnGround(q.x, q.z); var h = ctx.Range(5f, 8f);
-                    mk.Prism(WorldMaterials.Solid(new Color(.22f, .18f, .16f)), q - up * .3f, up, .22f, h * .5f, 6);
-                    mk.Blob(WorldMaterials.Solid(new Color(.18f, .25f, .18f)), q + up * h * .68f, new Vector3(2.2f, h * .42f, 2.2f), ctx.Rng, .25f);
+                    mk.Prism(WorldMaterials.Surface(new Color(.22f, .18f, .16f), Surface.Bark), q - up * .3f, up, .22f, h * .5f, 6);
+                    mk.Blob(WorldMaterials.Surface(new Color(.18f, .25f, .18f), Surface.Foliage), q + up * h * .68f, new Vector3(2.2f, h * .42f, 2.2f), ctx.Rng, .25f);
                     ArtistBits.PostCollider(ctx.Root, q, h * .5f, .28f);
                 }
             }

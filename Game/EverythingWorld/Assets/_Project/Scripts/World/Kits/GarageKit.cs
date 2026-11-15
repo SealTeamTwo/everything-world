@@ -46,13 +46,13 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            asphalt = WorldMaterials.Solid(Asphalt, .85f);
-            curb = WorldMaterials.Solid(Curb);
+            asphalt = WorldMaterials.Surface(Asphalt, Surface.Stone);
+            curb = WorldMaterials.Surface(Curb, Surface.Stone);
             dark = WorldMaterials.Solid(new Color(.08f, .08f, .09f));
-            metal = WorldMaterials.Solid(new Color(.5f, .52f, .55f), .5f);
-            brick = WorldMaterials.Solid(new Color(.5f, .27f, .22f));
+            metal = WorldMaterials.Surface(new Color(.5f, .52f, .55f), Surface.Metal);
+            brick = WorldMaterials.Surface(new Color(.5f, .27f, .22f), Surface.Stone);
             glass = WorldMaterials.Glow(new Color(1f, .78f, .5f), 1.1f);
-            wood = WorldMaterials.Solid(new Color(.4f, .3f, .24f));
+            wood = WorldMaterials.Surface(new Color(.4f, .3f, .24f), Surface.Wood);
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
@@ -209,7 +209,7 @@ namespace EverythingWorld.World
         void Street(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var side = Vector3.Cross(Vector3.up, streetDir);
-            var pave = WorldMaterials.Solid(new Color(.33f, .32f, .33f));
+            var pave = WorldMaterials.Surface(new Color(.33f, .32f, .33f), Surface.Stone);
             var line = WorldMaterials.Solid(new Color(.9f, .8f, .4f));
             var puddle = WorldMaterials.Solid(new Color(.1f, .1f, .14f), .98f);
             const float seg = 4f;
