@@ -9,7 +9,8 @@ namespace EverythingWorld.World
     /// So Claude can see what the owner sees while playing: press P (or F12) and the game view is saved to
     /// Logs/Live/ in the Unity project, with a line in Logs/Live/notes.txt saying where you were: the land,
     /// position, which way you faced, the nearest artist, the song playing, and whether you were indoors.
-    /// Then tell Claude "look at my snapshots". Nothing here is committed (Logs is ignored).
+    /// Then tell Claude "look at my snapshots". Nothing here is committed (Logs is ignored). Pictures older than two
+    /// weeks are deleted when the game starts; the notes are kept.
     public class LiveSnapshot : MonoBehaviour
     {
         string dir; int count; float flash; string flashText; bool pending;
@@ -26,7 +27,14 @@ namespace EverythingWorld.World
         {
             dir = Path.Combine(Application.dataPath, "..", "Logs", "Live");
             Directory.CreateDirectory(dir);
-            count = Directory.GetFiles(dir, "*.png").Length;
+            // pictures are kept for two weeks, then deleted (the owner's choice, 2026-11-15); notes.txt is kept
+            var cutoff = System.DateTime.Now.AddDays(-14);
+            foreach (var d in new[] { dir, Path.Combine(dir, "..", "LiveSheets") })
+                if (Directory.Exists(d))
+                    foreach (var f in Directory.GetFiles(d, "*.png"))
+                        try { if (File.GetLastWriteTime(f) < cutoff) File.Delete(f); } catch (IOException) { }
+            count = 0;
+            foreach (var f in Directory.GetFiles(dir, "*.png")) if (int.TryParse(Path.GetFileName(f).Split('_')[0], out var n) && n > count) count = n;
         }
 
         void Update()
