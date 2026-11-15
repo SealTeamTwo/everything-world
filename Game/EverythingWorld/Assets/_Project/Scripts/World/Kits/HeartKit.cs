@@ -312,24 +312,33 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Dune grass.
+        /// Dune grass in patches with bare sand between: tall marram clumps leaning in the sea wind, thin low grass
+        /// creeping over the sand, and here and there a drift of beach roses tipping the grass. Each patch has its
+        /// own shade (cool grey-green to sun-faded straw); every blade its own.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.4f, .8f, new Color(.6f, .66f, .5f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2013);
             const float st = 2.6f;
+            int marram = 0, creeping = 0, roses = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 8f, pz * .04f + 4f) < .42f) continue;
+                if (WindMesh.Patch(px, pz, .04f, 1f) < .44f) continue;     // bare sand
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.56f, .62f, .46f), new Color(.74f, .72f, .54f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .3f + (float)rng.NextDouble() * .4f, col, rng.NextDouble() < .08 ? Rose : Color.Lerp(col, new Color(.9f, .86f, .7f), .4f), rng, 3, .07f);
+                var col = Color.Lerp(new Color(.52f, .6f, .5f), new Color(.74f, .7f, .52f), Mathf.Clamp01(WindMesh.Patch(px, pz, .022f, 2f) * .8f + (float)rng.NextDouble() * .2f));
+                var drift = WindMesh.Patch(px, pz, .06f, 3f) > .64f;
+                var rose = rng.NextDouble() < (drift ? .3 : .03); if (rose) roses++;
+                var tip = rose ? Rose : Color.Lerp(col, new Color(.9f, .86f, .7f), .4f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (WindMesh.Patch(px, pz, .03f, 4f) > .45f) { wm.Tuft(at, .45f + (float)rng.NextDouble() * .4f, col, tip, rng, 4, .05f, .12f); marram++; }
+                else { wm.Tuft(at, .18f + (float)rng.NextDouble() * .16f, col * .95f, tip, rng, 2, .07f, .12f); creeping++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Heartbreak dune grass", ctx.Root, mat);
+            Debug.Log($"The Heartbreak Boardwalk dune grass: {marram} marram clumps, {creeping} creeping tufts, {roses} rose-tipped");
         }
     }
 }
