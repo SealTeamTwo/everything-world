@@ -6,11 +6,10 @@ namespace EverythingWorld.World
 {
     /// The Heartbreak Boardwalk's artists. Most have a beach hut of their own: a faded hut with its window lit, a deck
     /// chair under a striped umbrella, and one thing from their song; covers on a cream card on a weathered board.
-    /// - Lana Del Rey: a seaside bungalow with a porch swing, a white convertible ("West Coast"), a painter's easel
-    ///   ("Norman fucking Rockwell"), a lemon tree ("Salvatore"), a white wedding arch ("Say Yes To Heaven"), a
-    ///   butterfly as big as a door ("Happiness is a butterfly"), a black rose ("Black Beauty"), a ship's lantern on a
-    ///   mast ("Mariners Apartment Complex"), a record player on a stoop ("Brooklyn Baby"), a cinnamon candle
-    ///   ("Cinnamon Girl"), a lawn chair in the heat ("Summertime Sadness"), a vintage microphone ("Ultraviolence").
+    /// - Lana Del Rey: her own quarter, where it's always night (HeartLana.cs). In the middle, a seaside bungalow with
+    ///   a porch swing, a white convertible ("West Coast"), a painter's easel ("Norman fucking Rockwell"), a lemon
+    ///   tree ("Salvatore"), a black rose ("Black Beauty"), a lawn chair in the heat ("Summertime Sadness"), a vintage
+    ///   microphone ("Ultraviolence"); round it, five places for the five songs that matter most.
     /// - Olivia Rodrigo: a row of school lockers, a purple car with the door open ("good 4 u"), an ashtray smoking
     ///   ("cigarette smoke"), an upright piano ("All I Want"), a picnic with an apple pie ("all-american bitch").
     /// - Ashe: a wedding aisle with a veil on the ground ("Stop The Wedding!"), a lasso round a moon on a pole ("Lasso
@@ -37,7 +36,8 @@ namespace EverythingWorld.World
                 var list = new List<(string, string, string)>();
                 void Add(string artist, string title, string where) { var id = Find(artist, title); if (id != null) list.Add((id, title, where)); }
                 Add("Lana Del Rey", "Summertime Sadness", "@the promenade"); Add("Lana Del Rey", "Ultraviolence", "@down the boardwalk"); Add("Billie Eilish", "ocean eyes", "@the pier at sunset");
-                Add("Billie Eilish", "Happier Than Ever", "@the promenade"); Add("OneRepublic", "Counting Stars", "@the carousel"); Add("Lana Del Rey", "Happiness is a butterfly", "Lana Del Rey");
+                Add("Billie Eilish", "Happier Than Ever", "@the promenade"); Add("OneRepublic", "Counting Stars", "@the carousel"); Add("Lana Del Rey", "Happiness is a butterfly", "@the butterfly garden");
+                Add("Lana Del Rey", "Mariners", "@the lighthouse"); Add("Lana Del Rey", "Cinnamon Girl", "@the candle room"); Add("Lana Del Rey", "Brooklyn Baby", "@the stoop"); Add("Lana Del Rey", "Say Yes", "@the white stair");
                 return list.ToArray();
             }
         }
@@ -137,23 +137,17 @@ namespace EverythingWorld.World
             // the bungalow: white clapboard, a deep porch with a swing, a flag of bunting
             var f = new PlaceFrame(z.At(-6.5f, 0), fr); mk2(z, f);
             ArtistBits.Label(z.labels, "lana", f.P(0, 3.95f, 2.1f), fr, .3f, Neon, TextAnchor.MiddleCenter); z.area.glowLight = ArtistBits.PointLight(z.root, f.P(0, 3f, 4f), new Color(1f, .8f, .7f), 26f, 2.2f);
-            // "Ultraviolence": a vintage microphone on the porch, violet light; "Brooklyn Baby": a record player on the step
+            // "Ultraviolence": a vintage microphone on the porch, violet light
             var mc = f.P(1.6f, .7f, 2.3f); z.mk.Prism(iron, mc, up, .02f, 1.4f, 4); z.mk.Prism(iron, mc, up, .16f, .02f, 8); z.mk.Box(SongGlow(uv, Violet, 1.6f), mc + up * 1.5f, new Vector3(.14f, .2f, .08f), rot); halos.Add(mc + up * 1.5f, 1f, Violet, .5f);
-            var rp = f.P(-1.8f, .45f, 3.4f); z.mk.Box(woodM, rp, new Vector3(.6f, .16f, .5f), rot); z.mk.Prism(dark, rp + up * .09f, up, .22f, .01f, 14); z.mk.Prism(SongGlow(br, new Color(1f, .9f, .6f), 1.2f), rp + up * .1f, up, .07f, .01f, 10);
             // "West Coast": a white convertible
             var cv = z.At(4f, -9f) + up * .05f; var cr = rot * Quaternion.Euler(0, 70f, 0); z.mk.Box(white, cv + up * .55f, new Vector3(1.8f, .5f, 4.6f), cr); z.mk.Box(Paint(new Color(.7f, .2f, .26f)), cv + up * .74f - cr * Vector3.forward * .3f, new Vector3(1.6f, .1f, 2f), cr); z.mk.Box(Paint(new Color(.6f, .8f, .9f)), cv + up * 1f + cr * Vector3.forward * .7f, new Vector3(1.6f, .4f, .06f), cr * Quaternion.Euler(-20f, 0, 0)); foreach (var (x, zz) in new[] { (-.9f, 1.5f), (.9f, 1.5f), (.9f, -1.5f), (-.9f, -1.5f) }) z.mk.Prism(dark, cv + up * .3f + cr * new Vector3(x - Mathf.Sign(x) * .1f, 0, zz), cr * Vector3.right * Mathf.Sign(x), .3f, .2f, 12); foreach (var e in new[] { -.6f, .6f }) z.mk.Blob(SongGlow(wc, new Color(1f, .9f, .7f), 1.6f), cv + up * .6f + cr * new Vector3(e, 0, 2.31f), new Vector3(.14f, .1f, .03f), rng, 0f); BoxCol(z.root, cv + up * .6f, new Vector3(1.9f, 1.2f, 4.7f), cr); Interact.Seat(tlife.transform, cv + up * .8f - cr * Vector3.forward * .2f + cr * Vector3.right * .4f, cr * Vector3.forward, "Sit in the convertible").seatHeight = .5f;
             // "Summertime Sadness": a lawn chair in the heat, a fan, a glass
             var lc = z.At(6f, 6f) + up * .05f; z.mk.Box(stripeB, lc + up * .3f, new Vector3(.6f, .05f, 1.4f), rot * Quaternion.Euler(-10f, 30f, 0)); z.mk.Box(stripeB, lc + up * .66f - Quaternion.Euler(0, 30f, 0) * fr * .66f, new Vector3(.6f, .05f, .7f), rot * Quaternion.Euler(-55f, 30f, 0)); Interact.Seat(tlife.transform, lc + up * .4f, Quaternion.Euler(0, 30f, 0) * fr, "Lie back in the heat").seatHeight = .3f; z.mk.Prism(SongGlow(ss, new Color(1f, .7f, .3f), 1.2f), lc + sd * .7f, up, .05f, .18f, 6);
-            // "Say Yes To Heaven": a white arch of flowers; "Happiness is a butterfly": a butterfly as big as a door
-            var ar = z.At(9f, -1f); foreach (var e in new[] { -1f, 1f }) { z.mk.Prism(white, ar + sd * e * 1.2f - up * .2f, up, .07f, 2.4f, 5); ArtistBits.PostCollider(z.root, ar + sd * e * 1.2f, 2.2f, .08f); } for (var k = 0; k <= 12; k++) { var a = Mathf.PI * k / 12f; z.mk.Blob(k % 3 == 0 ? SongGlow(sy, White, 1.2f) : Paint(new Color(1f, .9f, .92f)), ar + up * (2.2f + Mathf.Sin(a) * 1f) + sd * Mathf.Cos(a) * 1.2f, Vector3.one * .16f, rng, .2f); }
-            var bf = z.At(-1f, 11f) + up * 1.6f; var bm = SongGlow(hb, new Color(.7f, .85f, 1f), 1.2f); foreach (var e in new[] { -1f, 1f }) { z.mk.Tri(bm, bf, bf + sd * e * 1.3f + up * .9f, bf + sd * e * 1.1f - up * .1f, bf - fr * 3f); z.mk.Tri(bm, bf, bf + sd * e * 1.3f + up * .9f, bf + sd * e * 1.1f - up * .1f, bf + fr * 3f); z.mk.Tri(bm, bf, bf + sd * e * .9f - up * .9f, bf + sd * e * 1.1f - up * .1f, bf - fr * 3f); z.mk.Tri(bm, bf, bf + sd * e * .9f - up * .9f, bf + sd * e * 1.1f - up * .1f, bf + fr * 3f); } z.mk.Prism(dark, bf - up * .5f, up, .04f, 1f, 5); z.mk.Prism(iron, bf - up * 1.6f, up, .02f, 1.1f, 4); halos.Add(bf, 1.6f, new Color(.7f, .85f, 1f), .3f);
             // "Norman fucking Rockwell": a painter's easel; "Salvatore": a lemon tree in a pot; "Black Beauty": a black rose
             var es = z.At(-3f, -11f); foreach (var e in new[] { -.4f, .4f }) z.mk.Prism(woodM, es + sd * e, (up + sd * -e * .2f).normalized, .03f, 1.9f, 4); z.mk.Box(SongGlow(nr, new Color(.6f, .74f, .9f), .7f), es + up * 1.3f + fr * .06f, new Vector3(1f, .8f, .04f), rot * Quaternion.Euler(-10f, 0, 0)); ArtistBits.PostCollider(z.root, es, 1.6f, .3f);
             var lt = z.At(3f, 10f) + up * .05f; z.mk.Prism(Paint(new Color(.74f, .46f, .36f)), lt, up, .4f, .6f, 8, 1.2f); z.mk.Prism(trunkM, lt + up * .5f, up, .07f, 1.2f, 5); z.mk.Blob(leafM, lt + up * 2f, new Vector3(.9f, .7f, .9f), rng, .2f); for (var k = 0; k < 6; k++) z.mk.Blob(k == 0 ? SongGlow(sa, new Color(1f, .9f, .3f), 1.2f) : Paint(new Color(1f, .9f, .36f)), lt + up * (1.8f + (k % 3) * .2f) + Quaternion.Euler(0, k * 60f, 0) * Vector3.forward * .8f, new Vector3(.1f, .08f, .08f), rng, 0f); ArtistBits.PostCollider(z.root, lt, 1f, .45f);
             var rs = z.At(10f, 4f); z.mk.Prism(leafDark, rs, up, .02f, 1.1f, 4); z.mk.Blob(SongGlow(bb, new Color(.3f, .16f, .3f), .6f), rs + up * 1.16f, new Vector3(.16f, .12f, .16f), rng, .3f);
-            // "Mariners Apartment Complex": a ship's lantern on a mast; "Cinnamon Girl": a candle on the porch rail
-            var ms = z.At(-8f, 10f); z.mk.Prism(woodM, ms - up * .2f, up, .1f, 4.6f, 6); z.mk.Prism(woodM, ms + up * 3.6f, sd, .05f, 1.6f, 4); z.mk.Box(SongGlow(ma, new Color(1f, .8f, .4f), 1.8f), ms + up * 3.2f + sd * 1.4f, new Vector3(.24f, .34f, .24f), rot); halos.Add(ms + up * 3.2f + sd * 1.4f, 1.2f, new Color(1f, .8f, .4f), .5f); ArtistBits.PostCollider(z.root, ms, 4.4f, .12f);
-            var cn = f.P(2.6f, 1.6f, 3.6f); z.mk.Prism(Paint(new Color(.66f, .34f, .2f)), cn, up, .06f, .14f, 8); z.mk.Blob(SongGlow(cg, new Color(1f, .6f, .3f), 2f), cn + up * .2f, new Vector3(.025f, .05f, .025f), rng, 0f);
+            if (IsQuarter(z.a)) Quarter(z, cg, ma, hb, br, sy);
             Folk(f.P(-1f, .7f, 2.6f), fr, Resident.Pose.Lean, new[] { "Come up on the porch, baby. The sun's doing the thing.", "The radio only plays slow songs after six. It's a rule. Nobody made it.", "Everyone's a little bit heartbroken here. It suits them." });
             Shot(z.ctx, "lana's bungalow", z.At(14f, 5f) + up * 2.2f, f.P(0, 2f, 0));
         }
@@ -168,7 +162,7 @@ namespace EverythingWorld.World
             z.mk.Box(boards, f.P(0, .7f, Dp / 2f + 1.4f), new Vector3(W, .12f, 2.8f), f.r); z.solid.Box(boards, f.P(0, .3f, Dp / 2f + 1.4f), new Vector3(W, .8f, 2.8f), f.r); for (var k = 0; k < 2; k++) z.mk.Box(boards, f.P(0, .2f + k * .26f, Dp / 2f + 3f + (1 - k) * .3f), new Vector3(2f, .1f, .34f), f.r);
             foreach (var e in new[] { -1f, 1f }) { z.mk.Box(white, f.P(e * (W / 2f - .2f), 2.4f, Dp / 2f + 2.7f), new Vector3(.12f, 3.4f, .12f), f.r); ArtistBits.PostCollider(z.root, f.P(e * (W / 2f - .2f), 0, Dp / 2f + 2.7f), 3.4f, .1f); }
             z.mk.Box(Paint(new Color(.42f, .5f, .6f)), f.P(0, 4.1f, Dp / 2f + 1.4f), new Vector3(W + .2f, .1f, 3f), f.r * Quaternion.Euler(8f, 0, 0));
-            z.mk.Box(woodM, f.P(0, 1.75f, Dp / 2f + .02f), new Vector3(1f, 2f, .04f), f.r); foreach (var e in new[] { -2.6f, 2.6f }) { z.mk.Box(windowM, f.P(e, 2.2f, Dp / 2f + .02f), new Vector3(1.4f, 1.1f, .04f), f.r); halos.Add(f.P(e, 2.2f, Dp / 2f + .5f), 1.3f, new Color(1f, .78f, .5f), .3f); }
+            z.mk.Box(woodM, f.P(0, 1.75f, Dp / 2f + .03f), new Vector3(1f, 2f, .04f), f.r); foreach (var e in new[] { -2.6f, 2.6f }) { z.mk.Box(windowM, f.P(e, 2.2f, Dp / 2f + .03f), new Vector3(1.4f, 1.1f, .04f), f.r); halos.Add(f.P(e, 2.2f, Dp / 2f + .5f), 1.3f, new Color(1f, .78f, .5f), .3f); }
             var sw = f.P(-2.8f, .76f, Dp / 2f + 2f); z.mk.Box(woodM, sw + up * .5f, new Vector3(1.6f, .06f, .5f), f.r); z.mk.Box(woodM, sw + up * .8f - f.Fwd * .24f, new Vector3(1.6f, .5f, .05f), f.r); foreach (var e in new[] { -.75f, .75f }) z.mk.Prism(dark, sw + up * .5f + f.Right * e, up, .01f, 2.6f, 3); Interact.Seat(tlife.transform, sw + up * .55f, f.Fwd, "Sit on the porch swing").seatHeight = .5f;
             for (var k = 0; k < 9; k++) z.mk.Tri(k % 3 == 0 ? Paint(new Color(.7f, .2f, .26f)) : k % 3 == 1 ? Paint(Cream) : Paint(new Color(.3f, .36f, .6f)), f.P(-W / 2f + .5f + k, 3.9f, Dp / 2f + 2.75f), f.P(-W / 2f + 1.5f + k, 3.9f, Dp / 2f + 2.75f), f.P(-W / 2f + 1f + k, 3.5f, Dp / 2f + 2.75f), f.P(0, 3.7f, Dp / 2f + 5f));
             Mark(f.o, 7f);

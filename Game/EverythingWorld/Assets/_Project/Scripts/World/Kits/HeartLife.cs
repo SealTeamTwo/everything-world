@@ -18,6 +18,8 @@ namespace EverythingWorld.World
         public Vector3 center, carousel, pierEnd;
         public string sadSong, violenceSong, westSong, oceanSong, butterflySong, moonSong, goodSong, happierSong, dieSong, starsSong, weddingSong;
         public Material lamps, neon, windows, sea; public float played = -99f;
+        /// 0..1: how far into Lana Del Rey's night quarter you are (set by LanaNight).
+        public float night;
         public List<Vector3> smokes = new List<Vector3>();
         public List<(string song, Material m, Color c)> songGlows = new List<(string, Material, Color)>();
         readonly Dictionary<string, float> songAmount = new Dictionary<string, float>();
@@ -100,6 +102,8 @@ namespace EverythingWorld.World
             if (happier > 0f) { tint = Color.Lerp(tint, new Color(.4f, .44f, .56f), happier); amount = Mathf.Lerp(amount, .4f, happier); }
             if (stars > 0f) { tint = Color.Lerp(tint, new Color(.16f, .2f, .44f), stars); amount = Mathf.Lerp(amount, .6f, stars); }
             if (die > 0f) { tint = Color.Lerp(tint, new Color(.1f, .08f, .12f), die); amount = Mathf.Lerp(amount, .62f, die); }
+            // Lana Del Rey's quarter is always night (LanaNight sets how far in you are)
+            if (night > 0f) { tint = Color.Lerp(tint, new Color(.3f, .38f, .8f), night * .8f); amount = Mathf.Lerp(amount, .4f, night); }
             SkyDirector.SetSongTint(Land, tint, amount);
             var wind = clouds != null ? clouds.Wind : new Vector2(1, 0);
             if (here) { Shader.SetGlobalFloat("_EW_Wind", .35f + .15f * energy + happier * .5f); Shader.SetGlobalVector("_EW_WindDir", new Vector4(wind.x, 0, wind.y, 0)); }

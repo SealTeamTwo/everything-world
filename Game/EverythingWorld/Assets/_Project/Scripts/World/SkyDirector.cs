@@ -28,6 +28,14 @@ namespace EverythingWorld.World
         /// A land can also bring a passing shower for a song (the Indie Downs' summer showers).
         static readonly Dictionary<string, float> songRain = new Dictionary<string, float>();
         public static void SetSongRain(string land, float amount) { if (land != null) songRain[land] = amount; }
+        /// A part of a land can be night while the rest isn't (Lana Del Rey's quarter on the Heartbreak Boardwalk):
+        /// 0..1, how far into night it goes. Only the land you're on shows; it blends in and out.
+        static readonly Dictionary<string, float> localNights = new Dictionary<string, float>();
+        public static void SetLocalNight(string land, float amount) { if (land != null) localNights[land] = amount; }
+        float nightNow;
+        /// Straight to the local night (after a jump: travelling by map, the photo tour).
+        public void SnapLocalNight() => nightNow = currentLand != null && localNights.TryGetValue(currentLand, out var n) ? n : 0f;
+        static readonly Color NightSky = new Color(.05f, .07f, .19f), NightFog = new Color(.06f, .08f, .21f), NightSun = new Color(.5f, .6f, 1f);
         float SongRain() => currentLand != null && songRain.TryGetValue(currentLand, out var r) ? r : 0f;
         Volume bloomVolume; Bloom bloomFx; float bloomNow;
         ColorAdjustments gradeFx; SplitToning splitFx; Vignette vignetteFx;
@@ -148,6 +156,7 @@ namespace EverythingWorld.World
             var tintGoal = currentLand != null && songTints.TryGetValue(currentLand, out var tg) ? tg : (Color.white, 0f);
             tintNow = Color.Lerp(tintNow, tintGoal.Item1, Time.deltaTime / 3f);
             tintAmountNow = Mathf.MoveTowards(tintAmountNow, tintGoal.Item2, Time.deltaTime / 4f);
+            nightNow = Mathf.MoveTowards(nightNow, currentLand != null && localNights.TryGetValue(currentLand, out var ln) ? ln : 0f, Time.deltaTime / 2.5f);
             Apply();
         }
 
@@ -158,16 +167,24 @@ namespace EverythingWorld.World
                 sun.shadows = target.sunShadows ? LightShadows.Soft : LightShadows.None;
                 sun.transform.rotation = current.sunRot;
                 sun.color = Color.Lerp(current.sun, tintNow, tintAmountNow);
-                sun.intensity = current.sunI;
+                sun.intensity = current.sunI * (1f - .75f * nightNow);
+                if (nightNow > 0f) sun.color = Color.Lerp(sun.color, NightSun, nightNow);
             }
             RenderSettings.ambientSkyColor = current.sky;
             RenderSettings.ambientEquatorColor = Color.Lerp(current.horizon, tintNow, tintAmountNow * .5f);
             RenderSettings.ambientGroundColor = current.ground;
             RenderSettings.fogColor = Color.Lerp(current.fog, tintNow, tintAmountNow * .35f);
+            if (nightNow > 0f)
+            {
+                RenderSettings.ambientSkyColor = Color.Lerp(RenderSettings.ambientSkyColor, NightSky * 1.6f, nightNow * .85f);
+                RenderSettings.ambientEquatorColor = Color.Lerp(RenderSettings.ambientEquatorColor, NightSky * 1.3f, nightNow * .85f);
+                RenderSettings.ambientGroundColor = Color.Lerp(RenderSettings.ambientGroundColor, NightSky, nightNow * .85f);
+                RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, NightFog, nightNow * .9f);
+            }
             RenderSettings.fogStartDistance = current.fogStart;
             RenderSettings.fogEndDistance = current.fogEnd;
             // the low mist (the "Height fog" pass on the renderer, Shaders/HeightFog.shader)
-            var mist = Color.Lerp(current.hfColor, tintNow, tintAmountNow * .35f);
+            var mist = Color.Lerp(Color.Lerp(current.hfColor, tintNow, tintAmountNow * .35f), NightFog, nightNow * .85f);
             Shader.SetGlobalVector("_EW_FogColor", new Vector4(mist.r, mist.g, mist.b, current.hf));
             var sunCol = sun != null ? sun.color : Color.white;
             Shader.SetGlobalVector("_EW_FogSun", new Vector4(sunCol.r, sunCol.g, sunCol.b, current.sunGlow));
@@ -192,9 +209,10 @@ namespace EverythingWorld.World
                 if (starDome != null)
                 {
                     starDome.transform.position = cam.transform.position;
-                    starMaterial.SetFloat("_Strength", current.stars);
+                    var starsNow = Mathf.Max(current.stars, nightNow);
+                    starMaterial.SetFloat("_Strength", starsNow);
                     if (lineMaterial != null) lineMaterial.SetFloat("_Strength", current.stars);
-                    starDome.SetActive(current.stars > .01f);
+                    starDome.SetActive(starsNow > .01f);
                 }
                 auroraObject ??= MakeAurora();
                 if (auroraObject != null)

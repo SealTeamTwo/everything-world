@@ -17,6 +17,10 @@ namespace EverythingWorld.World
         public static readonly Color Rose = new Color(.94f, .56f, .62f), Peach = new Color(1f, .7f, .52f), Violet = new Color(.42f, .3f, .58f), SeaBlue = new Color(.34f, .6f, .74f), Cream = new Color(.96f, .9f, .82f), Ink = new Color(.12f, .1f, .16f), Neon = new Color(1f, .3f, .56f), Mint = new Color(.56f, .86f, .76f), White = new Color(.96f, .95f, .94f);
         static readonly Color[] Faded = { new Color(.86f, .7f, .7f), new Color(.66f, .78f, .82f), new Color(.92f, .84f, .66f), new Color(.72f, .7f, .84f), new Color(.7f, .82f, .72f), new Color(.9f, .76f, .62f) };
         const float PathW = 2.8f, WalkW = 7f;
+        /// Lana Del Rey's quarter (HeartLana.cs): a ring of cypresses this far round her bungalow.
+        const float QuarterR = 66f;
+        static bool IsQuarter(IslandWorldData.Artist a) => a.name == "Lana Del Rey" && a.r >= QuarterR;
+        static float SegmentNear(Vector2 c, Vector2 a, Vector2 b) { var ab = b - a; var t = ab.sqrMagnitude < .01f ? 0f : Mathf.Clamp01(Vector2.Dot(c - a, ab) / ab.sqrMagnitude); return Vector2.Distance(c, a + ab * t); }
 
         Material boards, boardsDark, sand, woodM, iron, dark, white, leafM, leafDark, trunkM, windowM, lampM, neonM, seaM, stripeA, stripeB;
         GlowHalos halos; Vector3 center, D, S; HeartLife life;
@@ -84,7 +88,27 @@ namespace EverythingWorld.World
 
             var keep = new List<string>();
             void Put(string name, float d, float s, float room) { var p = P2(d, s); if (!Inside(p, room)) return; foreach (var a in data.layout.artists) if (a.sceneId == isl.sceneId && a.name == name) { a.x = p.x; a.z = p.y; keep.Add(name); } }
-            Put("Lana Del Rey", Mathf.Min(70f, streetL * .6f), 44f, 30f); Put("Olivia Rodrigo", -10f, -48f, 26f); Put("Billie Eilish", -50f, 20f, 26f); Put("Ashe", Mathf.Min(80f, streetL * .7f), -44f, 26f);
+            Put("Olivia Rodrigo", -10f, -48f, 26f); Put("Billie Eilish", -50f, 20f, 26f); Put("Ashe", Mathf.Min(80f, streetL * .7f), -44f, 26f);
+            // Lana Del Rey's quarter: the open ground nearest the Promenade with room for a ring 66 m across the middle,
+            // clear of the Boardwalk, the Pier, the realm's tower and the other big artists
+            var lanaSpot = Vector2.zero; var lanaD = float.MaxValue;
+            for (var x = heart2.x - 420f; x <= heart2.x + 420f; x += 8f)
+            for (var y = heart2.y - 420f; y <= heart2.y + 420f; y += 8f)
+            {
+                var p = new Vector2(x, y); var dh = Vector2.Distance(p, heart2); if (dh < 110f || dh >= lanaD) continue;
+                var ok = true;
+                foreach (var t in data.layout.towers) if (Vector2.Distance(p, new Vector2(t.x, t.z)) < 90f) { ok = false; break; }
+                for (var d = 0f; d <= streetL + 80f && ok; d += 10f) if (Vector2.Distance(p, heart2 + D2 * d) < QuarterR + 20f) ok = false;
+                foreach (var a in data.layout.artists) if (ok && a.sceneId == isl.sceneId && keep.Contains(a.name) && Vector2.Distance(p, new Vector2(a.x, a.z)) < QuarterR + 34f) ok = false;
+                if (!ok || !Inside(p, 30f) || !Inside(p, QuarterR - 10f) || !Inside(p, QuarterR + 10f)) continue;
+                lanaD = dh; lanaSpot = p;
+            }
+            foreach (var a in data.layout.artists)
+                if (a.sceneId == isl.sceneId && a.name == "Lana Del Rey")
+                {
+                    if (lanaD < float.MaxValue) { a.x = lanaSpot.x; a.z = lanaSpot.y; a.r = QuarterR + 6f; keep.Add(a.name); }
+                    else Put("Lana Del Rey", Mathf.Min(70f, streetL * .6f), 44f, 30f);
+                }
             var avoid = new List<Vector3>(); for (var d = 0f; d <= streetL; d += 20f) avoid.Add(new Vector3(heart2.x + D2.x * d, 14f, heart2.y + D2.y * d));
             ArtistPlacement.Spread(data, index, 54f, heart2, 44f, 40f, avoid, keep, Land, 330f);
             Level(data, index, heart2, 20f, 38f, plazaY);
@@ -92,7 +116,8 @@ namespace EverythingWorld.World
             {
                 if (a.sceneId != isl.sceneId) continue;
                 a.r = Mathf.Max(a.r, Foot(a) + 6f);
-                Level(data, index, new Vector2(a.x, a.z), Foot(a) + 1f, Foot(a) + 10f, Mathf.Max(data.HeightAt(a.x, a.z), waterY + 2.6f));
+                if (IsQuarter(a)) Level(data, index, new Vector2(a.x, a.z), QuarterR - 2f, QuarterR + 20f, Mathf.Max(data.HeightAt(a.x, a.z), waterY + 2.6f));
+                else Level(data, index, new Vector2(a.x, a.z), Foot(a) + 1f, Foot(a) + 10f, Mathf.Max(data.HeightAt(a.x, a.z), waterY + 2.6f));
             }
         }
 
@@ -166,7 +191,7 @@ namespace EverythingWorld.World
 
         bool InFootprint(LandContext ctx, float x, float z, float pad)
         {
-            foreach (var a in ctx.Artists) { float dx = x - a.x, dz = z - a.z, r = Foot(a) + pad; if (dx * dx + dz * dz < r * r) return true; }
+            foreach (var a in ctx.Artists) { float dx = x - a.x, dz = z - a.z, r = (IsQuarter(a) ? QuarterR + 2f : Foot(a)) + pad; if (dx * dx + dz * dz < r * r) return true; }
             return false;
         }
 
@@ -277,12 +302,17 @@ namespace EverythingWorld.World
                 }
                 walk++;
             }
-            var todo = new List<IslandWorldData.Artist>(ctx.Artists);
+            var todo = new List<IslandWorldData.Artist>(ctx.Artists); IslandWorldData.Artist lana = null; foreach (var a in ctx.Artists) if (IsQuarter(a)) lana = a;
             while (todo.Count > 0)
             {
                 IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
                 foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
+                    foreach (var (p, w) in walkPoints)
+                    {
+                        var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a);
+                        if (lana != null && a != lana && SegmentNear(new Vector2(lana.x, lana.z), new Vector2(p.x, p.z), new Vector2(a.x, a.z)) < QuarterR + 4f) d += 1000f;   // never through Lana's garden
+                        if (d < best) { best = d; next = a; join = p; }
+                    }
                 if (next == null) break;
                 todo.Remove(next);
                 Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);

@@ -78,7 +78,7 @@ Things to remember that aren't built or decided yet. Newest first.
 - As a joke with friends, "The Night the Lights Went Out in Georgia" should also play on the Phish radio, while staying where it normally is.
 
 **Artist areas that need much more:**
-- **Lana Del Rey:** hugely important on the playlist; a Radiohead-scale treatment.
+- **Lana Del Rey:** hugely important on the playlist; a Radiohead-scale treatment. *Built 2026-11-15: her own night quarter with five places for the five favourite songs (WORLD_GUIDE.md). The playlist only has some of her bigger songs; the owner and friends like many more, so more of hers may be added later.*
 - **Virtual Riot:** Radiohead-scale.
 - **Taylor Swift:** a friend's favourite; better, but not Radiohead-scale.
 - **Others:** Phoebe Bridgers, Big Thief, Florence Road (more artistic and unique), Trey Anastasio.
