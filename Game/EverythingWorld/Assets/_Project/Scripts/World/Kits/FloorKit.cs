@@ -30,7 +30,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            ground = WorldMaterials.Glow(new Color(.17f, .17f, .16f), .05f); truss = WorldMaterials.Solid(new Color(.5f, .52f, .56f), .7f); dark = WorldMaterials.Solid(new Color(.04f, .04f, .05f)); white = WorldMaterials.Glow(new Color(.86f, .86f, .9f), .16f); canvas = WorldMaterials.Glow(new Color(.8f, .78f, .72f), .14f); wood = WorldMaterials.Glow(new Color(.46f, .36f, .26f), .1f); leafM = WorldMaterials.Glow(new Color(.2f, .3f, .22f), .1f);
+            ground = WorldMaterials.Glow(new Color(.17f, .17f, .16f), .05f); truss = WorldMaterials.Surface(new Color(.5f, .52f, .56f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.04f, .04f, .05f)); white = WorldMaterials.Glow(new Color(.86f, .86f, .9f), .16f); canvas = WorldMaterials.Glow(new Color(.8f, .78f, .72f), .14f); wood = WorldMaterials.Glow(new Color(.46f, .36f, .26f), .1f); leafM = WorldMaterials.Glow(new Color(.2f, .3f, .22f), .1f);
             lampM = new Material(WorldMaterials.Glow(Amber, 1.6f)) { name = "Floor lamps" }; screenM = new Material(WorldMaterials.Glow(Blue, 1.4f)) { name = "Floor screens" }; stickM = new Material(WorldMaterials.Glow(Laser, 2f)) { name = "Floor glow sticks" }; fireM = new Material(WorldMaterials.Glow(new Color(1f, .5f, .16f), 2f)) { name = "Floor fires" };
         }
 
