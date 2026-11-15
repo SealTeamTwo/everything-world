@@ -33,7 +33,7 @@ namespace EverythingWorld.World
         void MakeMaterials()
         {
             // everything is faintly self-lit, so the dusk never swallows it
-            road = WorldMaterials.Glow(new Color(.3f, .32f, .42f), .12f); paving = WorldMaterials.Glow(new Color(.5f, .5f, .58f), .12f); woodM = WorldMaterials.Glow(new Color(.46f, .34f, .28f), .12f); iron = WorldMaterials.Solid(new Color(.16f, .16f, .2f), .5f); dark = WorldMaterials.Solid(new Color(.07f, .07f, .1f)); white = WorldMaterials.Glow(new Color(.92f, .9f, .86f), .14f);
+            road = WorldMaterials.Glow(new Color(.3f, .32f, .42f), .12f); paving = WorldMaterials.Glow(new Color(.5f, .5f, .58f), .12f); woodM = WorldMaterials.Glow(new Color(.46f, .34f, .28f), .12f); iron = WorldMaterials.Surface(new Color(.16f, .16f, .2f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.07f, .07f, .1f)); white = WorldMaterials.Glow(new Color(.92f, .9f, .86f), .14f);
             leafM = WorldMaterials.Glow(new Color(.3f, .48f, .4f), .14f); leafDark = WorldMaterials.Glow(new Color(.2f, .36f, .36f), .12f); leafMauve = WorldMaterials.Glow(new Color(.56f, .44f, .62f), .16f); trunkM = WorldMaterials.Glow(new Color(.3f, .26f, .28f), .1f); curtain = WorldMaterials.Glow(new Color(.9f, .56f, .4f), .5f); quilt = WorldMaterials.Glow(new Color(.5f, .42f, .62f), .16f);
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .74f, .4f), 1.3f)) { name = "Lo-Fi windows" }; lampM = new Material(WorldMaterials.Glow(Lamp, 1.7f)) { name = "Lo-Fi lamps" };
             vendM = new Material(WorldMaterials.Glow(new Color(.8f, .92f, 1f), 1.4f)) { name = "Lo-Fi vending" }; puddleM = new Material(WorldMaterials.Glow(new Color(.5f, .62f, .86f), .5f)) { name = "Lo-Fi puddles" };
