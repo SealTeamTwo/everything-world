@@ -89,7 +89,7 @@ namespace EverythingWorld.World
             for (var i = 0; i < stripes; i++)
             {
                 var x = (i + .5f) / stripes - .5f;
-                mk.Box(WorldMaterials.Solid(i % 2 == 0 ? a : b), center + right.normalized * x * w, new Vector3(w / stripes + .002f, h, thick), rot);
+                mk.Box(WorldMaterials.Surface(i % 2 == 0 ? a : b, Surface.Cloth), center + right.normalized * x * w, new Vector3(w / stripes + .002f, h, thick), rot);
             }
         }
 
@@ -104,8 +104,8 @@ namespace EverythingWorld.World
             var (lo, hi) = Footprint(ctx, c, rot, w, d);
             var floorY = hi + .15f;
             var accent = AccentOf(z.a, 0);
-            var facade = WorldMaterials.Solid(Color.Lerp(accent, Cream, .45f));
-            var floor = WorldMaterials.Solid(new Color(.55f, .4f, .3f));
+            var facade = WorldMaterials.Surface(Color.Lerp(accent, Cream, .45f), Surface.Painted);
+            var floor = WorldMaterials.Surface(new Color(.55f, .4f, .3f), Surface.Wood);
             Floor(z.mk, z.solid, floor, stone, c, rot, w, d, floorY, lo);
             void Wall(Material m, float x0, float x1, float y0, float y1, float zc, float thick, Quaternion r)
             {
@@ -140,7 +140,7 @@ namespace EverythingWorld.World
             for (var i = 0; i < 12; i++)
             {
                 var x = (i + .5f) / 12f * (w - .4f) - (w - .4f) / 2f;
-                var col = WorldMaterials.Solid(i % 2 == 0 ? accent : Cream);
+                var col = WorldMaterials.Surface(i % 2 == 0 ? accent : Cream, Surface.Cloth);
                 var top = c + rot * new Vector3(x, 0, d / 2f) + Vector3.up * (floorY + 3.5f);
                 var tilt = Quaternion.LookRotation(front) * Quaternion.Euler(28f, 0, 0);
                 z.mk.Box(col, top + front * .8f - Vector3.up * .42f, new Vector3((w - .4f) / 12f + .01f, .05f, 1.8f), tilt);
@@ -230,7 +230,7 @@ namespace EverythingWorld.World
             var c = z.center - front * 5f; c.y = 0f;
             var (lo, hi) = Footprint(ctx, c, rot, W, D);
             var floorY = hi + 1.1f;
-            var deck = WorldMaterials.Solid(new Color(.42f, .33f, .26f));
+            var deck = WorldMaterials.Surface(new Color(.42f, .33f, .26f), Surface.Wood);
             Floor(z.mk, z.solid, deck, darkWood, c, rot, W, D, floorY, lo);
             Ramp(ctx, z.mk, z.solid, deck, c + side * (W / 2f) + front * 1.5f, side, floorY, 2.4f);
             // back wall with the covers, big
@@ -281,7 +281,7 @@ namespace EverythingWorld.World
             var both = new[] { NoahBlue, Cream, SeanGreen, Cream };
             Bunting(z.mk, poleL + Vector3.up * 3.2f, trussL - Vector3.up * 3.5f, both, 0, .8f);
             Bunting(z.mk, poleR + Vector3.up * 3.2f, trussR - Vector3.up * 3.5f, both, 1, .8f);
-            var hay = WorldMaterials.Solid(new Color(.86f, .76f, .46f));
+            var hay = WorldMaterials.Surface(new Color(.86f, .76f, .46f), Surface.Foliage);
             for (var i = 0; i < 6; i++)
             {
                 var p = z.At(D / 2f - 5f + 5f + (i / 3) * 3.4f, (i % 3 - 1) * 3.6f + ((i / 3) % 2) * 1.2f);
@@ -302,14 +302,14 @@ namespace EverythingWorld.World
             // a short lane that comes from nowhere and goes nowhere
             var lane = new List<Vector3>();
             for (var x = -18f; x <= 18f; x += 2f) lane.Add(z.At(3.6f, x));
-            Ribbon(ctx, z.mk, WorldMaterials.Solid(new Color(.45f, .45f, .47f)), lane, 4f, .09f);
+            Ribbon(ctx, z.mk, WorldMaterials.Surface(new Color(.45f, .45f, .47f), Surface.Stone), lane, 4f, .09f);
             var c = z.At(-.5f, 0);
             const float W = 5f, H = 2.7f, D = 1.8f;
             Color[] rainbow = { new Color(.9f, .3f, .3f), new Color(.95f, .58f, .25f), new Color(.95f, .85f, .35f), new Color(.45f, .78f, .42f), new Color(.35f, .6f, .9f), new Color(.55f, .42f, .8f), new Color(.85f, .45f, .7f) };
             for (var i = 0; i < rainbow.Length; i++)
             {
                 var y = (i + .5f) / rainbow.Length * H;
-                z.mk.Box(WorldMaterials.Solid(rainbow[i]), c - front * (D / 2f) + Vector3.up * y, new Vector3(W, H / rainbow.Length + .01f, .12f + (i % 2) * .024f), rot);   // neighbouring stripes overlap a little, so alternate depths keep their faces apart (by 6 mm or more after Box's growth)
+                z.mk.Box(WorldMaterials.Surface(rainbow[i], Surface.Painted), c - front * (D / 2f) + Vector3.up * y, new Vector3(W, H / rainbow.Length + .01f, .12f + (i % 2) * .024f), rot);   // neighbouring stripes overlap a little, so alternate depths keep their faces apart (by 6 mm or more after Box's growth)
             }
             z.solid.Box(cream, c - front * (D / 2f) + Vector3.up * H / 2f, new Vector3(W, H, .2f), rot);
             foreach (var s in new[] { -1f, 1f })
@@ -319,7 +319,7 @@ namespace EverythingWorld.World
             }
             z.mk.Box(cream, c + Vector3.up * (H + .08f), new Vector3(W + .4f, .16f, D + .5f), rot);
             for (var i = 0; i < rainbow.Length; i++)
-                z.mk.Box(WorldMaterials.Solid(rainbow[i]), c + front * (D / 2f + .25f) + Vector3.up * (H + .08f) + side * ((i + .5f) / rainbow.Length * (W + .4f) - (W + .4f) / 2f), new Vector3((W + .4f) / rainbow.Length + .01f, .2f + (i % 2) * .024f, .06f + (i % 2) * .024f), rot);
+                z.mk.Box(WorldMaterials.Surface(rainbow[i], Surface.Painted), c + front * (D / 2f + .25f) + Vector3.up * (H + .08f) + side * ((i + .5f) / rainbow.Length * (W + .4f) - (W + .4f) / 2f), new Vector3((W + .4f) / rainbow.Length + .01f, .2f + (i % 2) * .024f, .06f + (i % 2) * .024f), rot);
             ArtistBits.CoverWall(z.pictures, z.labels, ctx, z.a, c - front * (D / 2f - .08f) + Vector3.up * 1.75f, front, 3, .7f, 3, true, Cream);
             Bench(z.mk, z.solid, c - front * .35f, front);
             // the stop sign and a timetable
@@ -361,7 +361,7 @@ namespace EverythingWorld.World
                     var rug = Quaternion.LookRotation(front) * Quaternion.Euler(0, 12, 0);
                     for (var i = 0; i < 4; i++)
                     for (var j = 0; j < 3; j++)
-                        z.mk.Box(WorldMaterials.Solid((i + j) % 2 == 0 ? accent : Cream), c + rug * new Vector3((i - 1.5f) * .7f, .03f, (j - 1f) * .7f), new Vector3(.7f, .04f, .7f), rug);
+                        z.mk.Box(WorldMaterials.Surface((i + j) % 2 == 0 ? accent : Cream, Surface.Cloth), c + rug * new Vector3((i - 1.5f) * .7f, .03f, (j - 1f) * .7f), new Vector3(.7f, .04f, .7f), rug);
                     z.mk.Box(wood, c + rug * new Vector3(1.6f, .25f, .9f), new Vector3(.6f, .4f, .4f), rug);
                     z.mk.Box(darkWood, c + rug * new Vector3(1.6f, .55f, .9f), new Vector3(.5f, .05f, .05f), rug);
                     Tree(z, z.At(-4.5f, -3f), 1.1f);
@@ -417,7 +417,7 @@ namespace EverythingWorld.World
                         z.mk.Box(darkWood, (foot + top) / 2f, new Vector3(.05f, d.magnitude, .05f), Quaternion.LookRotation(front, d.normalized));
                     }
                     ArtistBits.PostCollider(z.root, tri, 1.5f, .55f);
-                    z.mk.Prism(WorldMaterials.Solid(new Color(.75f, .6f, .3f), .5f), tri + Vector3.up * 1.4f - out_ * .5f, (out_ + Vector3.up * .25f).normalized, .1f, 1.2f, 8, .8f);
+                    z.mk.Prism(WorldMaterials.Surface(new Color(.75f, .6f, .3f), Surface.Metal), tri + Vector3.up * 1.4f - out_ * .5f, (out_ + Vector3.up * .25f).normalized, .1f, 1.2f, 8, .8f);
                     CoverBoard(z, z.At(1.2f, 3.2f), front, 2);
                     Plaque(z, 2.6f, -2.8f);
                     break;

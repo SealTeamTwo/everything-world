@@ -84,7 +84,7 @@ namespace EverythingWorld.World
             var root = new GameObject("The quiet place").transform;
             root.SetParent(ctx.Root, false);
             var c = new Vector3(quiet.x, ctx.Ground(quiet.x, quiet.z), quiet.z);
-            var pave = WorldMaterials.Solid(new Color(.82f, .8f, .75f)); var paveB = WorldMaterials.Solid(new Color(.74f, .72f, .67f));
+            var pave = WorldMaterials.Surface(new Color(.82f, .8f, .75f), Surface.Stone); var paveB = WorldMaterials.Surface(new Color(.74f, .72f, .67f), Surface.Stone);
             var warm = new Color(1f, .78f, .5f);
             // the walkway: a ring of laid stone
             const int segs = 56;
@@ -104,7 +104,7 @@ namespace EverythingWorld.World
                 var a = ctx.Range(0, Mathf.PI * 2f); var r = ctx.Range(2.6f, WalkIn - .6f);
                 var p = c + new Vector3(Mathf.Cos(a) * r, 0, Mathf.Sin(a) * r);
                 mk.Box(leafB, p + Vector3.up * .15f, new Vector3(.03f, .3f, .03f), Quaternion.identity);
-                mk.Blob(WorldMaterials.Solid(petals[i % petals.Length]), p + Vector3.up * .32f, new Vector3(.09f, .05f, .09f), ctx.Rng, .1f);
+                mk.Blob(WorldMaterials.Surface(petals[i % petals.Length], Surface.Foliage), p + Vector3.up * .32f, new Vector3(.09f, .05f, .09f), ctx.Rng, .1f);
             }
             Tree(ctx, mk, root, c, warm);
             // the four stones, facing the tree, between the walkway and the meadow
@@ -148,7 +148,7 @@ namespace EverythingWorld.World
                 mk.Prism(bark, c + Vector3.up * .9f + new Vector3(dir.x, 0, dir.z) * .9f, dir, .55f, 3.2f, 6, .3f);
                 ArtistBits.PostCollider(root, c + new Vector3(dir.x, 0, dir.z) * 2.6f, .9f, .55f);   // the roots
             }
-            var crownLeaf = new[] { leafA, leafB, WorldMaterials.Solid(new Color(.6f, .62f, .36f)) };
+            var crownLeaf = new[] { leafA, leafB, WorldMaterials.Surface(new Color(.6f, .62f, .36f), Surface.Foliage) };
             var lanterns = new List<Vector3>();
             for (var k = 0; k < 6; k++)
             {

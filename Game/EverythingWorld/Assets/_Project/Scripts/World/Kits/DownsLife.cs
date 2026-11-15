@@ -113,14 +113,14 @@ namespace EverythingWorld.World
         {
             var body = new GameObject("Kite").transform; body.SetParent(transform, false);
             var mk = new MeshKit();
-            var cloth = WorldMaterials.Solid(color);
+            var cloth = WorldMaterials.Surface(color, Surface.Cloth);
             Vector3 top = new Vector3(0, 1.1f, 0), bottom = new Vector3(0, -1.5f, 0), l = new Vector3(-.9f, 0, 0), r = new Vector3(.9f, 0, 0);
             foreach (var side in new[] { Vector3.forward, Vector3.back })
             {
                 var inside = -side * .1f;
                 mk.Tri(cloth, top, l, bottom, inside); mk.Tri(cloth, top, r, bottom, inside);
             }
-            var tail = WorldMaterials.Solid(Color.Lerp(color, Color.white, .5f));
+            var tail = WorldMaterials.Surface(Color.Lerp(color, Color.white, .5f), Surface.Cloth);
             for (var k = 0; k < 5; k++) mk.Box(tail, bottom - Vector3.up * (.6f + k * .55f) + Vector3.right * Mathf.Sin(k) * .15f, new Vector3(.3f, .12f, .05f), Quaternion.Euler(0, 0, k * 25f));
             mk.Build("Cloth", body, false).isStatic = false;
             var line = body.gameObject.AddComponent<LineRenderer>();
@@ -129,7 +129,7 @@ namespace EverythingWorld.World
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             // a stake in the ground where the string is tied
             var stake = new MeshKit();
-            stake.Prism(WorldMaterials.Solid(new Color(.33f, .25f, .19f)), anchor, Vector3.up, .06f, .8f, 5);
+            stake.Prism(WorldMaterials.Surface(new Color(.33f, .25f, .19f), Surface.Wood), anchor, Vector3.up, .06f, .8f, 5);
             stake.Build("Kite stake", transform, false);
             kites.Add(new Kite { body = body, line = line, anchor = anchor + Vector3.up * .75f, phase = i * 1.7f, reach = 24f + i * 5f });
         }
@@ -211,11 +211,11 @@ namespace EverythingWorld.World
             var y = 0f;
             for (var i = 0; i + 1 < radii.Length; i++)
             {
-                mk.Prism(WorldMaterials.Solid(bands[i % bands.Length]), Vector3.up * y, Vector3.up, radii[i], 2.2f, 14, radii[i + 1] / radii[i]);
+                mk.Prism(WorldMaterials.Surface(bands[i % bands.Length], Surface.Cloth), Vector3.up * y, Vector3.up, radii[i], 2.2f, 14, radii[i + 1] / radii[i]);
                 y += 2.2f;
             }
-            mk.Blob(WorldMaterials.Solid(bands[0]), Vector3.up * (y + .4f), new Vector3(3.7f, 1.6f, 3.7f), new System.Random(5), .02f);
-            var wicker = WorldMaterials.Solid(new Color(.55f, .4f, .26f));
+            mk.Blob(WorldMaterials.Surface(bands[0], Surface.Cloth), Vector3.up * (y + .4f), new Vector3(3.7f, 1.6f, 3.7f), new System.Random(5), .02f);
+            var wicker = WorldMaterials.Surface(new Color(.55f, .4f, .26f), Surface.Wood);
             mk.Box(wicker, Vector3.down * 3.2f, new Vector3(1.6f, 1.1f, 1.6f), Quaternion.identity);
             for (var k = 0; k < 4; k++)
             {

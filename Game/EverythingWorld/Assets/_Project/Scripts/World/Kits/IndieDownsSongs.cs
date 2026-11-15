@@ -113,7 +113,7 @@ namespace EverythingWorld.World
             }
             Rabbit(c + up * .05f, face, true);
             for (var k = 0; k < 3; k++) { var a = 1.2f + k * .7f; Rabbit(ctx.OnGround(c.x + Mathf.Cos(a) * 3.8f, c.z + Mathf.Sin(a) * 3.8f), new Vector3(-Mathf.Cos(a), 0, -Mathf.Sin(a)), false); }
-            for (var k = 0; k < 10; k++) { var a = k * .63f; var p = ctx.OnGround(c.x + Mathf.Cos(a) * 3.3f, c.z + Mathf.Sin(a) * 3.3f); mk.Box(WorldMaterials.Solid(new Color(.4f, .55f, .3f)), p + up * .4f, new Vector3(.05f, .8f, .05f), Quaternion.Euler(ctx.Range(-10f, 10f), 0, ctx.Range(-10f, 10f))); }
+            for (var k = 0; k < 10; k++) { var a = k * .63f; var p = ctx.OnGround(c.x + Mathf.Cos(a) * 3.3f, c.z + Mathf.Sin(a) * 3.3f); mk.Box(WorldMaterials.Surface(new Color(.4f, .55f, .3f), Surface.Foliage), p + up * .4f, new Vector3(.05f, .8f, .05f), Quaternion.Euler(ctx.Range(-10f, 10f), 0, ctx.Range(-10f, 10f))); }
         }
 
         void StormMast(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face, string id)
@@ -142,7 +142,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var side = Vector3.Cross(up, face);
             mk.Box(brick, c + up * 1.4f, new Vector3(2.4f, 2.8f, .3f), rot); solid.Box(brick, c + up * 1.4f, new Vector3(2.4f, 2.8f, .3f), rot);
-            mk.Box(WorldMaterials.Solid(Doors[0]), c + up * 1.05f + face * .16f, new Vector3(.95f, 2f, .04f), rot); mk.Blob(iron, c + up * 1.05f + face * .2f + side * .35f, Vector3.one * .04f, ctx.Rng, 0f);
+            mk.Box(WorldMaterials.Surface(Doors[0], Surface.Painted), c + up * 1.05f + face * .16f, new Vector3(.95f, 2f, .04f), rot); mk.Blob(iron, c + up * 1.05f + face * .2f + side * .35f, Vector3.one * .04f, ctx.Rng, 0f);
             var num = SongGlow(id, Lamp, 2f); mk.Box(num, c + up * 2.3f + face * .17f, new Vector3(.8f, .28f, .02f), rot);
             ArtistBits.Label(ctx.Root, "7563", c + up * 2.3f + face * .19f, face, .2f, Ink, TextAnchor.MiddleCenter);
             mk.Box(stone, c + up * .05f + face * .6f, new Vector3(1.2f, .1f, .6f), rot);
@@ -156,7 +156,7 @@ namespace EverythingWorld.World
             mk.Box(cream, (a + b) / 2f + up * 2.2f, new Vector3(Vector3.Distance(a, b), .02f, .02f), Quaternion.LookRotation(Vector3.Cross(up, face)) * Quaternion.Euler(0, 90f, 0));
             Color[] sheets = { new Color(.95f, .94f, .9f), Pastels[2], Pastels[1], Pastels[3] };
             var glow = SongGlow(id, new Color(1f, .9f, .7f), .8f);
-            for (var k = 0; k < 4; k++) { var p = Vector3.Lerp(a, b, .15f + k * .23f) + up * 1.6f; mk.Box(k == 1 ? glow : WorldMaterials.Solid(sheets[k]), p, new Vector3(1.4f, 1.2f, .03f), rot * Quaternion.Euler(0, ctx.Range(-8f, 8f), 0)); }
+            for (var k = 0; k < 4; k++) { var p = Vector3.Lerp(a, b, .15f + k * .23f) + up * 1.6f; mk.Box(k == 1 ? glow : WorldMaterials.Surface(sheets[k], Surface.Cloth), p, new Vector3(1.4f, 1.2f, .03f), rot * Quaternion.Euler(0, ctx.Range(-8f, 8f), 0)); }
         }
 
         void LittleTower(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face, string id)
@@ -185,7 +185,7 @@ namespace EverythingWorld.World
 
         void LittleRocket(LandContext ctx, MeshKit mk, MeshKit solid, Vector3 c, Vector3 face, string id)
         {
-            var up = Vector3.up; var redM = WorldMaterials.Solid(new Color(.85f, .25f, .2f)); mk.Prism(cream, c + up * .6f, up, .55f, 3.2f, 12); mk.Cone(redM, c + up * 3.8f, .55f, 1.2f, 12);
+            var up = Vector3.up; var redM = WorldMaterials.Surface(new Color(.85f, .25f, .2f), Surface.Painted); mk.Prism(cream, c + up * .6f, up, .55f, 3.2f, 12); mk.Cone(redM, c + up * 3.8f, .55f, 1.2f, 12);
             foreach (var k in new[] { 0, 1, 2 }) { var d = Quaternion.Euler(0, k * 120f, 0) * Vector3.forward; mk.Tri(redM, c + d * .55f + up * .6f, c + d * .55f + up * 1.8f, c + d * 1.1f, c + Vector3.Cross(d, up) * 3f); mk.Tri(redM, c + d * .55f + up * .6f, c + d * 1.1f, c + d * .55f + up * 1.8f, -Vector3.Cross(d, up) * 3f + c); }
             mk.Prism(SongGlow(id, new Color(.5f, .8f, 1f), 2f), c + up * 2.8f + face * .53f, face, .18f, .04f, 10); mk.Prism(SongGlow(id, new Color(1f, .6f, .2f), 2.4f), c + up * .5f, Vector3.down, .4f, .3f, 10, .3f);
             ArtistBits.PostCollider(ctx.Root, c, 4f, .7f);
@@ -230,12 +230,12 @@ namespace EverythingWorld.World
                 case "Manchester Orchestra": var a2 = p - side * 1.5f; var b2 = p + side * 1.5f; foreach (var q in new[] { a2, b2 }) { z.mk.Prism(darkWood, q, up, .05f, 1.4f, 6); z.mk.Prism(iron, q + up * 1.4f, side, .08f, .15f, 8); } z.mk.Box(G(new Color(1f, .85f, .5f), 1.6f), p + up * 1.45f, new Vector3(3f, .015f, .015f), Quaternion.LookRotation(side)); BoxCol(z.root, p + up * .75f, new Vector3(3.1f, 1.5f, .15f), rot); break;
                 case "Modest Mouse": z.mk.Blob(stone, p + up * .6f, new Vector3(.9f, .7f, .9f), ctx.Rng, .3f); z.mk.Cone(stone, p + up * 1.2f + f * .3f, .25f, .5f, 5); foreach (var s in new[] { -.25f, .25f }) z.mk.Blob(G(new Color(1f, .5f, .1f), 2.6f), p + up * .9f + f * .75f + side * s, Vector3.one * .07f, ctx.Rng, 0f); z.solid.Box(stone, p + up * .6f, new Vector3(1.6f, 1.2f, 1.6f), rot); break;
                 case "Rio Romeo": z.mk.Box(darkWood, p + up * .6f, new Vector3(1f, 1.2f, .6f), rot); z.mk.Box(G(new Color(1f, .9f, .7f), 1.4f), p + up * 1.3f + f * .31f, new Vector3(.9f, .3f, .02f), rot); ArtistBits.Label(z.labels, "NEWS", p + up * 1.3f + f * .33f, f, .16f, Ink, TextAnchor.MiddleCenter); z.solid.Box(darkWood, p + up * .7f, new Vector3(1f, 1.4f, .6f), rot); break;
-                case "Sam Fender": z.mk.Prism(WorldMaterials.Solid(new Color(.85f, .25f, .2f)), p, up, .4f, 1f, 10, .7f); z.mk.Prism(G(new Color(1f, .85f, .4f), 2.4f), p + up * 1f, up, .15f, .25f, 8); ArtistBits.Label(z.labels, "17", p + up * .6f + f * .42f, f, .2f, Cream, TextAnchor.MiddleCenter); ArtistBits.PostCollider(z.root, p, 1.3f, .4f); break;
+                case "Sam Fender": z.mk.Prism(WorldMaterials.Surface(new Color(.85f, .25f, .2f), Surface.Painted), p, up, .4f, 1f, 10, .7f); z.mk.Prism(G(new Color(1f, .85f, .4f), 2.4f), p + up * 1f, up, .15f, .25f, 8); ArtistBits.Label(z.labels, "17", p + up * .6f + f * .42f, f, .2f, Cream, TextAnchor.MiddleCenter); ArtistBits.PostCollider(z.root, p, 1.3f, .4f); break;
                 case "The 1975": Post(.3f); var fm = G(new Color(1f, .45f, .75f), 2.2f); var cc = p + up * 1.6f; foreach (var (x, y, w, h) in new[] { (0f, .7f, 1.6f, .08f), (0f, -.7f, 1.6f, .08f), (-.8f, 0f, .08f, 1.48f), (.8f, 0f, .08f, 1.48f) }) z.mk.Box(fm, cc + side * x + up * y, new Vector3(w, h, .05f), rot); z.mk.Box(darkWood, p + up * .6f, new Vector3(.08f, 1.2f, .08f), rot); break;
                 case "The Drums": Post(1.4f); var sc = p + up * 2f; for (var k = 0; k < 10; k++) { var a = (90f + k * 36f) * Mathf.Deg2Rad; var a1 = (90f + (k + 1) * 36f) * Mathf.Deg2Rad; var r0 = k % 2 == 0 ? .6f : .25f; var r1 = k % 2 == 0 ? .25f : .6f; var q0 = sc + (side * Mathf.Cos(a) + up * Mathf.Sin(a)) * r0; var q1 = sc + (side * Mathf.Cos(a1) + up * Mathf.Sin(a1)) * r1; z.mk.Tri(dark(), sc, q0, q1, sc - f); z.mk.Tri(dark(), sc, q1, q0, sc + f); z.mk.Box(G(new Color(.8f, .85f, 1f), 2.2f), (q0 + q1) / 2f + f * .03f, new Vector3(.04f, .04f, Vector3.Distance(q0, q1)), Quaternion.LookRotation(q1 - q0, f)); } BoxCol(z.root, sc, new Vector3(1.3f, 1.3f, .15f), rot); break;
                 case "The Folk Implosion": Post(1.5f); z.mk.Blob(cream, p + up * 1.9f, new Vector3(.6f, .4f, .1f), ctx.Rng, 0f); for (var k = 0; k < 3; k++) z.mk.Blob(G(new Color(1f, .8f, .4f), 2.2f), p + up * 1.9f + side * ((k - 1f) * .25f) + f * .1f, Vector3.one * .05f, ctx.Rng, 0f); BoxCol(z.root, p + up * 1.9f, new Vector3(1.2f, .8f, .25f), rot); break;
                 case "Veronica Everheart": foreach (var s in new[] { -.3f, .3f }) z.mk.Box(darkWood, p + side * s + up * 1.5f, new Vector3(.06f, 3f, .06f), rot * Quaternion.Euler(-8f, 0, 0)); for (var k = 0; k < 6; k++) z.mk.Box(G(new Color(.9f, .95f, 1f), 1.4f), p + up * (.3f + k * .5f) - f * k * .07f, new Vector3(.6f, .04f, .04f), rot); BoxCol(z.root, p + up * 1.5f - f * .2f, new Vector3(.8f, 3f, .5f), rot); break;
-                case "Wolf Alice": var snow = WorldMaterials.Solid(new Color(.95f, .97f, 1f)); z.mk.Prism(snow, p - up * .1f, up, 1.4f, .15f, 12); z.mk.Cone(WorldMaterials.Solid(new Color(.3f, .45f, .35f)), p, .8f, 2f, 8); z.mk.Cone(snow, p + up * 1.2f, .5f, .8f, 8); z.mk.Blob(G(new Color(1f, .9f, .5f), 2.6f), p + up * 2.1f, Vector3.one * .12f, ctx.Rng, 0f); ArtistBits.PostCollider(z.root, p, 2f, .6f); break;
+                case "Wolf Alice": var snow = WorldMaterials.Surface(new Color(.95f, .97f, 1f), Surface.Stone); z.mk.Prism(snow, p - up * .1f, up, 1.4f, .15f, 12); z.mk.Cone(WorldMaterials.Surface(new Color(.3f, .45f, .35f), Surface.Foliage), p, .8f, 2f, 8); z.mk.Cone(snow, p + up * 1.2f, .5f, .8f, 8); z.mk.Blob(G(new Color(1f, .9f, .5f), 2.6f), p + up * 2.1f, Vector3.one * .12f, ctx.Rng, 0f); ArtistBits.PostCollider(z.root, p, 2f, .6f); break;
                 case "Yellow Days": Post(2.2f); var cl = p + up * 2.6f; foreach (var s in new[] { -.6f, .6f }) z.mk.Blob(cream, cl + side * s, new Vector3(.6f, .35f, .4f), ctx.Rng, .2f); z.mk.Box(G(new Color(1f, .85f, .3f), 2f), cl - up * 1f, new Vector3(.25f, 2f, .05f), rot); break;
                 case "Pavement": var sl = z.At(-1f, -5f); z.mk.Box(iron, sl + up * 1f, new Vector3(.6f, .05f, 3f), rot * Quaternion.Euler(-30f, 0, 0)); z.mk.Prism(iron, sl - f * 1.3f, up, .04f, 1.8f, 6); for (var k = 0; k < 6; k++) z.mk.Blob(G(new Color(1f, .75f, .3f), 1.4f), sl + f * (1.6f + k * .2f) + side * ctx.Range(-.6f, .6f) + up * .08f, Vector3.one * .1f, ctx.Rng, .4f); ArtistBits.PostCollider(z.root, sl, 1.8f, .5f); break;
             }
