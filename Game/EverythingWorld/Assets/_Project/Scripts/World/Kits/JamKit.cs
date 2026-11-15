@@ -44,11 +44,11 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            dirt = WorldMaterials.Solid(new Color(.45f, .36f, .26f)); wood = WorldMaterials.Solid(new Color(.5f, .37f, .25f));
-            dark = WorldMaterials.Solid(new Color(.08f, .08f, .1f)); metal = WorldMaterials.Solid(new Color(.7f, .72f, .76f), .8f);
-            leaf = WorldMaterials.Solid(new Color(.2f, .4f, .24f)); pineM = WorldMaterials.Solid(new Color(.12f, .3f, .22f));
-            bark = WorldMaterials.Solid(new Color(.35f, .27f, .2f)); white = WorldMaterials.Solid(new Color(.95f, .94f, .9f));
-            canvas = WorldMaterials.Solid(new Color(.92f, .88f, .78f));
+            dirt = WorldMaterials.Surface(new Color(.45f, .36f, .26f), Surface.Stone); wood = WorldMaterials.Surface(new Color(.5f, .37f, .25f), Surface.Wood);
+            dark = WorldMaterials.Solid(new Color(.08f, .08f, .1f)); metal = WorldMaterials.Surface(new Color(.7f, .72f, .76f), Surface.Metal);
+            leaf = WorldMaterials.Surface(new Color(.2f, .4f, .24f), Surface.Foliage); pineM = WorldMaterials.Surface(new Color(.12f, .3f, .22f), Surface.Foliage);
+            bark = WorldMaterials.Surface(new Color(.35f, .27f, .2f), Surface.Bark); white = WorldMaterials.Solid(new Color(.95f, .94f, .9f));
+            canvas = WorldMaterials.Surface(new Color(.92f, .88f, .78f), Surface.Cloth);
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
@@ -277,10 +277,10 @@ namespace EverythingWorld.World
             ArtistBits.Label(ctx.Root, "THE JAM BAND COMMONWEALTH", gate + up * 6.2f - face * .12f, -face, .38f, Ink, TextAnchor.MiddleCenter);
             ArtistBits.Label(ctx.Root, "THE JAM BAND COMMONWEALTH", gate + up * 6.2f + face * .12f, face, .38f, Ink, TextAnchor.MiddleCenter);   // lettered on the back too, so it isn't blank walking out
             StringLights(mk, gate + up * 7f - side * 5f, gate + up * 7f + side * 5f, Warm, 14);
-            for (var k = 0; k < 3; k++) { var tp = gate + side * ((k - 1) * 3.2f) + up * 4.6f; for (var b = 0; b < 5; b++) mk.Box(WorldMaterials.Solid(Dye[(b + k * 2) % Dye.Length], .3f), tp - up * b * .4f, new Vector3(1.6f, .4f, .04f + (b % 2) * .01f), rot); }
+            for (var k = 0; k < 3; k++) { var tp = gate + side * ((k - 1) * 3.2f) + up * 4.6f; for (var b = 0; b < 5; b++) mk.Box(WorldMaterials.Surface(Dye[(b + k * 2) % Dye.Length], Surface.Cloth), tp - up * b * .4f, new Vector3(1.6f, .4f, .04f + (b % 2) * .01f), rot); }
             var hut = c + face * 4f + side * 9f;
             mk.Box(wood, hut + up * 1.4f, new Vector3(3f, 2.8f, 2.6f), rot); solid.Box(wood, hut + up * 1.4f, new Vector3(3f, 2.8f, 2.6f), rot);
-            mk.GableRoof(WorldMaterials.Solid(new Color(.45f, .3f, .22f)), hut + up * 2.8f, new Vector3(3.6f, 0, 3.4f), 1f, rot);
+            mk.GableRoof(WorldMaterials.Surface(new Color(.45f, .3f, .22f), Surface.Wood), hut + up * 2.8f, new Vector3(3.6f, 0, 3.4f), 1f, rot);
             mk.Box(GlowM(Warm, 1.6f), hut + up * 1.7f - face * 1.31f, new Vector3(1.8f, .8f, .02f), rot);
             ArtistBits.PointLight(ctx.Root, gate + up * 5f - face * 2f, Warm, 20f, 2f);
             life.gate = gate;
@@ -357,7 +357,7 @@ namespace EverythingWorld.World
                 }
             var toHeart = new Vector3(center.x - c.x, 0, center.z - c.z).normalized; var dir = Vector3.Cross(up, toHeart); var side = toHeart;
             var rot = Quaternion.LookRotation(dir);
-            var tarmac = WorldMaterials.Solid(new Color(.28f, .27f, .3f), .3f);   // laid on the ground in 2 m squares, so it follows the slope
+            var tarmac = WorldMaterials.Surface(new Color(.28f, .27f, .3f), Surface.Stone);   // laid on the ground in 2 m squares, so it follows the slope
             Vector3 T(float a, float b) { var q = c + dir * a + side * b; return ctx.OnGround(q.x, q.z) + up * .04f; }
             for (var a = -22f; a < 22f; a += 2f) for (var b = -8f; b < 8f; b += 2f) mk.Quad(tarmac, T(a, b), T(a + 2f, b), T(a + 2f, b + 2f), T(a, b + 2f), (T(a, b) + T(a + 2f, b + 2f)) / 2f - up);
             for (var k = 0; k < 7; k++) foreach (var s in new[] { -1f, 1f })
@@ -365,9 +365,9 @@ namespace EverythingWorld.World
                 var p = ctx.OnGround(c.x + dir.x * (k - 3f) * 5.6f + side.x * s * 5f, c.z + dir.z * (k - 3f) * 5.6f + side.z * s * 5f); var col = Dye[(k * 2 + (s > 0 ? 1 : 0)) % Dye.Length];
                 var trot = Quaternion.LookRotation(-side * s);
                 foreach (var a in new[] { -1f, 1f }) foreach (var b in new[] { -1f, 1f }) { var pp = p + dir * a * 1.9f + side * s * b * 1.9f; var pg = ctx.Ground(pp.x, pp.z); var ph = p.y + 2.5f - pg; pp.y = pg; mk.Prism(metal, pp - up * .2f, up, .04f, ph + .2f, 6); ArtistBits.PostCollider(ctx.Root, pp, ph, .06f); }   // each pole on its own ground, up to the canopy
-                mk.Box(WorldMaterials.Solid(col, .3f), p + up * 2.5f, new Vector3(4f, .12f, 4f), trot);
-                mk.Cone(WorldMaterials.Solid(col, .3f), p + up * 2.55f, 2.8f, .9f, 4, 45f);
-                for (var b = 0; b < 6; b++) mk.Box(WorldMaterials.Solid(Dye[(b + k) % Dye.Length], .3f), p + side * s * 2f + up * (.5f + b * .32f), new Vector3(3.6f, .32f, .03f + (b % 2) * .01f), trot);
+                mk.Box(WorldMaterials.Surface(col, Surface.Cloth), p + up * 2.5f, new Vector3(4f, .12f, 4f), trot);
+                mk.Cone(WorldMaterials.Surface(col, Surface.Cloth), p + up * 2.55f, 2.8f, .9f, 4, 45f);
+                for (var b = 0; b < 6; b++) mk.Box(WorldMaterials.Surface(Dye[(b + k) % Dye.Length], Surface.Cloth), p + side * s * 2f + up * (.5f + b * .32f), new Vector3(3.6f, .32f, .03f + (b % 2) * .01f), trot);
                 solid.Box(wood, p + side * s * 2f + up * 1.2f, new Vector3(3.6f, 1.9f, .12f), trot);   // the striped back cloth
                 mk.Box(wood, p + up * .45f - side * s * .8f, new Vector3(3f, .9f, .8f), trot); solid.Box(wood, p + up * .45f - side * s * .8f, new Vector3(3f, .9f, .8f), trot);
                 if (k == 2 && s > 0) { mk.Box(GlowM(new Color(1f, .5f, .15f), 2f), p + up * .95f - side * s * .8f, new Vector3(1.4f, .05f, .6f), trot); ArtistBits.Label(ctx.Root, "GRILLED CHEESE $5", p + up * 2.1f - side * s * 2.05f, -side * s, .2f, Ink, TextAnchor.MiddleCenter); }
@@ -379,9 +379,9 @@ namespace EverythingWorld.World
             foreach (var e in new[] { -1f, 1f })
             {
                 var bp = ctx.OnGround(c.x + dir.x * e * 25f, c.z + dir.z * e * 25f); var brot = Quaternion.LookRotation(side);
-                for (var b = 0; b < 5; b++) mk.Box(WorldMaterials.Solid(Dye[(b + (e > 0 ? 2 : 0)) % Dye.Length], .4f), bp + up * (.9f + b * .38f), new Vector3(2.4f + (b % 2) * .03f, .39f, 6f + (b % 2) * .03f), brot);   // alternate stripes step out 15 mm, more than Box's growth can take back
+                for (var b = 0; b < 5; b++) mk.Box(WorldMaterials.Surface(Dye[(b + (e > 0 ? 2 : 0)) % Dye.Length], Surface.Cloth), bp + up * (.9f + b * .38f), new Vector3(2.4f + (b % 2) * .03f, .39f, 6f + (b % 2) * .03f), brot);   // alternate stripes step out 15 mm, more than Box's growth can take back
                 mk.Box(white, bp + up * 2.9f, new Vector3(2.4f, .5f, 6f), brot);
-                mk.Box(WorldMaterials.Solid(new Color(.15f, .2f, .3f), .9f), bp + up * 2.3f, new Vector3(2.48f, .7f, 5f), brot);
+                mk.Box(WorldMaterials.Surface(new Color(.15f, .2f, .3f), Surface.Glass), bp + up * 2.3f, new Vector3(2.48f, .7f, 5f), brot);
                 foreach (var s in new[] { -1f, 1f }) foreach (var z in new[] { -2f, 2f }) mk.Prism(dark, bp + dir * s * 1.1f + side * z + up * .45f, dir * s, .45f, .25f, 12);
                 solid.Box(white, bp + up * 1.6f, new Vector3(2.5f, 3.2f, 6.1f), brot);
             }
@@ -450,14 +450,14 @@ namespace EverythingWorld.World
             for (var k = 0; k < 2; k++)
             {
                 var tp = at + Quaternion.Euler(0, k * 140f + ctx.Range(0, 40f), 0) * Vector3.forward * 4f; var tr = Quaternion.Euler(0, ctx.Range(0, 360f), 0);
-                var col = WorldMaterials.Solid(Dye[ctx.Rng.Next(Dye.Length)], .3f); var tc = tp + up * .8f; tp.y = ctx.Ground(tp.x, tp.z);
+                var col = WorldMaterials.Surface(Dye[ctx.Rng.Next(Dye.Length)], Surface.Cloth); var tc = tp + up * .8f; tp.y = ctx.Ground(tp.x, tp.z);
                 Vector3 T(float x, float y, float z) => tp + tr * new Vector3(x, y, z);
                 mk.Quad(col, T(-1.2f, 0, -1.4f), T(0, 1.6f, -1.4f), T(0, 1.6f, 1.4f), T(-1.2f, 0, 1.4f), tc); mk.Quad(col, T(1.2f, 0, 1.4f), T(0, 1.6f, 1.4f), T(0, 1.6f, -1.4f), T(1.2f, 0, -1.4f), tc);
                 mk.Tri(col, T(-1.2f, 0, -1.4f), T(1.2f, 0, -1.4f), T(0, 1.6f, -1.4f), tc); mk.Tri(dark, T(-1.2f, 0, 1.4f), T(0, 1.6f, 1.4f), T(1.2f, 0, 1.4f), tc);
                 mk.Box(GlowM(Warm, 1.2f), T(0, .5f, 1.38f), new Vector3(.5f, .6f, .02f), tr);
                 solid.Box(col, tp + up * .8f, new Vector3(2.4f, 1.6f, 2.8f), tr);
             }
-            for (var k = 0; k < 8; k++) mk.Blob(WorldMaterials.Solid(new Color(.45f, .43f, .4f)), at + Quaternion.Euler(0, k * 45f, 0) * Vector3.forward * .9f + up * .15f, new Vector3(.25f, .18f, .22f), ctx.Rng, .3f);
+            for (var k = 0; k < 8; k++) mk.Blob(WorldMaterials.Surface(new Color(.45f, .43f, .4f), Surface.Stone), at + Quaternion.Euler(0, k * 45f, 0) * Vector3.forward * .9f + up * .15f, new Vector3(.25f, .18f, .22f), ctx.Rng, .3f);
             var fl = ArtistBits.PointLight(ctx.Root, at + up * 1f, new Color(1f, .55f, .2f), 9f, 1.6f); fl.gameObject.AddComponent<FireFlicker>().baseIntensity = 1.6f;
             ArtistBits.PostCollider(ctx.Root, at, .5f, .9f);
             life.fires.Add(at + up * .25f);
@@ -469,7 +469,7 @@ namespace EverythingWorld.World
             var d = Quaternion.Euler(0, ctx.Range(0, 180f), 0) * Vector3.forward; var up = Vector3.up;
             var a = ctx.OnGround(at.x - d.x * 3.5f, at.z - d.z * 3.5f); var b = ctx.OnGround(at.x + d.x * 3.5f, at.z + d.z * 3.5f);
             Tree(ctx, mk, a, 1f); Tree(ctx, mk, b, .9f);
-            var cloth = WorldMaterials.Solid(Dye[ctx.Rng.Next(Dye.Length)], .3f);
+            var cloth = WorldMaterials.Surface(Dye[ctx.Rng.Next(Dye.Length)], Surface.Cloth);
             for (var k = 0; k < 6; k++)
             {
                 float t0 = .12f + k * .127f, t1 = t0 + .127f;

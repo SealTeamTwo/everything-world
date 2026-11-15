@@ -83,7 +83,7 @@ namespace EverythingWorld.World
         void Amphitheatre(Plot z)
         {
             var up = Vector3.up; var ctx = z.ctx; var rot = Quaternion.LookRotation(z.front);
-            var st = z.At(-16f, 0); var shellM = WorldMaterials.Solid(new Color(.85f, .82f, .76f)); var deck = WorldMaterials.Solid(new Color(.18f, .16f, .15f));
+            var st = z.At(-16f, 0); var shellM = WorldMaterials.Surface(new Color(.85f, .82f, .76f), Surface.Painted); var deck = WorldMaterials.Solid(new Color(.18f, .16f, .15f));
             z.mk.Box(deck, st + up * .9f, new Vector3(26f, 1.8f, 12f), rot); z.solid.Box(deck, st + up * .9f, new Vector3(26f, 1.8f, 12f), rot);
             // the curved shell: ribs arching over the back of the stage
             for (var k = 0; k <= 12; k++)
@@ -101,7 +101,7 @@ namespace EverythingWorld.World
             foreach (var s in new[] { -1f, 1f }) { var tp = st + up * 1.8f + z.side * s * 4f + z.front * 2f; z.mk.Prism(WorldMaterials.Solid(new Color(.1f, .1f, .12f)), tp + up * .5f, up, 1.2f, .06f, 16); z.mk.Prism(metal, tp, up, 1.3f, .55f, 16, 1f, 0f, false); }
             for (var k = 0; k < 3; k++) { var kb = st + up * (2.6f + k * .4f) - z.side * 8f + z.front * 1f; z.mk.Box(dark, kb, new Vector3(2f, .15f, .7f), rot * Quaternion.Euler(-12f, 0, 0)); z.mk.Box(white, kb + up * .09f + z.front * .15f, new Vector3(1.8f, .02f, .25f), rot * Quaternion.Euler(-12f, 0, 0)); }
             z.mk.Box(deck, st + up * 2.4f - z.front * 3f + z.side * 7f, new Vector3(5f, 1.2f, 4f), rot);
-            z.mk.Prism(WorldMaterials.Solid(new Color(.75f, .15f, .2f)), st + up * 3f - z.front * 3f + z.side * 7f, z.front, .7f, .6f, 14);
+            z.mk.Prism(WorldMaterials.Surface(new Color(.75f, .15f, .2f), Surface.Painted), st + up * 3f - z.front * 3f + z.side * 7f, z.front, .7f, .6f, 14);
             // the light rig: three trusses of moving lights
             var pods = new List<Transform>(); var lens = new List<Material>();
             for (var row = 0; row < 3; row++)
@@ -132,12 +132,12 @@ namespace EverythingWorld.World
             ArtistBits.PointLight(z.root, mix + up * 2.4f, new Color(.6f, .7f, 1f), 7f, .8f);
             // the crowd on the lawn, swaying (JamLife)
             var shirts = new[] { new Color(1f, .3f, .35f), new Color(1f, .62f, .2f), new Color(1f, .9f, .25f), new Color(.3f, .85f, .45f), new Color(.25f, .6f, 1f), new Color(.7f, .4f, 1f), new Color(.9f, .9f, .85f), new Color(.2f, .2f, .25f) };
-            var skin = new[] { new Color(.95f, .78f, .62f), new Color(.75f, .55f, .4f), new Color(.5f, .35f, .25f) }; var jeans = WorldMaterials.Solid(new Color(.2f, .25f, .4f));
+            var skin = new[] { new Color(.95f, .78f, .62f), new Color(.75f, .55f, .4f), new Color(.5f, .35f, .25f) }; var jeans = WorldMaterials.Surface(new Color(.2f, .25f, .4f), Surface.Cloth);
             for (var k = 0; k < 70; k++)
             {
                 var fw = z.ctx.Range(-6f, 15f); var rt = z.ctx.Range(-11f, 11f);
                 if (Vector2.Distance(new Vector2(fw, rt), new Vector2(10f, 9f)) < 4f || Mathf.Abs(rt) < 1.6f) continue;
-                var feet = z.At(fw, rt); var pk = new MeshKit(); var shirt = WorldMaterials.Solid(shirts[z.ctx.Rng.Next(shirts.Length)], .3f); var sk = WorldMaterials.Solid(skin[z.ctx.Rng.Next(skin.Length)]); var h = z.ctx.Range(.9f, 1.08f);
+                var feet = z.At(fw, rt); var pk = new MeshKit(); var shirt = WorldMaterials.Surface(shirts[z.ctx.Rng.Next(shirts.Length)], Surface.Cloth); var sk = WorldMaterials.Solid(skin[z.ctx.Rng.Next(skin.Length)]); var h = z.ctx.Range(.9f, 1.08f);
                 foreach (var s2 in new[] { -.11f, .11f }) pk.Box(jeans, new Vector3(s2, .42f * h, 0), new Vector3(.14f, .84f * h, .16f), Quaternion.identity);
                 pk.Box(shirt, new Vector3(0, 1.15f * h, 0), new Vector3(.44f, .62f * h, .24f), Quaternion.identity); pk.Blob(sk, new Vector3(0, 1.62f * h, 0), new Vector3(.13f, .15f, .14f), z.ctx.Rng, 0f);
                 var raised = z.ctx.Chance(.35f);
@@ -163,7 +163,7 @@ namespace EverythingWorld.World
                 {
                     float b0 = s * Mathf.PI / 6f, b1 = (s + 1) * Mathf.PI / 6f;
                     Vector3 P(float a, float b) { var rad = Mathf.Sin(a) * 8f * (a > Mathf.PI * .6f ? Mathf.Lerp(1f, .35f, (a - Mathf.PI * .6f) / (Mathf.PI * .4f)) : 1f); return new Vector3(Mathf.Cos(b) * rad, Mathf.Cos(a) * 10f, Mathf.Sin(b) * rad); }
-                    bk.Quad(WorldMaterials.Solid(Dye[s % Dye.Length], .4f), P(a0, b0), P(a0, b1), P(a1, b1), P(a1, b0), Vector3.zero);
+                    bk.Quad(WorldMaterials.Surface(Dye[s % Dye.Length], Surface.Cloth), P(a0, b0), P(a0, b1), P(a1, b1), P(a1, b0), Vector3.zero);
                 }
             }
             bk.Box(wood, Vector3.down * 13.5f, new Vector3(2f, 1.4f, 2f), Quaternion.identity);
@@ -178,26 +178,26 @@ namespace EverythingWorld.World
                 for (var s = 0; s < 14; s++)
                 {
                     var a = s * Mathf.PI * 2f / 14f; var p = dp + dr * (new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0) * 1.1f);
-                    z.mk.Blob(WorldMaterials.Solid(new Color(.85f, .6f, .35f)), p, Vector3.one * .6f, ctx.Rng, 0f);
-                    z.mk.Blob(WorldMaterials.Solid(new[] { new Color(1f, .5f, .7f), new Color(.45f, .25f, .15f), new Color(.95f, .95f, .9f), new Color(.5f, .7f, 1f) }[k], .6f), p + dr * Vector3.forward * .2f, new Vector3(.55f, .55f, .45f), ctx.Rng, 0f);
-                    if (s % 2 == 0) z.mk.Box(WorldMaterials.Solid(Dye[(s + k) % Dye.Length]), p + dr * Vector3.forward * .55f, new Vector3(.25f, .06f, .06f), dr * Quaternion.Euler(0, 0, s * 40f));
+                    z.mk.Blob(WorldMaterials.Surface(new Color(.85f, .6f, .35f), Surface.Painted), p, Vector3.one * .6f, ctx.Rng, 0f);
+                    z.mk.Blob(WorldMaterials.Surface(new[] { new Color(1f, .5f, .7f), new Color(.45f, .25f, .15f), new Color(.95f, .95f, .9f), new Color(.5f, .7f, 1f) }[k], Surface.Painted), p + dr * Vector3.forward * .2f, new Vector3(.55f, .55f, .45f), ctx.Rng, 0f);
+                    if (s % 2 == 0) z.mk.Box(WorldMaterials.Surface(Dye[(s + k) % Dye.Length], Surface.Cloth), p + dr * Vector3.forward * .55f, new Vector3(.25f, .06f, .06f), dr * Quaternion.Euler(0, 0, s * 40f));
                 }
                 z.solid.Box(dark, dp, new Vector3(3.4f, 3.4f, 1.3f), dr);   // the ring stands in the box's x-y plane
             }
             // a giant hot dog on a cart
             var hd = z.At(14f, 22f); var hr = Quaternion.LookRotation(z.side);
-            z.mk.Prism(WorldMaterials.Solid(new Color(.9f, .7f, .4f)), hd + up * 1.6f - z.side * 3.2f, z.side, 1.2f, 6.4f, 12);
-            z.mk.Prism(WorldMaterials.Solid(new Color(.75f, .25f, .18f)), hd + up * 2.4f - z.side * 3.9f, z.side, .8f, 7.8f, 12);
-            for (var k = 0; k < 8; k++) z.mk.Box(WorldMaterials.Solid(new Color(1f, .85f, .1f)), hd + up * 3.25f + z.side * ((k - 3.5f) * .9f) + z.front * Mathf.Sin(k) * .2f, new Vector3(.12f, .08f, .6f), hr * Quaternion.Euler(0, 30f * (k % 2 == 0 ? 1 : -1), 0));
+            z.mk.Prism(WorldMaterials.Surface(new Color(.9f, .7f, .4f), Surface.Painted), hd + up * 1.6f - z.side * 3.2f, z.side, 1.2f, 6.4f, 12);
+            z.mk.Prism(WorldMaterials.Surface(new Color(.75f, .25f, .18f), Surface.Painted), hd + up * 2.4f - z.side * 3.9f, z.side, .8f, 7.8f, 12);
+            for (var k = 0; k < 8; k++) z.mk.Box(WorldMaterials.Surface(new Color(1f, .85f, .1f), Surface.Painted), hd + up * 3.25f + z.side * ((k - 3.5f) * .9f) + z.front * Mathf.Sin(k) * .2f, new Vector3(.12f, .08f, .6f), hr * Quaternion.Euler(0, 30f * (k % 2 == 0 ? 1 : -1), 0));
             foreach (var s in new[] { -2.5f, 2.5f }) z.mk.Prism(dark, hd + z.side * s + up * .5f - z.front * 1.2f, z.front, .5f, 2.4f, 12);
             z.solid.Box(dark, hd + up * 1.8f, new Vector3(2.8f, 3.4f, 8f), hr);
             // a giant vacuum on a plinth by a tent printed with red donuts on blue
             var vc = z.At(16f, -10f);
-            z.mk.Box(WorldMaterials.Solid(new Color(.6f, .6f, .62f)), vc + up * .4f, new Vector3(2.4f, .8f, 2.4f), rot); z.solid.Box(dark, vc + up * 2f, new Vector3(2.4f, 4f, 2.4f), rot);
-            z.mk.Blob(WorldMaterials.Solid(new Color(.85f, .2f, .25f), .7f), vc + up * 1.6f, new Vector3(.8f, .8f, 1.2f), ctx.Rng, 0f);
+            z.mk.Box(WorldMaterials.Surface(new Color(.6f, .6f, .62f), Surface.Metal), vc + up * .4f, new Vector3(2.4f, .8f, 2.4f), rot); z.solid.Box(dark, vc + up * 2f, new Vector3(2.4f, 4f, 2.4f), rot);
+            z.mk.Blob(WorldMaterials.Surface(new Color(.85f, .2f, .25f), Surface.Painted), vc + up * 1.6f, new Vector3(.8f, .8f, 1.2f), ctx.Rng, 0f);
             z.mk.Box(metal, vc + up * 3f + z.side * .4f, new Vector3(.12f, 2.6f, .12f), rot * Quaternion.Euler(0, 0, -20f));
             z.mk.Box(dark, vc + up * 4.3f + z.side * .9f, new Vector3(.8f, .15f, .3f), rot);
-            var tent = z.At(18f, -16f); var blue = WorldMaterials.Solid(new Color(.2f, .35f, .8f), .3f); var dot = WorldMaterials.Solid(new Color(.85f, .15f, .15f));
+            var tent = z.At(18f, -16f); var blue = WorldMaterials.Surface(new Color(.2f, .35f, .8f), Surface.Cloth); var dot = WorldMaterials.Surface(new Color(.85f, .15f, .15f), Surface.Cloth);
             z.mk.Cone(blue, tent, 3f, 4f, 8);
             for (var k = 0; k < 14; k++) { var a = k * 50f * Mathf.Deg2Rad; var h = .6f + (k % 4) * .7f; var r = 3f * (1f - h / 4f) + .05f; z.mk.Blob(dot, tent + up * h + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * r, new Vector3(.3f, .3f, .3f), ctx.Rng, 0f); }
             z.solid.Prism(blue, tent, up, 2.6f, 3f, 8);
@@ -207,12 +207,12 @@ namespace EverythingWorld.World
         // ---------------------------------------------------------------- the others
         void Trey(Plot z)
         {
-            var up = Vector3.up; var c = z.At(-3f, 0); var rot = Quaternion.LookRotation(z.front); var body = WorldMaterials.Solid(new Color(.6f, .35f, .18f), .8f);
+            var up = Vector3.up; var c = z.At(-3f, 0); var rot = Quaternion.LookRotation(z.front); var body = WorldMaterials.Surface(new Color(.6f, .35f, .18f), Surface.Wood);
             z.mk.Blob(body, c + up * 3f, new Vector3(2.4f, 2.6f, .6f), z.ctx.Rng, 0f); z.mk.Blob(body, c + up * 5.6f, new Vector3(1.8f, 1.6f, .55f), z.ctx.Rng, 0f);
             foreach (var s in new[] { -1f, 1f }) z.mk.Box(dark, c + up * 4f + z.side * s * 1f + z.front * .58f, new Vector3(.25f, 1.2f, .05f), rot * Quaternion.Euler(0, 0, s * 12f));
-            z.mk.Box(WorldMaterials.Solid(new Color(.3f, .2f, .12f)), c + up * 9.5f, new Vector3(.5f, 5f, .3f), rot); z.mk.Box(dark, c + up * 12.5f, new Vector3(.8f, 1.4f, .3f), rot);
+            z.mk.Box(WorldMaterials.Surface(new Color(.3f, .2f, .12f), Surface.Wood), c + up * 9.5f, new Vector3(.5f, 5f, .3f), rot); z.mk.Box(dark, c + up * 12.5f, new Vector3(.8f, 1.4f, .3f), rot);
             z.solid.Box(body, c + up * 4f, new Vector3(4.4f, 8f, 1.2f), rot);
-            var brass = WorldMaterials.Solid(new Color(.9f, .75f, .35f), .9f);
+            var brass = WorldMaterials.Surface(new Color(.9f, .75f, .35f), Surface.Metal);
             for (var k = 0; k < 4; k++) { var p = z.At(3f, -5f + k * 3.3f); z.mk.Prism(dark, p, up, .04f, 1.3f, 6); z.mk.Prism(brass, p + up * 1.4f, (z.front + up * .3f).normalized, .08f, 1.2f, 8, 3f); }
         }
 
@@ -231,9 +231,9 @@ namespace EverythingWorld.World
 
         void Metronome(Plot z)
         {
-            var up = Vector3.up; var c = z.At(-3f, 0); var rot = Quaternion.LookRotation(z.front); var wd = WorldMaterials.Solid(new Color(.35f, .2f, .12f), .6f);
+            var up = Vector3.up; var c = z.At(-3f, 0); var rot = Quaternion.LookRotation(z.front); var wd = WorldMaterials.Surface(new Color(.35f, .2f, .12f), Surface.Wood);
             z.mk.Prism(wd, c, up, 3f, 8f, 4, .25f, 45f); z.solid.Prism(wd, c, up, 2.6f, 8f, 4, .3f, 45f);
-            var arm = new MeshKit(); arm.Box(metal, Vector3.up * 3.5f, new Vector3(.2f, 7f, .1f), Quaternion.identity); arm.Box(WorldMaterials.Solid(new Color(.9f, .75f, .35f), .9f), Vector3.up * 5f, new Vector3(.8f, .6f, .3f), Quaternion.identity);
+            var arm = new MeshKit(); arm.Box(metal, Vector3.up * 3.5f, new Vector3(.2f, 7f, .1f), Quaternion.identity); arm.Box(WorldMaterials.Surface(new Color(.9f, .75f, .35f), Surface.Metal), Vector3.up * 5f, new Vector3(.8f, .6f, .3f), Quaternion.identity);
             var t = new GameObject("Metronome arm").transform; t.SetParent(z.root, false); arm.BuildSingle("Arm", t, false); t.SetPositionAndRotation(c + up * 1.5f + z.front * 2.3f, rot); life.metronome = t;
         }
 
@@ -250,7 +250,7 @@ namespace EverythingWorld.World
 
         void GooseStatue(Plot z)
         {
-            var up = Vector3.up; var c = z.At(-3f, 0); var w = WorldMaterials.Solid(new Color(.95f, .95f, .92f)); var orange = WorldMaterials.Solid(new Color(1f, .55f, .15f));
+            var up = Vector3.up; var c = z.At(-3f, 0); var w = WorldMaterials.Solid(new Color(.95f, .95f, .92f)); var orange = WorldMaterials.Surface(new Color(1f, .55f, .15f), Surface.Painted);
             z.mk.Blob(w, c + up * 2.4f, new Vector3(2f, 1.6f, 3f), z.ctx.Rng, 0f);
             z.mk.Prism(w, c + up * 3f + z.front * 1.8f, (z.front * .3f + up).normalized, .5f, 3f, 10, .7f);
             z.mk.Blob(w, c + up * 6f + z.front * 2.6f, new Vector3(.7f, .6f, .9f), z.ctx.Rng, 0f);
@@ -263,7 +263,7 @@ namespace EverythingWorld.World
         void Harmonica(Plot z)
         {
             var up = Vector3.up; var c = z.At(-3f, 0); var rot = Quaternion.LookRotation(z.front) * Quaternion.Euler(-18f, 0, 0); var hc = c + up * 2.4f;
-            var chrome = WorldMaterials.Solid(new Color(.85f, .87f, .9f), .95f); var comb = WorldMaterials.Solid(new Color(.15f, .3f, .7f), .5f);
+            var chrome = WorldMaterials.Surface(new Color(.85f, .87f, .9f), Surface.Metal); var comb = WorldMaterials.Surface(new Color(.15f, .3f, .7f), Surface.Painted);
             z.mk.Box(chrome, hc + rot * Vector3.up * .55f, new Vector3(7f, .35f, 1.6f), rot); z.mk.Box(chrome, hc - rot * Vector3.up * .55f, new Vector3(7f, .35f, 1.6f), rot); z.mk.Box(comb, hc, new Vector3(6.8f, .8f, 1.5f), rot);
             for (var k = 0; k < 10; k++) { var hp = hc + rot * new Vector3((k - 4.5f) * .62f, 0, .76f); z.mk.Box(dark, hp, new Vector3(.36f, .42f, .04f), rot); ArtistBits.Label(z.labels, (k + 1).ToString(), hc + rot * new Vector3((k - 4.5f) * .62f, .55f, .82f), z.front, .12f, new Color(.1f, .1f, .1f), TextAnchor.MiddleCenter); }
             foreach (var s in new[] { -2.6f, 2.6f }) { z.mk.Prism(metal, c + z.side * s, up, .1f, 2.1f, 8); ArtistBits.PostCollider(z.root, c + z.side * s, 2.1f, .15f); }
@@ -284,7 +284,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var c = z.At(-3f, 0); var ch = WorldMaterials.Solid(new Color(1f, .97f, .86f)); var strand = GlowM(new Color(1f, .95f, .75f), 1.2f);
             // the wrapper starts well below the ground so the stick stands planted on any slope instead of floating
-            z.mk.Prism(WorldMaterials.Solid(new Color(.2f, .45f, .85f), .6f), c - up * 1.5f, up, 1f, 3.7f, 16); z.mk.Prism(ch, c + up * 2.2f, up, .9f, 3.2f, 16);
+            z.mk.Prism(WorldMaterials.Surface(new Color(.2f, .45f, .85f), Surface.Painted), c - up * 1.5f, up, 1f, 3.7f, 16); z.mk.Prism(ch, c + up * 2.2f, up, .9f, 3.2f, 16);
             for (var k = 0; k < 10; k++)
             {
                 var d = Quaternion.Euler(0, k * 36f, 0) * Vector3.forward; var p = c + up * 5.4f + d * .5f;
@@ -297,22 +297,22 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var c = z.At(-3f, 0);
             z.mk.Prism(metal, c, up, .12f, 4.5f, 8); ArtistBits.PostCollider(z.root, c, 4.5f, .2f);
-            z.mk.Prism(WorldMaterials.Solid(new Color(.88f, .88f, .92f), .98f), c + up * 5f - z.front * .4f, z.front, 1.6f, .8f, 16);
-            for (var k = 0; k < 9; k++) z.mk.Box(WorldMaterials.Solid(new Color(.95f, .95f, 1f), .99f), c + up * 5f + z.front * .41f + Quaternion.AngleAxis(k * 40f, z.front) * Vector3.up * (k % 2 == 0 ? .6f : 1.1f), new Vector3(.25f, .25f, .02f), Quaternion.LookRotation(z.front));
+            z.mk.Prism(WorldMaterials.Surface(new Color(.88f, .88f, .92f), Surface.Glass), c + up * 5f - z.front * .4f, z.front, 1.6f, .8f, 16);
+            for (var k = 0; k < 9; k++) z.mk.Box(WorldMaterials.Surface(new Color(.95f, .95f, 1f), Surface.Glass), c + up * 5f + z.front * .41f + Quaternion.AngleAxis(k * 40f, z.front) * Vector3.up * (k % 2 == 0 ? .6f : 1.1f), new Vector3(.25f, .25f, .02f), Quaternion.LookRotation(z.front));
             halos.Add(c + up * 5f, 2.4f, new Color(.8f, .85f, 1f), .5f);
         }
 
         void RoseArch(Plot z)
         {
-            var up = Vector3.up; var c = z.At(-3f, 0); var rose = WorldMaterials.Solid(new Color(.8f, .1f, .2f), .6f);
+            var up = Vector3.up; var c = z.At(-3f, 0); var rose = WorldMaterials.Surface(new Color(.8f, .1f, .2f), Surface.Foliage);
             for (var k = 0; k <= 10; k++) { var a = k / 10f * Mathf.PI; var p = c + z.side * Mathf.Cos(a) * 2.6f + up * Mathf.Sin(a) * 3.6f; soft.Blob(leaf, p, Vector3.one * .5f, z.ctx.Rng, .3f); soft.Blob(rose, p + z.front * .3f, Vector3.one * .25f, z.ctx.Rng, .2f); }
             foreach (var s in new[] { -1f, 1f }) ArtistBits.PostCollider(z.root, c + z.side * s * 2.6f, 2f, .3f);
-            var g = c + up * .1f; z.mk.Blob(WorldMaterials.Solid(new Color(.75f, .55f, .3f), .7f), g + up * .6f, new Vector3(.45f, .55f, .15f), z.ctx.Rng, 0f); z.mk.Box(dark, g + up * 1.6f, new Vector3(.07f, 1.2f, .05f), Quaternion.LookRotation(z.front));
+            var g = c + up * .1f; z.mk.Blob(WorldMaterials.Surface(new Color(.75f, .55f, .3f), Surface.Wood), g + up * .6f, new Vector3(.45f, .55f, .15f), z.ctx.Rng, 0f); z.mk.Box(dark, g + up * 1.6f, new Vector3(.07f, 1.2f, .05f), Quaternion.LookRotation(z.front));
         }
 
         void Roots(Plot z)
         {
-            var up = Vector3.up; var c = z.At(-3f, 0); var rust = WorldMaterials.Solid(new Color(.6f, .3f, .15f), .5f);
+            var up = Vector3.up; var c = z.At(-3f, 0); var rust = WorldMaterials.Surface(new Color(.6f, .3f, .15f), Surface.Metal);
             z.mk.Prism(rust, c, up, .8f, 6f, 8, .6f);
             for (var k = 0; k < 8; k++) { var d = Quaternion.Euler(0, k * 45f, 0) * Vector3.forward; z.mk.Prism(rust, c + up * .8f, (d - up * .4f).normalized, .3f, 4f, 6, .3f); z.mk.Prism(rust, c + up * 5.5f, (d + up * .7f).normalized, .25f, 3f, 6, .3f); }
             ArtistBits.PostCollider(z.root, c, 6f, .8f);
@@ -333,16 +333,16 @@ namespace EverythingWorld.World
             var up = Vector3.up; var c = z.At(-2.5f, 0); var rot = Quaternion.LookRotation(z.front); var n = z.a.name;
             if (n == "Cbdb")
             {   // Stacy's on the Lake: a little dock on a pond with a rowboat and a lantern
-                var water = WorldMaterials.Solid(new Color(.15f, .3f, .45f), .95f); z.mk.Prism(water, c - up * .1f, up, 4.2f, .22f, 24); z.mk.Prism(WorldMaterials.Solid(new Color(.5f, .45f, .35f)), c - up * .15f, up, 4.5f, .16f, 24);
+                var water = WorldMaterials.Solid(new Color(.15f, .3f, .45f), .95f); z.mk.Prism(water, c - up * .1f, up, 4.2f, .22f, 24); z.mk.Prism(WorldMaterials.Surface(new Color(.5f, .45f, .35f), Surface.Stone), c - up * .15f, up, 4.5f, .16f, 24);
                 z.mk.Box(wood, c + z.front * 2.6f + up * .3f, new Vector3(1.4f, .15f, 4f), rot); foreach (var s in new[] { -.6f, .6f }) foreach (var f in new[] { 1f, 3.6f }) z.mk.Prism(wood, c + z.front * f + z.side * s - up * .3f, up, .08f, .8f, 6);
-                var boat = c + z.side * 1.6f + up * .08f; var hull = WorldMaterials.Solid(new Color(.75f, .2f, .15f), .5f);
+                var boat = c + z.side * 1.6f + up * .08f; var hull = WorldMaterials.Surface(new Color(.75f, .2f, .15f), Surface.Painted);
                 z.mk.Box(hull, boat + up * .2f, new Vector3(1f, .35f, 2.6f), rot * Quaternion.Euler(0, 20f, 0)); z.mk.Box(wood, boat + up * .37f, new Vector3(.9f, .05f, .3f), rot * Quaternion.Euler(0, 20f, 0));
                 var lp = c + z.front * 4.4f + z.side * .7f; z.mk.Prism(wood, lp, up, .06f, 2f, 6); z.mk.Box(GlowM(Warm, 2.6f), lp + up * 2.1f, new Vector3(.28f, .38f, .28f), Quaternion.identity); halos.Add(lp + up * 2.1f, 1.4f, Warm, .8f);
                 z.solid.Prism(water, c - up * .2f, up, 4.4f, .6f, 12);
             }
             else if (n == "Enya Lisa")
             {   // Only Time: a tall hourglass of glowing sand on a plinth
-                var glass = WorldMaterials.Solid(new Color(.75f, .85f, .95f), .95f); var sand = GlowM(new Color(1f, .8f, .4f), 1.4f); var frame = wood;
+                var glass = WorldMaterials.Surface(new Color(.75f, .85f, .95f), Surface.Glass); var sand = GlowM(new Color(1f, .8f, .4f), 1.4f); var frame = wood;
                 z.mk.Prism(frame, c, up, 1.6f, .4f, 8); z.mk.Prism(frame, c + up * 5.2f, up, 1.6f, .4f, 8);
                 foreach (var a in new[] { 0f, 120f, 240f }) z.mk.Prism(frame, c + Quaternion.Euler(0, a, 0) * Vector3.forward * 1.4f, up, .08f, 5.4f, 6);
                 z.mk.Prism(glass, c + up * .4f, up, 1.2f, 2.4f, 16, .1f); z.mk.Prism(glass, c + up * 2.8f, up, .12f, 2.4f, 16, 10f);
@@ -351,14 +351,14 @@ namespace EverythingWorld.World
             }
             else if (n == "TAUK")
             {   // Mindshift: a big head in profile, cut from dark steel, with glowing gears turning slowly inside it
-                var steelD = WorldMaterials.Solid(new Color(.2f, .22f, .25f), .6f); var hc = c + up * 3.2f;
+                var steelD = WorldMaterials.Surface(new Color(.2f, .22f, .25f), Surface.Metal); var hc = c + up * 3.2f;
                 z.mk.Blob(steelD, hc, new Vector3(.4f, 2.4f, 2.1f), z.ctx.Rng, 0f); z.mk.Blob(steelD, hc - up * 1.8f + z.side * .1f, new Vector3(.4f, 1f, 1.1f), z.ctx.Rng, 0f); z.mk.Box(steelD, hc + up * .2f - z.side * 0f + z.front * 0f + Vector3.Cross(up, z.side) * 2.1f, new Vector3(.4f, .8f, .5f), Quaternion.LookRotation(z.side));
                 for (var k = 0; k < 3; k++) { var gc = hc + up * (.6f - k * .7f) + Vector3.Cross(up, z.side) * (k - 1f) * .7f; var gm = GlowM(new[] { new Color(1f, .6f, .2f), new Color(.3f, .8f, 1f), new Color(.8f, .4f, 1f) }[k], 2.2f); z.mk.Prism(gm, gc - z.side * .25f, z.side, .55f - k * .1f, .5f, 10); for (var t = 0; t < 8; t++) z.mk.Box(gm, gc + Quaternion.AngleAxis(t * 45f, z.side) * up * (.65f - k * .1f), new Vector3(.5f, .2f, .2f), Quaternion.LookRotation(z.side) * Quaternion.Euler(0, 0, t * 45f)); }
                 halos.Add(hc, 2.8f, new Color(.9f, .6f, 1f), .4f); z.mk.Prism(stoneM, c, up, 1.2f, 1f, 8); z.solid.Box(steelD, hc - up * 1f, new Vector3(1f, 6f, 4.4f), Quaternion.LookRotation(z.side));
             }
             else if (n == "The Jauntee")
             {   // Valley Girl: a giant pink roller skate with glowing wheels
-                var pink = WorldMaterials.Solid(new Color(1f, .45f, .7f), .6f); var sc = c + up * .6f; var r2 = Quaternion.LookRotation(z.side);
+                var pink = WorldMaterials.Surface(new Color(1f, .45f, .7f), Surface.Painted); var sc = c + up * .6f; var r2 = Quaternion.LookRotation(z.side);
                 z.mk.Box(pink, sc + up * .6f, new Vector3(1.6f, .6f, 3.6f), r2); z.mk.Box(pink, sc + up * 2f - z.side * 1f, new Vector3(1.6f, 2.4f, 1.6f), r2); z.mk.Box(white, sc + up * 3.25f - z.side * 1f, new Vector3(1.7f, .25f, 1.7f), r2);
                 for (var k = 0; k < 6; k++) z.mk.Box(white, sc + up * (1.6f + k * .3f) - z.side * .2f, new Vector3(1.2f, .05f, .05f), r2);
                 foreach (var s in new[] { -1.1f, 1.1f }) foreach (var f in new[] { -.6f, .6f }) z.mk.Prism(GlowM(new Color(.5f, 1f, .9f), 2.4f), sc + z.side * s + z.front * f - up * .1f, z.front * Mathf.Sign(f), .45f, .3f, 14);
@@ -366,7 +366,7 @@ namespace EverythingWorld.World
             }
             else if (n == "The Werks")
             {   // Into the Moss: a garden of mossy boulders with glowing moss and little mushrooms
-                var moss = WorldMaterials.Solid(new Color(.25f, .45f, .2f)); var glowMoss = GlowM(new Color(.5f, 1f, .4f), 1.2f);
+                var moss = WorldMaterials.Surface(new Color(.25f, .45f, .2f), Surface.Foliage); var glowMoss = GlowM(new Color(.5f, 1f, .4f), 1.2f);
                 for (var k = 0; k < 6; k++) { var bp = c + Quaternion.Euler(0, k * 60f + 15f, 0) * Vector3.forward * (k == 0 ? 0f : 2.6f); bp.y = z.ctx.Ground(bp.x, bp.z); var s = k == 0 ? 1.8f : z.ctx.Range(.8f, 1.3f); z.mk.Blob(stoneM, bp + up * .5f * s, new Vector3(1.2f, .9f, 1.1f) * s, z.ctx.Rng, .3f); soft.Blob(moss, bp + up * 1.2f * s, new Vector3(1.1f, .4f, 1f) * s, z.ctx.Rng, .3f); for (var g = 0; g < 4; g++) z.mk.Blob(glowMoss, bp + up * 1.3f * s + new Vector3(z.ctx.Range(-.6f, .6f), 0, z.ctx.Range(-.6f, .6f)) * s, Vector3.one * .12f, z.ctx.Rng, 0f); z.solid.Box(stoneM, bp + up * .6f * s, new Vector3(2f, 1.6f, 2f) * s, Quaternion.identity); }
                 halos.Add(c + up * 1.6f, 4f, new Color(.5f, 1f, .4f), .3f);
             }
@@ -381,7 +381,7 @@ namespace EverythingWorld.World
             }
             else if (n == "velvet stripe")
             {   // Haunt You Here: a lone doorway frame standing in the woods, warm light inside, a faint figure in it
-                var frameM = WorldMaterials.Solid(new Color(.3f, .22f, .18f)); var dp = c;
+                var frameM = WorldMaterials.Surface(new Color(.3f, .22f, .18f), Surface.Wood); var dp = c;
                 foreach (var s in new[] { -1f, 1f }) { z.mk.Box(frameM, dp + z.side * s * .75f + up * 1.3f, new Vector3(.2f, 2.6f, .25f), rot); ArtistBits.PostCollider(z.root, dp + z.side * s * .75f, 2.6f, .15f); }
                 z.mk.Box(frameM, dp + up * 2.7f, new Vector3(1.7f, .2f, .25f), rot); z.mk.Box(GlowM(new Color(1f, .7f, .45f), 1.2f), dp + up * 1.25f - z.front * .1f, new Vector3(1.3f, 2.5f, .02f), rot);
                 var ghost = WorldMaterials.Glow(new Color(.85f, .9f, 1f), .5f); z.mk.Box(ghost, dp + up * 1f - z.front * .25f, new Vector3(.4f, 1f, .2f), rot); z.mk.Blob(ghost, dp + up * 1.7f - z.front * .25f, Vector3.one * .15f, z.ctx.Rng, 0f);
@@ -392,10 +392,10 @@ namespace EverythingWorld.World
                 var h = Mathf.Abs(n.GetHashCode());
                 z.mk.Box(wood, c + up * .3f, new Vector3(6f, .6f, 4f), rot); z.solid.Box(wood, c + up * .3f, new Vector3(6f, .6f, 4f), rot);
                 foreach (var s in new[] { -1f, 1f }) { z.mk.Prism(wood, c + z.side * s * 2.8f - z.front * 1.8f, up, .1f, 4.2f, 6); ArtistBits.PostCollider(z.root, c + z.side * s * 2.8f - z.front * 1.8f, 4.2f, .12f); }
-                for (var b = 0; b < 8; b++) z.mk.Box(WorldMaterials.Solid(Dye[(b + h) % Dye.Length], .3f), c - z.front * 1.8f + up * (.8f + b * .4f), new Vector3(5.5f, .4f, .04f + (b % 2) * .01f), rot);
+                for (var b = 0; b < 8; b++) z.mk.Box(WorldMaterials.Surface(Dye[(b + h) % Dye.Length], Surface.Painted), c - z.front * 1.8f + up * (.8f + b * .4f), new Vector3(5.5f, .4f, .04f + (b % 2) * .01f), rot);
                 StringLights(z.mk, c + z.side * -2.8f + up * 4f - z.front * 1.8f, c + z.side * 2.8f + up * 4f - z.front * 1.8f, Warm, 8);
             }
         }
-        Material stoneM => WorldMaterials.Solid(new Color(.5f, .48f, .45f));
+        Material stoneM => WorldMaterials.Surface(new Color(.5f, .48f, .45f), Surface.Stone);
     }
 }

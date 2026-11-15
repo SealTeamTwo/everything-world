@@ -31,7 +31,7 @@ namespace EverythingWorld.World
             var board = at + Vector3.up * 1f;
             mk.Box(wood, board, new Vector3(2.6f, h, .06f), rot);
             BoxCol(ctx.Root, board - Vector3.up * .25f, new Vector3(2.6f, h + .5f, .25f), rot);   // the slanted board and its posts
-            mk.Box(WorldMaterials.Solid(new Color(.88f, .82f, .68f)), board + rot * Vector3.forward * .035f, new Vector3(2.45f, h - .12f, .01f), rot);
+            mk.Box(WorldMaterials.Surface(new Color(.88f, .82f, .68f), Surface.Wood), board + rot * Vector3.forward * .035f, new Vector3(2.45f, h - .12f, .01f), rot);
             for (var k = 0; k < lines.Length; k++)
             {
                 var p = board + rot * new Vector3(0, (lines.Length - 1) / 2f * .17f - k * .17f, .05f);
