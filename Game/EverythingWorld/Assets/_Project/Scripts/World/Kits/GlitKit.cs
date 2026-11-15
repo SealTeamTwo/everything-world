@@ -292,24 +292,33 @@ namespace EverythingWorld.World
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }
 
-        /// Glitter grass: short silvery tufts with sparkles.
+        /// Glitter grass in patches on the cloud: carpets of short tufts thick with silver sparkle, soft taller
+        /// plumes, and a sparse scatter at the edges, bare cloud between. Each patch has its own shade (cooler lilac
+        /// to warmer pink, lighter or darker); every blade its own, kept gentle.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, .8f, new Color(.8f, .72f, .9f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2008);
             const float st = 2.8f;
+            int sequins = 0, plumes = 0, scatter = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                if (Mathf.PerlinNoise(px * .04f + 8f, pz * .04f + 4f) < .48f) continue;
+                var bare = WindMesh.Patch(px, pz, .04f, 1f);
+                if (bare < .48f) continue;                                 // bare cloud between the patches
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.74f, .66f, .9f), new Color(.92f, .76f, .9f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .2f + (float)rng.NextDouble() * .3f, col, rng.NextDouble() < .2 ? Silver : Color.Lerp(col, Cream, .4f), rng, 3, .08f);
+                var col = Color.Lerp(new Color(.74f, .66f, .9f), new Color(.92f, .76f, .9f), Mathf.Clamp01(WindMesh.Patch(px, pz, .02f, 2f) * .8f + (float)rng.NextDouble() * .2f))
+                          * (.9f + WindMesh.Patch(px, pz, .03f, 3f) * .14f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (bare < .53f) { wm.Tuft(at, .16f + (float)rng.NextDouble() * .16f, col, Color.Lerp(col, Cream, .4f), rng, 2, .08f, .08f); scatter++; }   // the thin edge of a patch
+                else if (WindMesh.Patch(px, pz, .018f, 4f) < .5f) { wm.Tuft(at, .18f + (float)rng.NextDouble() * .18f, col, rng.NextDouble() < .38 ? Silver : Color.Lerp(col, Cream, .4f), rng, 3, .08f, .08f); sequins++; }
+                else { wm.Tuft(at, .32f + (float)rng.NextDouble() * .3f, col, rng.NextDouble() < .1 ? Silver : Color.Lerp(col, Cream, .45f), rng, 4, .06f, .08f); plumes++; }
             }
             foreach (var kv in meshes) kv.Value.Build("Glitter grass", ctx.Root, mat);
+            Debug.Log($"The Glitterlands glitter grass: {sequins} sparkle tufts, {plumes} plumes, {scatter} edge tufts");
         }
     }
 }
