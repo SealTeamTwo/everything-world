@@ -31,7 +31,7 @@ namespace EverythingWorld.World
         void MakeMaterials()
         {
             brick = WorldMaterials.Glow(Brick, .14f); brickD = WorldMaterials.Glow(new Color(.5f, .22f, .14f), .12f); tileA = WorldMaterials.Glow(new Color(.16f, .24f, .6f), .2f); tileB = WorldMaterials.Glow(new Color(.3f, .44f, .86f), .2f); pipeM = WorldMaterials.Glow(Pipe, .25f); goldM = WorldMaterials.Glow(Gold, .5f);
-            iron = WorldMaterials.Solid(new Color(.16f, .16f, .2f), .5f); dark = WorldMaterials.Solid(new Color(.05f, .05f, .08f)); white = WorldMaterials.Glow(new Color(.9f, .9f, .94f), .16f); leafM = WorldMaterials.Glow(Leaf, .14f); trunkM = WorldMaterials.Glow(new Color(.5f, .32f, .18f), .12f); dirt = WorldMaterials.Glow(new Color(.5f, .34f, .2f), .12f); stoneM = WorldMaterials.Glow(new Color(.46f, .46f, .5f), .12f);
+            iron = WorldMaterials.Surface(new Color(.16f, .16f, .2f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.05f, .05f, .08f)); white = WorldMaterials.Glow(new Color(.9f, .9f, .94f), .16f); leafM = WorldMaterials.Glow(Leaf, .14f); trunkM = WorldMaterials.Glow(new Color(.5f, .32f, .18f), .12f); dirt = WorldMaterials.Glow(new Color(.5f, .34f, .2f), .12f); stoneM = WorldMaterials.Glow(new Color(.46f, .46f, .5f), .12f);
             lampM = new Material(WorldMaterials.Glow(new Color(1f, .9f, .6f), 1.6f)) { name = "Bit lamps" }; coinM = new Material(WorldMaterials.Glow(Gold, 1.4f)) { name = "Bit coins" }; screenM = new Material(WorldMaterials.Glow(Cyan, 1.2f)) { name = "Bit screens" }; blockM = new Material(WorldMaterials.Glow(Gold, .9f)) { name = "Bit gold blocks" };
         }
 
