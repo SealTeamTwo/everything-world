@@ -29,7 +29,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            rock = WorldMaterials.Glow(new Color(.22f, .2f, .28f), .08f); rockD = WorldMaterials.Glow(new Color(.12f, .1f, .16f), .06f); path = WorldMaterials.Glow(new Color(.18f, .16f, .22f), .06f); dark = WorldMaterials.Solid(new Color(.04f, .03f, .06f)); iron = WorldMaterials.Solid(new Color(.16f, .16f, .2f), .6f); white = WorldMaterials.Glow(new Color(.84f, .84f, .9f), .16f);
+            rock = WorldMaterials.Glow(new Color(.22f, .2f, .28f), .08f); rockD = WorldMaterials.Glow(new Color(.12f, .1f, .16f), .06f); path = WorldMaterials.Glow(new Color(.18f, .16f, .22f), .06f); dark = WorldMaterials.Solid(new Color(.04f, .03f, .06f)); iron = WorldMaterials.Surface(new Color(.16f, .16f, .2f), Surface.Metal); white = WorldMaterials.Glow(new Color(.84f, .84f, .9f), .16f);
             shardM = new Material(WorldMaterials.Glow(Cyan, 1.3f)) { name = "Shard crystals" }; shardM2 = new Material(WorldMaterials.Glow(Magenta, 1.3f)) { name = "Shard crystals 2" }; lampM = new Material(WorldMaterials.Glow(Violet, 1.6f)) { name = "Shard lamps" }; coneM = new Material(WorldMaterials.Glow(Cyan, .9f)) { name = "Shard speaker cones" };
         }
 
