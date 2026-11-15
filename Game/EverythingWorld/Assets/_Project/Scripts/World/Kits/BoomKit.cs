@@ -359,25 +359,45 @@ namespace EverythingWorld.World
             for (var k = 0; k < 10; k++) { var a = k * 36f * Mathf.Deg2Rad; mk.Box(Paint(new Color(1f, .45f, .1f)), g + up * 3.05f + face * 1.08f + (rot * new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a))) * .23f, new Vector3(.15f, .03f, .03f), rot * Quaternion.Euler(0, -k * 36f + 90f, 0)); } ArtistBits.PostCollider(ctx.Root, g, 3.6f, .1f);
         }
 
-        /// Worn grass and weeds in the lots; nothing on the sand.
+        /// Worn grass and weeds in the lots, in patches the way a city lot grows: rank weeds thick along the kerbs
+        /// where nobody mows, worn short grass across the lots with drifts of dandelions, and bare trodden dirt
+        /// between. Each patch its own shade, from a dusty blue-green to a dry yellow-green; nothing on the sand.
         void Verge(LandContext ctx)
         {
             var mat = WindMesh.Material(.25f, .8f, new Color(.4f, .56f, .3f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1994);
             const float st = 2.8f;
+            Color dusty = new Color(.32f, .48f, .3f), dry = new Color(.54f, .58f, .28f), dandelion = new Color(1f, .9f, .3f);
+            int weeds = 0, lot = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 6.6f) || UnderEl(px, pz, 0f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 var gy = ctx.Ground(px, pz); if (gy < waterY + 3.4f) continue;
-                if (Mathf.PerlinNoise(px * .05f + 4f, pz * .05f + 6f) < .5f) continue;
+                var kerb = NearPath(px, pz, 8.6f);                                   // the strip along the kerb
+                var bare = WindMesh.Patch(px, pz, .05f, 1f);                         // bare trodden dirt
+                if (bare < (kerb ? .4f : .55f)) continue;
+                var tone = WindMesh.Patch(px, pz, .025f, 2f); var drift = WindMesh.Patch(px, pz, .07f, 3f);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.36f, .5f, .26f), new Color(.52f, .58f, .3f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, gy - .04f, pz), .22f + (float)rng.NextDouble() * .3f, col, rng.NextDouble() < .1 ? new Color(1f, .9f, .3f) : Color.Lerp(col, Cream, .3f), rng, 3, .05f);
+                var col = Color.Lerp(dusty, dry, Mathf.Clamp01((tone - .25f) * 2f)) * (.92f + (float)rng.NextDouble() * .16f);
+                var at = new Vector3(px, gy - .04f, pz);
+                if (kerb)
+                {
+                    // rank kerbside weeds, taller and coarser, the odd one in flower as before
+                    wm.Tuft(at, .32f + (float)rng.NextDouble() * .36f, col * .95f, rng.NextDouble() < .1 ? dandelion : Color.Lerp(col, Cream, .25f), rng, 4, .06f, .14f); weeds++;
+                }
+                else
+                {
+                    // worn lot grass; in a drift the dandelions are out
+                    var inDrift = drift > .62f && rng.NextDouble() < .5;
+                    wm.Tuft(at, .18f + (float)rng.NextDouble() * .24f, col, inDrift ? dandelion : Color.Lerp(col, Cream, .3f), rng, 3, .05f, .14f); lot++;
+                    if (inDrift) blooms++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Boom Bap weeds", ctx.Root, mat);
+            Debug.Log($"Boom Bap Harbour weeds: {weeds} kerbside weeds, {lot} lot tufts ({blooms} with dandelions)");
         }
     }
 }
