@@ -29,7 +29,7 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            stone = WorldMaterials.Glow(new Color(.24f, .26f, .36f), .08f); stoneD = WorldMaterials.Glow(new Color(.16f, .17f, .26f), .06f); navy = WorldMaterials.Glow(Royal, .2f); goldM = WorldMaterials.Glow(Gold, .5f); velvet = WorldMaterials.Glow(Velvet, .2f); iron = WorldMaterials.Solid(new Color(.14f, .14f, .18f), .5f); dark = WorldMaterials.Solid(new Color(.05f, .05f, .08f)); white = WorldMaterials.Glow(new Color(.86f, .86f, .9f), .16f);
+            stone = WorldMaterials.Glow(new Color(.24f, .26f, .36f), .08f); stoneD = WorldMaterials.Glow(new Color(.16f, .17f, .26f), .06f); navy = WorldMaterials.Glow(Royal, .2f); goldM = WorldMaterials.Glow(Gold, .5f); velvet = WorldMaterials.Glow(Velvet, .2f); iron = WorldMaterials.Surface(new Color(.14f, .14f, .18f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.05f, .05f, .08f)); white = WorldMaterials.Glow(new Color(.86f, .86f, .9f), .16f);
             leafM = WorldMaterials.Glow(new Color(.12f, .26f, .24f), .1f); trunkM = WorldMaterials.Glow(new Color(.26f, .2f, .18f), .1f); sand = WorldMaterials.Glow(new Color(.66f, .54f, .4f), .14f);
             lampM = new Material(WorldMaterials.Glow(new Color(1f, .86f, .56f), 1.6f)) { name = "Scores lamps" }; standM = new Material(WorldMaterials.Glow(Gold, 1.4f)) { name = "Scores music stands" }; starM = new Material(WorldMaterials.Glow(new Color(.9f, .9f, 1f), 1.6f)) { name = "Scores stars" };
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .6f, .2f), 1.2f)) { name = "Scores windows" }; waterM = new Material(WorldMaterials.Glow(new Color(.16f, .24f, .5f), .6f)) { name = "Scores water" };
