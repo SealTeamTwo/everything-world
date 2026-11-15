@@ -37,9 +37,9 @@ namespace EverythingWorld.World
         {
             // the road, the sand and the walls are faintly self-lit, so dusk never swallows the town
             earth = WorldMaterials.Glow(new Color(.72f, .36f, .2f), .16f); sand = WorldMaterials.Glow(new Color(.92f, .76f, .5f), .14f); concrete = WorldMaterials.Glow(new Color(.7f, .66f, .62f), .1f);
-            tin = WorldMaterials.Solid(new Color(.62f, .62f, .64f), .7f); rustM = WorldMaterials.Solid(new Color(.6f, .32f, .18f)); iron = WorldMaterials.Solid(new Color(.14f, .13f, .15f), .5f); dark = WorldMaterials.Solid(new Color(.07f, .06f, .08f));
-            white = WorldMaterials.Glow(new Color(.95f, .93f, .88f), .1f); woodM = WorldMaterials.Solid(new Color(.5f, .34f, .22f)); palmTrunk = WorldMaterials.Solid(new Color(.46f, .36f, .28f));
-            leafM = WorldMaterials.Glow(new Color(.16f, .5f, .26f), .08f); leafDark = WorldMaterials.Solid(new Color(.1f, .34f, .22f));
+            tin = WorldMaterials.Surface(new Color(.62f, .62f, .64f), Surface.Metal); rustM = WorldMaterials.Surface(new Color(.6f, .32f, .18f), Surface.Metal); iron = WorldMaterials.Surface(new Color(.14f, .13f, .15f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.07f, .06f, .08f));
+            white = WorldMaterials.Glow(new Color(.95f, .93f, .88f), .1f); woodM = WorldMaterials.Surface(new Color(.5f, .34f, .22f), Surface.Wood); palmTrunk = WorldMaterials.Surface(new Color(.46f, .36f, .28f), Surface.Bark);
+            leafM = WorldMaterials.Glow(new Color(.16f, .5f, .26f), .08f); leafDark = WorldMaterials.Surface(new Color(.1f, .34f, .22f), Surface.Foliage);
             fireM = new Material(WorldMaterials.Glow(new Color(1f, .55f, .12f), 2.4f)) { name = "Afro fires" }; emberM = new Material(WorldMaterials.Glow(new Color(1f, .25f, .05f), 1.4f)) { name = "Afro embers" };
             sunM = new Material(WorldMaterials.Glow(new Color(1f, .5f, .14f), 2.6f)) { name = "Afro sun" }; sunRoadM = new Material(WorldMaterials.Glow(new Color(1f, .5f, .2f), .9f)) { name = "Afro sun road" };
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .8f, .45f), 1.2f)) { name = "Afro windows" };
@@ -360,7 +360,7 @@ namespace EverythingWorld.World
 
         void Plantain(LandContext ctx, MeshKit mk, Vector3 g, float s, System.Random rng)
         {
-            var up = Vector3.up; mk.Prism(WorldMaterials.Solid(new Color(.4f, .5f, .26f)), g - up * .2f, up, .14f * s, 1.8f * s, 6, .8f); ArtistBits.PostCollider(ctx.Root, g, 1.8f * s, .16f * s);
+            var up = Vector3.up; mk.Prism(WorldMaterials.Surface(new Color(.4f, .5f, .26f), Surface.Bark), g - up * .2f, up, .14f * s, 1.8f * s, 6, .8f); ArtistBits.PostCollider(ctx.Root, g, 1.8f * s, .16f * s);
             for (var k = 0; k < 6; k++) { var fd = Quaternion.Euler(0, k * 60f + (float)rng.NextDouble() * 30f, 0) * Vector3.forward; mk.Box(k % 2 == 0 ? leafM : leafDark, g + up * 2f * s + fd * .8f * s, new Vector3(.6f * s, .04f, 1.8f * s), Quaternion.LookRotation(fd) * Quaternion.Euler(-30f + k * 6f, 0, 0)); }
             if (rng.Next(2) == 0) for (var k = 0; k < 5; k++) mk.Blob(GlowM(new Color(.8f, .8f, .2f), .3f), g + up * (1.5f - k * .08f) * s + Vector3.right * (.2f + (k % 2) * .08f) * s, new Vector3(.05f, .12f, .05f) * s, rng, 0f);
         }
