@@ -588,19 +588,43 @@ namespace EverythingWorld.World
             var mat = WindMesh.Material(.3f, 1f, new Color(.6f, .58f, .35f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1994);
             const float st = 3f;
+            Color dusty = new Color(.5f, .52f, .32f), bleached = new Color(.76f, .68f, .42f), tipC = new Color(.95f, .9f, .7f);
+            int stubble = 0, clumps = 0, dead = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
                 if (hasPool && Vector2.Distance(new Vector2(px, pz), pool2) < PoolR * 1.5f) continue;
-                if (Mathf.PerlinNoise(px * .04f + 5f, pz * .04f + 3f) < .55f) continue;
+                if (Mathf.PerlinNoise(px * .04f + 5f, pz * .04f + 3f) < .55f) continue;        // the badlands' bare dirt, as before
+                var kind = WindMesh.Patch(px, pz, .016f, 21f);      // wiry stubble, scrub clumps or dead straw
+                var tone = WindMesh.Patch(px, pz, .03f, 22f);       // the patch's shade, dusty green to sun-bleached
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.55f, .52f, .3f), new Color(.75f, .68f, .42f), (float)rng.NextDouble());
-                wm.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .25f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, new Color(.95f, .9f, .7f), .4f), rng, 3, .05f);
+                var col = Color.Lerp(dusty, bleached, tone) * (.9f + r2 * .18f);
+                var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
+                if (kind < .35f)
+                {
+                    // wiry stubble: short and thin
+                    wm.Tuft(at, .16f + r2 * .16f, col, Color.Lerp(col, tipC, .3f), rng, 2, .04f, .14f); stubble++;
+                }
+                else if (kind < .7f)
+                {
+                    // scrub clumps: a tuft and a smaller one leaning off it
+                    wm.Tuft(at, .3f + r2 * .3f, col, Color.Lerp(col, tipC, .4f), rng, 3, .05f, .14f);
+                    if (r1 < .5f) wm.Tuft(at + new Vector3(.3f, 0, .25f), .22f + r1 * .2f, col, Color.Lerp(col, tipC, .35f), rng, 3, .05f, .14f);
+                    clumps++;
+                }
+                else
+                {
+                    // dead straw: taller, burnt to the colour of the mesas
+                    var dc = Color.Lerp(col, new Color(.7f, .56f, .36f), .4f);
+                    wm.Tuft(at, .4f + r2 * .3f, dc, Color.Lerp(dc, tipC, .35f), rng, 3, .05f, .14f); dead++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Badlands scrub", ctx.Root, mat);
+            Debug.Log($"The Punk Badlands scrub: {stubble} stubble, {clumps} scrub clumps, {dead} dead straw");
         }
     }
 }
