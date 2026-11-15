@@ -32,6 +32,14 @@ namespace EverythingWorld.World
         readonly List<(Vector3 p, int w)> walkPoints = new List<(Vector3, int)>();
         readonly Dictionary<string, Vector3> facing = new Dictionary<string, Vector3>();
         readonly List<Vector3> noGrass = new List<Vector3>();
+        readonly HashSet<(int, int)> treeCells = new HashSet<(int, int)>();   // 6 m cells with a tree trunk or boulder in them (ferns gather round them)
+        void Rooted(Vector3 at) => treeCells.Add((Mathf.FloorToInt(at.x / 6f), Mathf.FloorToInt(at.z / 6f)));
+        bool NearTree(float x, float z)
+        {
+            int cx = Mathf.FloorToInt(x / 6f), cz = Mathf.FloorToInt(z / 6f);
+            for (var i = -1; i <= 1; i++) for (var j = -1; j <= 1; j++) if (treeCells.Contains((cx + i, cz + j))) return true;
+            return false;
+        }
         bool hasLake; Vector2 lakeC; float lakeR = 70f, lakeY;
 
         void MakeMaterials()
@@ -212,7 +220,7 @@ namespace EverythingWorld.World
 
         void Pine(LandContext ctx, MeshKit mk, Vector3 at, float s)
         {
-            var up = Vector3.up; var h = 12f * s;
+            var up = Vector3.up; var h = 12f * s; Rooted(at);
             mk.Prism(bark, at - up * .3f, up, .4f * s, h * .35f, 7);
             for (var k = 0; k < 4; k++) soft.Cone(pineM, at + up * (h * (.2f + k * .18f)), (3f - k * .65f) * s, h * .35f, 8, ctx.Range(0, 60f));
             ArtistBits.PostCollider(ctx.Root, at, h * .5f, .45f * s);
@@ -220,7 +228,7 @@ namespace EverythingWorld.World
 
         void Oak(LandContext ctx, MeshKit mk, Vector3 at, float s)
         {
-            var up = Vector3.up; var h = 5f * s;
+            var up = Vector3.up; var h = 5f * s; Rooted(at);
             mk.Prism(bark, at - up * .3f, up, .55f * s, h, 8, .7f);
             for (var k = 0; k < 5; k++) { var d = Quaternion.Euler(0, k * 72f + ctx.Range(-20f, 20f), 0) * Vector3.forward; soft.Blob(leaf, at + up * (h + 1f * s) + d * 2.2f * s, new Vector3(2.4f, 1.8f, 2.4f) * s, ctx.Rng, .3f); }
             soft.Blob(leaf, at + up * (h + 2.4f * s), new Vector3(3f, 2f, 3f) * s, ctx.Rng, .3f);
@@ -453,7 +461,7 @@ namespace EverythingWorld.World
                 else if (roll < .12f && life.shafts.Count < 26 && NearPath(px, pz, 30f)) { life.shafts.Add(p); if (life.shafts.Count == 1) { var mark = new GameObject("Shot: a sun shaft").transform; mark.SetParent(ctx.Root, false); var cam = p; for (var k = 0; k < 8; k++) { var q = ctx.OnGround(px + Mathf.Cos(k * .785f) * 18f, pz + Mathf.Sin(k * .785f) * 18f); if (ctx.IsLand(q.x, q.z, 2f) && (cam == p || q.y > cam.y)) cam = q; } mark.SetPositionAndRotation(cam, Quaternion.LookRotation(new Vector3(p.x - cam.x, 0, p.z - cam.z).normalized + Vector3.up * .2f)); } }
                 else if (roll < .55f) { Pine(ctx, mk, p, ctx.Range(.9f, 1.5f)); pines++; }
                 else if (roll < .8f) { Oak(ctx, mk, p, ctx.Range(.9f, 1.4f)); oaks++; }
-                else if (roll < .86f) { mk.Blob(stone, p + Vector3.up * .6f, new Vector3(ctx.Range(1f, 2.4f), ctx.Range(.7f, 1.4f), ctx.Range(1f, 2f)), ctx.Rng, .35f); soft.Blob(WorldMaterials.Solid(new Color(.35f, .5f, .25f)), p + Vector3.up * 1.3f, new Vector3(1.2f, .25f, 1f), ctx.Rng, .3f); solid.Box(stone, p + Vector3.up * .6f, new Vector3(3f, 1.4f, 2.6f), Quaternion.identity); rocks++; }
+                else if (roll < .86f) { mk.Blob(stone, p + Vector3.up * .6f, new Vector3(ctx.Range(1f, 2.4f), ctx.Range(.7f, 1.4f), ctx.Range(1f, 2f)), ctx.Rng, .35f); soft.Blob(WorldMaterials.Solid(new Color(.35f, .5f, .25f)), p + Vector3.up * 1.3f, new Vector3(1.2f, .25f, 1f), ctx.Rng, .3f); Rooted(p); solid.Box(stone, p + Vector3.up * .6f, new Vector3(3f, 1.4f, 2.6f), Quaternion.identity); rocks++; }
                 else continue;
             }
             Debug.Log($"The Folk Woods: {life.giants} giant sequoias, {life.shafts.Count} sun shafts, lake {(hasLake ? lakeR.ToString("0") + " m" : "none")}, {pines} pines, {oaks} oaks, {cabins} cabins, {fires} campfires, {rocks} boulders");
@@ -617,25 +625,72 @@ namespace EverythingWorld.World
             noGrass.Add(new Vector3(at.x, 4f, at.z));
         }
 
+        /// The woods' undergrowth, in patches the way a real wood grows, not an even carpet: open lawns of short
+        /// fine grass with drifts of one kind of flower, meadows of mixed grass, stands of tall seeding grass with
+        /// straw tips, bracken gathered round the trunks and boulders, and bare mossy ground between. Each patch is
+        /// its own shade, from a cool blue-green in the shade to a warm yellow-green in the open (by brightness and
+        /// blue/yellow, so the patches read for colour-blind eyes too). Patches are a few tens of metres across, so
+        /// the ground changes as you walk.
         void GroundCover(LandContext ctx)
         {
             var mat = WindMesh.Material(.3f, 1f, new Color(.32f, .5f, .3f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1971);
-            const float step = 2.3f; Color[] flowers = { new Color(.95f, .95f, .9f), new Color(.6f, .55f, 1f), new Color(1f, .85f, .3f) };
+            const float step = 2f;
+            Color shade = new Color(.2f, .38f, .3f), sunny = new Color(.56f, .62f, .28f), straw = new Color(.86f, .8f, .5f);
+            Color[] flowers = { new Color(.95f, .95f, .9f), new Color(.6f, .55f, 1f), new Color(1f, .85f, .3f), new Color(.98f, .62f, .78f) };
+            int lawn = 0, meadow = 0, tall = 0, ferns = 0, blooms = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 2.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || InLake(px, pz, 2f) || OnRail(px, pz, 0f)) continue;
-                if (Mathf.PerlinNoise(px * .025f + 3f, pz * .025f + 5f) < .38f) continue;
+                var kind = Mathf.PerlinNoise(px * .011f + 3f, pz * .011f + 5f);          // which kind of patch (lawn, meadow, tall grass)
+                var bare = Mathf.PerlinNoise(px * .045f + 41f, pz * .045f + 17f);        // bare mossy ground between patches
+                var tone = Mathf.PerlinNoise(px * .02f + 77f, pz * .02f + 13f);          // the patch's shade
+                var drift = Mathf.PerlinNoise(px * .06f + 9f, pz * .06f + 61f);          // flower drifts
+                var nearTree = NearTree(px, pz);
+                if (bare < .3f && !nearTree) continue;
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
-                var col = Color.Lerp(new Color(.32f, .5f, .3f), new Color(.45f, .58f, .35f), (float)rng.NextDouble());
                 var at = new Vector3(px, ctx.Ground(px, pz) - .04f, pz);
-                wm.Tuft(at, .4f + (float)rng.NextDouble() * .4f, col, Color.Lerp(col, new Color(.85f, .9f, .7f), .3f), rng, 4, .07f);
-                if (rng.NextDouble() < .07) wm.Flower(at + new Vector3(.1f, 0, .1f), .35f, flowers[rng.Next(flowers.Length)], rng);
+                var col = Color.Lerp(shade, sunny, Mathf.Clamp01((tone - .3f) * 2.2f)) * (.9f + r2 * .2f);
+                if (nearTree && r1 < .55f)
+                {
+                    var fc = Color.Lerp(new Color(.24f, .42f, .22f), new Color(.5f, .52f, .24f), tone);
+                    wm.Bracken(at, .55f + r2 * .6f, fc, Color.Lerp(fc, new Color(.75f, .7f, .35f), .35f), rng, 5 + rng.Next(3)); ferns++;
+                }
+                else if (kind < .38f)
+                {
+                    // a lawn: short, fine and bright, two little tufts per spot
+                    var lc = Color.Lerp(col, sunny, .25f);
+                    wm.Tuft(at, .18f + r2 * .14f, lc, Color.Lerp(lc, new Color(.8f, .85f, .55f), .25f), rng, 3, .05f);
+                    wm.Tuft(at + new Vector3(.45f, 0, -.3f), .15f + r1 * .12f, lc, lc, rng, 3, .05f); lawn++;
+                    if (drift > .62f && rng.NextDouble() < .45)
+                    {
+                        // the drift's own flower, so a patch is all one kind
+                        var fl = flowers[Mathf.FloorToInt(Mathf.PerlinNoise(px * .015f + 200f, pz * .015f + 7f) * flowers.Length * .999f)];
+                        for (var k = 0; k < 3; k++) wm.Flower(at + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * 1.4f, .22f + (float)rng.NextDouble() * .1f, fl, rng);
+                        blooms += 3;
+                    }
+                }
+                else if (kind < .62f)
+                {
+                    // a meadow: mixed heights, the odd flower
+                    wm.Tuft(at, .4f + r2 * .4f, col, Color.Lerp(col, new Color(.85f, .9f, .7f), .3f), rng, 4, .07f); meadow++;
+                    if (rng.NextDouble() < .07) { wm.Flower(at + new Vector3(.1f, 0, .1f), .35f, flowers[rng.Next(flowers.Length)], rng); blooms++; }
+                }
+                else
+                {
+                    // tall grass going to seed: waist high, wide blades, pale straw tips
+                    var tc = Color.Lerp(col, new Color(.5f, .52f, .3f), .3f);
+                    wm.Tuft(at, .85f + r2 * .5f, tc, Color.Lerp(tc, straw, .55f), rng, 5, .09f);
+                    if (r1 < .5f) wm.Tuft(at + new Vector3(-.5f, 0, .4f), .7f + r1 * .4f, tc, Color.Lerp(tc, straw, .4f), rng, 4, .08f);
+                    tall++;
+                }
             }
             foreach (var kv in meshes) kv.Value.Build("Folk grass", ctx.Root, mat);
+            Debug.Log($"The Folk Woods undergrowth: {lawn} lawn spots, {meadow} meadow tufts, {tall} tall-grass clumps, {ferns} bracken, {blooms} flowers");
         }
     }
 }
