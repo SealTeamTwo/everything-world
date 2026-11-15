@@ -333,24 +333,48 @@ namespace EverythingWorld.World
             var chunks = new Dictionary<(int, int), WindMesh>();
             var rng = new System.Random(303);
             const float step = 2f;
+            // In patches, as a damp hollow grows: close moss in the low shade, garden plants where it's a little
+            // lighter, beds of ferns, and bare wet earth between. Each patch has its own shade, cool blue-green moss to
+            // a warmer, lighter green; every blade a little different.
+            Color cool = new Color(.14f, .22f, .24f), warm = new Color(.26f, .33f, .25f), mist = new Color(.5f, .6f, .62f);
+            int moss = 0, garden = 0, ferns = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += step)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += step)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * step; var pz = z + ((float)rng.NextDouble() - .5f) * step;
-                if (Mathf.PerlinNoise(px * .03f + 4f, pz * .03f + 1f) < .4f) continue;
+                if (WindMesh.Patch(px, pz, .045f, 1f) < .36f) continue;                      // bare wet earth between the patches
                 if (!ctx.IsLand(px, pz, 3f) || !ctx.IsFree(px, pz, 1f) || NearPath(px, pz, 2.4f) || InNoah(new Vector3(px, 0, pz), 0f)) continue;
                 var g = ctx.Ground(px, pz);
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!chunks.TryGetValue(key, out var wm)) chunks[key] = wm = new WindMesh();
                 var at = new Vector3(px, g - .04f, pz);
-                if (rng.NextDouble() < .8)
+                var kind = WindMesh.Patch(px, pz, .022f, 2f);                                  // which kind of patch
+                var tone = WindMesh.Patch(px, pz, .03f, 3f);                                   // the patch's shade
+                var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();
+                var col = Color.Lerp(cool, warm, Mathf.Clamp01((tone - .25f) * 2f)) * (.92f + r2 * .16f);
+                if (kind < .4f)
                 {
-                    var col = Color.Lerp(new Color(.16f, .24f, .22f), new Color(.24f, .32f, .28f), (float)rng.NextDouble());
-                    wm.Tuft(at, .25f + (float)rng.NextDouble() * .3f, col, Color.Lerp(col, new Color(.5f, .6f, .62f), .3f), rng, 4, .08f);
+                    // moss: low and close, a cushion of short tufts
+                    var mc = Color.Lerp(col, cool, .3f);
+                    wm.Tuft(at, .1f + r1 * .12f, mc, Color.Lerp(mc, mist, .2f), rng, 3, .08f, .12f);
+                    if (r2 < .5f) wm.Tuft(at + new Vector3(.5f, 0, .35f), .08f + r2 * .1f, mc, Color.Lerp(mc, mist, .15f), rng, 2, .08f, .12f);
+                    moss++;
                 }
-                else wm.Bracken(at, .5f + (float)rng.NextDouble() * .3f, new Color(.16f, .26f, .22f), new Color(.26f, .36f, .3f), rng);
+                else if (kind < .66f || r1 < .25f)
+                {
+                    // low garden plants, now and then a fern among them
+                    if (r1 < .12f) { wm.Bracken(at, .5f + r2 * .3f, Color.Lerp(col, new Color(.16f, .26f, .22f), .5f), Color.Lerp(col, new Color(.26f, .36f, .3f), .7f), rng, 5); ferns++; }
+                    else { wm.Tuft(at, .25f + r2 * .3f, col, Color.Lerp(col, mist, .3f), rng, 4, .08f, .14f); garden++; }
+                }
+                else
+                {
+                    // a fern bed: fronds close together under the hedges and walls
+                    var fc = Color.Lerp(new Color(.16f, .26f, .22f), col, .4f);
+                    wm.Bracken(at, .5f + r2 * .4f, fc, Color.Lerp(fc, new Color(.3f, .4f, .32f), .6f), rng, 5 + rng.Next(2)); ferns++;
+                }
             }
             foreach (var kv in chunks) kv.Value.Build("Moss and ferns", ctx.Root, mat);
+            Debug.Log($"The Small Hours ground cover: {moss} moss cushions, {garden} garden plants, {ferns} ferns");
         }
     }
 }

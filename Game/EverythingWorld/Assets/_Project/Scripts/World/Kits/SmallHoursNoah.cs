@@ -439,17 +439,30 @@ namespace EverythingWorld.World
                 BareTree(ctx, mk, root, p, ctx.Range(1f, 1.3f));
             }
             // dry winter grass round the house
+            // in patches: tussocks of long dry grass, short grass flattened by the frost, and bare frozen earth between;
+            // each patch its own shade, grey and cold to warm straw
             var grass = new WindMesh(); var rng = new System.Random(77);
+            int tussocks = 0, flat = 0;
             for (var i = 0; i < 1400; i++)
             {
                 var a = (float)rng.NextDouble() * Mathf.PI * 2f; var r = Mathf.Sqrt((float)rng.NextDouble()) * 24f;
                 var p = N + F * 10f + new Vector3(Mathf.Cos(a) * r, 0, Mathf.Sin(a) * r);
                 if (NearPath(p.x, p.z, 1.8f)) continue;
                 if ((new Vector2(p.x, p.z) - new Vector2(N.x + F.x * 4f, N.z + F.z * 4f)).magnitude < 9.5f) continue;
-                var col = Color.Lerp(new Color(.48f, .4f, .3f), new Color(.62f, .52f, .36f), (float)rng.NextDouble());
-                grass.Tuft(G(p) - Vector3.up * .03f, .2f + (float)rng.NextDouble() * .25f, col, Color.Lerp(col, new Color(.8f, .72f, .55f), .4f), rng, 3, .07f);
+                if (WindMesh.Patch(p.x, p.z, .12f, 21f) < .28f) continue;                    // bare frozen earth
+                var tone = WindMesh.Patch(p.x, p.z, .07f, 22f);
+                var col = Color.Lerp(new Color(.44f, .4f, .34f), new Color(.64f, .53f, .36f), tone) * (.92f + (float)rng.NextDouble() * .16f);
+                var tip = Color.Lerp(col, new Color(.8f, .72f, .55f), .4f);
+                if (WindMesh.Patch(p.x, p.z, .09f, 23f) > .55f)
+                {
+                    // a tussock: long dry blades in a clump
+                    grass.Tuft(G(p) - Vector3.up * .03f, .35f + (float)rng.NextDouble() * .3f, col, tip, rng, 4, .07f, .14f);
+                    tussocks++;
+                }
+                else { grass.Tuft(G(p) - Vector3.up * .03f, .12f + (float)rng.NextDouble() * .15f, col * .95f, tip, rng, 3, .08f, .14f); flat++; }
             }
             grass.Build("Winter grass", root, WindMesh.Material(.08f, .6f, Moss));
+            Debug.Log($"The Small Hours, Noah Gallagher's yard: {tussocks} tussocks, {flat} tufts of frost-flattened grass");
         }
 
         void BareTree(LandContext ctx, MeshKit mk, Transform root, Vector3 at, float scale)
@@ -508,7 +521,7 @@ namespace EverythingWorld.World
                 return ctx.IsLand(p.x, p.z, 2f);
             }
             var shafts = new MeshKit();         // light falling between the trunks: walked through (the land audit skips "Soft")
-            var trees = 0;
+            var trees = 0; var roots = new List<Vector3>();   // where the trunks stand, so ferns can gather round them
             var many = Mathf.RoundToInt(260f * (noahR / 74f) * (noahR / 74f));
             for (var i = 0; i < many; i++)
             {
@@ -516,7 +529,7 @@ namespace EverythingWorld.World
                 var p = N + new Vector3(Mathf.Cos(a) * r, 0, Mathf.Sin(a) * r);
                 if (!Clear(p, 1.5f)) continue;
                 p = ctx.OnGround(p.x, p.z);
-                trees++;
+                trees++; roots.Add(p);
                 // a dark twisted trunk: a few leaning segments, then bare reaching branches and a little dark canopy
                 var h = ctx.Range(9f, 16f);
                 var at = p; var dir = Vector3.up; var rad = ctx.Range(.35f, .6f);
@@ -555,17 +568,36 @@ namespace EverythingWorld.World
                     halos.Add(op, 1.6f, col, .9f);
                 }
             }
-            // teal-tipped ferns over the forest floor
+            // teal-tipped ferns over the forest floor, in patches: ferns gathered round the trunks and in deep beds, low
+            // teal-tipped grass between, bare dark leaf litter in places; each patch a little bluer or greener
             var ferns = new WindMesh(); var rng = new System.Random(919);
+            int fernCount = 0, grassCount = 0;
+            bool NearRoot(Vector3 p) { foreach (var q in roots) { float dx = q.x - p.x, dz = q.z - p.z; if (dx * dx + dz * dz < 4.5f * 4.5f) return true; } return false; }
             for (var i = 0; i < many * 10; i++)
             {
                 var a = (float)rng.NextDouble() * Mathf.PI * 2f; var r = Mathf.Sqrt((float)rng.NextDouble()) * (noahR - 2f);
                 var p = N + new Vector3(Mathf.Cos(a) * r, 0, Mathf.Sin(a) * r);
                 if (!Clear(p, -1.5f)) continue;
+                var nearRoot = NearRoot(p);
+                if (!nearRoot && WindMesh.Patch(p.x, p.z, .06f, 31f) < .3f) continue;        // bare dark leaf litter
                 var g = ctx.OnGround(p.x, p.z) - Vector3.up * .03f;
-                if (rng.NextDouble() < .3) ferns.Bracken(g, .5f + (float)rng.NextDouble() * .4f, new Color(.08f, .18f, .2f), new Color(.2f, .7f, .62f), rng);
-                else ferns.Tuft(g, .3f + (float)rng.NextDouble() * .3f, new Color(.08f, .16f, .18f), new Color(.16f, .5f, .46f), rng, 3, .07f);
+                var tone = WindMesh.Patch(p.x, p.z, .035f, 32f);                              // bluer teal to greener
+                var shade = .9f + (float)rng.NextDouble() * .2f;
+                var tipF = Color.Lerp(new Color(.18f, .62f, .66f), new Color(.24f, .72f, .56f), tone) * shade;
+                var tipG = Color.Lerp(new Color(.14f, .44f, .5f), new Color(.2f, .54f, .42f), tone) * shade;
+                var bed = WindMesh.Patch(p.x, p.z, .045f, 33f) > .6f;
+                if ((nearRoot && rng.NextDouble() < .6) || (bed && rng.NextDouble() < .75) || rng.NextDouble() < .12)
+                {
+                    ferns.Bracken(g, .5f + (float)rng.NextDouble() * (bed ? .55f : .4f), new Color(.08f, .18f, .2f), tipF, rng); fernCount++;
+                }
+                else
+                {
+                    ferns.Tuft(g, .25f + (float)rng.NextDouble() * .3f, new Color(.08f, .16f, .18f), tipG, rng, 3, .07f, .1f);
+                    if (rng.NextDouble() < .35) ferns.Tuft(g + new Vector3(.4f, 0, -.3f), .18f + (float)rng.NextDouble() * .2f, new Color(.08f, .16f, .18f), tipG, rng, 2, .07f, .1f);
+                    grassCount++;
+                }
             }
+            Debug.Log($"The Small Hours forest floor: {fernCount} ferns, {grassCount} grass tufts");
             ferns.Build("Forest floor", root, WindMesh.Material(.1f, .5f, Moss));
             shafts.Build("Soft light shafts", root, false);
             ArtistBits.PointLight(root, N + Vector3.up * (noah.y + 6f) - F * 30f, Teal, 45f, 1.1f);
