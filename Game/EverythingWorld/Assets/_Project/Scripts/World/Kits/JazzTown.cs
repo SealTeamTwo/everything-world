@@ -188,8 +188,8 @@ namespace EverythingWorld.World
         /// escape, a water tank on the roof, a sign in white neon. It stands on a plinth, so it sits on a slope.
         void House(LandContext ctx, MeshKit mk, MeshKit solid, PlaceFrame f, int i)
         {
-            var up = Vector3.up; const float W = HouseW, D = HouseD; var st = 2 + (i * 7 + 1) % 3; var H = st * 3.1f + .5f; var wall = WorldMaterials.Solid(Walls[i % Walls.Length]); var rng = new System.Random(i * 17 + 3);
-            var glass = WorldMaterials.Solid(new Color(.09f, .1f, .13f), .9f); var fz = D / 2f;
+            var up = Vector3.up; const float W = HouseW, D = HouseD; var st = 2 + (i * 7 + 1) % 3; var H = st * 3.1f + .5f; var wall = WorldMaterials.Surface(Walls[i % Walls.Length], Surface.Stone); var rng = new System.Random(i * 17 + 3);
+            var glass = WorldMaterials.Surface(new Color(.09f, .1f, .13f), Surface.Glass); var fz = D / 2f;
             // it stands with its front level with the highest ground along it (so no door is buried), and its walls go
             // down past the lowest ground under it (on a slope the low side would otherwise hang in the air)
             float lo = f.o.y, hi = f.o.y;
@@ -249,9 +249,9 @@ namespace EverythingWorld.World
         /// A long black car at the kerb with its lamps left on, light lying on the wet ground ahead of it.
         void Sedan(LandContext ctx, MeshKit mk, Vector3 g, Vector3 fwd, int i)
         {
-            var up = Vector3.up; fwd.y = 0; fwd.Normalize(); var rot = Quaternion.LookRotation(fwd); var side = Vector3.Cross(up, fwd); var body = WorldMaterials.Solid(new Color(.06f, .06f, .07f), .9f); var rng = new System.Random(i + 40);
-            mk.Box(body, g + up * .62f, new Vector3(1.75f, .62f, 4.7f), rot); mk.Box(body, g + up * 1.2f - fwd * .35f, new Vector3(1.55f, .62f, 2.2f), rot); mk.Box(WorldMaterials.Solid(new Color(.2f, .22f, .26f), .9f), g + up * 1.22f - fwd * .35f, new Vector3(1.58f, .4f, 1.9f), rot);
-            mk.Blob(body, g + up * .8f + fwd * 1.7f, new Vector3(.86f, .34f, .9f), rng, .02f); mk.Box(WorldMaterials.Solid(Silver, .9f), g + up * .4f + fwd * 2.38f, new Vector3(1.8f, .12f, .08f), rot); mk.Box(WorldMaterials.Solid(Silver, .9f), g + up * .4f - fwd * 2.38f, new Vector3(1.8f, .12f, .08f), rot);
+            var up = Vector3.up; fwd.y = 0; fwd.Normalize(); var rot = Quaternion.LookRotation(fwd); var side = Vector3.Cross(up, fwd); var body = WorldMaterials.Surface(new Color(.06f, .06f, .07f), Surface.Painted); var rng = new System.Random(i + 40);
+            mk.Box(body, g + up * .62f, new Vector3(1.75f, .62f, 4.7f), rot); mk.Box(body, g + up * 1.2f - fwd * .35f, new Vector3(1.55f, .62f, 2.2f), rot); mk.Box(WorldMaterials.Surface(new Color(.2f, .22f, .26f), Surface.Glass), g + up * 1.22f - fwd * .35f, new Vector3(1.58f, .4f, 1.9f), rot);
+            mk.Blob(body, g + up * .8f + fwd * 1.7f, new Vector3(.86f, .34f, .9f), rng, .02f); mk.Box(WorldMaterials.Surface(Silver, Surface.Metal), g + up * .4f + fwd * 2.38f, new Vector3(1.8f, .12f, .08f), rot); mk.Box(WorldMaterials.Surface(Silver, Surface.Metal), g + up * .4f - fwd * 2.38f, new Vector3(1.8f, .12f, .08f), rot);
             foreach (var e in new[] { -1f, 1f }) { foreach (var s in new[] { -1.5f, 1.45f }) { mk.Prism(dark, g + up * .36f + side * e * .8f + fwd * s, side * e, .36f, .2f, 10); mk.Blob(body, g + up * .62f + side * e * .86f + fwd * s, new Vector3(.2f, .3f, .6f), rng, .02f); } mk.Blob(lampM, g + up * .72f + side * e * .6f + fwd * 2.36f, Vector3.one * .1f, rng, 0f); halos.Add(g + up * .72f + side * e * .6f + fwd * 2.5f, 1f, Brass, .6f); }
             var ahead = g + fwd * 4.6f; ahead = ctx.OnGround(ahead.x, ahead.z); if (Mathf.Abs(ahead.y - g.y) < .3f) mk.Prism(poolM, ahead + up * .17f, up, 1.6f, .012f, 12); Col(g + up * .8f, new Vector3(1.8f, 1.5f, 4.7f), rot); noGrass.Add(new Vector3(g.x, 3f, g.z));
         }

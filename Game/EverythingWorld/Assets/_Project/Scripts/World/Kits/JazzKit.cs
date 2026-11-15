@@ -39,9 +39,9 @@ namespace EverythingWorld.World
         {
             // the streets are faintly self-lit, so the night never swallows them
             cobble = WorldMaterials.Glow(new Color(.4f, .41f, .45f), .14f); stoneM = WorldMaterials.Glow(new Color(.62f, .63f, .67f), .12f);
-            brassM = WorldMaterials.Glow(new Color(.9f, .68f, .28f), .18f); iron = WorldMaterials.Solid(new Color(.1f, .1f, .12f), .6f); dark = WorldMaterials.Solid(new Color(.05f, .05f, .06f));
-            white = WorldMaterials.Glow(new Color(.93f, .93f, .92f), .1f); grey = WorldMaterials.Solid(new Color(.34f, .35f, .38f));
-            leafM = WorldMaterials.Solid(new Color(.3f, .32f, .33f)); leafDark = WorldMaterials.Solid(new Color(.18f, .19f, .21f)); trunkM = WorldMaterials.Solid(new Color(.09f, .09f, .1f));
+            brassM = WorldMaterials.Glow(new Color(.9f, .68f, .28f), .18f); iron = WorldMaterials.Surface(new Color(.1f, .1f, .12f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.05f, .05f, .06f));
+            white = WorldMaterials.Glow(new Color(.93f, .93f, .92f), .1f); grey = WorldMaterials.Surface(new Color(.34f, .35f, .38f), Surface.Stone);
+            leafM = WorldMaterials.Surface(new Color(.3f, .32f, .33f), Surface.Foliage); leafDark = WorldMaterials.Surface(new Color(.18f, .19f, .21f), Surface.Foliage); trunkM = WorldMaterials.Surface(new Color(.09f, .09f, .1f), Surface.Bark);
             waterM = new Material(WorldMaterials.Glow(new Color(.24f, .27f, .34f), .22f)) { name = "Jazz river" };
             puddleM = WorldMaterials.Glow(new Color(.5f, .54f, .62f), .2f);
             lampM = new Material(WorldMaterials.Glow(Brass, 1.8f)) { name = "Jazz lamps" };
@@ -333,7 +333,7 @@ namespace EverythingWorld.World
         /// An upright bass standing on its spike.
         void Bass(MeshKit mk, Vector3 g, Quaternion rot, System.Random rng)
         {
-            var up = Vector3.up; var wood = WorldMaterials.Solid(new Color(.3f, .22f, .16f), .6f); mk.Prism(iron, g, up, .012f, .25f, 4); mk.Blob(wood, g + up * .78f, new Vector3(.34f, .58f, .15f), rng, .04f); mk.Box(dark, g + up * 1.62f, new Vector3(.07f, 1f, .05f), rot); mk.Box(wood, g + up * 2.16f, new Vector3(.1f, .16f, .08f), rot);
+            var up = Vector3.up; var wood = WorldMaterials.Surface(new Color(.3f, .22f, .16f), Surface.Wood); mk.Prism(iron, g, up, .012f, .25f, 4); mk.Blob(wood, g + up * .78f, new Vector3(.34f, .58f, .15f), rng, .04f); mk.Box(dark, g + up * 1.62f, new Vector3(.07f, 1f, .05f), rot); mk.Box(wood, g + up * 2.16f, new Vector3(.1f, .16f, .08f), rot);
         }
 
         /// A grand piano, lid up. 'g' is under its middle, the keys on its front (rot's forward).
@@ -349,7 +349,7 @@ namespace EverythingWorld.World
         /// A microphone on a stand.
         void Mic(Transform parent, MeshKit mk, Vector3 g, Material head = null)
         {
-            var up = Vector3.up; mk.Prism(iron, g, up, .2f, .03f, 8); mk.Prism(iron, g, up, .018f, 1.5f, 4); mk.Blob(head ?? WorldMaterials.Solid(Silver, .8f), g + up * 1.56f, new Vector3(.06f, .09f, .06f), new System.Random(2), 0f); ArtistBits.PostCollider(parent, g, 1.5f, .06f);
+            var up = Vector3.up; mk.Prism(iron, g, up, .2f, .03f, 8); mk.Prism(iron, g, up, .018f, 1.5f, 4); mk.Blob(head ?? WorldMaterials.Surface(Silver, Surface.Metal), g + up * 1.56f, new Vector3(.06f, .09f, .06f), new System.Random(2), 0f); ArtistBits.PostCollider(parent, g, 1.5f, .06f);
         }
 
         /// A puddle: a patch of sky lying on the ground.
