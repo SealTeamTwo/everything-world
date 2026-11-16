@@ -175,6 +175,7 @@ namespace EverythingWorld.World
                     AddTri(verts, cols, byMaterial, corner[1], corner[2], corner[3], island, c, r);
                 }
             }
+            softColors.Clear(); baseColors.Clear();   // corners are remembered only while their chunk is built
             if (verts.Count == 0) return;
 
             var mesh = new Mesh { name = $"Terrain {c0},{r0}", indexFormat = IndexFormat.UInt32 };
@@ -283,27 +284,32 @@ namespace EverythingWorld.World
 
         /// The ground's colour at a grid corner, softened: the colours of the corner and its eight neighbours (each with
         /// its own height and steepness) blended, the corner itself counting most. Remembered per corner and land.
-        readonly Dictionary<(int, int, int), Color> softColors = new Dictionary<(int, int, int), Color>();
+        readonly Dictionary<(int, int, int), Color> softColors = new Dictionary<(int, int, int), Color>(), baseColors = new Dictionary<(int, int, int), Color>();
         Color SoftColor(Vector3 p, int island)
         {
             int c0 = Mathf.RoundToInt(p.x / Data.Step), r0 = Mathf.RoundToInt((Data.layout.depth - p.z) / Data.Step);
             if (softColors.TryGetValue((c0, r0, island), out var got)) return got;
             float H(int c, int r) => Data.VertexHeight(Mathf.Clamp(c, 0, Data.Nx - 1), Mathf.Clamp(r, 0, Data.Nz - 1));
+            Color Base(int c, int r)
+            {
+                if (baseColors.TryGetValue((c, r, island), out var bc)) return bc;
+                var h = H(c, r);
+                var sl = Mathf.Max(Mathf.Max(Mathf.Abs(H(c + 1, r) - h), Mathf.Abs(H(c - 1, r) - h)), Mathf.Max(Mathf.Abs(H(c, r + 1) - h), Mathf.Abs(H(c, r - 1) - h))) * 1.2f;
+                return baseColors[(c, r, island)] = TerrainColor(h, sl, island, c, r);
+            }
             var sum = Color.clear; var wsum = 0f;
             for (var dr = -1; dr <= 1; dr++)
             for (var dc = -1; dc <= 1; dc++)
             {
-                int c = c0 + dc, r = r0 + dr; var h = H(c, r);
-                var sl = Mathf.Max(Mathf.Max(Mathf.Abs(H(c + 1, r) - h), Mathf.Abs(H(c - 1, r) - h)), Mathf.Max(Mathf.Abs(H(c, r + 1) - h), Mathf.Abs(H(c, r - 1) - h))) * 1.2f;
                 var w = dc == 0 && dr == 0 ? 4f : dc == 0 || dr == 0 ? 2f : 1f;
-                sum += TerrainColor(h, sl, island, c, r) * w; wsum += w;
+                sum += Base(c0 + dc, r0 + dr) * w; wsum += w;
             }
             var col = sum / wsum; col.a = 1f;
             return softColors[(c0, r0, island)] = col;
         }
 
-        /// Rich ground textures (RichSurfaces) on this island: tried on Lanternwood first.
-        bool RichGround(int island) => !WorldLook.Old && island >= 0 && island < kits.Length && kits[island] != null && kits[island].Land == "Lanternwood";
+        /// Rich ground textures (RichSurfaces) and softly blended colours on this island: every built land.
+        bool RichGround(int island) => !WorldLook.Old && island >= 0 && island < kits.Length && kits[island] != null;
 
         /// Round a ground colour to one of a limited set of shades. Each distinct colour is its own material,
         /// drawn separately, and the built lands blend their ground colours smoothly: unrounded, one terrain chunk
@@ -600,11 +606,12 @@ namespace EverythingWorld.World
             {
                 var ctx = new LandContext(Data, i, landsRoot, coverAtlas);
                 MeshKit.Bevel = WorldLook.Old ? 0f : WorldLook.Bevel;   // bevelled box edges everywhere (WorldLook)
-                RichSurfaces.On = !WorldLook.Old && kits[i].Land == "Lanternwood";   // detailed textures with relief: tried on Lanternwood first
+                RichSurfaces.On = !WorldLook.Old;   // detailed textures with relief (RichSurfaces)
+                SoftEdges.On = !WorldLook.Old && !SoftEdges.BuiltPaths.Contains(kits[i].Land);   // worn paths wander, built ones stay straight
                 kits[i].Dress(ctx);
                 foreach (var a in ctx.Artists) kits[i].BuildArtist(ctx, a);
                 kits[i].Finish(ctx);
-                MeshKit.Bevel = 0f; RichSurfaces.On = false;
+                MeshKit.Bevel = 0f; RichSurfaces.On = false; SoftEdges.On = false;
                 if (!WorldLook.Old && ctx.Root.GetComponent<NearShadows>() == null) ctx.Root.gameObject.AddComponent<NearShadows>();   // lamp shadows near you
                 if ((auditLands || ForceAudit) && Application.isEditor && QuickLands == null && (AuditOnly == null || AuditOnly.Contains(kits[i].Land.StartsWith("The ") ? kits[i].Land.Substring(4) : kits[i].Land)))
                 {
@@ -619,7 +626,7 @@ namespace EverythingWorld.World
             {
                 Debug.LogException(e); // one broken land should not stop the rest of the world
             }
-            finally { MeshKit.Bevel = 0f; RichSurfaces.On = false; }
+            finally { MeshKit.Bevel = 0f; RichSurfaces.On = false; SoftEdges.On = false; }
         }
 
         /// How many different materials the built world draws with, grouped by kind (by the start of each material's

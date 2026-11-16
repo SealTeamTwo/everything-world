@@ -178,7 +178,7 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).sqrMagnitude > .01f ? (a + b).normalized : b; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                Vector3 l = pts[i] - side * (width / 2f * miter), r = pts[i] + side * (width / 2f * miter);
+                Vector3 l = pts[i] - side * (width / 2f * miter * SoftEdges.Edge(pts[i], width, 1f)), r = pts[i] + side * (width / 2f * miter * SoftEdges.Edge(pts[i], width, 2f));
                 var mid = ctx.Ground(pts[i].x, pts[i].z);
                 var bulge = Mathf.Clamp(mid - (ctx.Ground(l.x, l.z) + ctx.Ground(r.x, r.z)) / 2f, 0f, .3f);
                 for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = ctx.Ground(q.x, q.z) + bulge + lift; V[i, k] = q; }

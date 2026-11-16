@@ -227,7 +227,7 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                L[i] = pts[i] + Vector3.up * lift - side * (w / 2f * miter); R[i] = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
+                L[i] = pts[i] + Vector3.up * lift - side * (w / 2f * miter * SoftEdges.Edge(pts[i], w, 1f)); R[i] = pts[i] + Vector3.up * lift + side * (w / 2f * miter * SoftEdges.Edge(pts[i], w, 2f));
                 if (ground != null)
                 {
                     float gl = ground.Ground(L[i].x, L[i].z), gr = ground.Ground(R[i].x, R[i].z), top = Mathf.Max(pts[i].y, Mathf.Max(gl, gr) - .05f);

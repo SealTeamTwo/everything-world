@@ -198,12 +198,12 @@ namespace EverythingWorld.World
                 var bump = 0f;
                 if (ground != null)
                 {
-                    var l = pts[i] - side * (w / 2f * miter); var r = pts[i] + side * (w / 2f * miter);
+                    var l = pts[i] - side * (w / 2f * miter * SoftEdges.Edge(pts[i], w, 1f)); var r = pts[i] + side * (w / 2f * miter * SoftEdges.Edge(pts[i], w, 2f));
                     bump = Mathf.Clamp(pts[i].y - (ground.Ground(l.x, l.z) + ground.Ground(r.x, r.z)) / 2f, 0f, .25f);
                 }
                 for (var k = 0; k <= lanes; k++)
                 {
-                    var q = pts[i] + Vector3.up * lift + side * ((k / (float)lanes - .5f) * w * miter);
+                    var q = pts[i] + Vector3.up * lift + side * ((k / (float)lanes - .5f) * w * miter * SoftEdges.Lane(pts[i], w, k / (float)lanes));
                     if (ground != null) q.y = ground.Ground(q.x, q.z) + bump + lift;
                     V[i, k] = q;
                 }

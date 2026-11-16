@@ -289,7 +289,7 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                Vector3 l = pts[i] - side * (w / 2f * miter), r = pts[i] + side * (w / 2f * miter);
+                Vector3 l = pts[i] - side * (w / 2f * miter * SoftEdges.Edge(pts[i], w, 1f)), r = pts[i] + side * (w / 2f * miter * SoftEdges.Edge(pts[i], w, 2f));
                 var raised = ground == null || pts[i].y - ground.Ground(pts[i].x, pts[i].z) > .25f;
                 for (var k = 0; k <= lanes; k++) { var q = Vector3.Lerp(l, r, k / (float)lanes); q.y = (raised ? pts[i].y : ground.Ground(q.x, q.z)) + lift; V[i, k] = q; }
             }

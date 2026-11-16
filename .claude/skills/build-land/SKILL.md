@@ -72,6 +72,12 @@ Every item below is something that went wrong before.
   cross. Lay each path as one seamless strip, mitred at bends, so nothing overlaps or flickers.
   Pattern: `DriftwoodKit.Walk` and `Boardwalk`.
 - Start a joining path at the edge of the one it joins, not its centre. Leave railings open at junctions.
+- Worn paths and clearings get wandering edges, not dead-straight strips or perfect circles: multiply each
+  edge's offset by `SoftEdges.Edge(p, width, 1f or 2f)` (on automatically unless the land is in
+  `SoftEdges.BuiltPaths`; add it there if its paths are pavements, streets or boardwalks). No scattered
+  patches past the edge (the owner didn't like them).
+- Use `WorldMaterials.Surface(colour, kind)` rather than `Solid` for anything made of something: the rich
+  surface textures (`RichSurfaces`) and the ground's own textures only reach surface kinds.
 
 - An artist's radio ring (their `r`) must contain their whole scene: a pier, a garden, a jetty. If the scene
   is bigger, grow `r` in ShapeGround; a ring that cuts across the scene feels like the zone ends abruptly

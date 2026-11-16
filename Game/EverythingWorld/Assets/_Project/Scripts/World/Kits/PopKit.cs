@@ -191,7 +191,7 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                for (var k = 0; k <= lanes; k++) { var q = pts[i] + side * ((k / (float)lanes - .5f) * w * miter); q.y = ground.Ground(q.x, q.z) + lift; V[i, k] = q; }
+                for (var k = 0; k <= lanes; k++) { var q = pts[i] + side * ((k / (float)lanes - .5f) * w * miter * SoftEdges.Lane(pts[i], w, k / (float)lanes)); q.y = ground.Ground(q.x, q.z) + lift; V[i, k] = q; }
             }
             for (var i = 0; i + 1 < n; i++) for (var k = 0; k < lanes; k++) mk.Quad(m, V[i, k], V[i, k + 1], V[i + 1, k + 1], V[i + 1, k], (V[i, k] + V[i + 1, k + 1]) / 2f - Vector3.up);
         }

@@ -218,7 +218,7 @@ namespace EverythingWorld.World
                 var bump = ground != null ? Bump(ground, pts[i], side, w * miter) : 0f;
                 for (var k = 0; k <= lanes; k++)
                 {
-                    var q = pts[i] + Vector3.up * lift + side * ((k / (float)lanes - .5f) * w * miter);
+                    var q = pts[i] + Vector3.up * lift + side * ((k / (float)lanes - .5f) * w * miter * SoftEdges.Lane(pts[i], w, k / (float)lanes));
                     if (ground != null) q.y = ground.Ground(q.x, q.z) + bump + lift;
                     V[i, k] = q;
                 }

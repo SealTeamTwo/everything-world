@@ -211,7 +211,7 @@ namespace EverythingWorld.World
                 var b = i < n - 1 ? Flat(pts[i + 1] - pts[i]) : Flat(pts[n - 1] - pts[n - 2]);
                 var t = (a + b).normalized; var side = Vector3.Cross(Vector3.up, t);
                 var miter = 1f / Mathf.Max(.6f, Vector3.Dot(side, Vector3.Cross(Vector3.up, b)));
-                Vector3 L = pts[i] + Vector3.up * lift - side * (w / 2f * miter), R = pts[i] + Vector3.up * lift + side * (w / 2f * miter);
+                Vector3 L = pts[i] + Vector3.up * lift - side * (w / 2f * miter * SoftEdges.Edge(pts[i], w, 1f)), R = pts[i] + Vector3.up * lift + side * (w / 2f * miter * SoftEdges.Edge(pts[i], w, 2f));
                 var deck = true;
                 if (ground != null)
                 {

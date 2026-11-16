@@ -308,7 +308,7 @@ namespace EverythingWorld.World
                 var dir = pts[i + 1] - pts[i]; dir.y = 0;
                 if (dir.sqrMagnitude < .01f) continue;
                 var side = Vector3.Cross(Vector3.up, dir.normalized) * width / 2f;
-                Vector3 E(Vector3 p, Vector3 s) { var q = p + s; q.y = Mathf.Max(ctx.Ground(q.x, q.z), ctx.Ground(p.x, p.z)) + lift; return q; }
+                Vector3 E(Vector3 p, Vector3 s) { var q = p + s * SoftEdges.Edge(p, width, Vector3.Dot(s, side) < 0f ? 1f : 2f); q.y = Mathf.Max(ctx.Ground(q.x, q.z), ctx.Ground(p.x, p.z)) + lift; return q; }   // worn edges wander
                 // in pieces about a metre long, so the chalk follows the ground over a ridge instead of bridging it
                 var pieces = Mathf.Max(1, Mathf.CeilToInt(dir.magnitude / 1f));
                 for (var k = 0; k < pieces; k++)
