@@ -406,9 +406,14 @@ namespace EverythingWorld.World
             mk.Box(brickDark, fc, new Vector3(W + .4f, fh, D + 3f), f.r); solid.Box(brickDark, fc, new Vector3(W + .4f, fh, D + 3f), f.r);
             mk.Box(paint, f.P(0, H / 2f + .2f, -1.2f), new Vector3(W, H, D), f.r); solid.Box(paint, f.P(0, H / 2f + .2f, -1.2f), new Vector3(W, H, D), f.r);
             foreach (var e in new[] { -1f, 1f }) mk.Box(WorldMaterials.Surface(new Color(.5f, .52f, .54f), World.Surface.Metal), f.P(e * W / 4f, H + .95f, -.5f), new Vector3(W / 2f + .5f, .1f, D + 3.2f), f.r * Quaternion.Euler(0, 0, -e * 28f));
-            mk.Prism(paint, f.P(0, H + .2f, D / 2f - 1.25f), f.Fwd, W / 2f, .08f, 3); mk.Prism(paint, f.P(0, H + .2f, -D / 2f - 1.25f), f.Fwd, W / 2f, .08f, 3);
+            var apex = H + .2f + W / 2f * Mathf.Tan(28f * Mathf.Deg2Rad);   // the gable ends, under the ridge
+            foreach (var zz in new[] { D / 2f - 1.2f, -D / 2f - 1.2f })
+            {
+                Vector3 ga = f.P(-W / 2f, H + .2f, zz), gb = f.P(W / 2f, H + .2f, zz), gc = f.P(0, apex, zz); var inside = f.P(0, H, -1.2f);
+                mk.Tri(paint, ga, gb, gc, inside); solid.Tri(paint, ga, gb, gc, inside);
+            }
             mk.Box(white, f.P(-1.2f, 1.25f, D / 2f - 1.18f), new Vector3(.95f, 2.1f, .06f), f.r); mk.Box(windowM, f.P(1.2f, 1.7f, D / 2f - 1.18f), new Vector3(1.2f, 1.2f, .06f), f.r); mk.Box(white, f.P(1.2f, 1.7f, D / 2f - 1.16f), new Vector3(.06f, 1.2f, .06f), f.r);
-            foreach (var e in new[] { -1f, 1f }) { mk.Box(white, f.P(e * (W / 2f - .15f), 1.3f, D / 2f + .5f), new Vector3(.14f, 2.3f, .14f), f.r); ArtistBits.PostCollider(ctx.Root, f.P(e * (W / 2f - .15f), 0, D / 2f + .5f), 2.4f, .1f); }
+            foreach (var e in new[] { -1f, 1f }) { mk.Box(white, f.P(e * (W / 2f - .15f), (H + .25f) / 2f, D / 2f + .5f), new Vector3(.14f, H + .25f, .14f), f.r); ArtistBits.PostCollider(ctx.Root, f.P(e * (W / 2f - .15f), 0, D / 2f + .5f), H + .25f, .1f); }   // up to the eaves
             halos.Add(f.P(1.2f, 1.7f, D / 2f - .7f), 1.5f, Gold, .4f);
             // the porch swing
             var sw = f.P(1.3f, .55f, D / 2f - .3f); mk.Box(white, sw, new Vector3(1.6f, .06f, .5f), f.r); mk.Box(white, sw + up * .35f - f.Fwd * .24f, new Vector3(1.6f, .5f, .05f), f.r); foreach (var e in new[] { -.75f, .75f }) mk.Box(iron, sw + f.Right * e + up * 1.05f, new Vector3(.02f, 2f, .02f), f.r);
