@@ -63,6 +63,7 @@ namespace EverythingWorld.World
                 foreach (var i in list)
                 {
                     var e = edges[i];
+                    if (eye.y > e.ground + 40f) continue;   // high over the land (on an activity built in the sky): no names
                     var p = Closest(e.a, e.b, eye);
                     var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(eye.x, eye.z));
                     if (d > showWithin) continue;

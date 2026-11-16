@@ -20,9 +20,9 @@ namespace EverythingWorld.Activities
     /// - Press E at the bag: you shrink onto the course. It is a real, big course built out of sight (high over its
     ///   land, under the land's own sky), and the little model by the bag is a copy of it; friends who stay outside
     ///   see everyone's ball as a dot of light on the model.
-    /// - You are your ball: the camera circles it. Aim with the mouse, hold the button to swing (the bar fills and
-    ///   empties), let go to putt. Everyone putts at once; balls pass through each other.
-    /// - A hole ends when you're in (or after 10 strokes, or 2 minutes). When everyone on the hole is done, on to the next.
+    /// - You are your ball: the camera circles it. Aim with the mouse, hold the button and push the mouse forward to wind
+    ///   up (pull back to ease off; let go at nothing and no shot is played), let go to putt. Everyone putts at once; balls pass through each other.
+    /// - A hole ends when you're in (or after 10 strokes, or 2 minutes when friends are on the course with you). When everyone on the hole is done, on to the next.
     /// - Finish all 18 under par and the course's radio can play the whole Everything Playlist instead of its land's
     ///   songs (P switches back and forth). Your best round is kept.
     /// What friends share: where each ball is, the hole and the card, ten times a second (Friends.Broadcast). Each
@@ -35,6 +35,10 @@ namespace EverythingWorld.Activities
         public GolfCourse course; public Transform big, mini; public int landScene;
         public TextMesh recordText;   // a board by the bags: your best round, and whether the playlist is unlocked
         public const int StrokeLimit = 10; public const float HoleSeconds = 120f;
+        const float SwingTravel = 30f, MinPower = .03f;   // how far the mouse goes for a full swing (in the degrees it would have turned the view); below MinPower nothing is hit
+        /// How hard a swing of this power (0..1) hits: gentle taps stay easy to judge, the top end is a real wallop.
+        public static float SwingSpeed(float power) => Mathf.Lerp(1.2f, GolfSim.HitMax, Mathf.Pow(Mathf.Clamp01(power), 1.5f));
+        float swingPush; bool timed, outOfTime;
         const string Channel = "golf";
 
         enum Phase { Off, ShrinkIn, Aim, Roll, HoleDone, RoundDone, ShrinkOut }
@@ -169,7 +173,8 @@ namespace EverythingWorld.Activities
             var locked = Cursor.lockState == CursorLockMode.Locked && !MainMenu.Showing; var canAct = locked && wasLocked && kb != null && mouse != null && !PlayNotes.Active; wasLocked = locked;
             if (canAct)
             {
-                var look = mouse.delta.ReadValue() * walker.mouseSensitivity; yaw += look.x; pitch = Mathf.Clamp(pitch - look.y, 6f, 80f);
+                var look = mouse.delta.ReadValue() * walker.mouseSensitivity; swingPush = look.y;
+                if (!charging) { yaw += look.x; pitch = Mathf.Clamp(pitch - look.y, 6f, 80f); }   // while you swing the aim is held: the mouse is the club
                 dist = Mathf.Clamp(dist - mouse.scroll.ReadValue().y * (Mathf.Abs(mouse.scroll.ReadValue().y) > 10f ? .01f : 1f), 3f, 26f);
                 if (kb.pKey.wasPressedThisFrame && Unlocked) { Everything = !Everything; Tune(); Say(Everything ? "Playing the Everything Playlist" : "Playing the Riviera's songs", 3f); }
                 leaveHeld = kb.xKey.isPressed ? leaveHeld + dt : 0f; if (leaveHeld > .8f) { leaveHeld = 0f; phase = Phase.ShrinkOut; phaseT = 0f; return; }
@@ -181,11 +186,16 @@ namespace EverythingWorld.Activities
             {
                 if (!charging && mouse.leftButton.wasPressedThisFrame) { charging = true; power = 0f; phaseT = 0f; }
                 if (charging && (mouse.rightButton.wasPressedThisFrame || kb.qKey.wasPressedThisFrame)) charging = false;
-                if (charging) power = Mathf.PingPong(phaseT * .85f, 1f);
+                // hold the button and push the mouse forward to wind up, pull it back to ease off
+                if (charging) power = Mathf.Clamp01(power + swingPush / SwingTravel);
                 if (charging && !mouse.leftButton.isPressed)
                 {
-                    charging = false; var dir = Quaternion.Euler(0, yaw - course.yaws[hole], 0) * Vector3.forward;
-                    sim.Hit(new Vector2(dir.x, dir.z), Mathf.Lerp(1.2f, GolfSim.MaxSpeed, Mathf.Pow(Mathf.Max(power, .03f), 1.25f))); strokes++; phase = Phase.Roll; acc = 0f;
+                    charging = false;
+                    if (power >= MinPower)   // let go with nothing wound up: no shot, no stroke
+                    {
+                        var dir = Quaternion.Euler(0, yaw - course.yaws[hole], 0) * Vector3.forward;
+                        sim.Hit(new Vector2(dir.x, dir.z), SwingSpeed(power)); strokes++; phase = Phase.Roll; acc = 0f;
+                    }
                 }
             }
 
@@ -203,7 +213,10 @@ namespace EverythingWorld.Activities
                 if (sim.holed) FinishHole(strokes);
                 else if (!sim.moving) { if (strokes >= StrokeLimit) FinishHole(StrokeLimit); else phase = Phase.Aim; }
             }
-            if ((phase == Phase.Aim || phase == Phase.Roll) && Time.time - holeStarted > HoleSeconds && !(phase == Phase.Roll && sim.moving)) FinishHole(Mathf.Max(strokes, StrokeLimit));
+            // the clock is only there so nobody keeps friends waiting: on your own it never runs
+            timed = false; foreach (var o in others.Values) if (Fresh(o) && (o.flags & 4) == 0) timed = true;
+            if (!timed) holeStarted = Time.time;
+            if ((phase == Phase.Aim || phase == Phase.Roll) && Time.time - holeStarted > HoleSeconds && !(phase == Phase.Roll && sim.moving)) { outOfTime = true; FinishHole(Mathf.Max(strokes, StrokeLimit)); }
 
             if (phase == Phase.HoleDone)
             {
@@ -222,7 +235,7 @@ namespace EverythingWorld.Activities
         void FinishHole(int score)
         {
             card[hole] = score; phase = Phase.HoleDone; phaseT = 0f; waited = 0f; charging = false;
-            var par = course.holes[hole].par; Say(sim.holed ? Result(score, par) : "Out of strokes", 3.5f);
+            var par = course.holes[hole].par; Say(sim.holed ? Result(score, par) : outOfTime ? "Out of time" : "Out of strokes", 3.5f); outOfTime = false;
         }
 
         void FinishRound()
@@ -338,14 +351,14 @@ namespace EverythingWorld.Activities
             var gh = course.holes[hole]; var total = 0; var parSoFar = 0; for (var i = 0; i < card.Length; i++) if (card[i] > 0) { total += card[i]; parSoFar += course.holes[i].par; }
             var vs = total - parSoFar; var left = Mathf.Max(0, Mathf.CeilToInt(HoleSeconds - (Time.time - holeStarted)));
             GUI.Box(new Rect(12, 12, 470, 34), $"  Hole {hole + 1}/{course.holes.Length}  ·  {gh.name}  ·  par {gh.par}  ·  strokes {strokes}", box);
-            GUI.Box(new Rect(12, 50, 470, 30), $"  Round {(parSoFar == 0 ? "just started" : vs == 0 ? "level par" : vs < 0 ? $"{-vs} under par" : $"{vs} over par")}" + (phase == Phase.Aim || phase == Phase.Roll ? $"  ·  {left} s left" : "") + (Everything ? "  ·  Everything Playlist" : ""), box);
+            GUI.Box(new Rect(12, 50, 470, 30), $"  Round {(parSoFar == 0 ? "just started" : vs == 0 ? "level par" : vs < 0 ? $"{-vs} under par" : $"{vs} over par")}" + (timed && (phase == Phase.Aim || phase == Phase.Roll) ? $"  ·  {left} s left" : "") + (Everything ? "  ·  Everything Playlist" : ""), box);
             if (Time.time < bannerUntil && banner.Length > 0) { var h = banner.Contains("\n") ? 92f : 54f; GUI.Box(new Rect(Screen.width / 2f - 330, 96, 660, h), banner, big2); }
 
             if (phase == Phase.Aim)
             {
                 var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small);
                 if (charging) { var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
-                GUI.Box(new Rect(Screen.width / 2f - 330, Screen.height - 66, 660, 28), charging ? "Let go to putt  ·  right click to cancel" : "Aim with the mouse  ·  hold click to swing  ·  scroll to zoom  ·  Tab scores  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small);
+                GUI.Box(new Rect(Screen.width / 2f - 330, Screen.height - 66, 660, 28), charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go to putt  ·  pull back to ease off") : "Aim with the mouse  ·  hold click and push forward to swing  ·  scroll to zoom  ·  Tab scores  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small);
             }
             else if (phase == Phase.HoleDone)
             {

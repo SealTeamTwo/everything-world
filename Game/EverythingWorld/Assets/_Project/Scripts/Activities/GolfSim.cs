@@ -11,7 +11,7 @@ namespace EverythingWorld.Activities
     /// lay if it finds the water. Stepped in small fixed steps; no Unity physics, so it behaves the same everywhere.
     public class GolfSim
     {
-        public const float Step = 1f / 240f, Gravity = 13f, MaxSpeed = 17f, CupSpeed = 5.2f;
+        public const float Step = 1f / 240f, Gravity = 13f, MaxSpeed = 17f, HitMax = 30f, CupSpeed = 5.2f;
 
         public GolfHole hole;
         public Vector3 p, v;                 // p is the bottom of the ball
@@ -31,7 +31,7 @@ namespace EverythingWorld.Activities
         public void Hit(Vector2 dir, float speed)
         {
             if (moving || holed) return;
-            dir = dir.normalized; speed = Mathf.Min(speed, MaxSpeed); v = new Vector3(dir.x * speed, 0, dir.y * speed);
+            dir = dir.normalized; speed = Mathf.Min(speed, HitMax); v = new Vector3(dir.x * speed, 0, dir.y * speed);
             moving = true; grounded = true; moveTime = 0f; restFor = 0f; lastRest = p;
         }
 
@@ -113,7 +113,7 @@ namespace EverythingWorld.Activities
                 // rolling friction, and a little drag
                 var mu = Friction(under); var sp = hv.magnitude; var dec = (mu + .1f * sp) * dt;
                 hv = sp <= dec ? Vector2.zero : hv * ((sp - dec) / sp);
-                sp = hv.magnitude; if (sp > MaxSpeed * 1.5f) hv *= MaxSpeed * 1.5f / sp;
+                sp = hv.magnitude; var cap = endless ? MaxSpeed * 1.5f : HitMax * 1.07f; if (sp > cap) hv *= cap / sp;
                 slopeVy = gx * hv.x + gz * hv.y;
                 var want = p.y + slopeVy * dt;
                 p.x += hv.x * dt; p.z += hv.y * dt;
