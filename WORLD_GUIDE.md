@@ -1004,6 +1004,7 @@ Warm, humid, rhythmic. River country, smoky towns and coastline.
 - **The bridge:** stone, with a lamp at each corner and the saxophonist leaning on the parapet. Stop and listen.
 - **Lamp Street:** the houses up the hill, and people waiting in doorways.
 - **The temple:** above the rain. The view back down over the town.
+- **The Side Pocket (pool, the land's activity):** an open-sided hall near the square: iron posts, a flat dark roof, white neon, a pool table under a three-shade lamp, stools to watch from. Press E at the cue rack and you shrink onto the table: the same table thirty times the size, in a great dark room under its lamp. The camera circles the cue ball; a line shows what it will meet and where that ball will go; hold the button to swing, let go to play. Alone, clear the table with the black last in as few shots as you can. With friends it is eight-ball in two sides, taken in the order people came to the table. The real table in the hall shows the same balls, so anyone beside it can watch. Beat a friend, or clear the table alone in 30 shots or fewer, and the table's radio can play the whole Everything Playlist (P switches).
 
 ### The Funk Tropics
 *30 songs · 19 artists · 0.65 km² · built in Unity*

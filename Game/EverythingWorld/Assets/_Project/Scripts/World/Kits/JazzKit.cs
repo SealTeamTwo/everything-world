@@ -196,6 +196,7 @@ namespace EverythingWorld.World
             PlanDoors(ctx);
             RingStreets(ctx, mk, solid);
             Globe(ctx, mk, solid);
+            try { PoolHall(ctx, mk, solid); } catch (System.Exception e) { Debug.LogWarning("The Side Pocket (pool) could not be built (the rest of the Quarter is unaffected): " + e); }   // new and not yet played: it must never take the land down with it
             Wilds(ctx, mk, solid);
             GlobeStars(ctx, mk);
             mk.Build("The Old Jazz Quarter", ctx.Root, false);

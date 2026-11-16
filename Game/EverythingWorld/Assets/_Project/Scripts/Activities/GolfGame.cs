@@ -68,7 +68,7 @@ namespace EverythingWorld.Activities
         // ---------------------------------------------------------------- in and out
         public void Begin(PlayerInteractor who)
         {
-            if (Active != null || who == null) return;
+            if (Activity.Any || who == null) return;
             walker = who.GetComponent<SimplePlayerController>(); if (walker == null || walker.cameraPivot == null) return;
             hands = who; backPos = walker.transform.position; backRot = walker.transform.rotation;
             Active = this; phase = Phase.ShrinkIn; phaseT = 0f; shrinkT = 0f;

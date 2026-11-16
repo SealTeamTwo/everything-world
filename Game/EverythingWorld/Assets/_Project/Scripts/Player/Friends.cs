@@ -120,7 +120,7 @@ namespace EverythingWorld.Player
         /// side they're on. Close by and in plain view it goes away (their orb and name are enough).
         void OnGUI()
         {
-            if (remotes.Count == 0 || MainMenu.Showing || Event.current.type != EventType.Repaint || EverythingWorld.Activities.GolfGame.Playing) return;
+            if (remotes.Count == 0 || MainMenu.Showing || Event.current.type != EventType.Repaint || EverythingWorld.Activities.Activity.Any) return;
             var cam = Camera.main; if (cam == null) return;
             tagStyle ??= new GUIStyle(GameFonts.Box(15, TextAnchor.MiddleCenter)) { padding = new RectOffset(8, 8, 3, 3) };
             if (dot == null) { dot = Dot(false); rim = Dot(true); }

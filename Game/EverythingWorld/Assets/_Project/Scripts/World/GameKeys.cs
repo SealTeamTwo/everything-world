@@ -6,6 +6,6 @@ namespace EverythingWorld.World
     /// not while the menu is open, while you're typing at the hub's terminal or a note (T), or while a text box has the keyboard.
     public static class GameKeys
     {
-        public static bool Off => EverythingWorld.Player.MainMenu.Showing || HubTerminal.Active || PlayNotes.Active || EverythingWorld.Activities.GolfGame.Playing || GUIUtility.keyboardControl != 0;
+        public static bool Off => EverythingWorld.Player.MainMenu.Showing || HubTerminal.Active || PlayNotes.Active || EverythingWorld.Activities.Activity.Any || GUIUtility.keyboardControl != 0;
     }
 }
