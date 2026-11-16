@@ -35,7 +35,32 @@ namespace EverythingWorld.Activities
     {
         static GolfCourse riviera;
         public static GolfCourse Riviera => riviera ??= MakeRiviera();
-        public static GolfCourse ById(string id) => id == "riviera" ? Riviera : null;
+        public static GolfCourse ById(string id) => id == "riviera" ? Riviera : id == "pinball" ? Pinball : null;
+
+        static GolfCourse pinball;
+        /// The Oddball Backroads' pinball table, described the way a golf hole is (the same ball, the same pieces):
+        /// one long sloping floor of ice with the drain at the bottom, two flippers, kick bumpers, a booster lane up
+        /// the left, a spring, a pipe, and the launch lane up the right side.
+        public static GolfCourse Pinball => pinball ??= MakePinball();
+        public const float PinSlope = .2f; public static readonly Vector3 PinStart = new Vector3(10.2f, 0, 4.2f);
+
+        static GolfCourse MakePinball()
+        {
+            const float top = 1f + 44f * PinSlope; float Y(float z) => 1f + z * PinSlope;
+            var h = H("The Oddball", 3, "You are the ball.").On(Ice).Path(11f, "LRSE", 0, 0, 1, 0, 44, top);
+            h.Wall(9.4f, 3.2f, 9.4f, 37f, .6f).Wall(9.4f, 3.2f, 11f, 3.2f, .6f)                 // the launch lane
+             .Wall(11f, 39.5f, 6.5f, 44f, .6f).Wall(-11f, 39.5f, -6.5f, 44f, .6f)               // the top corners
+             .Wall(-11f, 11f, -4.6f, 4.2f, .6f).Wall(9.4f, 9.4f, 4.6f, 4.2f, .6f)                // the guides down to the flippers
+             .Flipper(-4.6f, 4.2f, 3.9f, -25f).Flipper(4.6f, 4.2f, 3.9f, 205f)
+             .PondStrip(-11f, 1.3f, 9.4f, 1.3f, 1.3f)                                              // the drain
+             .Bumper(-3f, 30f, .9f, 9f).Bumper(3f, 30f, .9f, 9f).Bumper(0, 34.5f, .9f, 9f).Bumper(-6.4f, 22f, .7f, 8f).Bumper(5.4f, 23f, .7f, 8f).Bumper(-7.2f, 12.5f, .6f, 8f).Bumper(6.3f, 11.5f, .6f, 8f)
+             .Post(0, 12.5f, .35f, .7f).Post(-2.2f, 39f, .3f, .7f).Post(2.2f, 39f, .3f, .7f)
+             .Boost(-9.8f, 14f, -9.8f, 31f, 1f, 15f).Spring(0, 19f, .8f, 6.5f).Pipe(-8.6f, 36.5f, 5.8f, 40f, 200, 5f, .6f)
+             .Tee(PinStart.x, PinStart.z).Cup(0, -30f)
+             .Prop("flamingo", -9.6f, 41.5f, 140, 1.6f).Prop("ring", 8f, 41.8f, 0, 1.5f).Prop("lamp", -11.5f, 22).Prop("lamp", 11.5f, 22).Prop("lamp", -11.5f, 40).Prop("lamp", 11.5f, 40);
+            h.floorLook = "night"; h.Done(); h.cup = new Vector3(0, -50f, -200f);   // (no cup: nothing to putt into)
+            var c = new GolfCourse { id = "pinball", name = "The Oddball", holes = new[] { h } }; c.Arrange(1, 0f); return c;
+        }
 
         static GolfHole H(string name, int par, string about) => new GolfHole().Named(name, par, about);
 

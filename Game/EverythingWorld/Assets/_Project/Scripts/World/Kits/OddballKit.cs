@@ -126,6 +126,7 @@ namespace EverythingWorld.World
             Arrival(ctx, mk, solid);
             Roads(ctx, mk, solid);
             Places(ctx, mk, solid);
+            try { PinballTable(ctx, mk, solid); } catch (System.Exception e) { Debug.LogWarning("An activity could not be built (the rest of the land is unaffected): " + e); }   // new and not yet played: it must never take the land down with it
             mk.Build("The Oddball Backroads", ctx.Root, false);
             solid.BuildCollider("The Oddball Backroads walls", ctx.Root);
         }

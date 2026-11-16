@@ -77,10 +77,13 @@ namespace EverythingWorld.Activities
         public float lift = 1.3f, duty = .5f;   // Lift: how high it rises, and how much of the cycle it stays up
         public float swing = 60f;         // Swing: degrees each way
         public string look = "";          // for GolfBuild
+        // a mover worked by hand instead of by the clock (a pinball flipper): whoever owns it sets its angle each step
+        public bool manual; public float manualAngle, manualPrev;
 
         public void Pose(double t, out Vector2 offset, out float angle, out float up)
         {
             offset = Vector2.zero; angle = 0f; up = 0f;
+            if (manual) { angle = manualAngle; return; }
             switch (kind)
             {
                 case Kind.Spin: angle = (float)((rate * t + phase * 360.0) % 360.0); break;
@@ -128,6 +131,7 @@ namespace EverythingWorld.Activities
         public const float Kerb = .38f, BallR = .15f, CupR = .34f, Sea = 0f;
 
         public string name = ""; public int par = 3; public string blurb = "";
+        public string floorLook = "";   // for GolfBuild: "night" draws every floor dark (the pinball table), whatever it is made of
         public Vector3 tee, cup;
         public readonly List<GolfPad> pads = new List<GolfPad>();
         public readonly List<GolfWall> walls = new List<GolfWall>();
@@ -278,6 +282,13 @@ namespace EverythingWorld.Activities
         {
             Swinging(x, z, swingDeg, seconds, phase, look); var a = restDeg * Mathf.Deg2Rad;
             Wall(Mathf.Cos(a) * .2f, Mathf.Sin(a) * .2f, Mathf.Cos(a) * len, Mathf.Sin(a) * len, .5f, "blade"); Post(0, 0, .25f, 1.1f, "hub"); return Still();
+        }
+
+        /// A flipper: an arm 'len' long on a pivot, worked by hand (it rests at restDeg; its owner swings it).
+        public GolfHole Flipper(float x, float z, float len, float restDeg)
+        {
+            Mover(new GolfMover { kind = GolfMover.Kind.Swing, pivot = new Vector2(x, z), manual = true, manualAngle = restDeg, manualPrev = restDeg, look = "flipper" });
+            Wall(.2f, 0, len, 0, .5f, "blade", float.NaN, .5f); Post(0, 0, .3f, .7f, "hub"); return Still();
         }
 
         // ---- zones

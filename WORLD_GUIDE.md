@@ -444,6 +444,8 @@ Someone walks the Scale all day, counting.
 
 **Happenings:** The head watches you; dandelion fluff drifts in the haze. "Ocean Man" turns the sky ocean blue, "Where Is My Mind?" a dreamy violet, "It's The End Of The World As We Know It" red with meteors streaking down, "Blister In The Sun" white-hot, "Yoshimi" pink.
 
+**Pinball, where you are the ball (the land's activity):** on a plinth by the roadside stands a little pinball table with a big plunger beside it. Press E on the plunger and you shrink onto the table: a long dark slope high over the Backroads, and the camera rides with the ball. Hold Space and let go to launch; A and D (or the two mouse buttons) work the flippers. Glasses that kick, a fast lane up the left side, a spring and a pipe all score; three balls a game. Everyone on the table plays their own ball at once and sees the others' balls and scores. Score 10,000 in a game and the table's radio can play the whole Everything Playlist (P switches).
+
 ### The Nu Metal Quarry
 *27 songs · 12 artists · 0.62 km² · built in Unity*
 

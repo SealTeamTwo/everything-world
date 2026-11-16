@@ -19,6 +19,7 @@ namespace EverythingWorld.Activities
         public Vector3 lastRest; public float moveTime;
         public GolfSurface under;
         public Action<GolfEvent, Vector3, float> onEvent;
+        public bool endless;                 // never called to rest by the clock (pinball: the ball is in play until it drains)
 
         float restFor, slopeVy, pipeCool; int inBoost = -1;
         Vector2[] offs, offsWas; float[] angs, angsWas, ups;
@@ -65,7 +66,7 @@ namespace EverythingWorld.Activities
         {
             if (!moving || holed) return;
             const float dt = Step; moveTime += dt; pipeCool -= dt;
-            for (var i = 0; i < hole.movers.Count; i++) { hole.movers[i].Pose(t, out offs[i], out angs[i], out ups[i]); hole.movers[i].Pose(t - dt, out offsWas[i], out angsWas[i], out _); }
+            for (var i = 0; i < hole.movers.Count; i++) { hole.movers[i].Pose(t, out offs[i], out angs[i], out ups[i]); hole.movers[i].Pose(t - dt, out offsWas[i], out angsWas[i], out _); if (hole.movers[i].manual) angsWas[i] = hole.movers[i].manualPrev; }
 
             var noRest = false; var hv = new Vector2(v.x, v.z);
             // ---- zones
@@ -132,7 +133,7 @@ namespace EverythingWorld.Activities
                 else if (restFor < 0f) restFor = 0f;
 
                 // lying still?
-                if (grounded && !noRest && hv.sqrMagnitude < .0064f && pull.magnitude < mu + .05f)
+                if (grounded && !noRest && !endless && hv.sqrMagnitude < .0064f && pull.magnitude < mu + .05f)
                 {
                     if (restFor >= 0f) restFor += dt;
                     if (restFor > .3f) { v = Vector3.zero; moving = false; lastRest = p; onEvent?.Invoke(GolfEvent.Rest, p, 0f); return; }
@@ -153,7 +154,7 @@ namespace EverythingWorld.Activities
                 if (p.y < GolfHole.Sea - .05f) { v.x = hv.x; v.z = hv.y; Back(); return; }
             }
             v.x = hv.x; v.z = hv.y;
-            if (moveTime > 30f) { if (grounded) { v = Vector3.zero; moving = false; lastRest = p; onEvent?.Invoke(GolfEvent.Rest, p, 0f); } else Back(); }
+            if (moveTime > 30f && !endless) { if (grounded) { v = Vector3.zero; moving = false; lastRest = p; onEvent?.Invoke(GolfEvent.Rest, p, 0f); } else Back(); }
         }
 
         /// Pushes the ball out of walls and bumpers and turns its speed round.

@@ -21,7 +21,7 @@ namespace EverythingWorld.Activities
             var t = SharedChance.Now;
             for (var i = 0; i < movers.Count; i++)
             {
-                if (movers[i] == null) continue; var m = course.holes[moverHole[i]].movers[moverIndex[i]];
+                if (movers[i] == null) continue; var m = course.holes[moverHole[i]].movers[moverIndex[i]]; if (m.manual) continue;   // (worked by its game, not the clock)
                 m.Pose(t, out var off, out var ang, out var up);
                 movers[i].localPosition = new Vector3(m.pivot.x + off.x, m.y + up, m.pivot.y + off.y); movers[i].localRotation = Quaternion.Euler(0, -ang, 0);
             }
@@ -71,7 +71,7 @@ namespace EverythingWorld.Activities
         static readonly Vector3 up = Vector3.up;
         static Vector3 V(Vector2 p, float y) => new Vector3(p.x, y, p.y);
 
-        public static GameObject Build(GolfCourse c)
+        public static GameObject Build(GolfCourse c, bool sea = true)
         {
             Materials();
             var root = new GameObject("Golf course: " + c.name); var view = root.AddComponent<GolfCourseView>(); view.courseId = c.id;
@@ -88,7 +88,7 @@ namespace EverythingWorld.Activities
                     view.movers.Add(go.transform); view.moverHole.Add(i); view.moverIndex.Add(m);
                 }
             }
-            Sea(root.transform, Mathf.Max(c.width, c.depth) * .5f + 520f);
+            if (sea) Sea(root.transform, Mathf.Max(c.width, c.depth) * .5f + 520f);
             return root;
         }
 
@@ -110,7 +110,7 @@ namespace EverythingWorld.Activities
         // ---------------------------------------------------------------- one hole
         static void Hole(MeshKit mk, GolfHole h, int index, Transform ht, GolfCourseView view, System.Random rng)
         {
-            for (var i = 0; i < h.pads.Count; i++) Pad(mk, h.pads[i], i);
+            night = h.floorLook == "night"; for (var i = 0; i < h.pads.Count; i++) Pad(mk, h.pads[i], i); night = false;
             foreach (var w in h.walls) if (w.mover < 0) Wall(mk, w, 0f);
             foreach (var b in h.bumpers) if (b.mover < 0) Bumper(mk, b, 0f, rng, ht);
             foreach (var z in h.zones) Zone(mk, z);
@@ -145,9 +145,10 @@ namespace EverythingWorld.Activities
             var l = go.AddComponent<Light>(); l.type = LightType.Point; l.color = c; l.range = range; l.intensity = intensity; l.shadows = LightShadows.None;
         }
 
+        static bool night; static Material nightM;
         static void Pad(MeshKit mk, GolfPad p, int index)
         {
-            var m = Floor(p.surface);
+            var m = night ? (nightM ??= WorldMaterials.Solid(new Color(.07f, .06f, .16f), .75f)) : Floor(p.surface);
             if (p.poly != null)
             {
                 var lift = .003f * (index % 3); var n = p.poly.Length; var top = new Vector3[n]; var mid = Vector3.zero;

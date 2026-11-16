@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 namespace EverythingWorld.Activities
 {
     /// Whether the player is inside any activity (so the world's own keys and friend markers stand down).
-    public static class Activity { public static bool Any => GolfGame.Playing || PoolGame.Active != null || HoopsGame.Active != null || HockeyGame.Active != null || BikeGame.Active != null; }
+    public static class Activity { public static bool Any => GolfGame.Playing || PoolGame.Active != null || HoopsGame.Active != null || HockeyGame.Active != null || BikeGame.Active != null || PinballGame.Active != null; }
 
     /// The thing you press E on to play pool (the cue rack by the table).
     public class PoolStart : Interactable
