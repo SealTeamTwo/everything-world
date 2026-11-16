@@ -41,6 +41,9 @@ namespace EverythingWorld.World
         public float buildDistance = 1200f;
         [Tooltip("Build every land while a loading screen shows at the start (about half a minute to a minute), so there are no pauses later as you travel. Off: lands are built as you come within buildDistance of them.")]
         public bool loadAllAtStart = true;
+        [Tooltip("With Load All At Start: the loading screen builds only the lands within Build Distance of you; the rest are built afterwards in the background, a piece at a time (a land's scenery, each artist area, its finish), nearest first, using about Background Share of the time so play stays smooth.")]
+        public bool backgroundLoading = true;
+        [Range(.05f, 1f)] public float backgroundShare = .3f;
         [Tooltip("Hide grass, small props, glows and lights on built lands when they're far away (LandCuller). Turn off to compare.")]
         public bool cullByDistance = true;
 
@@ -79,14 +82,22 @@ namespace EverythingWorld.World
         {
             DeferLoading = false;
             if (!loadAllAtStart || pending.Count == 0) { if (who != null) who.enabled = true; return; }
-            Loading = true; loadTotal = pending.Count; loadDone = 0; loadStarted = Time.realtimeSinceStartup;
+            Loading = true; loadTotal = LoadScreenCount(); loadDone = 0; loadStarted = Time.realtimeSinceStartup;
             heldPlayer = who; if (heldPlayer != null) heldPlayer.enabled = false;
+        }
+        /// How many lands the loading screen builds: all of them, or with background loading only those near you.
+        int LoadScreenCount()
+        {
+            if (!backgroundLoading) return pending.Count;
+            var at = player != null ? player.position : new Vector3(Data.layout.spawnX, 0f, Data.layout.spawnZ); var n = 0;
+            foreach (var i in pending) if (Distance(i, at) <= buildDistance) n++;
+            return Mathf.Max(1, n);
         }
         int loadTotal, loadDone; string loadName; float loadStarted;
         EverythingWorld.Player.SimplePlayerController heldPlayer;
 
         /// True once every land with a kit has been built.
-        public bool AllBuilt => pending.Count == 0;
+        public bool AllBuilt => pending.Count == 0 && building < 0;
         static bool Wanted(string land) => QuickLands == null || QuickLands.Contains(land.StartsWith("The ") ? land.Substring(4) : land);
 
         // shared terrain colours
@@ -591,7 +602,7 @@ namespace EverythingWorld.World
             // stay put until it's done
             if (loadAllAtStart && !everything && !DeferLoading && pending.Count > 0)
             {
-                Loading = true; loadTotal = pending.Count; loadDone = 0; loadStarted = Time.realtimeSinceStartup;
+                Loading = true; loadTotal = LoadScreenCount(); loadDone = 0; loadStarted = Time.realtimeSinceStartup;
                 heldPlayer = p; if (heldPlayer != null) heldPlayer.enabled = false;
             }
         }
@@ -609,21 +620,81 @@ namespace EverythingWorld.World
             if (Loading)
             {
                 int near = 0; for (var k = 1; k < pending.Count; k++) if (Distance(pending[k], at) < Distance(pending[near], at)) near = k;
-                var li = pending[near]; pending.RemoveAt(near); loadName = Data.layout.islands[li].name;
-                DressLand(li); loadDone++;
-                if (pending.Count == 0)
+                // with background loading, the loading screen ends once every land near you is built
+                var rest = backgroundLoading && Distance(pending[near], at) > buildDistance;
+                if (!rest) { var li = pending[near]; pending.RemoveAt(near); loadName = Data.layout.islands[li].name; DressLand(li); loadDone++; }
+                if (pending.Count == 0 || rest)
                 {
                     Loading = false; if (heldPlayer != null && !EverythingWorld.Player.MainMenu.Showing) heldPlayer.enabled = true;   // (the title screen lets you go itself)
-                    Debug.Log($"Loading screen: built {loadTotal} lands in {Time.realtimeSinceStartup - loadStarted:0.0} s");
-                    LogMaterials();
+                    Debug.Log($"Loading screen: built {loadDone} lands in {Time.realtimeSinceStartup - loadStarted:0.0} s" + (pending.Count > 0 ? $"; {pending.Count} more in the background" : ""));
+                    if (pending.Count == 0) LogMaterials(); else bgStarted = Time.realtimeSinceStartup;
                 }
                 return;
             }
+            // background loading: the nearest unbuilt land, a piece at a time
+            if (building >= 0) return;
+            if (backgroundLoading && loadAllAtStart && Time.realtimeSinceStartup >= bgNext) { StartCoroutine(BuildInBackground(at)); return; }
             int best = -1; var bestD = buildDistance;
             for (var k = 0; k < pending.Count; k++) { var d = Distance(pending[k], at); if (d <= bestD) { bestD = d; best = k; } }
             if (best < 0) return;
             var i = pending[best]; pending.RemoveAt(best);
             DressLand(i);
+        }
+
+        int building = -1; float bgNext, bgStarted;
+
+        /// Builds the nearest unbuilt land in pieces, one a frame (its scenery, each artist area, its finish), and after
+        /// each piece lets the game run on its own for a while, so the building takes about backgroundShare of the
+        /// time. A land you're close to (within buildDistance) is built without the pauses.
+        System.Collections.IEnumerator BuildInBackground(Vector3 at)
+        {
+            int near = 0; for (var k = 1; k < pending.Count; k++) if (Distance(pending[k], at) < Distance(pending[near], at)) near = k;
+            var i = pending[near]; pending.RemoveAt(near); building = i;
+            var t0 = Time.realtimeSinceStartup; var busy = 0f;
+            LandContext ctx = null; var steps = new List<System.Action>();
+            steps.Add(() =>
+            {
+                ctx = new LandContext(Data, i, landsRoot, coverAtlas); kits[i].Dress(ctx);
+                foreach (var a in ctx.Artists) { var aa = a; steps.Add(() => kits[i].BuildArtist(ctx, aa)); }
+                steps.Add(() => kits[i].Finish(ctx));
+            });
+            var failed = false;
+            for (var s = 0; s < steps.Count && !failed; s++)
+            {
+                var s0 = Time.realtimeSinceStartup;
+                try { BuildFlags(i, true); steps[s](); }
+                catch (System.Exception e) { Debug.LogException(e); failed = true; }
+                finally { BuildFlags(i, false); }
+                var took = Time.realtimeSinceStartup - s0; busy += took;
+                // rest: let the game run on its own long enough that building stays at its share of the time
+                bool Close()   // you're near this land, or near another one still waiting (after a teleport, say): no resting
+                {
+                    if (player == null) return false; var pp = player.position; if (Distance(i, pp) <= buildDistance) return true;
+                    foreach (var k in pending) if (Distance(k, pp) <= buildDistance) return true;
+                    return false;
+                }
+                var until = Time.realtimeSinceStartup + (Close() ? 0f : took * (1f / Mathf.Max(.05f, backgroundShare) - 1f));
+                do yield return null; while (Time.realtimeSinceStartup < until && !Close());
+            }
+            if (!failed && ctx != null) AfterLand(i, ctx, busy, $" in pieces over {Time.realtimeSinceStartup - t0:0.0} s");
+            building = -1;
+            if (pending.Count == 0) { Debug.Log($"Background loading: every land built, {Time.realtimeSinceStartup - bgStarted:0.0} s after the loading screen"); LogMaterials(); }
+        }
+
+        /// The look switches a land is built with (bevels, rich surfaces, soft path edges), on while its pieces build.
+        void BuildFlags(int i, bool on)
+        {
+            MeshKit.Bevel = on && !WorldLook.Old ? WorldLook.Bevel : 0f;
+            RichSurfaces.On = on && !WorldLook.Old;
+            SoftEdges.On = on && !WorldLook.Old && !SoftEdges.BuiltPaths.Contains(kits[i].Land);
+        }
+
+        /// After a land built in pieces: lamp shadows near you, the distance culler, the log line.
+        void AfterLand(int i, LandContext ctx, float seconds, string how)
+        {
+            if (!WorldLook.Old && ctx.Root.GetComponent<NearShadows>() == null) ctx.Root.gameObject.AddComponent<NearShadows>();
+            if (culler != null) culler.Add(ctx.Root);
+            Debug.Log($"{kits[i].Land}: dressed in {seconds * 1000:0} ms{how}, {ctx.Artists.Count} artist areas");
         }
 
         void DressLand(int i)
