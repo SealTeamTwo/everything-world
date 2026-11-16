@@ -10,6 +10,7 @@ namespace EverythingWorld.World
     {
         readonly List<Vector3> v = new List<Vector3>(), n = new List<Vector3>();
         readonly List<Color> c = new List<Color>();
+        readonly List<Vector2> uv = new List<Vector2>();   // across each blade (0..1) and root to tip, for the blade detail
         readonly List<int> t = new List<int>();
 
         public int Count => v.Count;
@@ -21,6 +22,7 @@ namespace EverythingWorld.World
             n.Add(Vector3.up); n.Add(Vector3.up); n.Add(Vector3.up);
             c.Add(new Color(baseC.r, baseC.g, baseC.b, 0f)); c.Add(new Color(baseC.r, baseC.g, baseC.b, 0f)); c.Add(new Color(tipC.r, tipC.g, tipC.b, sway));
             t.Add(i); t.Add(i + 1); t.Add(i + 2);
+            uv.Add(new Vector2(0f, 0f)); uv.Add(new Vector2(1f, 0f)); uv.Add(new Vector2(.5f, 1f));
         }
 
         /// A tuft of long grass with pale straw tips.
@@ -88,7 +90,7 @@ namespace EverythingWorld.World
         {
             if (v.Count == 0) return;
             var mesh = new Mesh { name = name, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
-            mesh.SetVertices(v); mesh.SetNormals(n); mesh.SetColors(c); mesh.SetTriangles(t, 0);
+            mesh.SetVertices(v); mesh.SetNormals(n); mesh.SetColors(c); if (uv.Count == v.Count) mesh.SetUVs(0, uv); mesh.SetTriangles(t, 0);
             mesh.RecalculateBounds();
             var b = mesh.bounds; b.Expand(2f); mesh.bounds = b;          // room for swaying
             var go = new GameObject(name);
@@ -117,6 +119,7 @@ namespace EverythingWorld.World
             var m = new Material(shader) { name = "Wind " + sway };
             m.SetFloat("_Sway", sway);
             m.SetFloat("_Flutter", flutter);
+            m.SetFloat("_Rich", RichSurfaces.On ? 1f : 0f);   // blade detail and lamp light, with rich surfaces
             return m;
         }
     }

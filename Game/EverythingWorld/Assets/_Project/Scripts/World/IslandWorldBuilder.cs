@@ -264,14 +264,42 @@ namespace EverythingWorld.World
             {
                 // one material: the colour (no longer rounded to a few shades) goes into the triangle's corners
                 var tc = TerrainColor(avg, slope, island, col, row); var lin = tc.linear; mat = groundMat;
-                if (RichGround(island)) mat = RichSurfaces.Ground(RichSurfaces.GroundOf(tc, slope), groundMat);   // grass, earth, sand, rock or snow, with relief
-                cols.Add(lin); cols.Add(lin); cols.Add(lin);
+                if (RichGround(island))
+                {
+                    // rich ground: grass, earth, sand, rock or snow, with relief; and each corner its own colour, blended
+                    // from the ground round it, so one kind of ground shades into the next instead of in triangles
+                    Color ca = SoftColor(a, island), cb = SoftColor(b, island), cc = SoftColor(c, island);
+                    mat = RichSurfaces.Ground(RichSurfaces.GroundOf((ca + cb + cc) / 3f, slope), groundMat);
+                    cols.Add(ca.linear); cols.Add(cb.linear); cols.Add(cc.linear);
+                }
+                else { cols.Add(lin); cols.Add(lin); cols.Add(lin); }
             }
             else mat = Mat(Quantise(TerrainColor(avg, slope, island, col, row)));
             if (!byMaterial.TryGetValue(mat, out var list)) byMaterial[mat] = list = new List<int>();
             list.Add(verts.Count); verts.Add(a);
             list.Add(verts.Count); verts.Add(b);
             list.Add(verts.Count); verts.Add(c);
+        }
+
+        /// The ground's colour at a grid corner, softened: the colours of the corner and its eight neighbours (each with
+        /// its own height and steepness) blended, the corner itself counting most. Remembered per corner and land.
+        readonly Dictionary<(int, int, int), Color> softColors = new Dictionary<(int, int, int), Color>();
+        Color SoftColor(Vector3 p, int island)
+        {
+            int c0 = Mathf.RoundToInt(p.x / Data.Step), r0 = Mathf.RoundToInt((Data.layout.depth - p.z) / Data.Step);
+            if (softColors.TryGetValue((c0, r0, island), out var got)) return got;
+            float H(int c, int r) => Data.VertexHeight(Mathf.Clamp(c, 0, Data.Nx - 1), Mathf.Clamp(r, 0, Data.Nz - 1));
+            var sum = Color.clear; var wsum = 0f;
+            for (var dr = -1; dr <= 1; dr++)
+            for (var dc = -1; dc <= 1; dc++)
+            {
+                int c = c0 + dc, r = r0 + dr; var h = H(c, r);
+                var sl = Mathf.Max(Mathf.Max(Mathf.Abs(H(c + 1, r) - h), Mathf.Abs(H(c - 1, r) - h)), Mathf.Max(Mathf.Abs(H(c, r + 1) - h), Mathf.Abs(H(c, r - 1) - h))) * 1.2f;
+                var w = dc == 0 && dr == 0 ? 4f : dc == 0 || dr == 0 ? 2f : 1f;
+                sum += TerrainColor(h, sl, island, c, r) * w; wsum += w;
+            }
+            var col = sum / wsum; col.a = 1f;
+            return softColors[(c0, r0, island)] = col;
         }
 
         /// Rich ground textures (RichSurfaces) on this island: tried on Lanternwood first.

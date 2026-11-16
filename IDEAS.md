@@ -110,6 +110,8 @@ Things to remember that aren't built or decided yet. Newest first.
 - **Electro Foundry:** the owner loves electro; add a ton.
 - **Dubstep Shards:** more about energy (crystal, electric, plasma).
 - **Lo-Fi Hills:** super vibey and cozy.
+- **Djent Spires:** a crystal mountain with an observation point at the top, reached by running through ice and crystal caves.
+- **Discotopia:** the art for "Moskau" (Dschinghis Khan) could reference the viral animal video-game meme set to "Camel by Camel".
 - **Punk Badlands:**
   - The theme is liked, but rough in low poly.
   - No trees and same-colour dunes make the bright paper boards stand out, which shows how many duplicates there are.
@@ -126,7 +128,7 @@ Things to remember that aren't built or decided yet. Newest first.
 - Punk Badlands: skating.
 - Post-Punk Docklands: a falling-blocks game with the containers.
 - Iron Range: a zombie-survival round, maybe in the mines (ambitious).
-- Lanternwood: ice fishing, and a telescope that really works.
+- Lanternwood: ice fishing, ice skating on the frozen lake, and a telescope that really works.
 - Indie Downs: kites you can fly.
 - Southern Rock Bayou: the riverboat sails about, carrying the CCR radio station with it.
 

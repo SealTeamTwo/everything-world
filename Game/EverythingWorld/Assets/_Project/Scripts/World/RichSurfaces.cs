@@ -66,7 +66,7 @@ namespace EverythingWorld.World
         }
 
         static float Repeat(GroundKind g) => g switch { GroundKind.Grass => 3.5f, GroundKind.Earth => 4f, GroundKind.Sand => 5f, GroundKind.Rock => 6f, _ => 6f };
-        static float Bump(GroundKind g) => g switch { GroundKind.Grass => .8f, GroundKind.Earth => .8f, GroundKind.Sand => .6f, GroundKind.Rock => 1f, _ => .5f };
+        static float Bump(GroundKind g) => g switch { GroundKind.Grass => .9f, GroundKind.Earth => .95f, GroundKind.Sand => .6f, GroundKind.Rock => 1.1f, _ => .9f };
 
         /// The rich ground material of a kind, made from the plain ground material (vertex colours, same shading).
         public static Material Ground(GroundKind g, Material plainGround)
@@ -122,11 +122,12 @@ namespace EverythingWorld.World
                 }
                 default:
                 {
-                    // snow and ice: soft drifts, a glint here and there, faint cracks
-                    var drift = Fbm(u, v, 4, 4, 241); var (f1, f2, _) = Cells(u, v, 5, 243); var crack = (1f - Smooth(.008f, .03f, f2 - f1)) * Smooth(.5f, .62f, Fbm(u, v, 3, 2, 247));
+                    // snow: soft drifts, ridges carved by the wind (in patches), a glint here and there
+                    var drift = Fbm(u, v, 4, 4, 241);
+                    var warp = (Fbm(u, v, 3, 3, 243) - .5f) * 1.2f; var ridge = Mathf.Pow(Mathf.Sin((u * 3f + v * 11f + warp) * Mathf.PI * 2f) * .5f + .5f, 3f) * Smooth(.4f, .65f, Fbm(u, v, 3, 2, 247));
                     var glint = Hash(Mathf.FloorToInt(u * N), Mathf.FloorToInt(v * N), 245) > .985f ? 1f : 0f;
-                    h = drift * .7f - crack * .15f;
-                    shade = (drift - .5f) * .12f + glint * .25f - crack * .06f;
+                    h = drift * .9f + ridge * .45f + Fbm(u, v, 32, 2, 249) * .1f;
+                    shade = (drift - .5f) * .16f + (ridge - .3f) * .08f + glint * .25f;
                     break;
                 }
             }
