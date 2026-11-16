@@ -21,6 +21,12 @@ namespace EverythingWorld.World
         public List<Vector3> sparks = new List<Vector3>();
         public List<(string song, Material m, Color c)> songGlows = new List<(string, Material, Color)>();
         readonly Dictionary<string, float> songAmount = new Dictionary<string, float>();
+        // the pop-up book (FarPaper, FarGlass): origami cranes circling (radius, height, speed, phase), paper boats on the
+        // glass stream and out at sea, the glass water that glints
+        public List<Transform> cranes = new List<Transform>(), streamBoats = new List<Transform>(), seaBoats = new List<Transform>();
+        public List<Vector4> craneWays = new List<Vector4>();
+        public List<Vector3> stream = new List<Vector3>();
+        public Material glassWater; Color glassBase; float[] streamAt; float streamLen; Vector3[] seaRest;
 
         CloudLayer clouds; ParticleSystem dots, sand;
         Color fireBase, lampBase;
@@ -35,7 +41,9 @@ namespace EverythingWorld.World
             clouds.minHeight = 170f; clouds.maxHeight = 270f; clouds.size = 3.4f; clouds.speed = 4f; clouds.cover = .28f;
             clouds.color = new Color(1f, 1f, .98f);
             Color E(Material m) => m != null ? m.GetColor("_EmissionColor") : Color.black;
-            fireBase = E(fire); lampBase = E(lamps);
+            fireBase = E(fire); lampBase = E(lamps); glassBase = E(glassWater);
+            if (stream.Count > 1) { streamAt = new float[stream.Count]; for (var k = 1; k < stream.Count; k++) streamAt[k] = streamAt[k - 1] + Vector3.Distance(stream[k - 1], stream[k]); streamLen = streamAt[stream.Count - 1]; }
+            seaRest = new Vector3[seaBoats.Count]; for (var k = 0; k < seaBoats.Count; k++) seaRest[k] = seaBoats[k] != null ? seaBoats[k].position : Vector3.zero;
             dots = Particles("Butterflies, sparks and petals", 700, Color.white, .06f, .12f, false);
             var dm = dots.main; dm.startLifetime = new ParticleSystem.MinMaxCurve(3f, 6f);
             sand = Particles("Blown sand", 600, new Color(.95f, .8f, .5f, .16f), .6f, 1.8f, false);
@@ -63,6 +71,32 @@ namespace EverythingWorld.World
             m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent; m.SetTexture("_BaseMap", tex);
             var r = go.GetComponent<ParticleSystemRenderer>(); r.sharedMaterial = m; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             return ps;
+        }
+
+        void PopUpBook(float t, float energy)
+        {
+            for (var k = 0; k < cranes.Count && k < craneWays.Count; k++)
+            {
+                if (cranes[k] == null) continue; var w = craneWays[k]; var a = t * w.z + w.w;
+                var p = center + new Vector3(Mathf.Cos(a) * w.x, w.y + Mathf.Sin(t * .5f + w.w) * 1.6f, Mathf.Sin(a) * w.x);
+                var fwd = new Vector3(-Mathf.Sin(a), 0, Mathf.Cos(a)) * Mathf.Sign(w.z);
+                cranes[k].SetPositionAndRotation(p, Quaternion.LookRotation(fwd) * Quaternion.Euler(Mathf.Sin(t * 1.3f + k) * 6f, 0, -Mathf.Sign(w.z) * 14f + Mathf.Sin(t * 2.1f + k) * 5f));
+            }
+            if (streamLen > 1f)
+                for (var k = 0; k < streamBoats.Count; k++)
+                {
+                    if (streamBoats[k] == null) continue; var s = Mathf.Repeat(t * .9f + k * streamLen / streamBoats.Count, streamLen);
+                    var i = 1; while (i < stream.Count - 1 && streamAt[i] < s) i++;
+                    var f = Mathf.InverseLerp(streamAt[i - 1], streamAt[i], s); var p = Vector3.Lerp(stream[i - 1], stream[i], f); var d = stream[i] - stream[i - 1]; d.y = 0;
+                    streamBoats[k].SetPositionAndRotation(p + Vector3.up * (.08f + Mathf.Sin(t * 3f + k) * .02f), Quaternion.LookRotation(d.sqrMagnitude > .001f ? d : Vector3.forward) * Quaternion.Euler(0, Mathf.Sin(t * 1.7f + k) * 8f, Mathf.Sin(t * 2.3f + k) * 4f));
+                }
+            for (var k = 0; k < seaBoats.Count && seaRest != null && k < seaRest.Length; k++)
+            {
+                if (seaBoats[k] == null) continue; var r = seaBoats[k].rotation.eulerAngles;
+                seaBoats[k].position = seaRest[k] + Vector3.up * Mathf.Sin(t * .7f + k * 1.3f) * .35f;
+                seaBoats[k].rotation = Quaternion.Euler(Mathf.Sin(t * .6f + k) * 3f, r.y + Time.deltaTime * .6f, Mathf.Sin(t * .8f + k * 2f) * 4f);
+            }
+            if (glassWater != null) glassWater.SetColor("_EmissionColor", glassBase * (1f + .18f * Mathf.Sin(t * 1.4f) * Mathf.Sin(t * .63f) + energy * .25f + aguas * .6f));
         }
 
         void Update()
@@ -102,6 +136,8 @@ namespace EverythingWorld.World
             SkyDirector.SetSongTint(Land, tint, amount);
             var w2 = clouds != null ? clouds.Wind : new Vector2(1, 0);
             if (here) { Shader.SetGlobalFloat("_EW_Wind", .4f + .15f * energy + wind * .6f); Shader.SetGlobalVector("_EW_WindDir", new Vector4(w2.x, 0, w2.y, 0)); }
+
+            PopUpBook(t, energy);
 
             var cam = Camera.main; if (!here || cam == null) return; var cp = cam.transform.position;
             if (t >= nextFly && aguas < .5f)

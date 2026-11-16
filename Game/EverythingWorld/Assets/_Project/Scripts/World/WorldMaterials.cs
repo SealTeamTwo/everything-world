@@ -5,7 +5,7 @@ namespace EverythingWorld.World
 {
     /// What a surface is made of: each kind catches the light its own way and has its own fine texture (see
     /// WorldMaterials.Surface). Plain = the old one-material-per-colour look.
-    public enum Surface { Plain, Stone, Wood, Bark, Cloth, Metal, Painted, Glass, Foliage, Ground }
+    public enum Surface { Plain, Stone, Wood, Bark, Cloth, Metal, Painted, Glass, Foliage, Ground, Paper }
 
     /// Shared materials for everything built in code: plain colours, glowing colours and pictures.
     /// One material per colour, reused everywhere, so many objects can share a draw call.
@@ -128,6 +128,7 @@ namespace EverythingWorld.World
                 case World.Surface.Metal: smooth = .62f; metal = .75f; boost = 1.6f; break;  // a sharp glint, a darker body that takes the sky's colour
                 case World.Surface.Glass: smooth = .88f; metal = .25f; boost = 2.2f; break;  // a bright point of light
                 case World.Surface.Cloth: smooth = 0f; break;                                // dead matte
+                case World.Surface.Paper: smooth = 0f; break;                                // matte paper
             }
             m.SetFloat("_Smoothness", smooth); m.SetFloat("_Metallic", metal); m.SetFloat("_SpecularBoost", boost);
             return kindMats[k] = m;
@@ -164,6 +165,8 @@ namespace EverythingWorld.World
                         val = rowShade[y] * .07f + r * .025f + Wave(u, v, 1, 2, .7f) * .03f; break;
                     case World.Surface.Foliage:   // soft leafy mottling
                         val = (Wave(u, v, 4, 3, .2f) * .5f + Wave(u, v, -3, 6, 1.7f) * .5f) * .07f + r * .07f; break;
+                    case World.Surface.Paper:     // fine fibres
+                        val = r * .03f + Wave(u, v, 0, 7, Wave(u, v, 3, 0, .2f)) * .012f; break;
                     case World.Surface.Painted:   // nearly flat: a faint brush texture
                         val = r * .025f + Wave(u, v, 0, 9, .4f) * .012f; break;
                     default: val = 0f; break;     // glass: clear

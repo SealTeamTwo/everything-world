@@ -55,7 +55,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var c = ctx.OnGround(center.x, center.z);
             // the plaza: pale stone, and a compass rose in black, white, teal and coral set into it
-            mk.Prism(stone, c - up * .28f, up, 21f, .4f, 32); mk.Prism(tileB, c + up * .122f, up, 8.4f, .01f, 32); mk.Prism(Paint(new Color(.9f, .87f, .78f)), c + up * .126f, up, 8f, .01f, 32);
+            mk.Prism(stone, c - up * .28f, up, 21f, .4f, 32); mk.Prism(tileB, c + up * .12f, up, 8.4f, .01f, 32); mk.Prism(Paint(new Color(.9f, .87f, .78f)), c + up * .133f, up, 8f, .01f, 32);   // apart, so they never flicker
             for (var k = 0; k < 16; k++) { var d = Quaternion.Euler(0, k * 22.5f, 0) * U; var len = k % 4 == 0 ? 7.6f : k % 2 == 0 ? 5.2f : 3f; var m = k % 4 == 0 ? tileB : k % 2 == 0 ? Paint(Teal) : Paint(Coral); var side = Vector3.Cross(up, d); var a = c + d * 1.2f + up * .15f; mk.Tri(m, a - side * (len * .1f), a + side * (len * .1f), c + d * len + up * .15f, c - up); mk.Tri(m, a + side * (len * .1f), a - side * (len * .1f), c + d * len + up * .15f, c + up * 9f); }
             mk.Prism(Paint(Sun), c + up * .15f, up, 1.2f, .012f, 16); foreach (var (d, t) in new[] { (U, "N"), (R, "E"), (-U, "S"), (-R, "W") }) { var t2 = ArtistBits.Label(rootT, t, c + d * 9.4f + up * .17f, Vector3.up, .9f, Ink, TextAnchor.MiddleCenter); t2.transform.rotation = Quaternion.LookRotation(Vector3.down, d); }
             // the signpost of far-off cities, north-east of the middle
@@ -88,7 +88,7 @@ namespace EverythingWorld.World
             for (var j = 0; j < lanes; j++)
             {
                 var u = -PromW / 2f + (j + .5f) * lw; var run = new List<Vector3>(); var colour = -1;
-                for (var d = 20f; d <= roadL + .01f; d += 1f)
+                for (var d = 21f; d <= roadL + .01f; d += 1f)   // from the plaza's edge, not over it
                 {
                     var c = Mathf.FloorToInt((d + Mathf.Sin(j * Mathf.PI * 2f / lanes) * 1.5f + 3f) / 2.4f) % 2; var p = G(ctx, u, -d);
                     if (c != colour && run.Count > 0) { run.Add(p); if (run.Count > 1) Strip(mk, run, colour == 0 ? tileW : tileB, lw + .02f, .14f, ctx); run = new List<Vector3>(); }
@@ -102,6 +102,7 @@ namespace EverythingWorld.World
             for (var d = 26f; d <= roadL - 4f; d += 9f, n++)
                 foreach (var e in new[] { -1f, 1f })
                 {
+                    if (UnderWave(d)) continue;   // the glass wave stands here (FarGlass)
                     var g = G(ctx, e * (PromW / 2f + 1.4f), -d); if (InFootprint(ctx, g.x, g.z, .5f)) continue;
                     if (n % 2 == 0) PalmTree(ctx, mk, g, 1.25f, rng, true); else GlobeLamp(ctx, mk, g);
                     if (n % 4 == 1 && e > 0 || n % 4 == 3 && e < 0) { var b = G(ctx, e * (PromW / 2f + 1.2f), -d - 3f); if (!InFootprint(ctx, b.x, b.z, 1f)) Bench(mk, b, -U * e); }

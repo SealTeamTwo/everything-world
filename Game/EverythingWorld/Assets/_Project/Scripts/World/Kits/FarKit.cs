@@ -33,7 +33,7 @@ namespace EverythingWorld.World
             tileW = WorldMaterials.Surface(new Color(.9f, .88f, .82f), Surface.Stone); tileB = WorldMaterials.Surface(new Color(.16f, .17f, .2f), Surface.Stone); sandM = WorldMaterials.Surface(new Color(.92f, .86f, .7f), Surface.Stone); duneM = WorldMaterials.Surface(new Color(.86f, .72f, .46f), Surface.Stone);
             stone = WorldMaterials.Surface(new Color(.8f, .76f, .68f), Surface.Stone); woodM = WorldMaterials.Surface(new Color(.56f, .4f, .26f), Surface.Wood); bleached = WorldMaterials.Surface(new Color(.8f, .74f, .62f), Surface.Wood); thatch = WorldMaterials.Surface(new Color(.78f, .64f, .36f), Surface.Foliage);
             iron = WorldMaterials.Surface(new Color(.16f, .16f, .18f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .08f, .1f)); white = WorldMaterials.Solid(new Color(.97f, .96f, .93f));
-            trunkM = WorldMaterials.Surface(new Color(.56f, .46f, .36f), Surface.Bark); leafM = WorldMaterials.Surface(new Color(.26f, .56f, .26f), Surface.Foliage); leafDark = WorldMaterials.Surface(new Color(.16f, .42f, .26f), Surface.Foliage);
+            trunkM = WorldMaterials.Surface(new Color(.56f, .46f, .36f), Surface.Bark); leafM = WorldMaterials.Surface(new Color(.36f, .66f, .36f), Surface.Paper); leafDark = WorldMaterials.Surface(new Color(.24f, .52f, .34f), Surface.Paper);   // paper leaves (the pop-up book)
             clothM = WorldMaterials.Surface(Indigo, Surface.Cloth); glassM = WorldMaterials.Surface(new Color(.6f, .8f, .86f), Surface.Glass);
             fireM = new Material(WorldMaterials.Glow(new Color(1f, .55f, .12f), 2.2f)) { name = "Far fires" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .95f, .8f), .9f)) { name = "Far lamps" };
         }
@@ -148,14 +148,23 @@ namespace EverythingWorld.World
             life.transform.SetParent(ctx.Root, false);
             life.center = center; life.fire = fireM; life.lamps = lampM;
             var mk = new MeshKit(); var solid = new MeshKit();
+            heart = null; PaperMaterials(); GlassMaterials(); waveD = Mathf.Max(30f, roadL - 18f);
             Remember(ctx.OnGround(center.x, center.z), 0);
             TownStart(ctx);
             Compass(ctx, mk, solid);
             Promenade(ctx, mk, solid);
+            GlassWave(ctx, mk, solid);
             Beach(ctx, mk, solid);
+            BeachGlass(ctx, mk, solid);
             CaravanTrack(ctx, mk, solid);
             Paths(ctx, mk, solid);
+            // the pop-up book: the walkable heart, the pages folding up round it, the scenery beyond, the glass stream
+            BuildHeart(ctx, mk);
+            GlassStream(ctx, mk);
             Wilds(ctx, mk, solid);
+            PaperEdges(ctx, mk, solid);
+            PaperScenery(ctx, mk, solid);
+            Cranes(ctx);
             mk.Build("The Far Shores", ctx.Root, false);
             solid.BuildCollider("The Far Shores walls", ctx.Root);
         }
@@ -229,6 +238,7 @@ namespace EverythingWorld.World
         /// A coconut palm.
         void PalmTree(LandContext ctx, MeshKit mk, Vector3 g, float s, System.Random rng, bool straight = false)
         {
+            if (paperCream != null) { PaperPalm(ctx, mk, g, s, rng, straight); return; }   // the pop-up book: folded paper palms
             var up = Vector3.up; var lean = straight ? Vector3.zero : Quaternion.Euler(0, (float)rng.NextDouble() * 360f, 0) * Vector3.forward * (.1f + (float)rng.NextDouble() * .2f); var p = g - up * .3f; var d = (up + lean).normalized;
             for (var k = 0; k < 5; k++) { var len = 1.5f * s; mk.Prism(trunkM, p, d, (.2f - k * .02f) * s, len + .05f, 6, .9f); p += d * len; d = (d + lean * .3f).normalized; }
             for (var k = 0; k < 8; k++) { var fd = Quaternion.Euler(0, k * 45f + (float)rng.NextDouble() * 20f, 0) * Vector3.forward; mk.Box(k % 2 == 0 ? leafM : leafDark, p + fd * 1.2f * s - up * .2f * s, new Vector3(.5f * s, .05f, 2.6f * s), Quaternion.LookRotation(fd) * Quaternion.Euler(22f, 0, 0)); }
@@ -283,6 +293,7 @@ namespace EverythingWorld.World
                 {
                     var dd = Mathf.Min(d, end); var q = from + dir * dd + side * Mathf.Sin(dd / 14f) * Mathf.Min(2f, end * .04f);
                     if (!ctx.IsLand(q.x, q.z, 0f)) break;
+                    { var cq = q - center; cq.y = 0; if (cq.sqrMagnitude < 21f * 21f) { if (dd >= end) break; continue; } }   // not across the Compass's plaza
                     // bend round any other artist's area in the way instead of running across it (an arc on whichever
                     // side the straight line passes, so the lane never flips across the area)
                     foreach (var o in ctx.Artists)
@@ -327,7 +338,7 @@ namespace EverythingWorld.World
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += cell)
             {
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
-                if (!Open(ctx, px, pz, 4f)) continue;
+                if (!Open(ctx, px, pz, 4f) || !InHeart(px, pz)) continue;   // beyond the pages: paper scenery only (FarPaper)
                 var p = ctx.OnGround(px, pz); var desert = p.y > duneFrom + 2f && px > center.x + 20f; var shore = p.y < waterY + 4.5f;
                 if (desert)
                 {
@@ -396,7 +407,7 @@ namespace EverythingWorld.World
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
-                if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 5f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
+                if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 5f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || !InHeart(px, pz, 6f)) continue;
                 var gy = ctx.Ground(px, pz); if (gy < waterY + 3.6f) continue; var desert = gy > duneFrom + 1f;
                 if (WindMesh.Patch(px, pz, .04f, 1f) < (desert ? .7f : .38f)) continue;   // bare sand between the patches
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));

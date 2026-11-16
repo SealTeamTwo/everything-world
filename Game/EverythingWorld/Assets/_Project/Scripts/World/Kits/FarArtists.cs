@@ -109,6 +109,13 @@ namespace EverythingWorld.World
             z.mk.Box(white, c - Vector3.up * .5f - dir * .06f, new Vector3(w + .5f, size + 2f, .2f), rot); z.solid.Box(white, c - Vector3.up * .5f, new Vector3(w + .5f, size + 2f, .3f), rot); z.mk.Box(Paint(Cream), c - Vector3.up * .1f + dir * .05f, new Vector3(w, size + .9f, .04f), rot);
             var stripes = Mathf.Max(3, Mathf.RoundToInt((w + .9f) / .4f)); for (var k = 0; k < stripes; k++) z.mk.Box(k % 2 == 0 ? Paint(Paints[hue % Paints.Length]) : white, c + Vector3.up * (size / 2f + .64f + (k % 2) * .01f) + dir * .3f + rot * Vector3.right * (-(w + .9f) / 2f + (k + .5f) * (w + .9f) / stripes), new Vector3((w + .9f) / stripes - .02f, .04f, .9f), rot * Quaternion.Euler(14f, 0, 0));
             ArtistBits.CoverWall(z.pictures, z.labels, z.ctx, z.a, c + dir * .08f + Vector3.up * .08f, dir, n, size, n, true, Ink);
+            // a postage stamp: perforated edges all round the white frame, and a round postmark over one corner
+            var fc = c - Vector3.up * .5f - dir * .06f; float hw = (w + .5f) / 2f, hh = (size + 2f) / 2f; var right = rot * Vector3.right;
+            for (var x = -hw; x <= hw + .01f; x += .26f) foreach (var e in new[] { -1f, 1f }) z.mk.Prism(white, fc + right * x + Vector3.up * e * hh - dir * .1f, dir, .1f, .2f, 8);
+            for (var y = -hh + .26f; y < hh; y += .26f) foreach (var e in new[] { -1f, 1f }) z.mk.Prism(white, fc + right * e * hw + Vector3.up * y - dir * .1f, dir, .1f, .2f, 8);
+            var pm = fc + right * (hw - .75f) + Vector3.up * (hh - .65f) + dir * .12f; var ink = Paint(Ink);
+            for (var k = 0; k < 18; k++) { var a = k * 20f * Mathf.Deg2Rad; var rd = right * Mathf.Cos(a) + Vector3.up * Mathf.Sin(a); z.mk.Box(ink, pm + rd * .5f, new Vector3(.17f, .035f, .01f), Quaternion.LookRotation(dir, Vector3.Cross(dir, rd))); }
+            for (var k = 0; k < 3; k++) for (var s = 0; s < 5; s++) z.mk.Box(ink, pm - right * (.9f + s * .3f) + Vector3.up * ((k - 1) * .16f + Mathf.Sin(s * 1.6f) * .04f), new Vector3(.3f, .03f, .01f), Quaternion.LookRotation(dir, Vector3.up) * Quaternion.Euler(0, 0, Mathf.Cos(s * 1.6f) * 12f));
         }
 
         /// A glass float on a post for each song without its own piece.

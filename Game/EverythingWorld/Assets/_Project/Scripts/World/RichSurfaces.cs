@@ -17,7 +17,7 @@ namespace EverythingWorld.World
         static readonly HashSet<Material> all = new HashSet<Material>();
 
         public static bool Has(Surface k) => k == Surface.Stone || k == Surface.Wood || k == Surface.Bark || k == Surface.Cloth
-                                            || k == Surface.Metal || k == Surface.Painted || k == Surface.Foliage;
+                                            || k == Surface.Metal || k == Surface.Painted || k == Surface.Foliage || k == Surface.Paper;
         /// A mesh drawn with this needs tangents (for its normal map).
         public static bool IsRich(Material m) => m != null && all.Contains(m);
 
@@ -25,13 +25,13 @@ namespace EverythingWorld.World
         static float Repeat(Surface k) => k switch
         {
             Surface.Stone => 3f, Surface.Wood => 2.4f, Surface.Bark => 1.6f, Surface.Cloth => 1.2f,
-            Surface.Metal => 2.5f, Surface.Painted => 2.5f, Surface.Foliage => 1.8f, _ => 5f,
+            Surface.Metal => 2.5f, Surface.Painted => 2.5f, Surface.Foliage => 1.8f, Surface.Paper => 2.2f, _ => 5f,
         };
         /// How strongly the relief bends the light.
         static float Bump(Surface k) => k switch
         {
             Surface.Stone => .9f, Surface.Wood => .75f, Surface.Bark => 1f, Surface.Cloth => .55f,
-            Surface.Metal => .35f, Surface.Painted => .3f, Surface.Foliage => .8f, _ => .5f,
+            Surface.Metal => .35f, Surface.Painted => .3f, Surface.Foliage => .8f, Surface.Paper => .45f, _ => .5f,
         };
 
         /// The rich version of a kind's shared material (made from it, so it keeps its finish and shading).
@@ -244,6 +244,16 @@ namespace EverythingWorld.World
                     var leaf = Mathf.Clamp01(1f - f1 * 1.3f); var leaf2 = Mathf.Clamp01(1f - g1 * 1.4f); var edge = 1f - Smooth(0f, .12f, f2 - f1);
                     h = Mathf.Max(leaf, leaf2 * .8f) - edge * .15f;
                     shade = (id - .5f) * .2f + (id2 - .5f) * .1f + (leaf - .5f) * .2f - edge * .1f;
+                    break;
+                }
+                case Surface.Paper:
+                {
+                    // paper: fine fibres running every way, a soft mottle, and a couple of gentle creases where it was folded
+                    var fib = Fbm(u, v, 128, 2, 141); var mott = Fbm(u, v, 5, 3, 145);
+                    var c1 = Mathf.Abs(Mathf.Repeat(u + v, 1f) - .5f); var c2 = Mathf.Abs(Mathf.Repeat(2f * v - u + .3f, 1f) - .5f);   // whole-number slopes, so the creases tile
+                    var crease = (1f - Smooth(0f, .012f, c1)) * .6f + (1f - Smooth(0f, .01f, c2)) * .4f;
+                    h = fib * .25f + mott * .2f + crease * .5f;
+                    shade = (fib - .5f) * .06f + (mott - .5f) * .05f - crease * .03f;
                     break;
                 }
                 default: h = 0f; shade = 0f; break;
