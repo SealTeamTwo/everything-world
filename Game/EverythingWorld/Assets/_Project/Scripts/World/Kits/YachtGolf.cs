@@ -37,6 +37,16 @@ namespace EverythingWorld.World
             foreach (var t in model.GetComponentsInChildren<TextMesh>(true)) Object.Destroy(t.gameObject);
             foreach (var n in new[] { "Sea", "Sea floor" }) { var s = model.transform.Find(n); if (s != null) Object.Destroy(s.gameObject); }
             model.transform.SetPositionAndRotation(f.P(0, rim - .07f, 0), f.r); model.transform.localScale = Vector3.one * LinksScale;
+            // marks for the photo tour (ShotTour switches the course on for them): the whole course, every tee, and two with the game running
+            void Mark(string name, Vector3 at, Vector3 look) { var m = new GameObject("Shot: " + name).transform; m.SetParent(big.transform, false); m.SetPositionAndRotation(at, Quaternion.LookRotation((look - at).normalized)); }
+            var top = big.transform.position; Mark("links from above", top + new Vector3(0, 130f, -course.depth * .9f), top);
+            for (var i = 0; i < course.holes.Length; i++)
+            {
+                var h = course.holes[i]; var d = h.route.Count > 1 ? (h.route[1] - h.route[0]).normalized : Vector2.up; var fw = new Vector3(d.x, 0, d.y);
+                var tee = big.transform.TransformPoint(course.At(i, h.tee)); var mid = big.transform.TransformPoint(course.At(i, new Vector3((h.minX + h.maxX) / 2f, h.tee.y, (h.minZ + h.maxZ) / 2f)));
+                Mark($"links hole {i + 1:00}", tee - fw * 9f + up * 3.2f, tee + fw * 6f); Mark($"links hole {i + 1:00} high", mid + new Vector3(-16f, 20f, -24f), mid);
+            }
+            Mark("links play 1", top, top + Vector3.forward); Mark("links play 5", top, top + Vector3.forward); Mark("links play 9", top, top + Vector3.forward);
             big.AddComponent<GolfSkyLife>(); big.SetActive(false);   // (marked after the copy was made, so the model is still culled like any scenery)
 
             var game = new GameObject("The Riviera Links").AddComponent<GolfGame>(); game.transform.SetParent(ctx.Root, false); game.transform.position = g;

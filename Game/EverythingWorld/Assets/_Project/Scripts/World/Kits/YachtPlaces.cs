@@ -105,7 +105,8 @@ namespace EverythingWorld.World
             plife = new GameObject("Riviera places life").AddComponent<YachtPlacesLife>(); plife.transform.SetParent(life.transform, false);
             foreach (var (at, r) in PlaceRings) noGrass.Add(new Vector3(at.x, r, at.y));
             StoneRoad(ctx, mk, WestWay); StoneRoad(ctx, mk, SouthWay); StoneRoad(ctx, mk, NorthWay); StoneRoad(ctx, mk, EastWay);
-            Lido(ctx, mk, solid); TennisClub(ctx, mk, solid); Winery(ctx, mk, solid); Studio(ctx, mk, solid); Gazebo(ctx, mk, solid); GolfLinks(ctx, mk, solid);
+            Lido(ctx, mk, solid); TennisClub(ctx, mk, solid); Winery(ctx, mk, solid); Studio(ctx, mk, solid); Gazebo(ctx, mk, solid);
+            try { GolfLinks(ctx, mk, solid); } catch (System.Exception e) { Debug.LogWarning("The Riviera Links could not be built (the rest of the Riviera is unaffected): " + e); }   // new, and not yet played: it must never take the land down with it
             if (hasBay) PromenadePeople(ctx, mk);
         }
 

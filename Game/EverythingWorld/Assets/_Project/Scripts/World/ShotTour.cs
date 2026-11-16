@@ -209,7 +209,30 @@ namespace EverythingWorld.World
                 var landRoot = GameObject.Find("Land: " + isl.name);
                 if (landRoot != null) foreach (var t in landRoot.GetComponentsInChildren<Transform>(true)) if (t.name.StartsWith("Shot: ")) marks.Add(t);
                 foreach (var ti in FindObjectsByType<TowerInfo>(FindObjectsSortMode.None)) if (ti.sceneId == isl.sceneId) foreach (var t in ti.GetComponentsInChildren<Transform>(true)) if (t.name.StartsWith("Shot: ")) marks.Add(t);   // the realm tower standing in this land
-                foreach (var m in marks) yield return Shot(m.name.Substring(6), m.position, m.eulerAngles.y, 6f, 1f);
+                foreach (var m in marks)
+                {
+                    var what = m.name.Substring(6);
+                    if (!what.StartsWith("links")) { yield return Shot(what, m.position, m.eulerAngles.y, 6f, 1f); continue; }
+                    // mini golf (the Riviera Links): its course is switched off until someone plays, so it is switched on
+                    // for its photos; and "links play" marks step onto the course and putt once, to photograph the game running
+                    if (only != null && only.Length > 0) { var hit = false; foreach (var o in only) if (what.ToLowerInvariant().Contains(o)) hit = true; if (!hit) continue; }
+                    var golf = FindAnyObjectByType<EverythingWorld.Activities.GolfGame>(FindObjectsInactive.Include);
+                    GameObject hidden = null; for (var p = m; p != null && p != landRoot.transform; p = p.parent) if (!p.gameObject.activeSelf) hidden = p.gameObject;
+                    var pitch = m.eulerAngles.x > 180f ? m.eulerAngles.x - 360f : m.eulerAngles.x;
+                    if (what.StartsWith("links play") && golf != null && player != null)
+                    {
+                        int.TryParse(what.Substring(what.LastIndexOf(' ') + 1), out var holeNo);
+                        yield return golf.Demo(player.GetComponent<EverythingWorld.Player.PlayerInteractor>(), Mathf.Max(0, holeNo - 1), 9f);
+                        yield return Shot(what, player.transform.position, player.transform.eulerAngles.y, pivot != null ? (pivot.localEulerAngles.x > 180f ? pivot.localEulerAngles.x - 360f : pivot.localEulerAngles.x) : 20f, 1.5f);
+                        golf.DemoEnd();
+                    }
+                    else
+                    {
+                        if (hidden != null) hidden.SetActive(true);
+                        yield return Shot(what, m.position, m.eulerAngles.y, pitch, 1f);
+                        if (hidden != null) hidden.SetActive(false);
+                    }
+                }
                 // inside the buildings: every room the land registered (IndoorSpaces), biggest first, from just inside
                 // one end looking down its length, and from the far end looking back
                 var rooms = new List<(Vector3 center, Quaternion rotation, Vector3 size)>();

@@ -110,6 +110,19 @@ namespace EverythingWorld.Activities
             Send(8, true); Active = null; phase = Phase.Off; sim = null; charging = false; shrinkT = .55f;
         }
 
+        /// For the photo tour only (ShotTour): steps onto the course at a hole and putts once, so a picture can be
+        /// taken of the game running and the log shows whether anything went wrong.
+        public System.Collections.IEnumerator Demo(PlayerInteractor who, int atHole, float speed)
+        {
+            Begin(who); var until = Time.realtimeSinceStartup + 2f; while (Time.realtimeSinceStartup < until) yield return null;
+            if (Active != this || sim == null) { Debug.LogWarning("Golf demo: the game did not start"); yield break; }
+            if (atHole != hole && atHole < course.holes.Length) StartHole(atHole);
+            var dir = Quaternion.Euler(0, yaw - course.yaws[hole], 0) * Vector3.forward; sim.Hit(new Vector2(dir.x, dir.z), speed); strokes++; phase = Phase.Roll; acc = 0f;
+            until = Time.realtimeSinceStartup + 1f; while (Time.realtimeSinceStartup < until) yield return null;
+            Debug.Log($"Golf demo: hole {hole + 1}, ball at {sim.p}, moving {sim.moving}, phase {phase}");
+        }
+        public void DemoEnd() { if (Active == this) Quit(); }
+
         void Tune()
         {
             var d = MusicDirector.Instance; if (d == null) return;
@@ -141,7 +154,11 @@ namespace EverythingWorld.Activities
         }
 
         // ---------------------------------------------------------------- playing
-        void Update()
+        // (if anything goes wrong in here, you are put back by the bags rather than left stranded on the course)
+        void Update() { try { Tick(); } catch (System.Exception e) { Debug.LogException(e); if (Active == this) Quit(); } }
+        void LateUpdate() { try { Follow(); } catch (System.Exception e) { Debug.LogException(e); if (Active == this) Quit(); } }
+
+        void Tick()
         {
             Remotes(); shrinkT += Time.deltaTime;
             if (Active != this) return;
@@ -222,7 +239,7 @@ namespace EverythingWorld.Activities
             else Say("Round over", 4f);
         }
 
-        void LateUpdate()
+        void Follow()
         {
             if (Active != this || sim == null || walker == null) return;
             var bw = BallWorld(); var look = bw;
