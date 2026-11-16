@@ -54,7 +54,7 @@ namespace EverythingWorld.Spotify
 #pragma warning disable 0649 // filled in by JsonUtility
         [Serializable] class Device { public string id; public string name; public string type; public bool is_active; public bool is_restricted; public int volume_percent = -1; }
         [Serializable] class DeviceList { public Device[] devices; }
-        [Serializable] class Item { public string name; public string uri; public int duration_ms; }
+        [Serializable] class Item { public string name; public string uri; public int duration_ms; public Album album; }
         [Serializable] class PlayerState { public Device device; public bool is_playing; public int progress_ms; public Item item; }
         [Serializable] class Restrictions { public string reason; }
         [Serializable] class Album { public string uri; }
@@ -247,8 +247,11 @@ namespace EverythingWorld.Spotify
                 Status = "Spotify is paused: the zone radio waits (walk into a zone to tune in again)";
                 return false;
             }
-            // A different song only a few seconds in is just the album moving on by itself; anything else is your choice.
-            if (!IsSameSong(state, lastStarted) && state.progress_ms > 5000)
+            // A different song only a few seconds in, or any later song of the album we started the last one from, is
+            // just that album moving on by itself (songs start "from their album", so Spotify carries on down it if
+            // the station's change comes late); anything else is your choice.
+            var sameAlbum = state.item?.album?.uri != null && trackCache.TryGetValue(lastStarted.id, out var was) && was.album?.uri == state.item.album.uri;
+            if (!IsSameSong(state, lastStarted) && state.progress_ms > 5000 && !sameAlbum)
             {
                 Status = $"You're playing {state.item?.name ?? "something else"}: walk into a zone to tune back in";
                 Debug.Log($"[Spotify] Not switching songs: you picked {state.item?.name}");

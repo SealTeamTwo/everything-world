@@ -14,6 +14,7 @@ namespace EverythingWorld.Activities
         public const float Step = 1f / 240f, Gravity = 13f, MaxSpeed = 17f, HitMax = 30f, CupSpeed = 5.2f;
         // the golf ball is light and lively (2026-11-17): it hangs a little in the air, keeps more off a wall or a landing, and rolls further.
         // (Pinball, the endless ball, keeps the heavier feel its table was made for.)
+        public const float Unstick = .01f, PopAt = 19f, CupPull = 1.8f, CupDeep = GolfHole.BallR * .8f;
         public const float AirGravity = 9.2f, Lively = .07f, Roll = .86f, LandBounce = .5f;
 
         public GolfHole hole;
@@ -24,18 +25,20 @@ namespace EverythingWorld.Activities
         public Action<GolfEvent, Vector3, float> onEvent;
         public bool endless;                 // never called to rest by the clock (pinball: the ball is in play until it drains)
 
+        public float sink;                   // how far the ball has dropped into the cup it is crossing (0 on open ground)
         float restFor, slopeVy, pipeCool; int inBoost = -1;
+        float groundVy = float.NaN, cupVy, pop;   // how fast the floor was carrying the ball up or down last step; its fall inside the cup; a hop owed to it (off a wall, off the lip)
         Vector2[] offs, offsWas; float[] angs, angsWas, ups;
 
         public GolfSim(GolfHole h) { hole = h; var n = h.movers.Count; offs = new Vector2[n]; offsWas = new Vector2[n]; angs = new float[n]; angsWas = new float[n]; ups = new float[n]; Place(h.tee); }
 
-        public void Place(Vector3 at) { p = at; p.y = hole.TopAt(at.x, at.z); v = Vector3.zero; moving = false; holed = false; grounded = true; lastRest = p; restFor = 0f; }
+        public void Place(Vector3 at) { p = at; p.y = hole.TopAt(at.x, at.z); v = Vector3.zero; moving = false; holed = false; grounded = true; lastRest = p; restFor = 0f; groundVy = float.NaN; sink = 0f; cupVy = 0f; pop = 0f; }
 
         public void Hit(Vector2 dir, float speed)
         {
             if (moving || holed) return;
             dir = dir.normalized; speed = Mathf.Min(speed, HitMax); v = new Vector3(dir.x * speed, 0, dir.y * speed);
-            moving = true; grounded = true; moveTime = 0f; restFor = 0f; lastRest = p;
+            moving = true; grounded = true; moveTime = 0f; restFor = 0f; lastRest = p; groundVy = float.NaN;
         }
 
         /// True if something moving (a boat, a propeller, a gate) has reached the ball where it lies: it should be
@@ -58,7 +61,7 @@ namespace EverythingWorld.Activities
             return false;
         }
         /// Lets a ball that was lying still roll again without a stroke (something has pushed it).
-        public void Wake() { if (holed) return; moving = true; grounded = true; moveTime = 0f; restFor = 0f; }
+        public void Wake() { if (holed) return; moving = true; grounded = true; moveTime = 0f; restFor = 0f; groundVy = float.NaN; }
 
         static float Friction(GolfSurface s) => s == GolfSurface.Sand ? 9f : s == GolfSurface.Ice ? .3f : s == GolfSurface.Deck ? 1.5f : s == GolfSurface.Stone ? 1.7f : 1.9f;
 
@@ -112,7 +115,7 @@ namespace EverythingWorld.Activities
                 hv += pull * dt;
                 // the cup draws a slow ball in
                 var toCup = new Vector2(hole.cup.x - p.x, hole.cup.z - p.z); var cupD = toCup.magnitude;
-                if (cupD < GolfHole.CupR * 2.2f && Mathf.Abs(p.y - hole.cup.y) < .3f && hv.magnitude < 3.5f && cupD > .01f) hv += toCup / cupD * 5f * dt;
+                if (endless && cupD < GolfHole.CupR * 2.2f && Mathf.Abs(p.y - hole.cup.y) < .3f && hv.magnitude < 3.5f && cupD > .01f) hv += toCup / cupD * 5f * dt;
                 // rolling friction, and a little drag
                 var mu = Friction(under) * (endless ? 1f : Roll); var sp = hv.magnitude; var dec = (mu + (endless ? .1f : .08f) * sp) * dt;
                 hv = sp <= dec ? Vector2.zero : hv * ((sp - dec) / sp);
@@ -123,12 +126,41 @@ namespace EverythingWorld.Activities
                 Collide(ref hv, dt);
                 if (!hole.Ground(p.x, p.z, p.y, out var g1, out var pad1) || g1 < want - .035f)
                 {
-                    grounded = false; v.y = Mathf.Clamp(slopeVy, -6f, 14f);   // off an edge, or off the lip of a ramp
+                    grounded = false; v.y = Mathf.Clamp(slopeVy, -6f, endless ? 14f : 20f); groundVy = float.NaN;   // off an edge, or off the lip of a ramp
                 }
-                else { p.y = g1; under = pad1.surface; }
+                else if (!endless && !float.IsNaN(groundVy) && groundVy - (g1 - p.y) / dt > AirGravity * dt + Unstick)
+                {
+                    // over a crest: the floor falls away faster than the ball can fall after it, so the ball keeps the
+                    // rise (or fall) it had and flies
+                    grounded = false; v.y = Mathf.Clamp(groundVy, -6f, 20f); p.y += v.y * dt; groundVy = float.NaN;
+                }
+                else { groundVy = (g1 - p.y) / dt; p.y = g1; under = pad1.surface; }
+                if (pop > 0f) { if (grounded) { grounded = false; v.y = pop; groundVy = float.NaN; } pop = 0f; }   // knocked into the air (a hard wall, the lip of the cup)
 
                 // into the cup?
-                if (grounded && cupD < GolfHole.CupR && Mathf.Abs(p.y - hole.cup.y) < .3f)
+                if (!endless)
+                {
+                    // a real hole: over it the ball falls. Slow enough and it is down before the far side; too fast and
+                    // it catches the far lip part-way down, which slows it, knocks it aside and hops it out.
+                    var cupNow = new Vector2(p.x - hole.cup.x, p.z - hole.cup.z);
+                    if (grounded && cupNow.magnitude < GolfHole.CupR && Mathf.Abs(p.y - hole.cup.y) < .3f)
+                    {
+                        cupVy += Gravity * CupPull * dt; sink += cupVy * dt;
+                        if (sink >= CupDeep) { holed = true; moving = false; p = hole.cup; v = Vector3.zero; sink = 0f; onEvent?.Invoke(GolfEvent.Holed, p, 1f); return; }
+                    }
+                    else if (sink > 0f)
+                    {
+                        var frac = Mathf.Clamp01(sink / CupDeep);
+                        if (cupNow.sqrMagnitude > 1e-6f)
+                        {
+                            var n = cupNow.normalized; var away = Vector2.Dot(hv, n);
+                            if (away > 0f) { var tan = new Vector2(-n.y, n.x); var side = Vector2.Dot(hv, tan) >= 0f ? 1f : -1f; hv += -n * (away * .55f * frac) + tan * (side * away * .25f * frac); }
+                        }
+                        if (frac > .15f && grounded) { grounded = false; v.y = .8f + 2.4f * frac; groundVy = float.NaN; onEvent?.Invoke(GolfEvent.LipOut, p, frac); }
+                        sink = 0f; cupVy = 0f;
+                    }
+                }
+                else if (grounded && cupD < GolfHole.CupR && Mathf.Abs(p.y - hole.cup.y) < .3f)
                 {
                     if (hv.magnitude < CupSpeed) { holed = true; moving = false; p = hole.cup; v = Vector3.zero; onEvent?.Invoke(GolfEvent.Holed, p, 1f); return; }
                     if (restFor >= 0f) { onEvent?.Invoke(GolfEvent.LipOut, p, 1f); restFor = -1f; }   // too fast: it skips over
@@ -136,7 +168,7 @@ namespace EverythingWorld.Activities
                 else if (restFor < 0f) restFor = 0f;
 
                 // lying still?
-                if (grounded && !noRest && !endless && hv.sqrMagnitude < .0064f && pull.magnitude < mu + .05f)
+                if (grounded && !noRest && !endless && sink <= 0f && hv.sqrMagnitude < .0064f && pull.magnitude < mu + .05f)
                 {
                     if (restFor >= 0f) restFor += dt;
                     if (restFor > .3f) { v = Vector3.zero; moving = false; lastRest = p; onEvent?.Invoke(GolfEvent.Rest, p, 0f); return; }
@@ -151,13 +183,31 @@ namespace EverythingWorld.Activities
                 if (v.y <= 0f && hole.Ground(p.x, p.z, Mathf.Max(was, p.y) + .5f, out var g, out var pad) && p.y <= g)
                 {
                     p.y = g; under = pad.surface;
-                    if (v.y < (endless ? -4f : -2.6f)) { onEvent?.Invoke(GolfEvent.Land, p, -v.y); v.y = -v.y * (endless ? .32f : LandBounce); hv *= endless ? .9f : .95f; }
-                    else { v.y = 0f; grounded = true; }
+                    if (endless) { if (v.y < -4f) { onEvent?.Invoke(GolfEvent.Land, p, -v.y); v.y = -v.y * .32f; hv *= .9f; } else { v.y = 0f; grounded = true; } }
+                    else
+                    {
+                        // how hard it meets the floor is its fall against the floor's own slope under it: a ball coming
+                        // down onto a downslope lands softly and runs on, one dropping onto the flat bounces
+                        SlopeAt(g, out var lx, out var lz); var floorVy = lx * hv.x + lz * hv.y; var rel = v.y - floorVy;
+                        if (rel < -2.6f) { onEvent?.Invoke(GolfEvent.Land, p, -rel); v.y = floorVy - rel * LandBounce; hv *= .95f; }
+                        else { v.y = 0f; grounded = true; groundVy = floorVy; }
+                    }
                 }
                 if (p.y < GolfHole.Sea - .05f) { v.x = hv.x; v.z = hv.y; Back(); return; }
             }
             v.x = hv.x; v.z = hv.y;
             if (moveTime > 30f && !endless) { if (grounded) { v = Vector3.zero; moving = false; lastRest = p; onEvent?.Invoke(GolfEvent.Rest, p, 0f); } else Back(); }
+        }
+
+        /// The floor's slope under the ball (rise per metre along x and z), taken from whichever sides have floor.
+        void SlopeAt(float g0, out float gx, out float gz)
+        {
+            const float e = .06f;
+            bool x1 = hole.Ground(p.x + e, p.z, p.y + .1f, out var hx1, out _), x0 = hole.Ground(p.x - e, p.z, p.y + .1f, out var hx0, out _);
+            bool z1 = hole.Ground(p.x, p.z + e, p.y + .1f, out var hz1, out _), z0 = hole.Ground(p.x, p.z - e, p.y + .1f, out var hz0, out _);
+            gx = x1 && x0 ? (hx1 - hx0) / (2f * e) : x1 ? (hx1 - g0) / e : x0 ? (g0 - hx0) / e : 0f;
+            gz = z1 && z0 ? (hz1 - hz0) / (2f * e) : z1 ? (hz1 - g0) / e : z0 ? (g0 - hz0) / e : 0f;
+            gx = Mathf.Clamp(gx, -3f, 3f); gz = Mathf.Clamp(gz, -3f, 3f);
         }
 
         /// Pushes the ball out of walls and bumpers and turns its speed round.
@@ -176,7 +226,9 @@ namespace EverythingWorld.Activities
                     var c = a + d * t; var off = q - c; var dist = off.magnitude; if (dist >= R) continue;
                     var n = dist > 1e-5f ? off / dist : (hv.sqrMagnitude > 1e-6f ? -hv.normalized : Vector2.up);
                     if (m >= 0) { var mv = hole.movers[m]; var lc = Vector2.Lerp(w.a, w.b, t); wv = (GolfMover.Place(mv.pivot, offs[m], angs[m], lc) - GolfMover.Place(mv.pivot, offsWas[m], angsWas[m], lc)) / dt; }
-                    q = c + n * R; Bounce(ref hv, n, wv, endless ? w.bounce : Mathf.Min(.95f, w.bounce + Lively), 0f);
+                    q = c + n * R; var knock = -Vector2.Dot(hv - wv, n);
+                    if (!endless && grounded && knock > PopAt) pop = Mathf.Max(pop, Mathf.Min(2.9f, 1.4f + (knock - PopAt) * .14f));   // a really hard knock hops it up (and maybe over the kerb)
+                    Bounce(ref hv, n, wv, endless ? w.bounce : Mathf.Min(.95f, w.bounce + Lively), 0f);
                 }
                 for (var i = 0; i < hole.bumpers.Count; i++)
                 {

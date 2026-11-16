@@ -174,7 +174,7 @@ namespace EverythingWorld.Activities
             if (canAct)
             {
                 var look = mouse.delta.ReadValue() * walker.mouseSensitivity; swingPush = look.y;
-                if (!charging) { yaw += look.x; pitch = Mathf.Clamp(pitch - look.y, 6f, 80f); }   // while you swing the aim is held: the mouse is the club
+                yaw += look.x; if (!charging) pitch = Mathf.Clamp(pitch - look.y, 6f, 80f);   // while you swing, forward and back is the club; side to side still aims
                 dist = Mathf.Clamp(dist - mouse.scroll.ReadValue().y * (Mathf.Abs(mouse.scroll.ReadValue().y) > 10f ? .01f : 1f), 3f, 26f);
                 if (kb.pKey.wasPressedThisFrame && Unlocked) { Everything = !Everything; Tune(); Say(Everything ? "Playing the Everything Playlist" : "Playing the Riviera's songs", 3f); }
                 leaveHeld = kb.xKey.isPressed ? leaveHeld + dt : 0f; if (leaveHeld > .8f) { leaveHeld = 0f; phase = Phase.ShrinkOut; phaseT = 0f; return; }
@@ -207,7 +207,7 @@ namespace EverythingWorld.Activities
                 foreach (var (e, p, f) in events)
                 {
                     if (e == GolfEvent.Splash) Say("Splash! Back where you were.", 2f);
-                    else if (e == GolfEvent.LipOut) Say("Too fast: it skipped the cup.", 2f);
+                    else if (e == GolfEvent.LipOut) Say("Lipped out!", 2f);
                 }
                 events.Clear();
                 if (sim.holed) FinishHole(strokes);
@@ -256,7 +256,7 @@ namespace EverythingWorld.Activities
         {
             if (Active != this || sim == null || walker == null) return;
             var bw = BallWorld(); var look = bw;
-            ball.position = sim.holed ? bw - Vector3.up * GolfHole.BallR * 2.2f : bw;   // in the cup: dropped out of sight
+            ball.position = sim.holed ? bw - Vector3.up * GolfHole.BallR * 2.2f : bw - Vector3.up * sim.sink;   // in the cup: dropped out of sight
             if (phase == Phase.HoleDone && watching >= 0) { var k = 0; foreach (var o in others.Values) if (StillOn(o) && o.ball != null && k++ == watching) look = o.ball.position; }
             focus = Vector3.Lerp(focus, look + Vector3.up * .5f, 1f - Mathf.Exp(-14f * Time.deltaTime));
             var rot = Quaternion.Euler(pitch, yaw, 0); var cam = focus - rot * Vector3.forward * dist; cam.y = Mathf.Max(cam.y, big.position.y + .6f);
