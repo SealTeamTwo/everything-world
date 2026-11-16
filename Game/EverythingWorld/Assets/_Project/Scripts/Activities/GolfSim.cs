@@ -12,6 +12,9 @@ namespace EverythingWorld.Activities
     public class GolfSim
     {
         public const float Step = 1f / 240f, Gravity = 13f, MaxSpeed = 17f, HitMax = 30f, CupSpeed = 5.2f;
+        // the golf ball is light and lively (2026-11-17): it hangs a little in the air, keeps more off a wall or a landing, and rolls further.
+        // (Pinball, the endless ball, keeps the heavier feel its table was made for.)
+        public const float AirGravity = 9.2f, Lively = .07f, Roll = .86f, LandBounce = .5f;
 
         public GolfHole hole;
         public Vector3 p, v;                 // p is the bottom of the ball
@@ -111,7 +114,7 @@ namespace EverythingWorld.Activities
                 var toCup = new Vector2(hole.cup.x - p.x, hole.cup.z - p.z); var cupD = toCup.magnitude;
                 if (cupD < GolfHole.CupR * 2.2f && Mathf.Abs(p.y - hole.cup.y) < .3f && hv.magnitude < 3.5f && cupD > .01f) hv += toCup / cupD * 5f * dt;
                 // rolling friction, and a little drag
-                var mu = Friction(under); var sp = hv.magnitude; var dec = (mu + .1f * sp) * dt;
+                var mu = Friction(under) * (endless ? 1f : Roll); var sp = hv.magnitude; var dec = (mu + (endless ? .1f : .08f) * sp) * dt;
                 hv = sp <= dec ? Vector2.zero : hv * ((sp - dec) / sp);
                 sp = hv.magnitude; var cap = endless ? MaxSpeed * 1.5f : HitMax * 1.07f; if (sp > cap) hv *= cap / sp;
                 slopeVy = gx * hv.x + gz * hv.y;
@@ -142,13 +145,13 @@ namespace EverythingWorld.Activities
             }
             else
             {
-                var was = p.y; v.y -= Gravity * dt; p.x += hv.x * dt; p.z += hv.y * dt; p.y += v.y * dt;
+                var was = p.y; v.y -= (endless ? Gravity : AirGravity) * dt; p.x += hv.x * dt; p.z += hv.y * dt; p.y += v.y * dt;
                 Collide(ref hv, dt);
                 // (a floor up to half a metre above the falling ball counts: it has flown into a rising slope)
                 if (v.y <= 0f && hole.Ground(p.x, p.z, Mathf.Max(was, p.y) + .5f, out var g, out var pad) && p.y <= g)
                 {
                     p.y = g; under = pad.surface;
-                    if (v.y < -4f) { onEvent?.Invoke(GolfEvent.Land, p, -v.y); v.y = -v.y * .32f; hv *= .9f; }
+                    if (v.y < (endless ? -4f : -2.6f)) { onEvent?.Invoke(GolfEvent.Land, p, -v.y); v.y = -v.y * (endless ? .32f : LandBounce); hv *= endless ? .9f : .95f; }
                     else { v.y = 0f; grounded = true; }
                 }
                 if (p.y < GolfHole.Sea - .05f) { v.x = hv.x; v.z = hv.y; Back(); return; }
@@ -173,7 +176,7 @@ namespace EverythingWorld.Activities
                     var c = a + d * t; var off = q - c; var dist = off.magnitude; if (dist >= R) continue;
                     var n = dist > 1e-5f ? off / dist : (hv.sqrMagnitude > 1e-6f ? -hv.normalized : Vector2.up);
                     if (m >= 0) { var mv = hole.movers[m]; var lc = Vector2.Lerp(w.a, w.b, t); wv = (GolfMover.Place(mv.pivot, offs[m], angs[m], lc) - GolfMover.Place(mv.pivot, offsWas[m], angsWas[m], lc)) / dt; }
-                    q = c + n * R; Bounce(ref hv, n, wv, w.bounce, 0f);
+                    q = c + n * R; Bounce(ref hv, n, wv, endless ? w.bounce : Mathf.Min(.95f, w.bounce + Lively), 0f);
                 }
                 for (var i = 0; i < hole.bumpers.Count; i++)
                 {
