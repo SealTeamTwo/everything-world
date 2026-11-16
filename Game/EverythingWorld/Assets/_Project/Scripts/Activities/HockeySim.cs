@@ -8,11 +8,13 @@ namespace EverythingWorld.Activities
     {
         public const float W = 1.2f, L = 2.4f, PuckR = .04f, MalletR = .055f, Goal = .4f, Step = 1f / 240f, MaxSpeed = 6.5f;
         public Vector2 puck, pv; public readonly Vector2[] mallet = { new Vector2(0, -.9f), new Vector2(0, .9f) }, mv = new Vector2[2]; public readonly int[] score = new int[2]; public float serveWait;
+        /// Each point starts slow and gets faster the longer the puck stays in play: this is how long this one has run, and the top speed that allows.
+        public float rally; public float Cap => Mathf.Lerp(2.3f, MaxSpeed, Mathf.Clamp01(rally / 28f));
 
         public void Reset() { score[0] = score[1] = 0; Serve(0); mallet[0] = new Vector2(0, -.9f); mallet[1] = new Vector2(0, .9f); }
         readonly System.Random rng = new System.Random(7);
         /// The puck is put down in the half of whoever was scored on, a little to one side or the other.
-        public void Serve(int toSide) { puck = new Vector2((float)(rng.NextDouble() - .5) * .5f, toSide == 0 ? -.35f : .35f); pv = Vector2.zero; serveWait = .8f; }
+        public void Serve(int toSide) { puck = new Vector2((float)(rng.NextDouble() - .5) * .5f, toSide == 0 ? -.35f : .35f); pv = Vector2.zero; serveWait = .8f; rally = 0f; }
 
         /// Moves a mallet toward where its player wants it, no faster than 'speed', kept inside its half.
         public void Move(int side, Vector2 want, float speed, float dt)
@@ -26,7 +28,7 @@ namespace EverythingWorld.Activities
         public int Advance(float dt)
         {
             if (serveWait > 0f) { serveWait -= dt; return -1; }
-            puck += pv * dt; var sp = pv.magnitude; if (sp > 0f) pv *= Mathf.Max(0f, 1f - .12f * dt);
+            rally += dt; puck += pv * dt; var sp = pv.magnitude; if (sp > 0f) pv *= Mathf.Max(0f, 1f - .12f * dt);
             for (var i = 0; i < 2; i++)
             {
                 var d = puck - mallet[i]; var dist = d.magnitude; if (dist >= PuckR + MalletR) continue; var n = dist > 1e-5f ? d / dist : new Vector2(0, i == 0 ? 1 : -1);
@@ -40,7 +42,7 @@ namespace EverythingWorld.Activities
                 if (inMouth) { if (Mathf.Abs(puck.y) > L / 2 + PuckR) { var scorer = puck.y > 0f ? 0 : 1; score[scorer]++; Serve(1 - scorer); return scorer; } }
                 else if (puck.y * pv.y > 0f) { puck.y = Mathf.Sign(puck.y) * (L / 2 - PuckR); pv.y = -pv.y * .92f; }
             }
-            sp = pv.magnitude; if (sp > MaxSpeed) pv *= MaxSpeed / sp;
+            sp = pv.magnitude; var cap = Cap; if (sp > cap) pv *= cap / sp;
             return -1;
         }
 

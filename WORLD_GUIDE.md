@@ -910,7 +910,7 @@ Benches with lamps sit between the places. Olivia Rodrigo has a row of purple sc
 - **The Glitter Mile:** strut it.
 - **The Sky Club:** drop a record; climb the staircase of light to the floating balcony.
 
-**Bowling (the land's activity):** a little model lane on a mirrored plinth, a ball return beside it, a sign in lights. Press E on the ball return and you shrink onto the lane: the same lane ten times the size, glitter down both sides, a mirror ball over the pins. A and D move where you stand, the mouse aims, hold the button to swing and let go to bowl; while the ball rolls, A and D curl it. Ten frames, scored the proper way, strikes and spares and all. Everyone bowls at once on their own copy of the lane and sees each other's scores. Bowl 170 or better and the lane's radio can play the whole Everything Playlist (P switches).
+**Bowling (the land's activity):** a little model lane on a mirrored plinth, a ball return beside it, a sign in lights. Press E on the ball return and you shrink onto the lane: the same lane ten times the size, glitter down both sides, a mirror ball over the pins. A and D move where you stand, the mouse aims, hold the button to swing and let go to bowl; while the ball rolls, A and D curl it. Ten frames, scored the proper way, strikes and spares and all. Everyone bowls at once on their own copy of the lane and sees each other's scores. Your line sways and you swing by pushing the mouse forward, as in golf, so each ball has to be timed. Bowl 180 or better and the lane's radio can play the whole Everything Playlist (P switches).
 
 ### The Latin Coast
 *22 songs · 16 artists · 0.54 km² · built in Unity*
@@ -1014,7 +1014,7 @@ Warm, humid, rhythmic. River country, smoky towns and coastline.
 - **The bridge:** stone, with a lamp at each corner and the saxophonist leaning on the parapet. Stop and listen.
 - **Lamp Street:** the houses up the hill, and people waiting in doorways.
 - **The temple:** above the rain. The view back down over the town.
-- **The Side Pocket (pool, the land's activity):** an open-sided hall near the square: iron posts, a flat dark roof, white neon, a pool table under a three-shade lamp, stools to watch from. Press E at the cue rack and you shrink onto the table: the same table thirty times the size, in a great dark room under its lamp. The camera circles the cue ball; a line shows what it will meet and where that ball will go; hold the button to swing, let go to play. Alone, clear the table with the black last in as few shots as you can. With friends it is eight-ball in two sides, taken in the order people came to the table. The real table in the hall shows the same balls, so anyone beside it can watch. Beat a friend, or clear the table alone in 30 shots or fewer, and the table's radio can play the whole Everything Playlist (P switches).
+- **The Side Pocket (pool, the land's activity):** an open-sided hall near the square: iron posts, a flat dark roof, white neon, a pool table under a three-shade lamp, stools to watch from. Press E at the cue rack and you shrink onto the table: the same table thirty times the size, in a great dark room under its lamp. The camera circles the cue ball; a line shows what it will meet and where that ball will go; hold the button to swing, let go to play. Alone, clear the table with the black last in as few shots as you can. With friends it is eight-ball in two sides, taken in the order people came to the table. The real table in the hall shows the same balls, so anyone beside it can watch. Beat a friend, or clear the table alone in 24 shots or fewer, and the table's radio can play the whole Everything Playlist (P switches).
 
 ### The Funk Tropics
 *30 songs · 19 artists · 0.65 km² · built in Unity*
@@ -1317,7 +1317,7 @@ Theatrical islands, closest to the hub.
 
 **Air hockey (the land's activity):** a table on a checkered pad near the Arcade, a lamp at each corner. Press E at the coin post and you shrink onto the table: the same table thirty times the size, glowing over a dark floor. Move the mouse to move your mallet; first to seven. Alone, the far mallet plays itself; the first friend to join takes it over, and anyone after that watches. The real table shows the same puck and mallets. Win a game and the table's radio can play the whole Everything Playlist (P switches).
 
-**BRICKS (a cabinet you can really play):** on the air hockey pad stands an arcade cabinet. Press E and its screen fills yours: our own bat, ball and wall of bricks. Move the mouse to move the bat, click to serve; three lives; each wall you clear brings the next one lower and the ball faster. Friends at the cabinet see each other's scores. Score 5,000 and the cabinet's radio can play the whole Everything Playlist (P switches).
+**BRICKS (a cabinet you can really play):** on the air hockey pad stands an arcade cabinet. Press E and its screen fills yours: our own bat, ball and wall of bricks. Move the mouse to move the bat, click to serve; three lives; each wall you clear brings the next one lower and the ball faster. Friends at the cabinet see each other's scores. The ball quickens off the bat, the top rows are armoured, and some bricks drop capsules to catch (three balls, a wide bat, a life). Score 8,000 and the cabinet's radio can play the whole Everything Playlist (P switches).
 
 ---
 

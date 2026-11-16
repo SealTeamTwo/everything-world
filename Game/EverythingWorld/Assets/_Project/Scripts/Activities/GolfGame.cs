@@ -352,20 +352,20 @@ namespace EverythingWorld.Activities
             var vs = total - parSoFar; var left = Mathf.Max(0, Mathf.CeilToInt(HoleSeconds - (Time.time - holeStarted)));
             GUI.Box(new Rect(12, 12, 470, 34), $"  Hole {hole + 1}/{course.holes.Length}  ·  {gh.name}  ·  par {gh.par}  ·  strokes {strokes}", box);
             GUI.Box(new Rect(12, 50, 470, 30), $"  Round {(parSoFar == 0 ? "just started" : vs == 0 ? "level par" : vs < 0 ? $"{-vs} under par" : $"{vs} over par")}" + (timed && (phase == Phase.Aim || phase == Phase.Roll) ? $"  ·  {left} s left" : "") + (Everything ? "  ·  Everything Playlist" : ""), box);
-            if (Time.time < bannerUntil && banner.Length > 0) { var h = banner.Contains("\n") ? 92f : 54f; GUI.Box(new Rect(Screen.width / 2f - 330, 96, 660, h), banner, big2); }
+            if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
 
             if (phase == Phase.Aim)
             {
                 var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small);
                 if (charging) { var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
-                GUI.Box(new Rect(Screen.width / 2f - 330, Screen.height - 66, 660, 28), charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go to putt  ·  pull back to ease off") : "Aim with the mouse  ·  hold click and push forward to swing  ·  scroll to zoom  ·  Tab scores  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small);
+                Activity.Hint(Screen.height - 66, charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go to putt  ·  pull back to ease off") : "Aim with the mouse  ·  hold click and push forward to swing  ·  scroll to zoom  ·  Tab scores  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small);
             }
             else if (phase == Phase.HoleDone)
             {
                 var waiting = 0; foreach (var o in others.Values) if (StillOn(o)) waiting++;
-                if (waiting > 0) GUI.Box(new Rect(Screen.width / 2f - 260, Screen.height - 66, 520, 28), (waiting == 1 ? "Waiting for one more ball" : $"Waiting for {waiting} more balls") + "  ·  click to watch", small);
+                if (waiting > 0) Activity.Hint(Screen.height - 66, (waiting == 1 ? "Waiting for one more ball" : $"Waiting for {waiting} more balls") + "  ·  click to watch", small);
             }
-            else if (phase == Phase.RoundDone) GUI.Box(new Rect(Screen.width / 2f - 260, Screen.height - 66, 520, 28), "Enter  Play again   ·   hold X  Leave the course", small);
+            else if (phase == Phase.RoundDone) Activity.Hint(Screen.height - 66, "Enter  Play again   ·   hold X  Leave the course", small);
 
             var kb = Keyboard.current;
             if (phase == Phase.HoleDone || phase == Phase.RoundDone || (kb != null && kb.tabKey.isPressed)) Card();

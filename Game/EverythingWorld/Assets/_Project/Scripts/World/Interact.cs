@@ -26,7 +26,8 @@ namespace EverythingWorld.World
         public override string Prompt => verb;
         public override void Use(PlayerInteractor who) => who.SitOn(this);
         /// Where your feet go when you stand up: a step in front of the seat.
-        public Vector3 StandPoint => transform.position + facing * .9f;
+        public Vector3 StandPoint => transform.position + facing * standOut;
+        public float standOut = .9f;   // how far in front of the seat you stand up (negative: behind it, for a stool that faces a machine or a wall)
     }
 
     public class Toy : Interactable

@@ -19,7 +19,7 @@ namespace EverythingWorld.Activities
     /// included), and you're out.
     public static class BikeSim
     {
-        public const float Half = 90f, Speed = 24f, Reach = .45f;
+        public const float Half = 90f, Speed = 31f, Reach = .45f;
 
         /// The start places, round the arena, each heading for the middle.
         public static void Spawn(Bike b, int slot)

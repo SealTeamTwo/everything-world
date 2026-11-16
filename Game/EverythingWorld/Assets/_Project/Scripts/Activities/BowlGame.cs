@@ -22,12 +22,17 @@ namespace EverythingWorld.Activities
     /// - A and D move where you stand, the mouse aims, hold the button to swing and let go to bowl. While the ball
     ///   rolls, A and D curl it. Ten frames, scored the proper way.
     /// - Everyone bowls at once on their own copy of the lane and sees each other's scores.
-    /// - Bowl 170 or better and the lane's radio can play the whole Everything Playlist (P switches).
+    /// - Bowl 180 or better and the lane's radio can play the whole Everything Playlist (P switches).
     public class BowlGame : MonoBehaviour
     {
         public static BowlGame Active { get; private set; }
         public Transform big; public float bigScale = 10f; public int landScene; public string id = "glit"; public string landName = "the Glitterlands"; public TextMesh recordText;
-        const string Channel = "bowl"; const int Bar = 170;
+        const string Channel = "bowl"; const int Bar = 180;
+        const float SwingTravel = 30f, MinPower = .03f;   // the swing, as in golf: hold click and push the mouse forward for power; let go below MinPower and nothing is bowled
+        /// Your arm is never quite still: the line you bowl along sways a little either side of where you aim, quicker
+        /// in the later frames, so a strike has to be timed and the same ball can't just be bowled again.
+        float Sway => (.75f + card.At.Item1 * .04f) * Mathf.Sin((Time.time - swayFrom) * (2.1f + card.At.Item1 * .09f));
+        float swayFrom;
 
         readonly BowlSim sim = new BowlSim(); BowlCard card = new BowlCard(); Transform ball, aimBar; Transform[] pins; float[] tip = new float[10];
         bool playing, charging, wasLocked; float power, chargeT, standX, aimDeg, shrinkT = 9f, outT = -1f, leaveHeld, nextSend, acc, settle = -1f; int before; Vector3 camAt; bool camSet; string banner = ""; float bannerUntil;
@@ -88,7 +93,7 @@ namespace EverythingWorld.Activities
                 }
                 var a = GameObject.CreatePrimitive(PrimitiveType.Cube); Destroy(a.GetComponent<Collider>()); a.name = "Aim"; a.transform.SetParent(big, false); a.GetComponent<MeshRenderer>().sharedMaterial = WorldMaterials.Glow(Color.white, 2f); aimBar = a.transform;
             }
-            Say("A and D move you, the mouse aims. Hold click to swing, let go to bowl.\nWhile it rolls, A and D curl it.", 8f);
+            Say("A and D move you, the mouse aims. Your line sways: hold click, push the mouse forward for power, and let go as it crosses your mark.\nWhile it rolls, A and D curl it.", 10f);
         }
 
         void Quit()
@@ -122,9 +127,14 @@ namespace EverythingWorld.Activities
                 else if (settle < 0f && !card.Done)
                 {
                     standX = Mathf.Clamp(standX + side * .35f * dt, -BowlSim.W / 2 + BowlSim.BallR, BowlSim.W / 2 - BowlSim.BallR); aimDeg = Mathf.Clamp(aimDeg + mouse.delta.ReadValue().x * walker.mouseSensitivity * .06f, -5f, 5f);
-                    if (!charging && mouse.leftButton.wasPressedThisFrame) { charging = true; chargeT = 0f; }
-                    if (charging) { chargeT += dt; power = Mathf.PingPong(chargeT * .85f, 1f); if (mouse.rightButton.wasPressedThisFrame) charging = false; }
-                    if (charging && !mouse.leftButton.isPressed) { charging = false; before = sim.Standing(); sim.Bowl(standX, aimDeg, Mathf.Lerp(4.5f, 9f, power)); acc = 0f; }
+                    if (!charging && mouse.leftButton.wasPressedThisFrame) { charging = true; power = 0f; }
+                    if (charging) { power = Mathf.Clamp01(power + mouse.delta.ReadValue().y * walker.mouseSensitivity / SwingTravel); if (mouse.rightButton.wasPressedThisFrame || kb.qKey.wasPressedThisFrame) charging = false; }
+                    if (charging && !mouse.leftButton.isPressed && power < MinPower) charging = false;   // let go with nothing wound up: nothing bowled
+                    if (charging && !mouse.leftButton.isPressed)
+                    {
+                        // a harder ball is a touch wilder
+                        charging = false; before = sim.Standing(); sim.Bowl(standX, aimDeg + Sway + Random.Range(-.12f, .12f) * (1f + power), Mathf.Lerp(4.5f, 9.5f, power)); acc = 0f;
+                    }
                 }
                 if (card.Done && (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)) { card = new BowlCard(); sim.Rack(); settle = -1f; }
             }
@@ -141,6 +151,7 @@ namespace EverythingWorld.Activities
                     settle = -1f; var got = before - sim.Standing(); var (f, b) = card.At; card.rolls.Add(got);
                     Say(got == 10 && b == 0 ? "Strike!" : sim.Standing() == 0 ? "Spare!" : sim.gutter && got == 0 ? "Gutter" : got.ToString(), 2f);
                     if (card.Done) Over(); else if (card.FreshRack) sim.Rack(); else sim.Sweep();
+                    standX = 0f; aimDeg = 0f; swayFrom = Time.time - Random.Range(0f, 3f);   // back to the middle of the approach for every ball
                 }
             }
             if (Time.time >= nextSend) { nextSend = Time.time + .5f; Send(); }
@@ -164,7 +175,7 @@ namespace EverythingWorld.Activities
                 var d = sim.pv[i].sqrMagnitude > .01f ? Mathf.Atan2(sim.pv[i].x, sim.pv[i].y) * Mathf.Rad2Deg : 0f; pins[i].localRotation = Quaternion.Euler(0, d, 0) * Quaternion.Euler(tip[i], 0, 0);
             }
             var aiming = !sim.rolling && settle < 0f && !card.Done; aimBar.gameObject.SetActive(aiming);
-            if (aiming) { var rot = Quaternion.Euler(0, aimDeg, 0); var len = (charging ? 2f + power * 5f : 4f) * s; aimBar.localRotation = rot; aimBar.localPosition = new Vector3(standX, .01f, 0) * s + rot * Vector3.forward * (len / 2f + .2f * s); aimBar.localScale = new Vector3(.012f * s, .006f * s, len); }
+            if (aiming) { var rot = Quaternion.Euler(0, aimDeg + Sway, 0); var len = (charging ? 2f + power * 5f : 4f) * s; aimBar.localRotation = rot; aimBar.localPosition = new Vector3(standX, .01f, 0) * s + rot * Vector3.forward * (len / 2f + .2f * s); aimBar.localScale = new Vector3(.012f * s, .006f * s, len); }
             // behind the ball as you aim; following it down, then held looking at the pins
             var z = sim.rolling || settle >= 0f ? Mathf.Min(sim.ball.y, BowlSim.L - 3.2f) : 0f; var x = aiming ? standX : sim.ball.x * .4f;
             var at = big.TransformPoint(new Vector3(x, .75f, z - 1.9f) * s); var look = big.TransformPoint(new Vector3(x * .5f, .1f, z + 3.2f) * s);
@@ -219,9 +230,9 @@ namespace EverythingWorld.Activities
             GUI.Box(new Rect(12, 12, 470, 34), card.Done ? $"  Game over  ·  {card.Total}" : $"  Frame {f + 1} of 10, ball {b + 1}  ·  score {card.Total}" + (Best > 0 ? $"  ·  your best {Best}" : ""), box);
             GUI.Box(new Rect(12, 50, 470, 30), "  " + rolls, box); var y = 84f; if (Everything) { GUI.Box(new Rect(12, y, 240, 30), "  Everything Playlist", box); y += 34f; }
             foreach (var o in others.Values) if (Time.time - o.seen < 4f) { GUI.Box(new Rect(12, y, 330, 28), $"  {o.name}: {o.total}  (frame {o.frame + 1})", box); y += 30f; }
-            if (Time.time < bannerUntil && banner.Length > 0) GUI.Box(new Rect(Screen.width / 2f - 380, 96, 760, banner.Contains("\n") ? 92f : 54f), banner, big2);
+            if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
             if (charging) { var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small2); var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
-            GUI.Box(new Rect(Screen.width / 2f - 400, Screen.height - 66, 800, 28), card.Done ? "Enter  New game   ·   hold X  Leave the lane" : sim.rolling ? "A and D curl the ball" : "A and D move  ·  mouse aims  ·  hold click to swing, let go to bowl  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
+            Activity.Hint(Screen.height - 66, card.Done ? "Enter  New game   ·   hold X  Leave the lane" : sim.rolling ? "A and D curl the ball" : (charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go as the line crosses your mark  ·  pull back to ease off") : "A and D move  ·  mouse aims  ·  hold click and push forward to swing  ·  hold X to leave") + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
     }
 }

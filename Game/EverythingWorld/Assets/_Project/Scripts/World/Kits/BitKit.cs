@@ -299,7 +299,7 @@ namespace EverythingWorld.World
             mk.Box(screenM, g + up * 1.5f * s + face * .5f * s, new Vector3(.7f, .55f, .02f) * s, rot * Quaternion.Euler(-12f, 0, 0)); mk.Box(dark, g + up * 1.05f * s + face * .5f * s, new Vector3(.9f, .1f, .3f) * s, rot);
             mk.Prism(dark, g + up * 1.1f * s + face * .5f * s - side * .2f * s, up, .02f * s, .16f * s, 4); mk.Blob(GlowM(new Color(1f, .2f, .2f), 1.4f), g + up * 1.28f * s + face * .5f * s - side * .2f * s, Vector3.one * .05f * s, new System.Random(n), 0f); for (var k = 0; k < 3; k++) mk.Prism(GlowM(CabCols[(n + k + 1) % CabCols.Length], 1.4f), g + up * 1.1f * s + face * .5f * s + side * (.05f + k * .1f) * s, up, .03f * s, .03f * s, 6);
             solid.Box(col, g + up * 1f * s, new Vector3(.9f, 2f, .9f) * s, rot);
-            if (s <= 1f) { var st = g + face * 1f; mk.Box(iron, st + up * .3f, new Vector3(.1f, .6f, .1f), rot); mk.Box(Paint(new Color(.9f, .2f, .3f)), st + up * .64f, new Vector3(.44f, .1f, .44f), rot); Interact.Seat(tlife.transform, st + up * .68f, -face, "Play a game").seatHeight = .65f; }
+            if (s <= 1f) { var st = g + face * 1f; mk.Box(iron, st + up * .3f, new Vector3(.1f, .6f, .1f), rot); mk.Box(Paint(new Color(.9f, .2f, .3f)), st + up * .64f, new Vector3(.44f, .1f, .44f), rot); var seat = Interact.Seat(tlife.transform, st + up * .68f, -face, "Play a game"); seat.seatHeight = .65f; seat.standOut = -.9f; }   // (you face the machine, so you get up behind the stool, not inside the cabinet)
         }
 
         Vector3 NearestWalk(Vector3 p) { var best = center; var bd = float.MaxValue; foreach (var (q, _) in walkPoints) { var d = (q - p).sqrMagnitude; if (d < bd) { bd = d; best = q; } } return best; }

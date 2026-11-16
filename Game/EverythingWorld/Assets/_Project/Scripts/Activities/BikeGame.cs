@@ -39,7 +39,7 @@ namespace EverythingWorld.Activities
         readonly Dictionary<ulong, Remote> others = new Dictionary<ulong, Remote>();
         // drawing: a pool of glowing boxes for the walls of light, and one for each bike
         readonly List<Transform> walls = new List<Transform>(); readonly List<Transform> bodies = new List<Transform>(); readonly Dictionary<Color, Material> glows = new Dictionary<Color, Material>(); int wallsUsed, bodiesUsed;
-        static readonly Color[] RobotColours = { new Color(1f, .2f, .7f), new Color(1f, .74f, .26f), new Color(.6f, .4f, 1f) };
+        static readonly Color[] RobotColours = { new Color(1f, .05f, .55f), new Color(1f, .6f, 0f), new Color(.4f, .12f, 1f) };
 
         string Key(string what) => $"EW_Bikes_{id}_{what}";
         int Wins { get => PlayerPrefs.GetInt(Key("wins"), 0); set => PlayerPrefs.SetInt(Key("wins"), value); }
@@ -132,7 +132,9 @@ namespace EverythingWorld.Activities
         }
 
         // ---------------------------------------------------------------- drawing
-        Material Glow(Color c) { if (!glows.TryGetValue(c, out var m)) glows[c] = m = new Material(WorldMaterials.Glow(c, 2.2f)) { name = "Light wall" }; return m; }
+        /// A colour at full strength: bloom turns a pale or over-bright wall white, so each is pushed to its purest and kept just bright enough to glow.
+        static Color Rich(Color c) { Color.RGBToHSV(c, out var h, out var sa, out var v); return Color.HSVToRGB(h, Mathf.Max(sa, .92f), 1f); }
+        Material Glow(Color c) { if (!glows.TryGetValue(c, out var m)) glows[c] = m = new Material(WorldMaterials.Glow(Rich(c), 1.05f)) { name = "Light wall" }; return m; }
         Transform Box(List<Transform> pool, ref int used)
         {
             if (used == pool.Count) { var g = GameObject.CreatePrimitive(PrimitiveType.Cube); Destroy(g.GetComponent<Collider>()); g.name = "Light"; g.transform.SetParent(big, false); g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; pool.Add(g.transform); }
@@ -152,7 +154,7 @@ namespace EverythingWorld.Activities
                     t.localScale = Mathf.Abs(q.x - p.x) > Mathf.Abs(q.y - p.y) ? new Vector3(len + .2f, 1.6f, .2f) : new Vector3(.2f, 1.6f, len + .2f); t.GetComponent<MeshRenderer>().sharedMaterial = m;
                 }
                 if (!b.alive) return; var body = Box(bodies, ref bodiesUsed); body.localPosition = new Vector3(b.at.x, .55f, b.at.y) + new Vector3(b.Heading.x, 0, b.Heading.y) * .6f; body.localRotation = Quaternion.Euler(0, b.dir * 90f, 0); body.localScale = new Vector3(.7f, .9f, 2.2f);
-                body.GetComponent<MeshRenderer>().sharedMaterial = Glow(Color.Lerp(c, Color.white, .6f));
+                body.GetComponent<MeshRenderer>().sharedMaterial = Glow(Color.Lerp(c, Color.white, .2f));
             }
             if (inRound) { One(mine, PlayerOrb.Local != null ? PlayerOrb.Local.Color : new Color(.3f, .9f, 1f)); for (var i = 0; i < robots.Count; i++) One(robots[i], RobotColours[i % RobotColours.Length]); }
             foreach (var o in others.Values) if (Time.time - o.seen < 3f && o.playing && o.round == round) One(o.bike, o.color);
@@ -231,8 +233,8 @@ namespace EverythingWorld.Activities
             if (Everything) GUI.Box(new Rect(12, 50, 240, 30), "  Everything Playlist", box);
             if (inRound && into < CountIn) GUI.Box(new Rect(Screen.width / 2f - 120, Screen.height / 2f - 130, 240, 70), Mathf.CeilToInt((float)(CountIn - into)).ToString(), big2);
             else if (!inRound || into >= RideEnds) GUI.Box(new Rect(Screen.width / 2f - 200, 150, 400, 44), $"Next round in {Mathf.CeilToInt((float)(Period - into))}", small2);
-            if (Time.time < bannerUntil && banner.Length > 0) GUI.Box(new Rect(Screen.width / 2f - 360, 96, 720, banner.Contains("\n") ? 100f : 54f), banner, big2);
-            GUI.Box(new Rect(Screen.width / 2f - 330, Screen.height - 66, 660, 28), "A and D (or arrows, or the mouse buttons) turn  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
+            if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
+            Activity.Hint(Screen.height - 66, "A and D (or arrows, or the mouse buttons) turn  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
     }
 }

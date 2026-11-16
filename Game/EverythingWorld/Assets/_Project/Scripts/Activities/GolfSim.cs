@@ -230,7 +230,7 @@ namespace EverythingWorld.Activities
                 {
                     var w = hole.walls[i]; Vector2 a = w.a, b = w.b; var up = 0f; var wv = Vector2.zero; var m = w.mover;
                     if (m >= 0) { var mv = hole.movers[m]; a = GolfMover.Place(mv.pivot, offs[m], angs[m], w.a); b = GolfMover.Place(mv.pivot, offs[m], angs[m], w.b); up = ups[m]; }
-                    if (p.y > w.Top + up - .04f || p.y + 2f * R < w.Bottom + up) continue;
+                    if (!endless && (p.y > w.Top + up - .04f || p.y + 2f * R < w.Bottom + up)) continue;   // (on the pinball table the walls are as good as glass to the ceiling: a ball in the air cannot clear them)
                     var d = b - a; var len2 = d.sqrMagnitude; var t = len2 < 1e-8f ? 0f : Mathf.Clamp01(Vector2.Dot(q - a, d) / len2);
                     var c = a + d * t; var off = q - c; var dist = off.magnitude; if (dist >= R) continue;
                     var n = dist > 1e-5f ? off / dist : (hv.sqrMagnitude > 1e-6f ? -hv.normalized : Vector2.up);

@@ -64,7 +64,8 @@ namespace EverythingWorld.Activities
             big.gameObject.SetActive(true); Tune(); playing = true; camSet = false; play ??= new PinballPlay(); play.NewGame();
             if (ball == null)
             {
-                ball = Sphere("Pinball", GolfHole.BallR * 2f, big, out ballM);
+                ball = Sphere("Pinball", GolfHole.BallR * 2.6f, big, out ballM);   // (drawn a little big, with a light of its own, so it is easy to find on the dark table)
+                { var bl = new GameObject("Ball light").AddComponent<Light>(); bl.transform.SetParent(ball, false); bl.transform.localPosition = Vector3.up * 2f; bl.type = LightType.Point; bl.range = 6f; bl.intensity = 2.2f; bl.color = new Color(1f, .95f, .8f); bl.shadows = LightShadows.None; }
                 var view = big.GetComponent<GolfCourseView>(); flippers = new[] { view.movers[0], view.movers[1] };
             }
             var c = PlayerOrb.Local != null ? PlayerOrb.Local.Color : Color.white; ballM.SetColor("_BaseColor", c); ballM.SetColor("_EmissionColor", c * 1.3f);
@@ -126,7 +127,10 @@ namespace EverythingWorld.Activities
             var table = play.table; var p = play.sim.p + Vector3.up * GolfHole.BallR; ball.localPosition = p; ball.gameObject.SetActive(play.ballsLeft > 0);
             for (var i = 0; i < 2; i++) { var m = table.movers[i]; flippers[i].localPosition = new Vector3(m.pivot.x, m.y, m.pivot.y); flippers[i].localRotation = Quaternion.Euler(0, -m.manualAngle, 0); }
             // the camera rides behind and above the ball, looking up the table; it keeps the flippers in sight when the ball is low
-            var follow = new Vector3(Mathf.Clamp(p.x * .6f, -5f, 5f), p.y, Mathf.Max(p.z, 7f)); var at = big.TransformPoint(follow + new Vector3(0, 15f, -15f)); var look = big.TransformPoint(follow + new Vector3(0, 0, 5f));
+            // (waiting in the launch lane, it looks straight at the ball, close, so you can see where you are)
+            var waiting = !play.inPlay;
+            var follow = waiting ? new Vector3(p.x * .8f, p.y, p.z + 2f) : new Vector3(Mathf.Clamp(p.x * .7f, -6.5f, 6.5f), p.y, Mathf.Max(p.z, 6f));
+            var at = big.TransformPoint(follow + (waiting ? new Vector3(0, 8f, -9f) : new Vector3(0, 11.5f, -11f))); var look = big.TransformPoint(follow + new Vector3(0, 0, waiting ? 1.5f : 4f));
             if (!camSet) { camAt = at; camSet = true; } camAt = Vector3.Lerp(camAt, at, 1f - Mathf.Exp(-6f * Time.deltaTime));
             var dir = (look - at).normalized; var yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg; var pitch = -Mathf.Asin(dir.y) * Mathf.Rad2Deg; var body = Quaternion.Euler(0, yaw, 0); var pivot = walker.cameraPivot;
             walker.transform.SetPositionAndRotation(camAt - body * pivot.localPosition, body); pivot.localEulerAngles = new Vector3(pitch, 0, 0);
@@ -196,9 +200,9 @@ namespace EverythingWorld.Activities
             var y = 50f; if (Everything) { GUI.Box(new Rect(12, y, 240, 30), "  Everything Playlist", box); y += 34f; }
             foreach (var o in others.Values) if (Time.time - o.seen < 3f) { GUI.Box(new Rect(12, y, 330, 28), $"  {o.name}: {o.score:N0}", box); y += 30f; }
             if (Time.time - play.lastHitAt < 1.2f && play.lastHit.Length > 0 && Time.time > bannerUntil) GUI.Box(new Rect(Screen.width / 2f - 150, 96, 300, 40), play.lastHit, small2);
-            if (Time.time < bannerUntil && banner.Length > 0) GUI.Box(new Rect(Screen.width / 2f - 380, 96, 760, banner.Contains("\n") ? 92f : 54f), banner, big2);
+            if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
             if (charging) { var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small2); var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
-            GUI.Box(new Rect(Screen.width / 2f - 380, Screen.height - 66, 760, 28), play.ballsLeft <= 0 ? "Enter  New game   ·   hold X  Leave the table" : !play.inPlay ? "Hold Space and let go to launch  ·  hold X to leave" : "A and D (or the mouse buttons) work the flippers  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
+            Activity.Hint(Screen.height - 66, play.ballsLeft <= 0 ? "Enter  New game   ·   hold X  Leave the table" : !play.inPlay ? "Hold Space and let go to launch  ·  hold X to leave" : "A and D (or the mouse buttons) work the flippers  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
     }
 }

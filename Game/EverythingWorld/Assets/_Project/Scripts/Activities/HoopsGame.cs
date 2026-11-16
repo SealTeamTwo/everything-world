@@ -292,9 +292,9 @@ namespace EverythingWorld.Activities
             var list = ""; for (var i = 0; i < hoops.Count; i++) list += (i > 0 ? "   " : "") + ((Made & (1 << i)) != 0 ? "● " : "○ ") + hoops[i].name;
             GUI.Box(new Rect(12, 12, 860, 34), "  " + list, box);
             if (Everything) GUI.Box(new Rect(12, 50, 240, 30), "  Everything Playlist", box);
-            if (Time.time < bannerUntil && banner.Length > 0) GUI.Box(new Rect(Screen.width / 2f - 360, 96, 720, banner.Contains("\n") ? 92f : 54f), banner, big2);
+            if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
             if (charging) { var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small2); var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
-            GUI.Box(new Rect(Screen.width / 2f - 380, Screen.height - 66, 760, 28), held == null ? "Click a ball to pick it up  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : "") : charging ? "Let go to shoot  ·  right click to cancel" : "Hold click to wind up a shot  ·  E put it down  ·  hold X to leave", small2);
+            Activity.Hint(Screen.height - 66, held == null ? "Click a ball to pick it up  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : "") : charging ? "Let go to shoot  ·  right click to cancel" : "Hold click to wind up a shot  ·  E put it down  ·  hold X to leave", small2);
         }
     }
 }

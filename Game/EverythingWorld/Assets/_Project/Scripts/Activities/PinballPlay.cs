@@ -11,7 +11,7 @@ namespace EverythingWorld.Activities
         public readonly GolfHole table; public readonly GolfSim sim;
         public int score, ballsLeft = 3; public bool inPlay; public string lastHit = ""; public float lastHitAt;
         const float LRest = -25f, LUp = 32f, RRest = 205f, RUp = 148f, Swing = 520f;
-        double clock, launched; float still, time; readonly System.Random rng = new System.Random(11);
+        bool fellOff; double clock, launched; float still, time; readonly System.Random rng = new System.Random(11);
         public System.Action<string, int> onScore;
 
         public PinballPlay()
@@ -23,6 +23,7 @@ namespace EverythingWorld.Activities
                 {
                     case GolfEvent.Kick: Add("Bumper", 100); break; case GolfEvent.Boost: Add("The fast lane", 50); break; case GolfEvent.Spring: Add("Boing", 250); break;
                     case GolfEvent.Pipe: Add("Down the pipe", 250); break; case GolfEvent.Bounce: score += 5; break;
+                    case GolfEvent.Splash: fellOff = p.y < .6f; break;   // (the drain is up on the table; anything lower fell off it)
                 }
             };
             NewGame();
@@ -47,6 +48,7 @@ namespace EverythingWorld.Activities
                 rm.manualPrev = rm.manualAngle; rm.manualAngle = Mathf.MoveTowards(rm.manualAngle, right ? RUp : RRest, Swing * GolfSim.Step);
                 if (!inPlay) continue;
                 sim.Advance(clock); clock += GolfSim.Step;
+                if (!sim.moving && fellOff) { fellOff = false; Ready(); lastHit = "Off the table: have it back"; lastHitAt = time; break; }   // not your fault: the same ball again
                 if (!sim.moving) { ballsLeft--; inPlay = false; lastHit = ballsLeft > 0 ? "Drained" : "Game over"; lastHitAt = time; break; }   // (the drain puts the ball back and stops it)
                 // a ball that falls back down the launch lane is simply launched again
                 if (sim.p.x > 9.4f && sim.p.z < 4.6f && sim.v.magnitude < .6f && clock - launched > 2.0) { Ready(); break; }

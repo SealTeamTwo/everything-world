@@ -223,8 +223,8 @@ namespace EverythingWorld.Activities
             var y = 50f; if (Everything) { GUI.Box(new Rect(12, y, 240, 30), "  Everything Playlist", box); y += 34f; }
             foreach (var o in others.Values) if (Time.time - o.seen < 3f) { GUI.Box(new Rect(12, y, 330, 28), $"  {o.name}: {o.score:N0}", box); y += 30f; }
             if (sim.saidT > 0f && sim.lastTrick.Length > 0 && Time.time > bannerUntil) GUI.Box(new Rect(Screen.width / 2f - 200, 96, 400, 44), sim.lastPoints > 0 ? $"{sim.lastTrick}   +{sim.lastPoints:N0}" : sim.lastTrick, small2);
-            if (Time.time < bannerUntil && banner.Length > 0) GUI.Box(new Rect(Screen.width / 2f - 400, 96, 800, banner.Contains("\n") ? 92f : 54f), banner, big2);
-            GUI.Box(new Rect(Screen.width / 2f - 420, Screen.height - 66, 840, 28), "W push  ·  S brake  ·  A D steer and spin  ·  Space jump  ·  Shift grab  ·  " + (runLeft < 0f ? "Enter one-minute run  ·  " : "") + "hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
+            if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
+            Activity.Hint(Screen.height - 66, "W push  ·  S brake  ·  A D steer and spin  ·  Space jump  ·  Shift grab  ·  " + (runLeft < 0f ? "Enter one-minute run  ·  " : "") + "hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
     }
 }

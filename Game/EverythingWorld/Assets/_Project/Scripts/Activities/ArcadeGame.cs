@@ -20,12 +20,12 @@ namespace EverythingWorld.Activities
     /// - Press E at the cabinet: its screen fills yours. Move the mouse to move the bat, click to serve. Three lives;
     ///   each wall you clear brings the next one lower and the ball faster.
     /// - Friends at their own cabinets anywhere in the Isles see each other's scores.
-    /// - Score 5,000 and the cabinet's radio can play the whole Everything Playlist (P switches).
+    /// - Score 8,000 and the cabinet's radio can play the whole Everything Playlist (P switches).
     public class ArcadeGame : MonoBehaviour
     {
         public static ArcadeGame Active { get; private set; }
         public int landScene; public string id = "bricks"; public string landName = "the Game Isles"; public TextMesh recordText;
-        const string Channel = "arcade"; const int Bar = 5000;
+        const string Channel = "arcade"; const int Bar = 8000;
 
         readonly BricksPlay play = new BricksPlay(); float target = .5f, leaveHeld, nextSend; bool wasLocked, over; string banner = ""; float bannerUntil;
         SimplePlayerController walker; PlayerInteractor hands; Vector3 backPos; Quaternion backRot;
@@ -49,7 +49,7 @@ namespace EverythingWorld.Activities
             if (Activity.Any || who == null) return;
             walker = who.GetComponent<SimplePlayerController>(); if (walker == null) return;
             hands = who; backPos = walker.transform.position; backRot = walker.transform.rotation; Active = this; walker.Take(); hands.enabled = false; play.NewGame(); over = false; target = .5f; Tune();
-            Say("Move the mouse to move the bat. Click to serve.", 4f);
+            Say("Move the mouse to move the bat. Click to serve.\nCatch the capsules: M three balls, W wide bat, + a life.", 6f);
         }
 
         void Quit()
@@ -109,7 +109,7 @@ namespace EverythingWorld.Activities
         public void DemoEnd() { if (Active == this) Quit(); }
 
         // ---------------------------------------------------------------- the screen
-        GUIStyle box, big2, small2; static Texture2D white;
+        GUIStyle box, big2, small2, capStyle; static Texture2D white;
 
         void OnGUI()
         {
@@ -121,16 +121,26 @@ namespace EverythingWorld.Activities
             {
                 GUI.color = new Color(0, 0, 0, .55f); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white);
                 GUI.color = new Color(.25f, .9f, 1f); GUI.DrawTexture(new Rect(x0 - 6, y0 - 6, w + 12, h + 12), white); GUI.color = new Color(.03f, .03f, .09f); GUI.DrawTexture(new Rect(x0, y0, w, h), white);
-                for (var r = 0; r < BricksPlay.Rows; r++) for (var c = 0; c < BricksPlay.Cols; c++) if (play.brick[r * BricksPlay.Cols + c]) { var b = play.BrickRect(c, r); Fill(b.x, b.y, b.width, b.height, RowColours[r % RowColours.Length]); }
-                Fill(play.batX - BricksPlay.BatW / 2f, BricksPlay.BatY - .012f, BricksPlay.BatW, .024f, Color.white);
-                Fill(play.ball.x - BricksPlay.BallR, play.ball.y - BricksPlay.BallR, BricksPlay.BallR * 2f, BricksPlay.BallR * 2f, new Color(1f, .95f, .5f));
+                for (var r = 0; r < BricksPlay.Rows; r++) for (var c = 0; c < BricksPlay.Cols; c++) if (play.Brick(c, r))
+                    {
+                        // an armoured brick is drawn white-edged until its first hit
+                        var b = play.BrickRect(c, r); var col = RowColours[r % RowColours.Length];
+                        if (play.hp[r * BricksPlay.Cols + c] > 1) { Fill(b.x, b.y, b.width, b.height, Color.white); Fill(b.x + .006f, b.y + .006f, b.width - .012f, b.height - .012f, col); } else Fill(b.x, b.y, b.width, b.height, col);
+                    }
+                Fill(play.batX - play.BatW / 2f, BricksPlay.BatY - .012f, play.BatW, .024f, play.wideFor > 0f ? new Color(.4f, 1f, .6f) : Color.white);
+                if (play.balls.Count == 0) Fill(play.ball.x - BricksPlay.BallR, play.ball.y - BricksPlay.BallR, BricksPlay.BallR * 2f, BricksPlay.BallR * 2f, new Color(1f, .95f, .5f));
+                foreach (var b in play.balls) Fill(b.p.x - BricksPlay.BallR, b.p.y - BricksPlay.BallR, BricksPlay.BallR * 2f, BricksPlay.BallR * 2f, new Color(1f, .95f, .5f));
+                foreach (var k in play.capsules) Fill(k.p.x - .028f, k.p.y - .013f, .056f, .026f, k.kind == BricksPlay.Multi ? new Color(1f, .85f, .2f) : k.kind == BricksPlay.Wide ? new Color(.4f, 1f, .6f) : new Color(1f, .4f, .6f));
                 GUI.color = keep;
             }
+            // the letter on each falling capsule
+            capStyle ??= new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 13, fontStyle = FontStyle.Bold, normal = { textColor = Color.black } };
+            foreach (var k in play.capsules) GUI.Label(new Rect(x0 + (k.p.x - .03f) * w, y0 + (BricksPlay.Top - k.p.y - .016f) * w, .06f * w, .032f * w), k.kind == BricksPlay.Multi ? "M" : k.kind == BricksPlay.Wide ? "W" : "+", capStyle);
             GUI.Box(new Rect(12, 12, 470, 34), $"  BRICKS  ·  score {play.score:N0}  ·  lives {Mathf.Max(0, play.lives)}  ·  wall {play.level}" + (Best > 0 ? $"  ·  best {Best:N0}" : ""), box);
             var y = 50f; if (Everything) { GUI.Box(new Rect(12, y, 240, 30), "  Everything Playlist", box); y += 34f; }
             foreach (var o in others.Values) if (Time.time - o.seen < 4f) { GUI.Box(new Rect(12, y, 330, 28), $"  {o.name}: {o.score:N0}", box); y += 30f; }
-            if (Time.time < bannerUntil && banner.Length > 0) GUI.Box(new Rect(Screen.width / 2f - 360, y0 + h * .45f, 720, banner.Contains("\n") ? 92f : 54f), banner, big2);
-            GUI.Box(new Rect(Screen.width / 2f - 330, Screen.height - 40, 660, 28), play.lives <= 0 ? "Click  New game   ·   E  Step away" : !play.served ? "Click to serve  ·  E to step away" : "Move the mouse  ·  E to step away" + (Unlocked ? "  ·  P playlist" : ""), small2);
+            if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, y0 + h * .45f, big2);
+            Activity.Hint(Screen.height - 40, play.lives <= 0 ? "Click  New game   ·   E  Step away" : !play.served ? "Click to serve  ·  E to step away" : "Move the mouse  ·  E to step away" + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
     }
 }

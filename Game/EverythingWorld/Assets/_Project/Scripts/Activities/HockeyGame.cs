@@ -28,7 +28,7 @@ namespace EverythingWorld.Activities
         public static HockeyGame Active { get; private set; }
         public Transform big, small; public float bigScale = 30f; public int landScene; public string id = "bit"; public string landName = "the Game Isles"; public TextMesh recordText;
         const string Channel = "hockey"; const int Target = 7;
-        const float RobotSpeed = 3.4f;   // how fast the table's own mallet moves (yours can go 9): the knob for how hard it is to beat
+        const float RobotSpeed = 2.5f, RobotTop = 3.3f;   // the table's own mallet: slow at the start of a point, quicker as the point goes on (it follows sim.rally)
 
         readonly HockeySim sim = new HockeySim(); Transform[] bigBits, smallBits; bool playing, wasLocked; float shrinkT = 9f, outT = -1f, leaveHeld, nextSend, acc; double joined; int winner = -1;
         Vector2 want; SimplePlayerController walker; PlayerInteractor hands; Vector3 backPos; Quaternion backRot; string banner = ""; float bannerUntil; Vector3 camAt, camLook; bool camSet;
@@ -136,7 +136,7 @@ namespace EverythingWorld.Activities
                 acc += dt; var n = Mathf.Min(60, (int)(acc / HockeySim.Step)); acc -= n * HockeySim.Step;
                 for (var k = 0; k < n; k++)
                 {
-                    sim.Move(0, want, 9f, HockeySim.Step); if (far != null) sim.Move(1, far.mallet, 9f, HockeySim.Step); else sim.Move(1, sim.Robot(1), RobotSpeed, HockeySim.Step);
+                    sim.Move(0, want, 9f, HockeySim.Step); if (far != null) sim.Move(1, far.mallet, 9f, HockeySim.Step); else sim.Move(1, sim.Robot(1), Mathf.Lerp(RobotSpeed, RobotTop, Mathf.Clamp01(sim.rally / 28f)), HockeySim.Step);
                     if (winner >= 0) continue; var scored = sim.Advance(HockeySim.Step);
                     if (scored >= 0) { if (sim.score[scored] >= Target) { winner = scored; Over(); } else Say(scored == 0 ? "Goal!" : "They score", 1.5f); }
                 }
@@ -224,8 +224,8 @@ namespace EverythingWorld.Activities
             var seat = Seat(); var mine = seat == 1 ? 1 : 0; var r = Roster(); var them = r.Count > 1 ? (others.TryGetValue(r[seat == 0 ? 1 : 0].id, out var o) ? o.name : "Friend") : "The table";
             GUI.Box(new Rect(12, 12, 470, 34), seat < 2 ? $"  You {sim.score[mine]}  ·  {them} {sim.score[1 - mine]}  ·  first to {Target}" : $"  {sim.score[0]} - {sim.score[1]}  ·  first to {Target}  (watching)", box);
             if (Everything) GUI.Box(new Rect(12, 50, 240, 30), "  Everything Playlist", box);
-            if (Time.time < bannerUntil && banner.Length > 0) GUI.Box(new Rect(Screen.width / 2f - 330, 96, 660, banner.Contains("\n") ? 92f : 54f), banner, big2);
-            GUI.Box(new Rect(Screen.width / 2f - 330, Screen.height - 66, 660, 28), winner >= 0 && seat == 0 ? "Enter  New game   ·   hold X  Leave the table" : seat < 2 ? "Move the mouse to move your mallet  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : "") : "Hold X to leave", small2);
+            if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
+            Activity.Hint(Screen.height - 66, winner >= 0 && seat == 0 ? "Enter  New game   ·   hold X  Leave the table" : seat < 2 ? "Move the mouse to move your mallet  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : "") : "Hold X to leave", small2);
         }
     }
 }
