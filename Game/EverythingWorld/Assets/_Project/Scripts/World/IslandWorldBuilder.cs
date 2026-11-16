@@ -662,9 +662,11 @@ namespace EverythingWorld.World
             for (var s = 0; s < steps.Count && !failed; s++)
             {
                 var s0 = Time.realtimeSinceStartup;
-                try { BuildFlags(i, true); steps[s](); }
+                // the land is switched off between its pieces, so nothing in it starts (or reads lists still being
+                // filled) until it's complete
+                try { if (ctx != null) ctx.Root.gameObject.SetActive(true); BuildFlags(i, true); steps[s](); }
                 catch (System.Exception e) { Debug.LogException(e); failed = true; }
-                finally { BuildFlags(i, false); }
+                finally { BuildFlags(i, false); if (ctx != null && s + 1 < steps.Count && !failed) ctx.Root.gameObject.SetActive(false); }
                 var took = Time.realtimeSinceStartup - s0; busy += took;
                 // rest: let the game run on its own long enough that building stays at its share of the time
                 bool Close()   // you're near this land, or near another one still waiting (after a teleport, say): no resting
@@ -676,6 +678,7 @@ namespace EverythingWorld.World
                 var until = Time.realtimeSinceStartup + (Close() ? 0f : took * (1f / Mathf.Max(.05f, backgroundShare) - 1f));
                 do yield return null; while (Time.realtimeSinceStartup < until && !Close());
             }
+            if (ctx != null) ctx.Root.gameObject.SetActive(true);
             if (!failed && ctx != null) AfterLand(i, ctx, busy, $" in pieces over {Time.realtimeSinceStartup - t0:0.0} s");
             building = -1;
             if (pending.Count == 0) { Debug.Log($"Background loading: every land built, {Time.realtimeSinceStartup - bgStarted:0.0} s after the loading screen"); LogMaterials(); }
