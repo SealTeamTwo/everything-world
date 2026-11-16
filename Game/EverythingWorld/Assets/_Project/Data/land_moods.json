@@ -504,7 +504,7 @@
    "sunPitch": 10, "sunYaw": 70, "sunIntensity": 0.3, "sunColor": "#FF9466",
    "skyLight": "#2F3B66", "horizonLight": "#323B57", "groundLight": "#444A63",
    "fogColor": "#3B4970", "fogStart": 25, "fogEnd": 360,
-   "stars": 0.9, "sunShadows": false, "dailyWeather": false, "auroraChance": 0.25, "bloom": 1.0,
+   "stars": 0.9, "sunShadows": false, "dailyWeather": false, "auroraChance": 0.25, "bloom": 1.0, "ao": 1.1, "aoRadius": 0.9,
    "weather": "snow", "weatherAmount": 0.4, "heightFog": 0.75, "heightFogColor": "#46557E", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.25, "grade": 0.7
   },
   {

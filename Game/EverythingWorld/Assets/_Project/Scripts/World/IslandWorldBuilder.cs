@@ -566,6 +566,7 @@ namespace EverythingWorld.World
             try
             {
                 var ctx = new LandContext(Data, i, landsRoot, coverAtlas);
+                MeshKit.Bevel = 0f;   // sharp unless the land asks (WorldLook)
                 kits[i].Dress(ctx);
                 foreach (var a in ctx.Artists) kits[i].BuildArtist(ctx, a);
                 kits[i].Finish(ctx);

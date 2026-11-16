@@ -46,7 +46,7 @@ namespace EverythingWorld.World
             public Color sky, horizon, ground, fog; public float fogStart, fogEnd;
             public float snow, rain, stars, aurora, auroraChance;
             public bool sunShadows;
-            public float bloom;
+            public float bloom, ao, aoR;
             public float hf, hfBase, hfFall, hfDens, sunGlow, grade; public Color hfColor;
         }
 
@@ -78,6 +78,7 @@ namespace EverythingWorld.World
         void OnDestroy()
         {
             if (Instance == this) Instance = null;
+            RestoreAmbientOcclusion();
         }
 
         /// The land whose sky is showing, and how starry it is right now (for the surprises).
@@ -111,6 +112,7 @@ namespace EverythingWorld.World
                 aurora = m.aurora, auroraChance = m.auroraChance, bloom = m.bloom,
                 hf = m.heightFog, hfColor = LandMood.Hex(m.heightFogColor, Color.grey), hfBase = m.heightFogBase,
                 hfFall = m.heightFogFalloff, hfDens = m.heightFogDensity, sunGlow = m.sunGlow, grade = m.grade,
+                ao = m.ao > 0f && !WorldLook.Old ? m.ao : -1f, aoR = m.aoRadius > 0f && !WorldLook.Old ? m.aoRadius : -1f,
             };
             var amount = m.weatherAmount;
             if (m.dailyWeather)
@@ -132,6 +134,7 @@ namespace EverythingWorld.World
             if (cam == null) cam = Camera.main;
             var k = 1f - Mathf.Exp(-Time.deltaTime * 3f / Mathf.Max(.1f, blendSeconds));
             current.sunRot = Quaternion.Slerp(current.sunRot, target.sunRot, k);
+            current.ao = target.ao; current.aoR = target.aoR;
             current.sun = Color.Lerp(current.sun, target.sun, k);
             current.sunI = Mathf.Lerp(current.sunI, target.sunI, k);
             current.sky = Color.Lerp(current.sky, target.sky, k);
@@ -160,8 +163,41 @@ namespace EverythingWorld.World
             Apply();
         }
 
+        // ---- ambient occlusion: the renderer's SSAO feature, its settings turned per land (and put back on the way out,
+        // so the asset in the editor keeps its own values)
+        object aoSettings; System.Reflection.FieldInfo aoIntensity, aoRadius; float aoBaseI = -1f, aoBaseR = -1f, aoNowI = -1f, aoNowR = -1f; bool aoLooked;
+        void AmbientOcclusion(float want, float wantR)
+        {
+            if (!aoLooked)
+            {
+                aoLooked = true;
+                try
+                {
+                    var asset = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline;
+                    var list = asset?.GetType().GetField("m_RendererDataList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(asset) as UnityEngine.Rendering.Universal.ScriptableRendererData[];
+                    if (list != null) foreach (var d in list) { if (d == null) continue; foreach (var f in d.rendererFeatures) if (f != null && f.GetType().Name == "ScreenSpaceAmbientOcclusion")
+                    {
+                        aoSettings = f.GetType().GetField("m_Settings", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(f);
+                        if (aoSettings == null) continue;
+                        var t = aoSettings.GetType(); var fl = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance;
+                        aoIntensity = t.GetField("Intensity", fl); aoRadius = t.GetField("Radius", fl);
+                        if (aoIntensity != null) aoBaseI = (float)aoIntensity.GetValue(aoSettings); if (aoRadius != null) aoBaseR = (float)aoRadius.GetValue(aoSettings);
+                        break;
+                    } if (aoSettings != null) break; }
+                }
+                catch (System.Exception e) { Debug.LogWarning("Ambient occlusion per land: " + e.Message); }
+            }
+            if (aoSettings == null || aoIntensity == null || aoRadius == null) return;
+            var i = want > 0f ? want : aoBaseI; var r = wantR > 0f ? wantR : aoBaseR;
+            aoNowI = aoNowI < 0f ? i : Mathf.MoveTowards(aoNowI, i, Time.deltaTime * .8f); aoNowR = aoNowR < 0f ? r : Mathf.MoveTowards(aoNowR, r, Time.deltaTime * .8f);
+            aoIntensity.SetValue(aoSettings, aoNowI); aoRadius.SetValue(aoSettings, aoNowR);
+        }
+
+        void RestoreAmbientOcclusion() { if (aoSettings != null && aoBaseI >= 0f) { aoIntensity.SetValue(aoSettings, aoBaseI); aoRadius.SetValue(aoSettings, aoBaseR); } }
+
         void Apply()
         {
+            AmbientOcclusion(current.ao, current.aoR);
             if (sun != null)
             {
                 sun.shadows = target.sunShadows ? LightShadows.Soft : LightShadows.None;

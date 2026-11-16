@@ -27,6 +27,7 @@ namespace EverythingWorld.World
         public string weather = "";         // "", "snow" or "rain"
         public float weatherAmount;         // 0..1
         public float bloom;                 // 0..1: glowing things bloom (soft light spills round them) on this land
+        public float ao, aoRadius;          // ambient occlusion strength and reach (metres); 0 = the renderer's own (faint) setting
         // Valheim-like air and colour (all off at 0, so a land without them looks as it always has):
         public float heightFog;             // 0..1: mist that lies low and thickens with distance (the HeightFog shader)
         public string heightFogColor = "#C8D8DC";

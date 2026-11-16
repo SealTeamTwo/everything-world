@@ -75,10 +75,16 @@ namespace EverythingWorld.World
             return .0018f * ((r + 3 * g + 5 * b) % 7);   // 0 to 11 mm in steps, chosen so the land audits' pairs separate
         }
 
+        /// Box edges are cut back this far (metres) into a narrow slanted face that catches the light, so things look
+        /// made rather than generated. 0 = sharp. Set by a land while it builds (WorldLook).
+        public static float Bevel;
+
         /// A box of the given full size, rotated.
         public void Box(Material m, Vector3 center, Vector3 size, Quaternion rot)
         {
             var h = size / 2f + Vector3.one * Grow(m);
+            var bv = Mathf.Min(Bevel, Mathf.Min(h.x, Mathf.Min(h.y, h.z)) * .35f);
+            if (bv > .004f) { Bevelled(m, center, h, rot, bv); return; }
             var p = new Vector3[8];
             for (var i = 0; i < 8; i++)
                 p[i] = center + rot * new Vector3((i & 1) == 0 ? -h.x : h.x, (i & 2) == 0 ? -h.y : h.y, (i & 4) == 0 ? -h.z : h.z);
@@ -91,6 +97,33 @@ namespace EverythingWorld.World
         }
 
         public void Box(Material m, Vector3 center, Vector3 size) => Box(m, center, size, Quaternion.identity);
+
+        /// A box with its edges and corners cut back by 'b': six faces, twelve slanted edge strips, eight corner facets.
+        void Bevelled(Material m, Vector3 center, Vector3 h, Quaternion rot, float b)
+        {
+            var hi = h - Vector3.one * b;
+            // the point at a corner (signs sx, sy, sz) pushed out fully along one axis (0 = x, 1 = y, 2 = z)
+            Vector3 C(int sx, int sy, int sz, int axis)
+            {
+                var v = new Vector3(sx * hi.x, sy * hi.y, sz * hi.z);
+                if (axis == 0) v.x = sx * h.x; else if (axis == 1) v.y = sy * h.y; else v.z = sz * h.z;
+                return center + rot * v;
+            }
+            int[] s = { -1, 1 };
+            foreach (var e in s)
+            {
+                Quad(m, C(e, -1, -1, 0), C(e, 1, -1, 0), C(e, 1, 1, 0), C(e, -1, 1, 0), center);   // the x faces
+                Quad(m, C(-1, e, -1, 1), C(1, e, -1, 1), C(1, e, 1, 1), C(-1, e, 1, 1), center);   // the y faces
+                Quad(m, C(-1, -1, e, 2), C(1, -1, e, 2), C(1, 1, e, 2), C(-1, 1, e, 2), center);   // the z faces
+            }
+            foreach (var a in s) foreach (var c in s)
+            {
+                Quad(m, C(a, c, -1, 0), C(a, c, -1, 1), C(a, c, 1, 1), C(a, c, 1, 0), center);     // edges along z
+                Quad(m, C(a, -1, c, 0), C(a, -1, c, 2), C(a, 1, c, 2), C(a, 1, c, 0), center);     // edges along y
+                Quad(m, C(-1, a, c, 1), C(-1, a, c, 2), C(1, a, c, 2), C(1, a, c, 1), center);     // edges along x
+            }
+            foreach (var x in s) foreach (var y in s) foreach (var z in s) Tri(m, C(x, y, z, 0), C(x, y, z, 1), C(x, y, z, 2), center);
+        }
 
         /// A tapered prism (low-poly trunk, post, log or candle) from 'start' along 'dir' for 'length'.
         public void Prism(Material m, Vector3 start, Vector3 dir, float radius, float length, int sides, float topScale = 1f, float twist = 0f, bool capTop = true)
