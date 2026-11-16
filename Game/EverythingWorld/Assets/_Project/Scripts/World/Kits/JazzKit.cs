@@ -131,7 +131,7 @@ namespace EverythingWorld.World
             var avoid = new List<Vector3>();
             for (var d = -streamL - 10f; d <= streamL + 10f; d += 22f) avoid.Add(new Vector3(stream2.x + R2.x * d, 30f, stream2.y + R2.y * d));
             for (var d = 20f; d < hillD; d += 24f) avoid.Add(new Vector3(heart2.x + U2.x * d, 26f, heart2.y + U2.y * d));
-            ArtistPlacement.Spread(data, index, 56f, heart2, 44f, 42f, avoid, keep, Land, 330f);
+            ArtistPlacement.Spread(data, index, 56f, heart2, 44f, 42f, avoid, keep, Land, 270f);   // (all inside the rain globe: JazzGlobe)
 
             // level the square and the river's banks to one height, then cut the river into them
             Level(data, index, heart2, 22f, 38f, quayY);
@@ -182,6 +182,7 @@ namespace EverythingWorld.World
             center = ctx.Plaza; U = new Vector3(U2.x, 0, U2.y); R = new Vector3(R2.x, 0, R2.y); streamC = new Vector3(stream2.x, quayY, stream2.y);
             life = new GameObject("Jazz life").AddComponent<JazzLife>();
             life.transform.SetParent(ctx.Root, false);
+            life.globeAt = new Vector3(heart2.x, quayY, heart2.y); life.globeR = GlobeR;
             life.center = center; life.lamps = lampM; life.pools = poolM; life.windows = windowM; life.neon = neonM; life.blue = blueM; life.gold = goldM; life.stars = starM; life.bulbs = bulbM;
             var mk = new MeshKit(); var solid = new MeshKit();
             Remember(ctx.OnGround(center.x, center.z), 0);
@@ -191,8 +192,12 @@ namespace EverythingWorld.World
             LampStreet(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Houses(ctx, mk, solid);
+            // the rain globe (JazzGlobe): doors planned first, then the town grown out to the glass, then the glass
+            PlanDoors(ctx);
+            RingStreets(ctx, mk, solid);
+            Globe(ctx, mk, solid);
             Wilds(ctx, mk, solid);
-            Stars(ctx, mk);
+            GlobeStars(ctx, mk);
             mk.Build("The Old Jazz Quarter", ctx.Root, false);
             solid.BuildCollider("The Old Jazz Quarter walls", ctx.Root);
         }
@@ -449,7 +454,7 @@ namespace EverythingWorld.World
                 // up a different count of random numbers, so the rest of the layout stays put
                 float Fall(Vector3 at, float r) { float lo = at.y, hi = at.y; for (var k = 0; k < 8; k++) { var h = ctx.Ground(at.x + Mathf.Cos(k * Mathf.PI / 4f) * r, at.z + Mathf.Sin(k * Mathf.PI / 4f) * r); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
                 if (roll < .2f) { BareTree(ctx, mk, p, .9f + s * .7f, rng); trees++; }
-                else if (roll < .3f) { if (Fall(p, 1.2f + s * 1.6f) < .2f) { Puddle(mk, p, 1.2f + s * 1.6f, rng); puddles++; } else { rng.NextDouble(); rng.NextDouble(); } }
+                else if (roll < .3f) { if (Fall(p, 1.2f + s * 1.6f) < .2f && InGlobe(px, pz, -4f)) { Puddle(mk, p, 1.2f + s * 1.6f, rng); puddles++; } else { rng.NextDouble(); rng.NextDouble(); } }   // (dry outside the glass)
                 else if (roll < .335f)
                 {
                     // the bench stands on its own ground, and only where that is flat

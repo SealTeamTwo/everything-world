@@ -19,6 +19,10 @@ namespace EverythingWorld.World
             return false;
         }
 
+        /// The same, knowing where the triangle is (x, z in the world): for ground that changes by place. Uses Ground
+        /// unless a land overrides it.
+        public virtual bool GroundAt(float x, float z, float height, float slope, float patch, out Color color) => Ground(height, slope, patch, out color);
+
         /// Runs before the terrain is built: change heights in data.heights on this land (dig a lake...).
         public virtual void ShapeGround(IslandWorldData data, int islandIndex) { }
 

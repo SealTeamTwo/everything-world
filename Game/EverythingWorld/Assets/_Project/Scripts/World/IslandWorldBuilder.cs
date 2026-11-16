@@ -385,7 +385,7 @@ namespace EverythingWorld.World
             if (height < 1.6f || island < 0) return Sand;
             // patches about 40 m across
             var patch = Mathf.PerlinNoise(col * .12f + island * 7.3f, row * .12f);
-            if (kits[island] != null && kits[island].Ground(height, slope, patch, out var kitColor)) return kitColor;
+            if (kits[island] != null && kits[island].GroundAt(col * Data.Step, Data.layout.depth - row * Data.Step, height, slope, patch, out var kitColor)) return kitColor;
             if (height > 38f) return Peak;
             if (slope > 7f || height > 26f) return Rock;
             var isl = Data.layout.islands[island];

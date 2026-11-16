@@ -17,6 +17,8 @@ namespace EverythingWorld.World
     {
         const string Land = "The Old Jazz Quarter";
         public Vector3 center, aliceAt, leavesAt;
+        // the rain globe (JazzGlobe): rain only inside the glass, stars outside, rain running down the glass, the doors turning
+        public Vector3 globeAt; public float globeR; public Material globeGlass; public List<Transform> doors = new List<Transform>(); float inside = 1f; float[] doorSpin, doorAngle;
         public string wonderSong, billieSong, soWhatSong, trainSong, moodSong, autumnSong, astralSong, rondoSong;
         public HashSet<string> aliceSongs = new HashSet<string>();
         public Material lamps, pools, windows, neon, blue, gold, stars, train; public Material[] bulbs, rondo;
@@ -108,7 +110,7 @@ namespace EverythingWorld.World
             var rate = 1.2f + energy * 1.2f + lift * 2f + mood * 5f;
             if (bulbs != null) for (var i = 0; i < bulbs.Length; i++) if (bulbs[i] != null) { var ph = Mathf.Repeat(now * rate - i / 3f, 1f); bulbs[i].SetColor("_EmissionColor", bulbBase * hush * (.35f + (ph < .34f ? 1.1f : 0f) + mood * .6f)); }
             if (train != null) train.SetColor("_EmissionColor", trainBase * hush * (1f + aTrain * (1.4f + 1.2f * Mathf.Sign(Mathf.Sin(t * 9f)))));
-            if (stars != null) stars.SetColor("_EmissionColor", new Color(1f, .95f, .8f) * (Mathf.Max(alice, astral * .8f) * (2.2f + .5f * Mathf.Sin(t * 1.9f))));
+            if (stars != null) stars.SetColor("_EmissionColor", new Color(1f, .95f, .8f) * (Mathf.Max(Mathf.Max(alice, astral * .8f), 1f - inside) * (2.2f + .5f * Mathf.Sin(t * 1.9f))));   // always clear outside the glass
             // Blue Rondo: nine stones, lit two, two, two, three
             if (rondo != null && rondo.Length == 9)
             {
@@ -117,7 +119,16 @@ namespace EverythingWorld.World
             }
 
             // the sky and the rain: it always rains, except over Alice Coltrane's songs
-            SkyDirector.SetSongRain(Land, .55f * (1f - Mathf.Max(alice, wonder)));
+            var camNow = Camera.main; if (camNow != null && globeR > 0f) { var cp0 = camNow.transform.position; var dIn = Vector2.Distance(new Vector2(cp0.x, cp0.z), new Vector2(globeAt.x, globeAt.z)); inside = Mathf.MoveTowards(inside, dIn < globeR - 2f && cp0.y < globeAt.y + 185f ? 1f : 0f, dt / 1.2f); }
+            SkyDirector.SetSongRain(Land, .55f * (1f - Mathf.Max(alice, wonder)) * inside);   // it rains only under the glass
+            if (globeGlass != null) { var o = globeGlass.GetTextureOffset("_BaseMap"); o.y = Mathf.Repeat(o.y + dt * (.35f * (1f - Mathf.Max(alice, wonder) * .9f)), 1f); globeGlass.SetTextureOffset("_BaseMap", o); globeGlass.SetColor("_EmissionColor", Color.Lerp(new Color(.05f, .06f, .08f), new Color(.5f, .34f, .1f), alice * .5f)); }
+            // the revolving doors turn slowly, and quicker while somebody passes through (you walk straight through them)
+            if (doorSpin == null || doorSpin.Length != doors.Count) { doorSpin = new float[doors.Count]; doorAngle = new float[doors.Count]; }
+            for (var k = 0; k < doors.Count; k++)
+            {
+                if (doors[k] == null) continue; var near = camNow != null && (camNow.transform.position - doors[k].position).sqrMagnitude < 5f * 5f;
+                doorSpin[k] = Mathf.MoveTowards(doorSpin[k], near ? 120f : 18f, dt * 160f); doorAngle[k] += doorSpin[k] * dt; doors[k].rotation = Quaternion.Euler(0, doorAngle[k] + k * 37f, 0);
+            }
             var tint = new Color(.5f, .52f, .58f); var amount = 0f;
             if (soWhat > 0f) { tint = Color.Lerp(tint, new Color(.25f, .45f, 1f), soWhat); amount = Mathf.Lerp(amount, .4f, soWhat); }
             if (autumn > 0f) { tint = Color.Lerp(tint, new Color(1f, .75f, .45f), autumn); amount = Mathf.Lerp(amount, .16f, autumn); }
