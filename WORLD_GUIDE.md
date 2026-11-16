@@ -1305,9 +1305,9 @@ Theatrical islands, closest to the hub.
 - **The Ring:** stand under it at the end of the road.
 - **The farm:** visit all four seasons at once; ship something in the bin.
 
----
-
 **Air hockey (the land's activity):** a table on a checkered pad near the Arcade, a lamp at each corner. Press E at the coin post and you shrink onto the table: the same table thirty times the size, glowing over a dark floor. Move the mouse to move your mallet; first to seven. Alone, the far mallet plays itself; the first friend to join takes it over, and anyone after that watches. The real table shows the same puck and mallets. Win a game and the table's radio can play the whole Everything Playlist (P switches).
+
+---
 
 ## Artist areas: the concept
 

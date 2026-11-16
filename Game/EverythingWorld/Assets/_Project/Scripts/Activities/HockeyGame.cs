@@ -61,7 +61,8 @@ namespace EverythingWorld.Activities
 
         public static void Table(MeshKit mk, float s, bool legs)
         {
-            var ice = new Material(WorldMaterials.Glow(new Color(.62f, .78f, .95f), .08f)) { name = "Hockey table" };   // (pale, barely lit: any brighter and the bloom hides its lines) var line = WorldMaterials.Glow(new Color(.2f, .5f, 1f), 1.2f); var red = WorldMaterials.Glow(new Color(1f, .3f, .4f), 1.4f);
+            // (the table is pale and barely lit: any brighter and the bloom hides its lines)
+            var ice = new Material(WorldMaterials.Glow(new Color(.62f, .78f, .95f), .08f)) { name = "Hockey table" }; var line = WorldMaterials.Glow(new Color(.2f, .5f, 1f), 1.2f); var red = WorldMaterials.Glow(new Color(1f, .3f, .4f), 1.4f);
             var rail = WorldMaterials.Solid(new Color(.06f, .06f, .12f)); var gold = WorldMaterials.Glow(new Color(1f, .82f, .2f), 1.2f); var up = Vector3.up; float W = HockeySim.W * s, L = HockeySim.L * s, t = .06f * s, h = .03f * s, g = HockeySim.Goal * s;
             mk.Box(ice, -up * (.02f * s), new Vector3(W, .04f * s, L)); mk.Box(red, up * (.0006f * s), new Vector3(W, .001f * s, .012f * s)); mk.Prism(line, up * (.0004f * s), up, .16f * s, .001f * s, 20); mk.Prism(ice, up * (.0008f * s), up, .15f * s, .001f * s, 20);
             foreach (var e in new[] { -1f, 1f })
