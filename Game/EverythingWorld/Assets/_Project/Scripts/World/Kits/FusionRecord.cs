@@ -94,7 +94,7 @@ namespace EverythingWorld.World
         void RecordMaterials()
         {
             vinylM = WorldMaterials.Surface(new Color(.05f, .05f, .07f), Surface.Glass);   // black, glossy
-            grooveWaterM = new Material(WorldMaterials.Glow(new Color(.07f, .36f, .42f), .55f)) { name = "Groove water" };
+            grooveWaterM = WorldMaterials.Water("Groove water", new Color(.1f, .34f, .42f), new Color(.1f, .34f, .42f), 1f, 0f, .55f);   // the sea's water, dark, no foam (it's shallow over the vinyl)
             grooveLineM = WorldMaterials.Glow(new Color(.16f, .18f, .22f), .12f); grooveLitM = WorldMaterials.Glow(new Color(.3f, .64f, .7f), .45f);
             chromeM = WorldMaterials.Surface(new Color(.86f, .88f, .92f), Surface.Metal); labelPrintM = WorldMaterials.Surface(new Color(.93f, .88f, .74f), Surface.Paper);
             life.grooveWater = grooveWaterM;

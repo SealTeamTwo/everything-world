@@ -690,7 +690,7 @@ namespace EverythingWorld.World
         void BuildFlags(int i, bool on)
         {
             MeshKit.Bevel = on && !WorldLook.Old ? WorldLook.Bevel : 0f;
-            RichSurfaces.On = on && !WorldLook.Old;
+            RichSurfaces.On = on && !WorldLook.Old; RichSurfaces.Scale = on && kits[i].Land == "The Everything Hub" ? .55f : 1f;   // the Hub's stone drawn finer
             SoftEdges.On = on && !WorldLook.Old && !SoftEdges.BuiltPaths.Contains(kits[i].Land);
         }
 
@@ -709,12 +709,12 @@ namespace EverythingWorld.World
             {
                 var ctx = new LandContext(Data, i, landsRoot, coverAtlas);
                 MeshKit.Bevel = WorldLook.Old ? 0f : WorldLook.Bevel;   // bevelled box edges everywhere (WorldLook)
-                RichSurfaces.On = !WorldLook.Old;   // detailed textures with relief (RichSurfaces)
+                RichSurfaces.On = !WorldLook.Old; RichSurfaces.Scale = kits[i].Land == "The Everything Hub" ? .55f : 1f;   // detailed textures with relief (RichSurfaces); the Hub's stone finer
                 SoftEdges.On = !WorldLook.Old && !SoftEdges.BuiltPaths.Contains(kits[i].Land);   // worn paths wander, built ones stay straight
                 kits[i].Dress(ctx);
                 foreach (var a in ctx.Artists) kits[i].BuildArtist(ctx, a);
                 kits[i].Finish(ctx);
-                MeshKit.Bevel = 0f; RichSurfaces.On = false; SoftEdges.On = false;
+                MeshKit.Bevel = 0f; RichSurfaces.On = false; SoftEdges.On = false; RichSurfaces.Scale = 1f;
                 if (!WorldLook.Old && ctx.Root.GetComponent<NearShadows>() == null) ctx.Root.gameObject.AddComponent<NearShadows>();   // lamp shadows near you
                 if ((auditLands || ForceAudit) && Application.isEditor && QuickLands == null && (AuditOnly == null || AuditOnly.Contains(kits[i].Land.StartsWith("The ") ? kits[i].Land.Substring(4) : kits[i].Land)))
                 {

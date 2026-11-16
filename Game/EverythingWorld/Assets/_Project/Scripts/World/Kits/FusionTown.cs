@@ -97,7 +97,7 @@ namespace EverythingWorld.World
             foreach (var e in new[] { -1f, 1f })
             {
                 mk.Box(brickDark, P(0, e * (CanalHalf + .3f), -1.4f), new Vector3(.6f, 2.9f, L * 2f + 1f), along); mk.Box(stoneM, P(0, e * (CanalHalf + .3f), .09f), new Vector3(.8f, .18f, L * 2f + 1f), along);
-                mk.Box(paving, P(0, e * (CanalHalf + .6f + QuayW / 2f), .06f), new Vector3(QuayW, .14f, L * 2f + 20f), along);
+                mk.Box(paving, P(0, e * (CanalHalf + .6f + QuayW / 2f), .06f), new Vector3(QuayW, .14f, L * 2f + 20f), along); solid.Box(paving, P(0, e * (CanalHalf + .6f + QuayW / 2f), -.37f), new Vector3(QuayW, 1f, L * 2f + 20f), along);   // solid: flat underfoot
                 for (var al = -L - 8f; al <= L + 8f; al += 3f) Remember(P(al, e * (CanalHalf + 3.6f), .1f), e > 0 ? 3 : 2);
                 mk.Box(brickDark, P(e * L, 0, -1.4f), new Vector3(CanalHalf * 2f + 1.2f, 2.9f, .7f), along); mk.Prism(dark, P(e * (L - .37f), 0, -1.3f), A * -e, 2.6f, .06f, 10); mk.Box(stoneM, P(e * L, 0, .09f), new Vector3(CanalHalf * 2f + 1.6f, .18f, .9f), along);
                 // railings, open where the bridges land

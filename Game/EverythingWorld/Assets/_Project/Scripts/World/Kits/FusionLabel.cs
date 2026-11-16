@@ -58,7 +58,7 @@ namespace EverythingWorld.World
             foreach (var e in new[] { -1f, 1f })
             {
                 mk.Box(brickDark, Q(0, e * (CanalHalf + .3f), -1.4f), new Vector3(.6f, 2.9f, L * 2f + 1f), along); mk.Box(stoneM, Q(0, e * (CanalHalf + .3f), .09f), new Vector3(.8f, .18f, L * 2f + 1f), along);
-                mk.Box(paving, Q(0, e * (CanalHalf + .6f + QuayW / 2f), .06f), new Vector3(QuayW, .14f, L * 2f + 14f), along);
+                mk.Box(paving, Q(0, e * (CanalHalf + .6f + QuayW / 2f), .06f), new Vector3(QuayW, .14f, L * 2f + 14f), along); solid.Box(paving, Q(0, e * (CanalHalf + .6f + QuayW / 2f), -.37f), new Vector3(QuayW, 1f, L * 2f + 14f), along);   // solid: flat underfoot
                 for (var al = -L - 4f; al <= L + 4f; al += 3f) Remember(Q(al, e * (CanalHalf + 3.6f), .1f), 2);
                 mk.Box(brickDark, Q(e * L, 0, -1.4f), new Vector3(CanalHalf * 2f + 1.2f, 2.9f, .7f), along); mk.Box(stoneM, Q(e * L, 0, .09f), new Vector3(CanalHalf * 2f + 1.6f, .18f, .9f), along);
                 Col(Q(e * (L + .3f), 0, .6f), new Vector3(CanalHalf * 2f + 1.6f, 1.2f, .12f), along); mk.Box(iron, Q(e * (L + .3f), 0, 1.08f), new Vector3(CanalHalf * 2f + 1.4f, .06f, .07f), along);

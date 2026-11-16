@@ -42,7 +42,7 @@ namespace EverythingWorld.World
             brassM = WorldMaterials.Surface(new Color(.86f, .66f, .28f), Surface.Metal); iron = WorldMaterials.Surface(new Color(.14f, .15f, .18f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .08f, .1f));
             white = WorldMaterials.Solid(new Color(.95f, .94f, .9f)); woodM = WorldMaterials.Surface(new Color(.55f, .38f, .24f), Surface.Wood);
             leafM = WorldMaterials.Surface(new Color(.3f, .52f, .34f), Surface.Foliage); leafDark = WorldMaterials.Surface(new Color(.2f, .4f, .32f), Surface.Foliage); glassDark = WorldMaterials.Surface(new Color(.2f, .28f, .36f), Surface.Glass);
-            waterM = new Material(WorldMaterials.Glow(new Color(.1f, .55f, .6f), .3f)) { name = "Canal water" };
+            waterM = WorldMaterials.Water("Canal water", new Color(.24f, .58f, .62f), new Color(.07f, .27f, .36f), 2.4f, .35f, .45f);   // like the sea's
             lampM = new Material(WorldMaterials.Glow(Brass, 1.6f)) { name = "Fusion lamps" };
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .8f, .5f), 1.15f)) { name = "Fusion windows" };
             for (var i = 0; i < 3; i++) bulbM[i] = new Material(WorldMaterials.Glow(new Color(1f, .86f, .58f), 1.6f)) { name = "Fusion bulbs " + i };

@@ -13,7 +13,6 @@ namespace EverythingWorld.World
         public static bool On;
 
         const int N = 256;
-        static readonly Dictionary<Surface, Material> mats = new Dictionary<Surface, Material>();
         static readonly HashSet<Material> all = new HashSet<Material>();
 
         public static bool Has(Surface k) => k == Surface.Stone || k == Surface.Wood || k == Surface.Bark || k == Surface.Cloth
@@ -35,16 +34,21 @@ namespace EverythingWorld.World
         };
 
         /// The rich version of a kind's shared material (made from it, so it keeps its finish and shading).
+        /// How big the textures are drawn on the land being built (1 = as designed; the Hub's stone is finer).
+        public static float Scale = 1f;
+        static readonly Dictionary<(Surface, float), Material> scaled = new Dictionary<(Surface, float), Material>();
+        static readonly Dictionary<Surface, (Texture2D albedo, Texture2D normal)> made = new Dictionary<Surface, (Texture2D, Texture2D)>();
+
         public static Material For(Surface k, Material plainKind)
         {
-            if (mats.TryGetValue(k, out var m)) return m;
-            m = new Material(plainKind) { name = "Rich surface: " + k };
-            Make(k.ToString(), (float u, float v, out float h, out float sh) => Sample(k, u, v, out h, out sh), out var albedo, out var normal);
-            m.SetTexture("_BaseMap", albedo);
-            var s = MeshKit.GrainScale / Repeat(k); m.SetTextureScale("_BaseMap", new Vector2(s, s));
-            m.SetTexture("_BumpMap", normal); m.SetFloat("_BumpScale", Bump(k)); m.EnableKeyword("_NORMALMAP");
+            if (scaled.TryGetValue((k, Scale), out var m)) return m;
+            if (!made.TryGetValue(k, out var tex)) { Make(k.ToString(), (float u, float v, out float h, out float sh) => Sample(k, u, v, out h, out sh), out var albedo, out var normal); made[k] = tex = (albedo, normal); }
+            m = new Material(plainKind) { name = "Rich surface: " + k + (Scale != 1f ? $" x{Scale:0.##}" : "") };
+            m.SetTexture("_BaseMap", tex.albedo);
+            var s = MeshKit.GrainScale / (Repeat(k) * Scale); m.SetTextureScale("_BaseMap", new Vector2(s, s));
+            m.SetTexture("_BumpMap", tex.normal); m.SetFloat("_BumpScale", Bump(k)); m.EnableKeyword("_NORMALMAP");
             all.Add(m);
-            return mats[k] = m;
+            return scaled[(k, Scale)] = m;
         }
 
         // ------------------------------------------------------------ the ground

@@ -192,6 +192,20 @@ namespace EverythingWorld.World
             return glow[(c, strength)] = m;
         }
 
+        /// Water like the sea's (the Water shader: moving ripples, sun glitter, the sky reflected at grazing angles,
+        /// shallow to deep colour by how deep it is, foam where it meets things), for canals, channels and pools.
+        /// 'foam' = metres the foam reaches from an edge (0 = none). Falls back to a glowing colour without the shader.
+        public static Material Water(string name, Color shallow, Color deep, float depthRange, float foam, float ripple = .5f)
+        {
+            var sh = Shader.Find("Everything World/Water");
+            if (sh == null) return new Material(Glow(Color.Lerp(shallow, deep, .5f), .4f)) { name = name };
+            var m = new Material(sh) { name = name };
+            m.SetColor("_Shallow", shallow); m.SetColor("_Deep", deep); m.SetFloat("_DepthRange", depthRange);
+            m.SetFloat("_FoamDepth", Mathf.Max(.01f, foam)); if (foam <= 0f) m.SetColor("_Foam", Color.Lerp(shallow, deep, .5f));
+            m.SetFloat("_Ripple", ripple); m.SetFloat("_Reflect", .5f); m.SetFloat("_Glitter", 3f);
+            return m;
+        }
+
         /// A picture that ignores lighting, so album covers stay readable at dusk.
         public static Material Picture(Texture t)
         {
