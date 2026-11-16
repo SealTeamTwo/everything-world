@@ -165,9 +165,8 @@ namespace EverythingWorld.World
             Rooftop(ctx, mk, solid, new PlaceFrame(P(18f, back), -Nrm));
             Cafe(ctx, mk, solid, new PlaceFrame(P(-16f, -back), Nrm));
             // Brass Lane carries on north between the houses to a little green with a tree
-            var lane = new List<Vector3>(); for (var d = CanalHalf + QuayW; d <= back + HouseD / 2f + 30f; d += 2f) lane.Add(ctx.OnGround(canalC.x + Nrm.x * d, canalC.z + Nrm.z * d)); Strip(mk, lane, paving, 5f, .15f, ctx); foreach (var p in lane) Remember(p, 4);
-            var green = lane[lane.Count - 1]; mk.Prism(paving, green - up * .25f, up, 7f, .38f, 16); PlaneTree(ctx, mk, green + up * .1f, 1.5f, new System.Random(3)); for (var k = 0; k < 3; k++) { var d = Quaternion.Euler(0, k * 120f + 60f, 0) * A; Bench(mk, green + d * 4.6f + up * .13f, d); } Mark(green, 8f);
-            for (var k = 0; k < 2; k++) BrassLamp(ctx, mk, ctx.OnGround(lane[4 + k * 8].x + A.x * 3.2f, lane[4 + k * 8].z + A.z * 3.2f), -A, true);
+            // (Brass Lane carries on north as the label's avenue: FusionLabel)
+            var lane = new List<Vector3>(); for (var d = CanalHalf + QuayW; d <= back + HouseD / 2f + 2.5f; d += 2f) lane.Add(ctx.OnGround(canalC.x + Nrm.x * d, canalC.z + Nrm.z * d)); Strip(mk, lane, paving, 5f, .15f, ctx); foreach (var p in lane) Remember(p, 4);
             // tables by the water outside the Rooftop
             for (var k = 0; k < 2; k++) { var tp = P(10f + k * 6f, CanalHalf + 2.2f, .12f); mk.Prism(iron, tp, up, .04f, .72f, 5); mk.Prism(woodM, tp + up * .72f, up, .45f, .05f, 10); ArtistBits.PostCollider(ctx.Root, tp, .8f, .36f); Chair(mk, tp + A * .9f, -A, k); Chair(mk, tp - A * .9f, A, k + 4); }
             Folk(P(10f + .9f, CanalHalf + 2.2f, .62f), -A, Resident.Pose.Sit, new[] { "We come down here between sets. You can still hear it, and the chairs don't match either.", "That bass player's been holding one note for a minute and it's the best thing I've heard all day." }, Local(Residents.Tool.Mug), null, .5f);

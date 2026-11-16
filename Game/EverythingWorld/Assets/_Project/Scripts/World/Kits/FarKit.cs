@@ -259,7 +259,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var rot = Quaternion.LookRotation(face); var c = Paint(Paints[i % Paints.Length]);
             mk.Prism(white, g, (up + face * .06f).normalized, .03f, 2.3f, 5); mk.Cone(c, g + up * 2f, 1.5f, .5f, 8); mk.Cone(white, g + up * 2.2f, .8f, .32f, 8, 22.5f); ArtistBits.PostCollider(ctx.Root, g, 2f, .06f);
-            var lg = g + Vector3.Cross(up, face) * 1.1f; mk.Box(bleached, lg + up * .3f, new Vector3(.7f, .08f, 1.9f), rot); mk.Box(c, lg + up * .35f, new Vector3(.62f, .04f, 1.3f), rot); mk.Box(c, lg + up * .56f - face * .75f, new Vector3(.62f, .04f, .7f), rot * Quaternion.Euler(-40f, 0, 0)); foreach (var e in new[] { -.7f, .7f }) mk.Box(bleached, lg + up * .15f + face * e, new Vector3(.6f, .3f, .06f), rot);
+            var lg = g + Vector3.Cross(up, face) * 1.1f; mk.Box(bleached, lg + up * .3f, new Vector3(.7f, .08f, 1.9f), rot); mk.Box(c, lg + up * .35f, new Vector3(.62f, .04f, 1.3f), rot); mk.Box(c, lg + up * .56f - face * .75f, new Vector3(.62f, .04f, .7f), rot * Quaternion.Euler(40f, 0, 0));   // the backrest leans back foreach (var e in new[] { -.7f, .7f }) mk.Box(bleached, lg + up * .15f + face * e, new Vector3(.6f, .3f, .06f), rot);
             BoxCol(rootT, lg + up * .25f, new Vector3(.7f, .5f, 1.9f), rot); Interact.Seat(tlife.transform, lg + up * .42f, face, "Lie on the lounger").seatHeight = .4f;
         }
 

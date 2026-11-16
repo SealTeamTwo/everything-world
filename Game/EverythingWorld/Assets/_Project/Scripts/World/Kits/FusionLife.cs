@@ -21,6 +21,9 @@ namespace EverythingWorld.World
         public float played = -99f, dominoAt = -99f;
         public List<Transform> dominoes = new List<Transform>(); public List<Quaternion> dominoRot = new List<Quaternion>();
         public List<(string song, Material m, Color c)> songGlows = new List<(string, Material, Color)>();
+        // the record (FusionRecord): the groove water pulses with the music; rings of light spread from the needle
+        public List<Transform> grooveBoats = new List<Transform>(); public List<Vector3> grooveBoatWays = new List<Vector3>();   // radius, degrees a second, start
+        public Material grooveWater, needleGlow; public Vector3 needle; Color grooveBase, needleBase; readonly List<Transform> ripples = new List<Transform>();
         readonly Dictionary<string, float> songAmount = new Dictionary<string, float>();
 
         CloudLayer clouds; ParticleSystem moths, confetti;
@@ -35,7 +38,17 @@ namespace EverythingWorld.World
             clouds.minHeight = 150f; clouds.maxHeight = 230f; clouds.size = 3f; clouds.speed = 1.8f; clouds.cover = .32f;
             clouds.color = new Color(.78f, .56f, .6f);
             Color E(Material m) => m != null ? m.GetColor("_EmissionColor") : Color.black;
-            lampBase = E(lamps); windowBase = E(windows); waterBase = E(water); bulbBase = bulbs != null && bulbs.Length > 0 ? E(bulbs[0]) : Color.black;
+            lampBase = E(lamps); windowBase = E(windows); waterBase = E(water); grooveBase = E(grooveWater); needleBase = E(needleGlow);
+            if (needle != Vector3.zero)
+            {
+                var rm = new Material(WorldMaterials.Glow(new Color(.55f, 1f, 1f), 1.6f)) { name = "Needle ripples" };
+                for (var k = 0; k < 4; k++)
+                {
+                    var mk = new MeshKit(); const int n = 40;
+                    for (var i = 0; i < n; i++) { float a0 = i * Mathf.PI * 2f / n, a1 = (i + 1) * Mathf.PI * 2f / n; Vector3 o0 = new Vector3(Mathf.Cos(a0), 0, Mathf.Sin(a0)), o1 = new Vector3(Mathf.Cos(a1), 0, Mathf.Sin(a1)); mk.Quad(rm, o0 * .94f, o1 * .94f, o1, o0, Vector3.down); }
+                    var go = mk.BuildSingle("Needle ripple", transform, false); go.transform.position = needle + Vector3.up * .03f; ripples.Add(go.transform);
+                }
+            } bulbBase = bulbs != null && bulbs.Length > 0 ? E(bulbs[0]) : Color.black;
             moths = Particles("Moths of light", 400, new Color(1f, .9f, .65f, .8f), .03f, .07f);
             var mm = moths.main; mm.startLifetime = new ParticleSystem.MinMaxCurve(4f, 8f); mm.startSpeed = new ParticleSystem.MinMaxCurve(.1f, .4f);
             confetti = Particles("Confetti", 900, Color.white, .08f, .14f);
@@ -65,6 +78,23 @@ namespace EverythingWorld.World
             return ps;
         }
 
+        void Grooves(float t, float energy)
+        {
+            for (var k = 0; k < grooveBoats.Count && k < grooveBoatWays.Count; k++)
+            {
+                if (grooveBoats[k] == null) continue; var w = grooveBoatWays[k]; var deg = (w.z + (float)(SharedChance.Now % 100000.0) * w.y) * Mathf.Deg2Rad;
+                var d = new Vector3(Mathf.Cos(deg), 0, Mathf.Sin(deg)); var tan = new Vector3(-d.z, 0, d.x) * Mathf.Sign(w.y);
+                grooveBoats[k].SetPositionAndRotation(new Vector3(center.x, center.y, center.z) + d * w.x + Vector3.up * (-.05f + Mathf.Sin(t * 1.3f + k) * .03f), Quaternion.LookRotation(tan) * Quaternion.Euler(0, 0, Mathf.Sin(t * .9f + k) * 2f));
+            }
+            if (grooveWater != null) grooveWater.SetColor("_EmissionColor", grooveBase * (1f + .25f * Mathf.Sin(t * 1.1f) + energy * .6f + tidal * 1.2f));
+            if (needleGlow != null) needleGlow.SetColor("_EmissionColor", needleBase * (.85f + .3f * Mathf.Sin(t * 6f) + energy * .8f));
+            for (var k = 0; k < ripples.Count; k++)
+            {
+                var ph = Mathf.Repeat(t / 3.2f + k / (float)ripples.Count, 1f); var s = 1f + ph * (10f + energy * 6f + tidal * 8f);
+                ripples[k].localScale = new Vector3(s, 1f, s); ripples[k].gameObject.SetActive(ph < .96f);
+            }
+        }
+
         void Update()
         {
             var dt = Time.deltaTime; var t = Time.time; var now = (float)(SharedChance.Now % 100000.0);
@@ -79,6 +109,7 @@ namespace EverythingWorld.World
             galaxy = Mathf.MoveTowards(galaxy, On(galaxySong) ? 1f : 0f, dt / 4f);
             victory = Mathf.MoveTowards(victory, On(victorySong) ? 1f : 0f, dt / 2f);
             strings = Mathf.MoveTowards(strings, On(stringsSong) ? 1f : 0f, dt / 3f);
+            Grooves(t, energy);
 
             foreach (var (s, _, _) in songGlows) if (!songAmount.ContainsKey(s)) songAmount[s] = 0f;
             var keys = new List<string>(songAmount.Keys);

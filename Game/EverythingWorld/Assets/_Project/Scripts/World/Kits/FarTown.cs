@@ -135,6 +135,14 @@ namespace EverythingWorld.World
             var bb = new MeshKit(); for (var k = 0; k < 6; k++) bb.Blob(Paint(k % 2 == 0 ? Cream : Paints[(k / 2 * 2 + 1) % Paints.Length]), new Vector3(0, .22f, 0) + Quaternion.Euler(0, k * 60f, 0) * Vector3.forward * .04f, new Vector3(.2f, .22f, .2f), rng, 0f); Thing(bb, "Beach ball", "a beach ball", c + U * 7f - R * 3f + up * .1f, Quaternion.identity, new Vector3(.44f, .44f, .44f), .2f, false);
             // surfboards stuck in the sand
             for (var k = 0; k < 3; k++) { var sb = c - U * 8f - R * (1f + k * .9f) + up * .06f; mk.Box(Paint(Paints[(k * 2 + 1) % Paints.Length]), sb + up * 1.1f, new Vector3(.5f, 2.2f, .07f), Quaternion.Euler(0, 20f + k * 12f, 6f)); mk.Box(white, sb + up * 1.1f, new Vector3(.08f, 2.2f, .08f), Quaternion.Euler(0, 20f + k * 12f, 6f)); ArtistBits.PostCollider(ctx.Root, sb, 2f, .2f); }
+            // a rope on posts along the water's edge: the beach stops here
+            for (var a = -75f; a <= 75f; a += 6f)
+            {
+                var d = Quaternion.Euler(0, a, 0) * -R; var p = c + d * 22.5f; p.y = Mathf.Max(ctx.Ground(p.x, p.z), waterY + .2f); if (InFootprint(ctx, p.x, p.z, 1f)) continue;
+                mk.Prism(bleached, p - up * .3f, up, .08f, 1.4f, 6); mk.Blob(Paint(Paints[((int)(a + 75f) / 6) % Paints.Length]), p + up * 1.15f, Vector3.one * .14f, rng, 0f);
+                var n2 = Quaternion.Euler(0, a + 6f, 0) * -R; var q = c + n2 * 22.5f; q.y = Mathf.Max(ctx.Ground(q.x, q.z), waterY + .2f);
+                if (a + 6f <= 75f) { var mid = (p + q) / 2f + up * .8f; mk.Prism(Paint(Coral), p + up * .95f, (q - p).normalized, .025f, Vector3.Distance(p, q), 4); Col(mid, new Vector3(.2f, 1.6f, Vector3.Distance(p, q)), Quaternion.LookRotation((q - p).normalized)); }
+            }
             Mark(c, 24f);
             Shot(ctx, "the beach", c + R * 17f + U * 5f + up * 2.6f, c - R * 26f + up * 1f);
         }

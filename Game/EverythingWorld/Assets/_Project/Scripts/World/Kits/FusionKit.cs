@@ -84,20 +84,13 @@ namespace EverythingWorld.World
             var isl = data.layout.islands[index]; heart2 = new Vector2(isl.labelX, isl.labelZ); waterY = data.layout.waterLevel;
             bool Inside(Vector2 p, float m) { if (data.IslandAt(p.x, p.y) != isl) return false; for (var k = 0; k < 12; k++) { var a = k * Mathf.PI / 6f; if (data.IslandAt(p.x + Mathf.Cos(a) * m, p.y + Mathf.Sin(a) * m) != isl) return false; } return true; }
             // the canal runs east-west, north of the square, as long as the land allows
-            A2 = new Vector2(1, 0); N2 = new Vector2(0, 1); canal2 = heart2 + N2 * CanalOff; canalL = 130f;
+            A2 = new Vector2(1, 0); N2 = new Vector2(0, 1); canal2 = heart2 + N2 * CanalOff; canalL = 122f;   // (short enough that the town fits on the record's label)
             while (canalL > 60f && !(Inside(canal2 + A2 * (canalL + 20f), 30f) && Inside(canal2 - A2 * (canalL + 20f), 30f))) canalL -= 10f;
             quayY = Mathf.Max(data.HeightAt(heart2.x, heart2.y), waterY + 5f);
 
-            var keep = new List<string>();
-            void Put(string name, Vector2 p, float room) { if (!Inside(p, room)) return; foreach (var a in data.layout.artists) if (a.sceneId == isl.sceneId && a.name == name) { a.x = p.x; a.z = p.y; keep.Add(name); } }
-            Put("Tom Misch", heart2 - A2 * 72f - N2 * 18f, 34f); Put("Yussef Dayes", heart2 + A2 * 68f - N2 * 20f, 30f); Put("Yussef Kamaal", heart2 + A2 * 118f - N2 * 34f, 26f); Put("Ezra Collective", heart2 - N2 * 84f + A2 * 6f, 30f);
-            // the older fusion players, north of the canal beyond the houses
-            var north = CanalOff + CanalHalf + QuayW + HouseD + 44f;
-            Put("CASIOPEA", heart2 - A2 * 84f + N2 * north, 26f); Put("Pat Metheny Group", heart2 - A2 * 28f + N2 * (north + 14f), 26f); Put("Allan Holdsworth", heart2 + A2 * 30f + N2 * (north + 14f), 26f); Put("Victor Wooten", heart2 + A2 * 86f + N2 * north, 26f); Put("Medeski, Martin & Wood", heart2 + A2 * 142f + N2 * (north - 12f), 26f);
-            var avoid = new List<Vector3>();
-            for (var d = -canalL - 10f; d <= canalL + 10f; d += 26f) avoid.Add(new Vector3(canal2.x + A2.x * d, 36f, canal2.y + A2.y * d));
-            avoid.Add(new Vector3(heart2.x, 22f, heart2.y + CanalOff + 60f));
-            ArtistPlacement.Spread(data, index, 56f, heart2, 44f, 40f, avoid, keep, Land, 330f);
+            // the record (FusionRecord): flat, the town on its label, every artist out on a track
+            ShapeRecord(data, index); PlaceOnRecord(data, index);
+            foreach (var (off, L) in ExtraCanals) CutCanal(data, index, heart2 + N2 * off, L);   // the label's other canals (FusionLabel)
 
             // level the square and the whole canal corridor to one height, then cut the canal into it
             Level(data, index, heart2, 20f, 34f, quayY);
@@ -157,6 +150,8 @@ namespace EverythingWorld.World
             Square(ctx, mk, solid);
             Canal(ctx, mk, solid);
             Houses(ctx, mk, solid);
+            LabelTown(ctx, mk, solid);
+            Record(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Wilds(ctx, mk, solid);
             mk.Build("The Fusion Isthmus", ctx.Root, false);
@@ -198,7 +193,7 @@ namespace EverythingWorld.World
         /// Inside the canal corridor (the water, the quays and the houses), plus 'pad'.
         bool InTown(float x, float z, float pad)
         {
-            var rel = new Vector2(x, z) - canal2; return Mathf.Abs(Vector2.Dot(rel, A2)) < canalL + 14f + pad && Mathf.Abs(Vector2.Dot(rel, N2)) < CanalHalf + QuayW + HouseD + 3f + pad;
+            var rel = new Vector2(x, z) - canal2; return Mathf.Abs(Vector2.Dot(rel, A2)) < canalL + 14f + pad && Mathf.Abs(Vector2.Dot(rel, N2)) < CanalHalf + QuayW + HouseD + 3f + pad || InExtraTown(x, z, pad);
         }
 
         bool Open(LandContext ctx, float x, float z, float pad) =>
@@ -342,7 +337,7 @@ namespace EverythingWorld.World
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += cell)
             {
                 float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble();
-                if (!Open(ctx, px, pz, 4f)) continue;
+                if (!Open(ctx, px, pz, 4f) || OnVinyl(px, pz, 2f)) continue;   // nothing grows on the record
                 var p = ctx.OnGround(px, pz);
                 // how much the ground falls across a round of radius r round p; steep spots are skipped after the random
                 // numbers are drawn, so the rest of the layout stays put
@@ -384,7 +379,7 @@ namespace EverythingWorld.World
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
-                if (!ctx.IsLand(px, pz, 1f) || InTown(px, pz, 1f) || NearPath(px, pz, 2.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
+                if (!ctx.IsLand(px, pz, 1f) || InTown(px, pz, 1f) || NearPath(px, pz, 2.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || OnVinyl(px, pz)) continue;
                 if (WindMesh.Patch(px, pz, .04f, 1f) < .38f) continue;     // bare ground between the patches
                 var key = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                 if (!meshes.TryGetValue(key, out var wm)) meshes[key] = wm = new WindMesh();
