@@ -154,6 +154,7 @@ namespace EverythingWorld.World
             groundMat = WorldMaterials.KindShared(Surface.Ground); var cols = groundMat != null ? new List<Color>() : null;
             var corner = new Vector3[4];
             var uv = new List<Vector2>();
+            if (cols != null && RichGround(0)) ChunkColours(c0, r0, w, h);
             for (var r = r0; r < r0 + h; r++)
             for (var c = c0; c < c0 + w; c++)
             {
@@ -175,7 +176,6 @@ namespace EverythingWorld.World
                     AddTri(verts, cols, byMaterial, corner[1], corner[2], corner[3], island, c, r);
                 }
             }
-            softColors.Clear(); baseColors.Clear();   // corners are remembered only while their chunk is built
             if (verts.Count == 0) return;
 
             var mesh = new Mesh { name = $"Terrain {c0},{r0}", indexFormat = IndexFormat.UInt32 };
@@ -269,7 +269,7 @@ namespace EverythingWorld.World
                 {
                     // rich ground: grass, earth, sand, rock or snow, with relief; and each corner its own colour, blended
                     // from the ground round it, so one kind of ground shades into the next instead of in triangles
-                    Color ca = SoftColor(a, island), cb = SoftColor(b, island), cc = SoftColor(c, island);
+                    Color ca = SoftColor(a), cb = SoftColor(b), cc = SoftColor(c);
                     mat = RichSurfaces.Ground(RichSurfaces.GroundOf((ca + cb + cc) / 3f, slope), groundMat);
                     cols.Add(ca.linear); cols.Add(cb.linear); cols.Add(cc.linear);
                 }
@@ -282,34 +282,61 @@ namespace EverythingWorld.World
             list.Add(verts.Count); verts.Add(c);
         }
 
-        /// The ground's colour at a grid corner, softened: the colours of the corner and its eight neighbours (each with
-        /// its own height and steepness) blended, the corner itself counting most. Remembered per corner and land.
-        readonly Dictionary<(int, int, int), Color> softColors = new Dictionary<(int, int, int), Color>(), baseColors = new Dictionary<(int, int, int), Color>();
-        Color SoftColor(Vector3 p, int island)
+        /// The ground's colour at a grid corner, softened: the colours of the corner and the corners round it (each with
+        /// its own land, height and steepness) blended, the corner itself counting most. One colour per corner whatever
+        /// land the triangles round it belong to, so the ground shades smoothly within a land and from one land into
+        /// the next. Remembered per corner while a terrain chunk is built.
+        Color[] softArr, baseArr; int arrC0, arrR0, arrW;
+        void ChunkColours(int c0, int r0, int w, int h)
+        {
+            arrC0 = c0 - 3; arrR0 = r0 - 3; arrW = w + 7; var n = arrW * (h + 7);
+            if (softArr == null || softArr.Length < n) { softArr = new Color[n]; baseArr = new Color[n]; }
+            for (var k = 0; k < n; k++) { softArr[k].a = -1f; baseArr[k].a = -1f; }
+        }
+        float H(int c, int r) => Data.VertexHeight(Mathf.Clamp(c, 0, Data.Nx - 1), Mathf.Clamp(r, 0, Data.Nz - 1));
+        Color BaseColor(int c, int r)
+        {
+            var k = (r - arrR0) * arrW + (c - arrC0);
+            if (baseArr[k].a >= 0f) return baseArr[k];
+            var h = H(c, r);
+            var sl = Mathf.Max(Mathf.Max(Mathf.Abs(H(c + 1, r) - h), Mathf.Abs(H(c - 1, r) - h)), Mathf.Max(Mathf.Abs(H(c, r + 1) - h), Mathf.Abs(H(c, r - 1) - h))) * 1.2f;
+            var id = Data.IslandIndexAtVertex(Mathf.Clamp(c, 0, Data.Nx - 1), Mathf.Clamp(r, 0, Data.Nz - 1));
+            var col = SmoothTerrainColor(h, sl, id == 255 ? -1 : id, c, r); col.a = 1f;
+            return baseArr[k] = col;
+        }
+        Color SoftColor(Vector3 p)
         {
             int c0 = Mathf.RoundToInt(p.x / Data.Step), r0 = Mathf.RoundToInt((Data.layout.depth - p.z) / Data.Step);
-            if (softColors.TryGetValue((c0, r0, island), out var got)) return got;
-            float H(int c, int r) => Data.VertexHeight(Mathf.Clamp(c, 0, Data.Nx - 1), Mathf.Clamp(r, 0, Data.Nz - 1));
-            Color Base(int c, int r)
-            {
-                if (baseColors.TryGetValue((c, r, island), out var bc)) return bc;
-                var h = H(c, r);
-                var sl = Mathf.Max(Mathf.Max(Mathf.Abs(H(c + 1, r) - h), Mathf.Abs(H(c - 1, r) - h)), Mathf.Max(Mathf.Abs(H(c, r + 1) - h), Mathf.Abs(H(c, r - 1) - h))) * 1.2f;
-                return baseColors[(c, r, island)] = TerrainColor(h, sl, island, c, r);
-            }
+            var k = (r0 - arrR0) * arrW + (c0 - arrC0);
+            if (softArr[k].a >= 0f) return softArr[k];
             var sum = Color.clear; var wsum = 0f;
-            for (var dr = -1; dr <= 1; dr++)
-            for (var dc = -1; dc <= 1; dc++)
+            for (var dr = -2; dr <= 2; dr++)
+            for (var dc = -2; dc <= 2; dc++)
             {
-                var w = dc == 0 && dr == 0 ? 4f : dc == 0 || dr == 0 ? 2f : 1f;
-                sum += Base(c0 + dc, r0 + dr) * w; wsum += w;
+                var d2 = dc * dc + dr * dr; if (d2 > 5) continue;
+                var w = d2 == 0 ? 6f : d2 == 1 ? 4f : d2 == 2 ? 2.5f : 1f;
+                sum += BaseColor(c0 + dc, r0 + dr) * w; wsum += w;
             }
             var col = sum / wsum; col.a = 1f;
-            return softColors[(c0, r0, island)] = col;
+            return softArr[k] = col;
         }
 
-        /// Rich ground textures (RichSurfaces) and softly blended colours on this island: every built land.
-        bool RichGround(int island) => !WorldLook.Old && island >= 0 && island < kits.Length && kits[island] != null;
+        /// TerrainColor, but blended toward the next land smoothly (no steps), for the softened ground.
+        Color SmoothTerrainColor(float height, float slope, int island, int col, int row)
+        {
+            var own = OwnTerrainColor(height, slope, island, col, row);
+            if (borderOther == null || island < 0 || height < 1.6f) return own;
+            var k = Mathf.Clamp(row, 0, Data.Nz - 1) * Data.Nx + Mathf.Clamp(col, 0, Data.Nx - 1);
+            var other = borderOther[k]; if (other == 255 || other == island) return own;
+            var w = .5f * (1f - borderDist[k] * Data.Step / borderBlend);
+            if (w <= 0f) return own;
+            var jag = Mathf.PerlinNoise(col * .19f + 11.7f, row * .19f + 3.1f) - .5f;
+            var t = Mathf.Clamp01(w + jag * .3f);
+            return t <= 0f ? own : Color.Lerp(own, OwnTerrainColor(height, slope, other, col, row), t);
+        }
+
+        /// Rich ground textures (RichSurfaces) and softly blended colours: everywhere, sea floor and beaches too.
+        bool RichGround(int island) => !WorldLook.Old;
 
         /// Round a ground colour to one of a limited set of shades. Each distinct colour is its own material,
         /// drawn separately, and the built lands blend their ground colours smoothly: unrounded, one terrain chunk

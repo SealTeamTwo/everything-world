@@ -23,11 +23,12 @@ namespace EverythingWorld.World
             "The Trip-Hop Undercity", "The Velvet Rooftops", "The Yacht Rock Riviera",
         };
         /// How much one side of a path (seed 1 = left, 2 = right) is widened or narrowed at 'p': footpaths wander,
-        /// wide roads (5.5 m and up) stay straight, the way a road is built and a path is worn.
+        /// roads (4 m and wider) stay straight, the way a road is built and a path is worn. The wander is slow (over
+        /// about 9 m), so paths laid with points far apart still curve gently instead of zigzagging.
         public static float Edge(Vector3 p, float width, float seed)
         {
-            if (!On || width >= 5.5f) return 1f;
-            return Wander(p.x, p.z, seed, .28f * Mathf.Clamp01((5.5f - width) / 2f), 3f);
+            if (!On || width >= 4f) return 1f;
+            return Wander(p.x, p.z, seed, .22f * Mathf.Clamp01((4f - width) / 1.2f), 9f);
         }
         /// The same for a point across a path laid in lanes ('t' 0 = left edge, 1 = right edge).
         public static float Lane(Vector3 p, float width, float t) => t < .5f ? Edge(p, width, 1f) : t > .5f ? Edge(p, width, 2f) : 1f;
