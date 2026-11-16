@@ -20,6 +20,7 @@ namespace EverythingWorld.Player
         static MainMenu instance;
 
         enum Page { Main, Settings, Friends }
+        GUIStyle feedbackStyle;
         string codeTyped = "";
         bool open = true, entered, testRoom, inTutorial; Page page = Page.Main; float yaw;
         SimplePlayerController walker; PlayerInteractor hands; Transform hub;
@@ -188,7 +189,14 @@ namespace EverythingWorld.Player
                 if (GUI.Button(new Rect(x - 16f, y, W - 60f, 44f), online ? $"Friends   ({fr.Count} here)" : "Play with Friends", button)) page = Page.Friends; y += 50f;
                 if (!entered && !testRoom && !inTutorial) { if (GUI.Button(new Rect(x - 16f, y, W - 60f, 44f), "Multiplayer Test Room", button)) GoTestRoom(); y += 50f; }
                 if (GUI.Button(new Rect(x - 16f, y, W - 60f, 44f), "Settings", button)) page = Page.Settings; y += 50f;
+                // notes (T) and photos (P) taken while playing, packed into one file on the Desktop to send (EverythingWorld.World.Feedback)
+                if (GUI.Button(new Rect(x - 16f, y, W - 60f, 44f), "Pack my feedback to send", button) && EverythingWorld.World.Feedback.Instance != null) EverythingWorld.World.Feedback.Instance.Pack(); y += 50f;
                 if (GUI.Button(new Rect(x - 16f, y, W - 60f, 44f), "Quit", button)) Quit(); y += 50f;
+                {
+                    feedbackStyle ??= new GUIStyle(small) { wordWrap = true };
+                    var note = string.IsNullOrEmpty(EverythingWorld.World.Feedback.LastResult) ? "While you play: T writes a note, P takes a photo, F9 packs them all into one file on your Desktop to send." : EverythingWorld.World.Feedback.LastResult;
+                    var nh = feedbackStyle.CalcHeight(new GUIContent(note), W - 70f); GUI.Label(new Rect(x, y + 4f, W - 70f, nh), note, feedbackStyle); y += nh + 10f;
+                }
             }
             else if (page == Page.Settings) Settings(x, y, W);
             else FriendsPage(x, y, W);

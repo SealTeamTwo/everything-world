@@ -26,8 +26,7 @@ namespace EverythingWorld.World
 
         void Start()
         {
-            var dir = Path.Combine(Application.dataPath, "..", "Logs", "Live");
-            Directory.CreateDirectory(dir); file = Path.Combine(dir, "notes.txt");
+            file = Path.Combine(Feedback.Dir, "notes.txt");   // (Logs/Live in the editor; the game's own data folder in a built game)
         }
 
         void Update()
@@ -54,7 +53,7 @@ namespace EverythingWorld.World
                 {
                     File.AppendAllText(file, $"NOTE {System.DateTime.Now:yyyy-MM-dd HH:mm}: \"{note}\" ({where})\n");
                     Debug.Log("Note for Claude: " + note);
-                    flashText = "Note saved for Claude";
+                    flashText = Application.isEditor ? "Note saved for Claude" : "Note saved  ·  F9 packs your notes and photos into one file to send";
                 }
                 else flashText = "Empty note, nothing saved";
                 flash = 2f; Close();

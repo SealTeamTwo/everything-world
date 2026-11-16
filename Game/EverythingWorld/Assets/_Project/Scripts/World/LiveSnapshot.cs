@@ -25,10 +25,10 @@ namespace EverythingWorld.World
 
         void Start()
         {
-            dir = Path.Combine(Application.dataPath, "..", "Logs", "Live");
+            dir = Feedback.Dir;   // (Logs/Live in the editor; the game's own data folder in a built game)
             Directory.CreateDirectory(dir);
             // pictures are kept for two weeks, then deleted (the owner's choice, 2026-11-15); notes.txt is kept
-            var cutoff = System.DateTime.Now.AddDays(-14);
+            var cutoff = System.DateTime.Now.AddDays(Application.isEditor ? -14 : -60);   // (a friend's copy keeps them two months: they may play over weeks before sending)
             foreach (var d in new[] { dir, Path.Combine(dir, "..", "LiveSheets") })
                 if (Directory.Exists(d))
                     foreach (var f in Directory.GetFiles(d, "*.png"))
@@ -50,7 +50,7 @@ namespace EverythingWorld.World
             var line = $"{file}: {where}";
             File.AppendAllText(Path.Combine(dir, "notes.txt"), line + "\n");
             Debug.Log("Snapshot for Claude: " + line);
-            pending = true; flashText = "Snapshot " + count + " saved for Claude";
+            pending = true; flashText = Application.isEditor ? "Snapshot " + count + " saved for Claude" : "Photo " + count + " saved  ·  F9 packs your notes and photos into one file to send";
         }
 
         /// Where you are right now, in words: the land, position, facing, nearest artist, the song (and how far into
