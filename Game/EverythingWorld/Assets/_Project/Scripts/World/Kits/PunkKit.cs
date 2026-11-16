@@ -197,6 +197,7 @@ namespace EverythingWorld.World
             if (hasPool) Pool(ctx, mk, solid);
             Paths(ctx, mk, solid);
             BadlandsPlaces(ctx, mk, solid);
+            try { SkatePark(ctx, mk, solid); } catch (System.Exception e) { Debug.LogWarning("An activity could not be built (the rest of the land is unaffected): " + e); }   // new and not yet played: it must never take the land down with it
             Wilds(ctx, mk, solid);
             mk.Build("The Punk Badlands", ctx.Root, false);
             solid.BuildCollider("The Punk Badlands walls", ctx.Root);

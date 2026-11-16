@@ -329,6 +329,8 @@ The tailgate chairs can be sat in.
 - **The TP'd House and the Legal Wall:** the one neat house in the Badlands, on the one green lawn, buried in toilet paper; its owner sits in a lawn chair with a hose, the culprit hides behind the tree, and a crate of rolls waits to be thrown over the roof. Beside it a long grey wall: spray it and a tag appears each time, until someone from the city paints it grey again.
 - **The Water Tower:** a steel tank on four legs with the town's name on it and what the kids added. One long flight of stairs climbs to the catwalk: sit with your legs over the edge and look out, press play on the boombox.
 
+**Skating (the land's activity):** on a concrete plinth stands a little model of a skatepark, a drained swimming pool, with a board leaning by it. Press E on the board and you shrink into the park: the same pool the size of a field, high over the Badlands under its white-hot sky, with a funbox, a hump and a kicker on its floor. You're an orb on a skateboard. W pushes, S brakes, A and D steer; ride up a wall and you leave the top into the air, and Space jumps anywhere. In the air A and D spin you and Shift grabs the board: come round to any half turn and you land it, anything else is a fall, and tricks landed close together multiply. It is free skating; Enter starts a one-minute run. Friends in the park each ride their own board. Score 8,000 in a run and the park's radio can play the whole Everything Playlist (P switches).
+
 ### The Math Rock Escarpment
 *43 songs · 33 artists · 0.52 km² · built in Unity*
 

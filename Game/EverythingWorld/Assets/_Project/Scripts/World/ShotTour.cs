@@ -212,7 +212,7 @@ namespace EverythingWorld.World
                 foreach (var m in marks)
                 {
                     var what = m.name.Substring(6);
-                    if (!what.StartsWith("links") && !what.StartsWith("pool") && !what.StartsWith("hoops") && !what.StartsWith("pinball") && !what.StartsWith("bikes") && !what.StartsWith("hockey")) { yield return Shot(what, m.position, m.eulerAngles.y, 6f, 1f); continue; }
+                    if (!what.StartsWith("links") && !what.StartsWith("pool") && !what.StartsWith("hoops") && !what.StartsWith("skate") && !what.StartsWith("pinball") && !what.StartsWith("bikes") && !what.StartsWith("hockey")) { yield return Shot(what, m.position, m.eulerAngles.y, 6f, 1f); continue; }
                     // mini golf (the Riviera Links): its course is switched off until someone plays, so it is switched on
                     // for its photos; and "links play" marks step onto the course and putt once, to photograph the game running
                     if (only != null && only.Length > 0) { var hit = false; foreach (var o in only) if (what.ToLowerInvariant().Contains(o)) hit = true; if (!hit) continue; }
@@ -249,6 +249,16 @@ namespace EverythingWorld.World
                     else if (what.StartsWith("pinball play") && player != null)
                     {
                         var act = FindAnyObjectByType<EverythingWorld.Activities.PinballGame>(FindObjectsInactive.Include);
+                        if (act != null)
+                        {
+                            yield return act.Demo(player.GetComponent<EverythingWorld.Player.PlayerInteractor>());
+                            yield return Shot(what, player.transform.position, player.transform.eulerAngles.y, pivot != null ? (pivot.localEulerAngles.x > 180f ? pivot.localEulerAngles.x - 360f : pivot.localEulerAngles.x) : 30f, 1.5f);
+                            act.DemoEnd();
+                        }
+                    }
+                    else if (what.StartsWith("skate play") && player != null)
+                    {
+                        var act = FindAnyObjectByType<EverythingWorld.Activities.SkateGame>(FindObjectsInactive.Include);
                         if (act != null)
                         {
                             yield return act.Demo(player.GetComponent<EverythingWorld.Player.PlayerInteractor>());
