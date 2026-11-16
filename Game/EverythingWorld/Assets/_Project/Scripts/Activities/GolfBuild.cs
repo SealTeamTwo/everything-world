@@ -12,6 +12,7 @@ namespace EverythingWorld.Activities
         public string courseId;
         public List<Transform> movers = new List<Transform>(); public List<int> moverHole = new List<int>(), moverIndex = new List<int>();
         public List<Transform> rotors = new List<Transform>();   // scenery that just turns (fan blades)
+        public List<Transform> gusts = new List<Transform>(); public List<int> gustHole = new List<int>(), gustZone = new List<int>(); public List<float> gustSpan = new List<float>();   // streaks of wind where a fan blows, shown only while it does
         public List<Transform> holes = new List<Transform>();
         GolfCourse course;
 
@@ -24,6 +25,17 @@ namespace EverythingWorld.Activities
                 if (movers[i] == null) continue; var m = course.holes[moverHole[i]].movers[moverIndex[i]]; if (m.manual) continue;   // (worked by its game, not the clock)
                 m.Pose(t, out var off, out var ang, out var up);
                 movers[i].localPosition = new Vector3(m.pivot.x + off.x, m.y + up, m.pivot.y + off.y); movers[i].localRotation = Quaternion.Euler(0, -ang, 0);
+            }
+            for (var i = 0; i < gusts.Count; i++)
+            {
+                var g = gusts[i]; if (g == null) continue; var on = course.holes[gustHole[i]].zones[gustZone[i]].On(t);
+                if (g.gameObject.activeSelf != on) g.gameObject.SetActive(on); if (!on) continue;
+                for (var k = 0; k < g.childCount; k++)
+                {
+                    // each streak runs down the wind and starts again, thin at both ends of its run
+                    var c = g.GetChild(k); var u = (float)((t * (.9 + k % 3 * .25) + k * .381) % 1.0); var lp = c.localPosition; lp.z = (u - .5f) * gustSpan[i]; c.localPosition = lp;
+                    var s = c.localScale; s.z = Mathf.Sin(u * Mathf.PI) * 1.2f + .05f; c.localScale = s;
+                }
             }
             var spin = (float)(t * 300.0 % 360.0);
             foreach (var r in rotors) if (r != null) r.localRotation = Quaternion.Euler(0, 0, spin);
@@ -114,6 +126,21 @@ namespace EverythingWorld.Activities
             foreach (var w in h.walls) if (w.mover < 0) Wall(mk, w, 0f);
             foreach (var b in h.bumpers) if (b.mover < 0) Bumper(mk, b, 0f, rng, ht);
             foreach (var z in h.zones) Zone(mk, z);
+            // wind you can see: pale streaks that run across wherever a fan blows, and only while it blows
+            for (var zi = 0; zi < h.zones.Count; zi++)
+            {
+                var z = h.zones[zi]; if (z.kind != GolfZoneKind.Fan || z.shape.poly == null || ht == null || view == null) continue;
+                var s = z.shape; var mid = (s.a + s.b) / 2f; var span = (s.b - s.a).magnitude + 4f; var across = (s.poly[0] - s.poly[1]).magnitude;
+                var holder = new GameObject("Gusts").transform; holder.SetParent(ht, false); holder.localPosition = V(mid, s.Height(mid.x, mid.y)); holder.localRotation = Quaternion.LookRotation(new Vector3(z.dir.x, 0, z.dir.y));
+                var windM = WorldMaterials.Glow(new Color(.9f, .97f, 1f), 1.6f);
+                for (var k = 0; k < 16; k++)
+                {
+                    var gm = new MeshKit(); gm.Box(windM, Vector3.zero, new Vector3(.05f, .05f, 1.6f)); var go = gm.BuildSingle("Gust", holder, false); if (go == null) continue;
+                    go.transform.localPosition = new Vector3(((float)rng.NextDouble() - .5f) * across, .25f + (float)rng.NextDouble() * 1.9f, 0);
+                    var mr = go.GetComponent<MeshRenderer>(); if (mr != null) mr.shadowCastingMode = ShadowCastingMode.Off;
+                }
+                view.gusts.Add(holder); view.gustHole.Add(index); view.gustZone.Add(zi); view.gustSpan.Add(span);
+            }
             // a lifting gate's two posts stay put, a lamp on each
             for (var m = 0; m < h.movers.Count; m++)
                 if (h.movers[m].look == "gate")
@@ -264,6 +291,9 @@ namespace EverythingWorld.Activities
                 x0 = Mathf.Min(x0, Mathf.Min(w.a.x, w.b.x)); x1 = Mathf.Max(x1, Mathf.Max(w.a.x, w.b.x)); z0 = Mathf.Min(z0, Mathf.Min(w.a.y, w.b.y)); z1 = Mathf.Max(z1, Mathf.Max(w.a.y, w.b.y));
             }
             foreach (var b in h.bumpers) if (b.mover == index) { if (m.look == "door") mk.Prism(brass, V(b.c, 0), up, b.r, 1.7f, 10); else Bumper(mk, b, m.y, rng, null); }
+            // scenery that rides it (a horn's bell on the turning stage), and the stage's own track: brass studs in a ring, so you can see it turn
+            foreach (var p in h.props) if (p.mover == index) { Prop(mk, new GolfProp { kind = p.kind, at = new Vector3(p.at.x, p.at.y - m.y, p.at.z), yaw = p.yaw, scale = p.scale }, rng, null, null); if (m.look == "stage") mk.Prism(brass, new Vector3(p.at.x, .0f, p.at.z) * .887f, up, .5f, .03f, 14); }
+            if (m.look == "stage") for (var k = 0; k < 36; k++) { var a = k * Mathf.PI / 18f; mk.Prism(brass, new Vector3(Mathf.Cos(a) * 5.3f, 0, Mathf.Sin(a) * 5.3f), up, .09f, .03f, 6); }
             if (m.look == "boat" && x1 > x0)
             {
                 // a little rowing boat: hull, gunwale, a thwart and a rower's hat

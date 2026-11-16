@@ -120,6 +120,7 @@ namespace EverythingWorld.Activities
         public float reach = 1.2f;                        // how far above its floor it still works
         public Vector2 dir; public float power;           // Boost and Fan: the push, metres a second squared. Current: its speed. Spring: the upward speed.
         public Vector3 exit; public Vector2 exitDir; public float exitSpeed;   // Pipe: where and how the ball comes out
+        public int exitMover = -1;                        // Pipe: the mover its way out rides on (exit and exitDir are then in that mover's own metres)
         public float period, duty = .5f, phase;           // Fan: seconds on and off (0 = always on)
         public bool On(double t) { if (period <= 0f) return true; var u = t / period + phase; return u - Math.Floor(u) < duty; }
     }
@@ -316,8 +317,9 @@ namespace EverythingWorld.Activities
         /// A pipe: in at one place, out at another, heading 'outDeg' (0 = along x, 90 = ahead) at 'speed'.
         public GolfHole Pipe(float x, float z, float ox, float oz, float outDeg, float speed = 5f, float r = .45f)
         {
-            var a = outDeg * Mathf.Deg2Rad;
-            return Zone(new GolfZone { kind = GolfZoneKind.Pipe, shape = Round(x, z, r), exit = new Vector3(ox, TopAt(ox, oz), oz), exitDir = new Vector2(Mathf.Cos(a), Mathf.Sin(a)), exitSpeed = speed, reach = .3f }, x, z);
+            // (called while a mover is being described, the way in stays where it is on the hole and the way out rides the mover)
+            var a = outDeg * Mathf.Deg2Rad; var oy = onMover >= 0 ? movers[onMover].y : TopAt(ox, oz);
+            return Zone(new GolfZone { kind = GolfZoneKind.Pipe, shape = Round(x, z, r), exit = new Vector3(ox, oy, oz), exitDir = new Vector2(Mathf.Cos(a), Mathf.Sin(a)), exitSpeed = speed, reach = .3f, exitMover = onMover }, x, z);
         }
 
         /// Scenery (GolfBuild knows the kinds). It stands on the floor there, or on the sea, unless 'y' is given.

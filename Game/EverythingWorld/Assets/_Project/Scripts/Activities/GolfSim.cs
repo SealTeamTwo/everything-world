@@ -90,7 +90,16 @@ namespace EverythingWorld.Activities
                     case GolfZoneKind.Pipe:
                         if (grounded && pipeCool <= 0f)
                         {
-                            onEvent?.Invoke(GolfEvent.Pipe, p, 1f); p = z.exit; hv = z.exitDir * Mathf.Max(z.exitSpeed, hv.magnitude * .6f); v.y = 0f; pipeCool = .5f;
+                            onEvent?.Invoke(GolfEvent.Pipe, p, 1f); var ex = z.exit; var ed = z.exitDir;
+                            if (z.exitMover >= 0)
+                            {
+                                // the way out rides a mover: wherever that has got to now, and pointing the way it has turned
+                                var em = z.exitMover; var q2 = GolfMover.Place(hole.movers[em].pivot, offs[em], angs[em], new Vector2(z.exit.x, z.exit.z)); ex = new Vector3(q2.x, z.exit.y, q2.y);
+                                ed = GolfMover.Place(Vector2.zero, Vector2.zero, angs[em], z.exitDir);
+                                hv = ed * z.exitSpeed;   // (a moving bell plays the ball out at its own speed, however it went in)
+                            }
+                            else hv = ed * Mathf.Max(z.exitSpeed, hv.magnitude * .6f);
+                            p = ex; v.y = 0f; pipeCool = .5f; groundVy = float.NaN;
                             onEvent?.Invoke(GolfEvent.Pipe, p, 1f);
                         }
                         break;
@@ -189,7 +198,7 @@ namespace EverythingWorld.Activities
                         // how hard it meets the floor is its fall against the floor's own slope under it: a ball coming
                         // down onto a downslope lands softly and runs on, one dropping onto the flat bounces
                         SlopeAt(g, out var lx, out var lz); var floorVy = lx * hv.x + lz * hv.y; var rel = v.y - floorVy;
-                        if (rel < -2.6f) { onEvent?.Invoke(GolfEvent.Land, p, -rel); v.y = floorVy - rel * LandBounce; hv *= .95f; }
+                        if (rel < -2.6f) { onEvent?.Invoke(GolfEvent.Land, p, -rel); v.y = floorVy - rel * (under == GolfSurface.Sand ? .12f : LandBounce); hv *= under == GolfSurface.Sand ? .5f : 1f - Mathf.Min(.35f, .04f * -rel); }   // the harder it lands, the more of its run the floor takes; sand swallows it
                         else { v.y = 0f; grounded = true; groundVy = floorVy; }
                     }
                 }

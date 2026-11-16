@@ -172,9 +172,9 @@ namespace EverythingWorld.Activities
                 .Prop("sailboat", -9, 17.5f, 90, .8f).Prop("buoy", 6, 17.5f).Prop("buoy", -5, 17.5f).Prop("palm", 8, 34).Prop("lamp", -3.3f, 24).Prop("lamp", 3.3f, 24).Done());
 
             // 12. sea breeze: gusts across a pier with no rail on the far side
-            holes.Add(H("Sea Breeze", 3, "No rail on the left, and the wind knows it.")
+            holes.Add(H("Sea Breeze", 3, "No rail on the left. Go when the gusts drop.")
                 .On(Deck).Path(2.4f, "RS", 0, -3, 1, 0, 34.05f, 1)
-                .Fan(2.4f, 11.5f, -2.4f, 11.5f, 2.5f, 9f, 3.2f, .5f, 0f).Fan(2.4f, 24f, -2.4f, 24f, 2.5f, 9f, 3.2f, .5f, .5f)
+                .Fan(2.4f, 11.5f, -2.4f, 11.5f, 2.5f, 12f, 4.4f, .5f, 0f).Fan(2.4f, 24f, -2.4f, 24f, 2.5f, 12f, 4.4f, .5f, .77f)   // (the far fan drops a second after the near one, so one calm spell carries a ball past both)
                 .On(Green).Disc(0, 39.5f, 6, 1).Cut(0, 34f, 2.38f)
                 .Tee(0, 0).Cup(0, 41)
                 .Prop("fan", 3.6f, 11.5f, 180).Prop("fan", 3.6f, 24f, 180).Prop("sailboat", -10, 14, 0).Prop("sailboat", -12, 27, 10, .8f).Prop("buoy", -5, 6).Prop("palm", 8, 38).Done());
@@ -200,14 +200,20 @@ namespace EverythingWorld.Activities
                 .Prop("glassbig", 10, 18, 0, 1, 0).Prop("palm", -9, 8).Prop("buoy", 8, 32).Done());
 
             // 15. smooth sax: three horns, and only one comes out by the cup
-            holes.Add(H("Smooth Sax", 3, "Three horns. One plays you straight to the cup.")
+            holes.Add(H("Smooth Sax", 3, "Three horns play onto a turning stage. Go when a bell faces the flag.")
                 .On(Deck).Path(2.6f, "LRS", 0, -3, 1, 0, 10.05f, 1)
                 .Disc(0, 16, 6.5f, 1).Cut(0, 10.04f, 2.58f)
                 .On(Green).Disc(0, 40, 6.5f, 1)
                 .On(Sand).Disc(-3.4f, 37.6f, 2f, 1, 0, false)
-                .Pipe(-4f, 18.5f, -3.4f, 37.2f, 90, 2f).Pipe(0, 20.6f, 0, 35.6f, 90, 3.2f).Pipe(4f, 18.5f, 4.6f, 43.6f, 215, 4.4f)
-                .Tee(0, 0).Cup(0, 40.8f).Route(0, 0, 4, 18.5f, 0, 40.8f)
-                .Prop("sax", -4f, 18.5f, 0).Prop("sax", 0, 20.6f, 0).Prop("sax", 4f, 18.5f, 0).Prop("bell", -3.4f, 36.6f, 90).Prop("bell", 0, 35f, 90).Prop("bell", 5.1f, 44f, 215)
+                // the three bells go slowly round the green on a turning stage, each playing straight across its middle: the
+                // cup is off to one side, so a bell only finds it as it comes into line (the left horn plays softest, the right hardest)
+                .Spinning(0, 40, 20f, 0f, "stage")
+                .Pipe(-4f, 18.5f, 4.7f, 0, 180, 3.6f).Prop("bell", 5.3f, 0, 180)
+                .Pipe(0, 20.6f, -2.35f, 4.07f, 300, 4.7f).Prop("bell", -2.65f, 4.59f, 300)
+                .Pipe(4f, 18.5f, -2.35f, -4.07f, 60, 5.6f).Prop("bell", -2.65f, -4.59f, 60)
+                .Still()
+                .Tee(0, 0).Cup(1.7f, 41.5f).Route(0, 0, 0, 20.6f, 1.7f, 41.5f)
+                .Prop("sax", -4f, 18.5f, 0).Prop("sax", 0, 20.6f, 0).Prop("sax", 4f, 18.5f, 0)
                 .Prop("palm", -9, 30).Prop("palm", 9, 30).Prop("buoy", 0, 28).Done());
 
             // 16. yacht hop: three decks, two jumps
@@ -229,11 +235,12 @@ namespace EverythingWorld.Activities
                 .Prop("palm", -7, 6).Prop("palm", 7, 6).Prop("lamp", -3.3f, 15).Prop("lamp", 3.3f, 15).Prop("cabana", 0, 48.5f, 180).Done());
 
             // 18. into the sunset: down the slipway, off the lip, through the sun and into the bowl
-            holes.Add(H("Into the Sunset", 3, "Down the slipway, through the sun, into the bowl.")
+            holes.Add(H("Into the Sunset", 3, "A firm putt: the slipway and the sun do the rest. Smash it and it is gone.")
                 .On(Deck).Path(2.6f, "LRS", 0, -3, 7, 0, 4, 7, 0, 24, 2f, 0, 28, 3.4f)
                 .Boost(0, 8, 0, 20, 2.5f, 10f)
-                .On(Green).Disc(0, 46, 9, .6f, 1.4f)
-                .Ring(0, 46, 9.05f, 2f, 2.6f, "glass", 15, 165)
+                .On(Green).Path(2.6f, "LRS", 0, 28.3f, 1f, 0, 37.1f, 2f)   // a landing apron under the sun: a ball that falls short can putt on up into the bowl
+.On(Green).Disc(0, 46, 9, .6f, 1.4f).Cut(0, 37.05f, 2.58f)
+                .Ring(0, 46, 9.05f, 2f, 7f, "glass", -52, 232)
                 .Tee(0, 0).Cup(0, 46).Route(0, 0, 0, 28, 0, 46)
                 .Prop("sunring", 0, 32.5f, 0, 1, 4.4f).Prop("yacht", -14, 38, 10, 1.6f).Prop("yacht", 15, 42, 170, 1.4f).Prop("palm", -12, 52).Prop("palm", 12, 52).Prop("buoy", 5, 31).Prop("buoy", -5, 34).Done());
 
