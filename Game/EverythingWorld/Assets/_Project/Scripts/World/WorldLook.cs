@@ -3,12 +3,14 @@ using UnityEngine;
 
 namespace EverythingWorld.World
 {
-    /// The visual upgrade being tried on one land at a time (2026-11-15, starting with Lanternwood): deeper ambient
-    /// occlusion (land_moods.json "ao", "aoRadius"), bevelled box edges (MeshKit.Bevel) and lantern shadows near you
-    /// (NearShadows). Old = the look before it, for comparing: set the environment variable EW_OLD_LOOK=1 (the photo
+    /// The visual upgrade (2026-11-15, tried on Lanternwood, then every land): deeper ambient occlusion (land_moods.json
+    /// "ao", "aoRadius" to set a land's own), bevelled box edges (MeshKit.Bevel) and lamp shadows near you (NearShadows). Old = the look before it, for comparing: set the environment variable EW_OLD_LOOK=1 (the photo
     /// tour passes it through) or PlayerPrefs EW_OldLook = 1.
     public static class WorldLook
     {
+        /// How far box edges are cut back (metres), and the ambient occlusion every land gets unless its land_moods.json
+        /// entry asks for its own: a little lighter on sunny lands, whose sun shadows already give depth.
+        public const float Bevel = .045f, AO = .95f, AOSunny = .7f, AORadius = .7f;
         static int old = -1;
         public static bool Old
         {

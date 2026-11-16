@@ -66,7 +66,6 @@ namespace EverythingWorld.World
 
         public override void Dress(LandContext ctx)
         {
-            MeshKit.Bevel = WorldLook.Old ? 0f : .045f;   // the visual upgrade, tried here first (WorldLook)
             MakeMaterials();
             clear.Clear();
             pathPoints.Clear(); lanternPosts.Clear();
@@ -454,11 +453,9 @@ namespace EverythingWorld.World
 
         public override void Finish(LandContext ctx)
         {
-            if (!WorldLook.Old) ctx.Root.gameObject.AddComponent<NearShadows>();
             FrostCover(ctx);
             halos.Build("Lanternwood glow", ctx.Root);
             Debug.Log($"Lanternwood: {halos.Count} glows");
-            MeshKit.Bevel = 0f;
         }
 
         /// Winter ground cover: dry grass poking up through the snow with frost on its tips, and clumps of rusty

@@ -112,7 +112,7 @@ namespace EverythingWorld.World
                 aurora = m.aurora, auroraChance = m.auroraChance, bloom = m.bloom,
                 hf = m.heightFog, hfColor = LandMood.Hex(m.heightFogColor, Color.grey), hfBase = m.heightFogBase,
                 hfFall = m.heightFogFalloff, hfDens = m.heightFogDensity, sunGlow = m.sunGlow, grade = m.grade,
-                ao = m.ao > 0f && !WorldLook.Old ? m.ao : -1f, aoR = m.aoRadius > 0f && !WorldLook.Old ? m.aoRadius : -1f,
+                ao = WorldLook.Old ? -1f : m.ao > 0f ? m.ao : m.sunShadows ? WorldLook.AOSunny : WorldLook.AO, aoR = WorldLook.Old ? -1f : m.aoRadius > 0f ? m.aoRadius : WorldLook.AORadius,
             };
             var amount = m.weatherAmount;
             if (m.dailyWeather)
