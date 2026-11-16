@@ -211,6 +211,7 @@ The playlist is meant to be surprising and spontaneous, so the world shouldn't b
 - **The reward is music:** doing well (going under par for the golf course, say) unlocks the full Everything Playlist while you play that activity. Before that, the activity only plays its land's songs. You can switch it back to just the land.
 - **Completionist piece in the Hub:** each activity finished adds to something in the Hub (see the pedestals idea below).
 - **One fixed bar per activity** (under par, say) for the unlock. High scores or records could be shown at the Hub.
+- **Mini golf is the big one:** expected to be one of the main things friends do. 18 holes on the Riviera, built so another course could be added one day.
 - **Air hockey** is another candidate.
 - **The feel to aim for** comes from party games the owner plays with friends: mini golf with everyone on the course at once, a nine-ball pool game with a twist of chance, a quick basketball shooting game. Take the feel and the kind of game only; every course, table, rule set and look is our own.
 - **Collectibles** to find around the world (not a priority yet).
