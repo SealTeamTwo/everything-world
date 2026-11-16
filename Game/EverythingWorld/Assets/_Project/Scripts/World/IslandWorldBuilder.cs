@@ -41,10 +41,10 @@ namespace EverythingWorld.World
         public float buildDistance = 1200f;
         [Tooltip("Build every land while a loading screen shows at the start (about half a minute to a minute), so there are no pauses later as you travel. Off: lands are built as you come within buildDistance of them.")]
         public bool loadAllAtStart = true;
-        [Tooltip("In the editor only (a built game loads every land first). With Load All At Start: the loading screen builds only the lands within Build Distance of you; the rest are built afterwards in the background, a piece at a time (a land's scenery, each artist area, its finish), nearest first, using about Background Share of the time so play stays smooth.")]
-        public bool backgroundLoading = true;
+        [Tooltip("Off: every land is built behind the loading screen at the start, so nothing pauses later. On, in the editor only (a built game loads every land first). With Load All At Start: the loading screen builds only the lands within Build Distance of you; the rest are built afterwards in the background, a piece at a time (a land's scenery, each artist area, its finish), nearest first, using about Background Share of the time so play stays smooth.")]
+        public bool buildWhilePlaying = false;   // (off since 2026-11-17: the pauses while lands built during play were worse than a longer loading screen)
         /// Background loading is for testing in the editor; a built game builds every land behind the loading screen.
-        bool Background => backgroundLoading && Application.isEditor;
+        bool Background => buildWhilePlaying && Application.isEditor;
         [Range(.05f, 1f)] public float backgroundShare = .3f;
         [Tooltip("Hide grass, small props, glows and lights on built lands when they're far away (LandCuller). Turn off to compare.")]
         public bool cullByDistance = true;
