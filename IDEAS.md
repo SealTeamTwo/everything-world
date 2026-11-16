@@ -203,6 +203,16 @@ The playlist is meant to be surprising and spontaneous, so the world shouldn't b
 - **Post-Punk Docklands:** a flat centre where the tall buildings stand, on something closer to a street grid, with slopes round it down to the docks.
 - **Grunge Rainwood:** more colour and more lighting (it can be higher energy, not only gloomy), without overdoing it; make Alice In Chains (the owner's favourite of the scene) easy to find.
 
+## Activities: the owner's thinking (2026-11-16, not decided, not built)
+
+- **Walk up and play together:** activities are things in the world you walk up to and play with friends.
+- **Shrinking:** starting an activity shrinks you down onto a tiny version (a tiny golf course on a table, say), so no activity is limited by the room its land has.
+- **More activities wanted:** basketball and pool, besides mini golf (Riviera), skating, ice fishing and the rest above.
+- **The reward is music:** doing well (going under par for the golf course, say) unlocks the full Everything Playlist while you play that activity. Before that, the activity only plays its land's songs. You can switch it back to just the land.
+- **Completionist piece in the Hub:** each activity finished adds to something in the Hub (see the pedestals idea below).
+- **Collectibles** to find around the world.
+- **Later, bigger:** giant puzzles; a survive-the-waves game with friends in the Iron Range.
+
 ## Social spaces and minigames (2026-11-09, later)
 
 - A big Christmas lodge (probably in or near Lanternwood) you can go inside, sit down in and talk with friends.
