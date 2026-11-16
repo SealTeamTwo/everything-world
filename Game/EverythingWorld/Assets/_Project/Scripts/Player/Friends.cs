@@ -36,7 +36,55 @@ namespace EverythingWorld.Player
             set => PlayerPrefs.SetString("EW_PlayerName", (value ?? "").Trim().Length > 20 ? value.Trim().Substring(0, 20) : (value ?? "").Trim());
         }
 
-        const string MsgMine = "ew/me", MsgAll = "ew/all";
+        const string MsgMine = "ew/me", MsgAll = "ew/all", MsgExtra = "ew/x";
+
+        // ---------------------------------------------------------------- anything else friends share (activities)
+        /// A message from a friend on a named channel (mini golf's scores and balls...): who sent it, the channel, the bytes.
+        public static event Action<ulong, string, byte[]> Received;
+        /// True once messages can be sent.
+        public bool Online => net != null && net.IsListening && session != null && handlers;
+        public ulong LocalId => net != null ? net.LocalClientId : 0;
+        /// While set, this is the position friends are told you're at (an activity that has taken your camera
+        /// somewhere unreal can leave your orb where it makes sense).
+        public static Vector3? ReportedEye;
+
+        /// Sends bytes to everyone else in the game on a channel (through the host, who passes them on).
+        public void Broadcast(string channel, byte[] data, bool reliable = false)
+        {
+            if (!Online || data == null || data.Length > 4096) return;
+            var how = reliable ? NetworkDelivery.ReliableSequenced : NetworkDelivery.UnreliableSequenced;
+            using (var w = new FastBufferWriter(data.Length + 128, Allocator.Temp, 8192))
+            {
+                w.WriteValueSafe(net.LocalClientId); w.WriteValueSafe(channel); w.WriteValueSafe(data.Length); w.WriteBytesSafe(data, data.Length);
+                if (net.IsServer) { foreach (var id in net.ConnectedClientsIds) if (id != net.LocalClientId) net.CustomMessagingManager.SendNamedMessage(MsgExtra, id, w, how); }
+                else net.CustomMessagingManager.SendNamedMessage(MsgExtra, NetworkManager.ServerClientId, w, how);
+            }
+        }
+
+        void OnExtra(ulong sender, FastBufferReader r)
+        {
+            r.ReadValueSafe(out ulong from); r.ReadValueSafe(out string channel); r.ReadValueSafe(out int n);
+            if (n < 0 || n > 4096) return; var data = new byte[n]; if (n > 0) r.ReadBytesSafe(ref data, n);
+            if (net.IsServer)
+            {
+                from = sender; if (sender == net.LocalClientId) return;
+                // the host passes it on to everyone else
+                using (var w = new FastBufferWriter(n + 128, Allocator.Temp, 8192))
+                {
+                    w.WriteValueSafe(from); w.WriteValueSafe(channel); w.WriteValueSafe(n); w.WriteBytesSafe(data, n);
+                    foreach (var id in net.ConnectedClientsIds) if (id != sender && id != net.LocalClientId) net.CustomMessagingManager.SendNamedMessage(MsgExtra, id, w, NetworkDelivery.UnreliableSequenced);
+                }
+            }
+            else if (from == net.LocalClientId) return;
+            try { Received?.Invoke(from, channel, data); } catch (Exception e) { Debug.LogWarning("Friends: " + e); }
+        }
+
+        /// A friend's name and orb colour, by the number their messages carry.
+        public bool TryGetFriend(ulong id, out string name, out Color color)
+        {
+            if (remotes.TryGetValue(id, out var r) && r.go != null) { name = r.label.text; color = r.orb.Color; return true; }
+            name = "Friend"; color = Color.white; return false;
+        }
         const float SendEvery = .05f, Forget = 4f;
         // friends are drawn a moment in the past, gliding between positions they've already sent, so their path is
         // smooth however unevenly the messages arrive (through the host and the relay); without this they jolt and slingshot
@@ -72,7 +120,7 @@ namespace EverythingWorld.Player
         /// side they're on. Close by and in plain view it goes away (their orb and name are enough).
         void OnGUI()
         {
-            if (remotes.Count == 0 || MainMenu.Showing || Event.current.type != EventType.Repaint) return;
+            if (remotes.Count == 0 || MainMenu.Showing || Event.current.type != EventType.Repaint || EverythingWorld.Activities.GolfGame.Playing) return;
             var cam = Camera.main; if (cam == null) return;
             tagStyle ??= new GUIStyle(GameFonts.Box(15, TextAnchor.MiddleCenter)) { padding = new RectOffset(8, 8, 3, 3) };
             if (dot == null) { dot = Dot(false); rim = Dot(true); }
@@ -216,6 +264,7 @@ namespace EverythingWorld.Player
                 handlers = true;
                 net.CustomMessagingManager.RegisterNamedMessageHandler(MsgMine, OnMine);
                 net.CustomMessagingManager.RegisterNamedMessageHandler(MsgAll, OnAll);
+                net.CustomMessagingManager.RegisterNamedMessageHandler(MsgExtra, OnExtra);
             }
             if (Time.time >= nextSend)
             {
@@ -258,7 +307,7 @@ namespace EverythingWorld.Player
 
         State MyState()
         {
-            var eye = walker != null && walker.cameraPivot != null ? walker.cameraPivot.position : transform.position + Vector3.up * .7f;
+            var eye = ReportedEye ?? (walker != null && walker.cameraPivot != null ? walker.cameraPivot.position : transform.position + Vector3.up * .7f);
             var look = Camera.main != null ? Camera.main.transform.forward : transform.forward;
             if (shades == null) shades = GetComponent<Sunglasses>();
             return new State { eye = eye, stamp = Time.realtimeSinceStartup, yaw = Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg, shades = (byte)(shades != null && shades.On ? 1 : 0),

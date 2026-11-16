@@ -215,7 +215,8 @@ The playlist is meant to be surprising and spontaneous, so the world shouldn't b
   - The first course is the Riviera's own: yacht-rock life in miniature (a yacht's deck, a swimming pool, a marina, a cocktail bar, a sunset pier). A world-tour course (each hole a tiny land) could be a second course later.
   - The more moving parts and tricks the better (moving obstacles, ramps, water that resets the ball). Everyone putts at once, in the style of party mini golf games.
   - A full round takes 20 to 30 minutes.
-  - Build order: the game itself on 3 holes first (shrink, putt, scores, friends, the unlock), then the other 15.
+  - **Built 2026-11-16 (first version, waiting for the owner's first play):** the whole game and all 18 holes (see the Riviera's entry in WORLD_GUIDE.md). How it works, for the activities that follow: the course is a real, big place built out of sight high over its land (so the land's sky and radio still apply), and the model you see in the world is a shrunk copy of it; the ball rolls by the game's own small physics (GolfSim), not Unity's, so every hole can be played thousands of times outside Unity to check it can be finished; friends share only where each ball is and the card (Friends.Broadcast, a channel any activity can use).
+  - Still to do for golf: the record and trophy at the Hub; sounds; a second course; watching a friend's ball while you wait; whatever the first play shows.
 - **Air hockey** is another candidate.
 - **The feel to aim for** comes from party games the owner plays with friends: mini golf with everyone on the course at once, a nine-ball pool game with a twist of chance, a quick basketball shooting game. Take the feel and the kind of game only; every course, table, rule set and look is our own.
 - **Collectibles** to find around the world (not a priority yet).

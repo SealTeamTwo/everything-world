@@ -32,6 +32,9 @@ namespace EverythingWorld.World
         GUIStyle style;
 
         public string IslandName { get; private set; } = "";
+        /// Set while an activity has taken the player somewhere that isn't really a place in the world (mini golf's
+        /// course in the sky): the land, the sky and the radio stay as they were, and nothing turns the player back.
+        public static bool Frozen;
 
         void Start()
         {
@@ -60,7 +63,7 @@ namespace EverythingWorld.World
         void Update()
         {
             var world = IslandWorldBuilder.Instance;
-            if (world == null) return;
+            if (world == null || Frozen) return;
             var p = transform.position;
             var feet = p.y + controller.center.y - controller.height / 2;
 
@@ -169,7 +172,7 @@ namespace EverythingWorld.World
         }
 
         /// Unstuck (from the pause menu): moves you to the nearest clear spot a step or more away.
-        public void Unstick() { if (IslandWorldBuilder.Instance != null && IslandWorldBuilder.Instance.Data != null) PlaceAt(StandingSpot(transform.position, transform, notHere: true), keepHeight: true); }
+        public void Unstick() { if (!Frozen && IslandWorldBuilder.Instance != null && IslandWorldBuilder.Instance.Data != null) PlaceAt(StandingSpot(transform.position, transform, notHere: true), keepHeight: true); }
 
         void PlaceAt(Vector3 p, bool keepHeight = false)
         {
@@ -183,7 +186,7 @@ namespace EverythingWorld.World
 
         void OnGUI()
         {
-            if (nearTower == null || IslandWorldBuilder.Instance == null) return;
+            if (nearTower == null || IslandWorldBuilder.Instance == null || Frozen) return;
             style ??= GameFonts.Box(17, TextAnchor.UpperLeft);
             var towers = IslandWorldBuilder.Instance.Towers;
             var text = $"{nearTower.towerName}: fast travel\n" + (nearTower.sceneId != 1000 ? "\nH  Back to the Hub" : "");

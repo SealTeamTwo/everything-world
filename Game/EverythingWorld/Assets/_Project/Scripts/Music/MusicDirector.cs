@@ -29,8 +29,25 @@ namespace EverythingWorld.Music
 
         public SceneCatalog Catalog { get; private set; }
         /// The scene of the zone you're in: a trigger zone if you're inside one, otherwise the island under you.
-        public SceneInfo CurrentScene =>
-            zones.Count > 0 ? Catalog.Get(zones[zones.Count - 1].sceneId) : areaSceneId >= 0 ? Catalog.Get(areaSceneId) : null;
+        public SceneInfo CurrentScene => held ??
+            (zones.Count > 0 ? Catalog.Get(zones[zones.Count - 1].sceneId) : areaSceneId >= 0 ? Catalog.Get(areaSceneId) : null);
+
+        SceneInfo held, everything;
+        /// An activity can hold the radio on one station (its land's, or the whole playlist) wherever the player's
+        /// body happens to be. Null lets the radio follow the player again.
+        public SceneInfo Held { get => held; set { if (held == value) return; held = value; ScheduleSwitch(); } }
+        /// The Everything Playlist as one station: every song of every land, shuffled on the shared clock like the
+        /// rest, so friends who have it on hear the same song.
+        public SceneInfo Everything
+        {
+            get
+            {
+                if (everything != null || Catalog == null) return everything;
+                var all = new List<TrackInfo>(); var seen = new HashSet<string>();
+                foreach (var s in Catalog.scenes) if (s.tracks != null) foreach (var t in s.tracks) if (t != null && seen.Add(t.id ?? t.name)) all.Add(t);
+                return everything = new SceneInfo { id = 9999, name = "The Everything Playlist", tracks = all.ToArray() };
+            }
+        }
         /// The station you're tuned to, and the song it's on.
         public SceneInfo PlayingScene { get; private set; }
         public RadioSchedule.Slot CurrentSlot { get; private set; }

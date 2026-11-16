@@ -11,7 +11,7 @@ namespace EverythingWorld.World
     /// Club (a clay court, an umpire's chair, a ball machine, balls to throw); the Winery (a terrace of tables under a
     /// pergola, barrels, grapes); Smooth Sound Studios (a studio to walk into, a mixing desk with faders to push, gold
     /// records, a saxophonist who has been on take 41 for some time); and the Sunset Gazebo with its telescope.
-    /// THE EAST MEADOW BEYOND THE GAZEBO IS LEFT EMPTY ON PURPOSE: it is the room kept for the owner's mini golf.
+    /// The east meadow beyond the gazebo, kept empty for the owner's mini golf, now holds the way in to it (YachtGolf).
     public partial class YachtKit
     {
         static readonly Vector2 LidoAt = new Vector2(6005, 4216), TennisAt = new Vector2(6320, 4018), WineryAt = new Vector2(6128, 4048), StudioAt = new Vector2(6560, 4436), GazeboAt = new Vector2(6702, 4122);
@@ -19,7 +19,7 @@ namespace EverythingWorld.World
         static readonly Vector2[] SouthWay = { new Vector2(6318, 4100), new Vector2(6316, 4070), new Vector2(6320, 4046) };
         static readonly Vector2[] NorthWay = { new Vector2(6552, 4372), new Vector2(6558, 4400), new Vector2(6560, 4420) };
         static readonly Vector2[] EastWay = { new Vector2(6682, 4150), new Vector2(6705, 4105), new Vector2(6735, 4075), new Vector2(6752, 4052) };
-        static readonly (Vector2 at, float r)[] PlaceRings = { (LidoAt, 15f), (TennisAt, 19f), (WineryAt, 13f), (StudioAt, 11f), (GazeboAt, 6f) };
+        static readonly (Vector2 at, float r)[] PlaceRings = { (LidoAt, 15f), (TennisAt, 19f), (WineryAt, 13f), (StudioAt, 11f), (GazeboAt, 6f), (GolfAt, 10f) };
 
         YachtPlacesLife plife; System.Random prng; Transform rootT; LandContext ctx0; readonly List<Vector3> roadPts = new List<Vector3>();
 
@@ -105,7 +105,7 @@ namespace EverythingWorld.World
             plife = new GameObject("Riviera places life").AddComponent<YachtPlacesLife>(); plife.transform.SetParent(life.transform, false);
             foreach (var (at, r) in PlaceRings) noGrass.Add(new Vector3(at.x, r, at.y));
             StoneRoad(ctx, mk, WestWay); StoneRoad(ctx, mk, SouthWay); StoneRoad(ctx, mk, NorthWay); StoneRoad(ctx, mk, EastWay);
-            Lido(ctx, mk, solid); TennisClub(ctx, mk, solid); Winery(ctx, mk, solid); Studio(ctx, mk, solid); Gazebo(ctx, mk, solid);
+            Lido(ctx, mk, solid); TennisClub(ctx, mk, solid); Winery(ctx, mk, solid); Studio(ctx, mk, solid); Gazebo(ctx, mk, solid); GolfLinks(ctx, mk, solid);
             if (hasBay) PromenadePeople(ctx, mk);
         }
 

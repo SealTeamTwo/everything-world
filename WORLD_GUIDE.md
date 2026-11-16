@@ -150,7 +150,11 @@ Guards stand at the castle gate, a flower seller and a walker keep the village g
 
 On the promenade: two people strolling round the bay in opposite directions, a gelato cart, and a saxophonist where you arrive. The promenade benches and the club's seats can be sat on.
 
-**Kept empty on purpose:** the broad east meadow beyond the gazebo (the road ends at its edge) is reserved for a mini golf course.
+**The Riviera Links (mini golf, the land's activity):** in the broad east meadow beyond the gazebo. What stands in the meadow is the way in: a long stone basin of water holding a little model of the whole course, two golf bags, a board, benches, lamps and a caddy. Press E on a bag and you shrink onto the course itself: eighteen holes of yacht-rock life in miniature, standing on piles in a calm sea under the Riviera's sunset. You are your ball. Aim with the mouse, hold the button to swing, let go to putt; everyone putts at once and balls pass through each other. A hole ends when you're in, after 10 strokes, or after two minutes; when everyone is done, on to the next. Friends who stay by the basin see each ball as a dot of light on the model, and the model's propellers turn in step with the real ones.
+
+The holes, par 55 in all: Welcome Aboard (a straight putt down the gangplank), The Gangway (up a ramp to the top deck), Marina Dogleg (round a corner off an angled board), Propeller (two turning propellers), Pool Party (round the pool, or off the diving board and over it), Piano Keys (weave between the black keys), Sandbar (bunkers and a hump), Rowing Club (rowing boats crossing the lane), The Lighthouse (a ramp winding round it to the green on top), Cocktail Hour (glasses that kick the ball away), Drawbridge (jump the channel, then time the gate), Sea Breeze (gusts across a pier with no rail on one side), Lazy River (the current carries the ball round), On the Rocks (ice, and ice cubes to bounce off), Smooth Sax (three horns, one of which plays the ball out beside the cup), Yacht Hop (three decks, two jumps), Hotel Lobby (two revolving doors and a porter's barrier), Into the Sunset (down a slipway with boosters, off the lip, through a ring of sun and into a bowl).
+
+Finish a full round under par and the course's radio can play the whole Everything Playlist instead of the Riviera's songs (P switches between them from then on). Your best round is kept and shown at the bags.
 
 ### The Prog Marches
 *37 songs · 13 artists · 0.54 km² · built in Unity*

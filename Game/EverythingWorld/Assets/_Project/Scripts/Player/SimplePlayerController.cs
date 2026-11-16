@@ -68,6 +68,17 @@ namespace EverythingWorld.Player
             pitch = 0f;
         }
 
+        /// True while something else has the body (an activity's own camera, like mini golf): no walking, looking,
+        /// flying or falling until it lets go. Whoever takes it moves this transform and the camera pivot itself.
+        public bool Controlled { get; private set; }
+        public void Take() { if (Flying) SetFlying(false); Controlled = true; controller.enabled = false; verticalVelocity = 0f; }
+        /// Gives the body back at 'middle' (the body's middle, as transform.position was), facing 'facing'.
+        public void Release(Vector3 middle, Quaternion facing)
+        {
+            Controlled = false; pitch = 0f; if (cameraPivot != null) cameraPivot.localEulerAngles = Vector3.zero;
+            transform.SetPositionAndRotation(middle, facing); controller.enabled = true; verticalVelocity = 0f;
+        }
+
         /// Stands up at 'feet'.
         public void Stand(Vector3 feet)
         {
@@ -86,6 +97,7 @@ namespace EverythingWorld.Player
 
             // (Esc opens the pause menu, MainMenu, which frees the cursor)
             if (mouse.leftButton.wasPressedThisFrame) SetCursorLocked(true);
+            if (Controlled) return;
             if (keyboard.fKey.wasPressedThisFrame && !Seated) { if (FlightUnlocked || Flying) SetFlying(!Flying); else lockedNote = Time.time; }
 
             if (Cursor.lockState == CursorLockMode.Locked)
