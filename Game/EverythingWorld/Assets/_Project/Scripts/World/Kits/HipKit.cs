@@ -121,6 +121,7 @@ namespace EverythingWorld.World
             Remember(ctx.OnGround(center.x, center.z), 0);
             TownStart(ctx);
             TheBlock(ctx, mk, solid);
+            try { HoopsCourt(ctx, mk, solid); } catch (System.Exception e) { Debug.LogWarning("The basketball court could not be built (the rest of the Boroughs is unaffected): " + e); }   // new and not yet played: it must never take the land down with it
             VictoryAvenue(ctx, mk, solid);
             TheStage(ctx, mk, solid);
             Paths(ctx, mk, solid);

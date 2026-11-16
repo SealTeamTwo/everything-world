@@ -1122,6 +1122,8 @@ City islands joined by bridges. Dusk into night, with one sunny beach.
 - **The Stage:** climb the steps and take the microphone.
 - **The Tower:** the boombox on the roof; you feel it in the pavement.
 
+**The Court (basketball, the land's activity):** by the Block's half court stand a ball rack and a little model of a full street court. Press E at the rack and you shrink onto that court: the roof of a tall brick block high over the Boroughs, fenced, in the same golden light. Here you walk about as you always do. Click a ball to pick it up (it bounces at your side as you move), hold the button to wind up a shot, let go to shoot where you're looking. Six baskets, each keeping count of everyone's baskets: The Regular and The Other End, The High One, The Little One, The Shuttle (it slides to and fro) and The Bin on the ground. It is freestyle: no clock, no score to beat. Score in all six, over as many visits as it takes, and the court's radio can play the whole Everything Playlist (P switches).
+
 ### The Velvet Rooftops
 *29 songs · 23 artists · 0.48 km² · built in Unity*
 
