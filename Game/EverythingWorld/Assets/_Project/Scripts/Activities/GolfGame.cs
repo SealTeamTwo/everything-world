@@ -33,13 +33,14 @@ namespace EverythingWorld.Activities
         public static bool Playing => Active != null;
 
         public GolfCourse course; public Transform big, mini; public int landScene;
+        public TextMesh recordText;   // a board by the bags: your best round, and whether the playlist is unlocked
         public const int StrokeLimit = 10; public const float HoleSeconds = 120f;
         const string Channel = "golf";
 
         enum Phase { Off, ShrinkIn, Aim, Roll, HoleDone, RoundDone, ShrinkOut }
         Phase phase = Phase.Off; float phaseT, shrinkT = 9f;
         int hole; GolfSim sim; int strokes; int[] card; float holeStarted, acc, yaw, pitch = 24f, dist = 8f, power; bool charging, wasLocked, fullRound;
-        Vector3 focus; Transform ball, aim; Material ballM; string banner = ""; float bannerUntil; float leaveHeld, nextSend, waited;
+        Vector3 focus; int watching = -1; Transform ball, aim; Light ballLight; TrailRenderer trail; Material trailM; Material ballM; string banner = ""; float bannerUntil; float leaveHeld, nextSend, waited;
         SimplePlayerController walker; PlayerInteractor hands; Vector3 backPos; Quaternion backRot;
         readonly List<(GolfEvent e, Vector3 p, float f)> events = new List<(GolfEvent, Vector3, float)>();
 
@@ -53,6 +54,15 @@ namespace EverythingWorld.Activities
         public string StartPrompt => $"Play mini golf  ·  {course.holes.Length} holes, par {course.Par}" + (Best > 0 ? $"  ·  your best {Best}" : "");
 
         void OnEnable() { Friends.Received += OnNet; }
+        void Start() { ShowRecord(); }
+
+        void ShowRecord()
+        {
+            if (recordText == null || course == null) return;
+            var best = Best; var vs = best - course.Par;
+            recordText.text = (best > 0 ? $"Your best round: {best}  ({(vs == 0 ? "level par" : vs < 0 ? $"{-vs} under par" : $"{vs} over par")})" : "No round finished yet")
+                + "\n" + (Unlocked ? "The Everything Playlist is unlocked here" : $"Go round under {course.Par} to unlock the Everything Playlist");
+        }
         void OnDisable() { Friends.Received -= OnNet; if (Active == this) Quit(); }
 
         // ---------------------------------------------------------------- in and out
@@ -71,10 +81,18 @@ namespace EverythingWorld.Activities
             if (ball == null)
             {
                 ball = Sphere("Golf ball", GolfHole.BallR * 2f, big, out ballM);
+                // a little light of its own and a short trail, so it is easy to follow at dusk
+                var bl = new GameObject("Ball light").AddComponent<Light>(); bl.transform.SetParent(ball, false); bl.transform.localPosition = Vector3.up * 1.5f; bl.type = LightType.Point; bl.range = 3.5f; bl.intensity = 1.1f; bl.shadows = LightShadows.None; ballLight = bl;
+                var tm = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit")) { name = "Ball trail" };
+                tm.SetFloat("_Surface", 1f); tm.SetFloat("_Blend", 2f); tm.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha); tm.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.One);
+                tm.SetFloat("_ZWrite", 0f); tm.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); tm.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent; trailM = tm;
+                trail = ball.gameObject.AddComponent<TrailRenderer>(); trail.sharedMaterial = tm; trail.time = .4f; trail.startWidth = .24f; trail.endWidth = 0f; trail.minVertexDistance = .05f;
+                trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; trail.receiveShadows = false;
                 var a = GameObject.CreatePrimitive(PrimitiveType.Cube); Destroy(a.GetComponent<Collider>()); a.name = "Aim line"; a.transform.SetParent(big, false);
                 var r = a.GetComponent<MeshRenderer>(); r.sharedMaterial = WorldMaterials.Glow(Color.white, 2f); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; aim = a.transform;
             }
             var c = PlayerOrb.Local != null ? PlayerOrb.Local.Color : Color.white; ballM.SetColor("_BaseColor", c); ballM.SetColor("_EmissionColor", c * 1.2f);
+            if (ballLight != null) ballLight.color = c; if (trailM != null) trailM.SetColor("_BaseColor", new Color(c.r, c.g, c.b, .55f));
             ball.gameObject.SetActive(true);
             card = new int[course.holes.Length];
             // join friends where they are; a round only counts for the record if you played it from the first hole
@@ -101,9 +119,9 @@ namespace EverythingWorld.Activities
         void StartHole(int h)
         {
             hole = h; var gh = course.holes[h]; sim = new GolfSim(gh) { onEvent = (e, p, f) => events.Add((e, p, f)) };
-            strokes = 0; holeStarted = Time.time; acc = 0f; charging = false; waited = 0f; phase = Phase.Aim; phaseT = 0f;
+            strokes = 0; holeStarted = Time.time; acc = 0f; charging = false; waited = 0f; watching = -1; phase = Phase.Aim; phaseT = 0f;
             var d = gh.route.Count > 1 ? gh.route[1] - gh.route[0] : Vector2.up; yaw = course.yaws[h] + Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg; pitch = 24f; dist = 8f;
-            focus = BallWorld() + Vector3.up * .5f; Say($"Hole {h + 1}  ·  {gh.name}  ·  par {gh.par}\n{gh.blurb}", 4.5f);
+            focus = BallWorld() + Vector3.up * .5f; if (ball != null) ball.position = BallWorld(); if (trail != null) trail.Clear(); Say($"Hole {h + 1}  ·  {gh.name}  ·  par {gh.par}\n{gh.blurb}", 4.5f);
         }
 
         Vector3 BallWorld() => big.TransformPoint(course.At(hole, sim.p + Vector3.up * GolfHole.BallR));
@@ -140,6 +158,8 @@ namespace EverythingWorld.Activities
                 leaveHeld = kb.xKey.isPressed ? leaveHeld + dt : 0f; if (leaveHeld > .8f) { leaveHeld = 0f; phase = Phase.ShrinkOut; phaseT = 0f; return; }
             }
 
+            // a boat or a propeller that reaches a ball lying still pushes it along (no stroke)
+            if (phase == Phase.Aim && sim.Touched(SharedChance.Now)) { charging = false; sim.Wake(); phase = Phase.Roll; acc = 0f; }
             if (phase == Phase.Aim && canAct)
             {
                 if (!charging && mouse.leftButton.wasPressedThisFrame) { charging = true; power = 0f; phaseT = 0f; }
@@ -170,7 +190,8 @@ namespace EverythingWorld.Activities
 
             if (phase == Phase.HoleDone)
             {
-                waited += dt; var waiting = 0; foreach (var o in others.Values) if (Fresh(o) && (o.flags & 4) == 0 && o.hole == hole && (o.flags & 2) == 0) waiting++;
+                waited += dt; var waiting = 0; foreach (var o in others.Values) if (StillOn(o)) waiting++;
+                if (waiting == 0) watching = -1; else if (canAct && mouse.leftButton.wasPressedThisFrame) watching = watching + 1 >= waiting ? -1 : watching + 1;   // click: watch the next ball still out there, then your own again
                 if (phaseT > 3.5f && (waiting == 0 || waited > HoleSeconds + 30f))
                 {
                     if (hole + 1 < course.holes.Length) StartHole(hole + 1); else FinishRound();
@@ -196,7 +217,7 @@ namespace EverythingWorld.Activities
                 PlayerPrefs.SetInt(Key("rounds"), PlayerPrefs.GetInt(Key("rounds"), 0) + 1);
                 if (total < course.Par && !Unlocked) { PlayerPrefs.SetInt(Key("unlocked"), 1); Everything = true; Tune(); Say($"{course.Par - total} under par!\nThe Everything Playlist is unlocked here. P switches it.", 9f); }
                 else Say(total < course.Par ? $"{course.Par - total} under par!" : total == course.Par ? "Level par" : $"{total - course.Par} over par", 6f);
-                PlayerPrefs.Save();
+                PlayerPrefs.Save(); ShowRecord();
             }
             else Say("Round over", 4f);
         }
@@ -204,8 +225,10 @@ namespace EverythingWorld.Activities
         void LateUpdate()
         {
             if (Active != this || sim == null || walker == null) return;
-            var bw = BallWorld(); ball.position = bw;
-            focus = Vector3.Lerp(focus, bw + Vector3.up * .5f, 1f - Mathf.Exp(-14f * Time.deltaTime));
+            var bw = BallWorld(); var look = bw;
+            ball.position = sim.holed ? bw - Vector3.up * GolfHole.BallR * 2.2f : bw;   // in the cup: dropped out of sight
+            if (phase == Phase.HoleDone && watching >= 0) { var k = 0; foreach (var o in others.Values) if (StillOn(o) && o.ball != null && k++ == watching) look = o.ball.position; }
+            focus = Vector3.Lerp(focus, look + Vector3.up * .5f, 1f - Mathf.Exp(-14f * Time.deltaTime));
             var rot = Quaternion.Euler(pitch, yaw, 0); var cam = focus - rot * Vector3.forward * dist; cam.y = Mathf.Max(cam.y, big.position.y + .6f);
             var body = Quaternion.Euler(0, yaw, 0); var pivot = walker.cameraPivot;
             walker.transform.SetPositionAndRotation(cam - body * pivot.localPosition, body); pivot.localEulerAngles = new Vector3(pitch, 0, 0);
@@ -221,6 +244,8 @@ namespace EverythingWorld.Activities
 
         // ---------------------------------------------------------------- friends
         static bool Fresh(Remote o) => Time.time - o.seen < 5f && (o.flags & 8) == 0;
+        /// A friend still playing the hole you're on.
+        bool StillOn(Remote o) => Fresh(o) && (o.flags & 4) == 0 && o.hole == hole && (o.flags & 2) == 0;
 
         void Send(int flags, bool reliable)
         {
@@ -307,8 +332,8 @@ namespace EverythingWorld.Activities
             }
             else if (phase == Phase.HoleDone)
             {
-                var waiting = 0; foreach (var o in others.Values) if (Fresh(o) && (o.flags & 4) == 0 && o.hole == hole && (o.flags & 2) == 0) waiting++;
-                if (waiting > 0) GUI.Box(new Rect(Screen.width / 2f - 200, Screen.height - 66, 400, 28), waiting == 1 ? "Waiting for one more ball" : $"Waiting for {waiting} more balls", small);
+                var waiting = 0; foreach (var o in others.Values) if (StillOn(o)) waiting++;
+                if (waiting > 0) GUI.Box(new Rect(Screen.width / 2f - 260, Screen.height - 66, 520, 28), (waiting == 1 ? "Waiting for one more ball" : $"Waiting for {waiting} more balls") + "  ·  click to watch", small);
             }
             else if (phase == Phase.RoundDone) GUI.Box(new Rect(Screen.width / 2f - 260, Screen.height - 66, 520, 28), "Enter  Play again   ·   hold X  Leave the course", small);
 

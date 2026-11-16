@@ -68,7 +68,7 @@ namespace EverythingWorld.Activities
             // 4. past the propellers
             holes.Add(H("Propeller", 3, "Time it past the propellers.")
                 .On(Deck).Path(3f, "LRS", 0, -3, 1, 0, 36.85f, 1)
-                .Spinner(0, 15, 2.75f, 4, 70f).Spinner(0, 27, 2.75f, 2, -110f, .2f)
+                .Spinner(0, 15, 2.75f, 4, 70f).Spinner(0, 27, 2.75f, 2, -85f, .2f)
                 .On(Green).Disc(0, 42, 6, 1).Cut(0, 36.8f, 2.98f)
                 .Tee(0, 0).Cup(0, 43.5f)
                 .Prop("yacht", 11, 20, 180, 1.5f).Prop("buoy", -7, 10).Prop("buoy", -8, 30).Prop("palm", 8, 40).Done());
@@ -81,7 +81,7 @@ namespace EverythingWorld.Activities
                 .On(Green).Disc(0, 33.5f, 5, 1, 0, false)
                 .Post(6.5f, 15, .28f, 1.6f, "parasol").Post(-6.5f, 21, .28f, 1.6f, "parasol")
                 .Tee(0, 0).Cup(0, 35).Route(0, 0, 6.5f, 10, 6.5f, 27, 0, 35)
-                .Prop("lounger", -6.8f, 14, 90).Prop("lounger", -6.8f, 16.5f, 90).Prop("lounger", 6.8f, 19.5f, -90).Prop("lounger", 6.8f, 22, -90).Prop("flamingo", 2.2f, 17, 30, 1, 1.02f).Prop("ring", -2.5f, 21, 0, 1, 1.02f)
+                .Prop("lounger", -10.2f, 14, 90).Prop("lounger", -10.2f, 19, 90).Prop("lounger", 10.2f, 17, -90).Prop("lounger", 10.2f, 22, -90).Prop("flamingo", 2.2f, 17, 30, 1, 1.02f).Prop("ring", -2.5f, 21, 0, 1, 1.02f)
                 .Prop("palm", -10.5f, 5).Prop("palm", 10.5f, 30).Prop("cabana", 0, 43.2f, 180).Done());
 
             // 6. the keyboard: weave between the black keys
@@ -144,7 +144,7 @@ namespace EverythingWorld.Activities
                 .Gate(-3f, 29, 3f, 29, 4.4f, .5f)
                 .On(Green).Disc(0, 42, 6, 1).Cut(0, 36.8f, 2.98f)
                 .Tee(0, 0).Cup(0, 43.5f)
-                .Prop("sailboat", -1, 17.5f, 90, .8f).Prop("buoy", 6, 17).Prop("buoy", -6, 18).Prop("palm", 8, 34).Prop("lamp", -3.3f, 24).Prop("lamp", 3.3f, 24).Done());
+                .Prop("sailboat", -9, 17.5f, 90, .8f).Prop("buoy", 6, 17.5f).Prop("buoy", -5, 17.5f).Prop("palm", 8, 34).Prop("lamp", -3.3f, 24).Prop("lamp", 3.3f, 24).Done());
 
             // 12. sea breeze: gusts across a pier with no rail on the far side
             holes.Add(H("Sea Breeze", 3, "No rail on the left, and the wind knows it.")
@@ -195,7 +195,7 @@ namespace EverythingWorld.Activities
                 .Prop("hull", 0, 4, 0, 1, 0).Prop("hull", 2, 24, 0, 1.2f, 0).Prop("hull", 25, 27, 90, 1.3f, 0).Prop("buoy", 7, 15).Prop("buoy", 14, 20).Prop("palm", 36, 34).Done());
 
             // 17. the hotel lobby: revolving doors, and the bellhop's boom
-            holes.Add(H("Hotel Lobby", 3, "Two revolving doors and a porter's barrier.")
+            holes.Add(H("Hotel Lobby", 4, "Two revolving doors and a porter's barrier.")
                 .On(Stone).Path(3f, "LRS", 0, -3, 1, 0, 34.85f, 1)
                 .Spinner(0, 10, 2.8f, 4, 80f, 0f, "door").Spinner(0, 19, 2.8f, 4, -80f, .1f, "door")
                 .Boom(-3f, 27.5f, 4.6f, 0, 50, 3.4f)
@@ -204,7 +204,7 @@ namespace EverythingWorld.Activities
                 .Prop("palm", -7, 6).Prop("palm", 7, 6).Prop("lamp", -3.3f, 15).Prop("lamp", 3.3f, 15).Prop("cabana", 0, 48.5f, 180).Done());
 
             // 18. into the sunset: down the slipway, off the lip, through the sun and into the bowl
-            holes.Add(H("Into the Sunset", 4, "Down the slipway, through the sun, into the bowl.")
+            holes.Add(H("Into the Sunset", 3, "Down the slipway, through the sun, into the bowl.")
                 .On(Deck).Path(2.6f, "LRS", 0, -3, 7, 0, 4, 7, 0, 24, 2f, 0, 28, 3.4f)
                 .Boost(0, 8, 0, 20, 2.5f, 10f)
                 .On(Green).Disc(0, 46, 9, .6f, 1.4f)

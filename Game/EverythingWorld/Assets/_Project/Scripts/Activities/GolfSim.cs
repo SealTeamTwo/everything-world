@@ -34,6 +34,28 @@ namespace EverythingWorld.Activities
             moving = true; grounded = true; moveTime = 0f; restFor = 0f; lastRest = p;
         }
 
+        /// True if something moving (a boat, a propeller, a gate) has reached the ball where it lies: it should be
+        /// woken (Wake) so it gets pushed along instead of being passed through.
+        public bool Touched(double t)
+        {
+            if (moving || holed) return false; const float R = GolfHole.BallR - .01f; var q = new Vector2(p.x, p.z);
+            for (var i = 0; i < hole.movers.Count; i++) hole.movers[i].Pose(t, out offs[i], out angs[i], out ups[i]);
+            foreach (var w in hole.walls)
+            {
+                var m = w.mover; if (m < 0 || p.y > w.Top + ups[m] - .04f || p.y + 2f * R < w.Bottom + ups[m]) continue; var mv = hole.movers[m];
+                Vector2 a = GolfMover.Place(mv.pivot, offs[m], angs[m], w.a), b = GolfMover.Place(mv.pivot, offs[m], angs[m], w.b); var d = b - a; var len2 = d.sqrMagnitude;
+                var u = len2 < 1e-8f ? 0f : Mathf.Clamp01(Vector2.Dot(q - a, d) / len2); if ((q - (a + d * u)).sqrMagnitude < R * R) return true;
+            }
+            foreach (var bm in hole.bumpers)
+            {
+                var m = bm.mover; if (m < 0 || p.y > bm.y + bm.h + ups[m] - .04f || p.y + 2f * R < bm.y + ups[m]) continue;
+                var c = GolfMover.Place(hole.movers[m].pivot, offs[m], angs[m], bm.c); if ((q - c).sqrMagnitude < (R + bm.r) * (R + bm.r)) return true;
+            }
+            return false;
+        }
+        /// Lets a ball that was lying still roll again without a stroke (something has pushed it).
+        public void Wake() { if (holed) return; moving = true; grounded = true; moveTime = 0f; restFor = 0f; }
+
         static float Friction(GolfSurface s) => s == GolfSurface.Sand ? 9f : s == GolfSurface.Ice ? .3f : s == GolfSurface.Deck ? 1.5f : s == GolfSurface.Stone ? 1.7f : 1.9f;
 
         void Back(float strength = 1f) { onEvent?.Invoke(GolfEvent.Splash, p, strength); p = lastRest; v = Vector3.zero; moving = false; grounded = true; restFor = 0f; }

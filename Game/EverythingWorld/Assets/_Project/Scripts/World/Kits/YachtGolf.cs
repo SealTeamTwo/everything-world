@@ -37,7 +37,7 @@ namespace EverythingWorld.World
             foreach (var t in model.GetComponentsInChildren<TextMesh>(true)) Object.Destroy(t.gameObject);
             foreach (var n in new[] { "Sea", "Sea floor" }) { var s = model.transform.Find(n); if (s != null) Object.Destroy(s.gameObject); }
             model.transform.SetPositionAndRotation(f.P(0, rim - .07f, 0), f.r); model.transform.localScale = Vector3.one * LinksScale;
-            big.SetActive(false);
+            big.AddComponent<GolfSkyLife>(); big.SetActive(false);   // (marked after the copy was made, so the model is still culled like any scenery)
 
             var game = new GameObject("The Riviera Links").AddComponent<GolfGame>(); game.transform.SetParent(ctx.Root, false); game.transform.position = g;
             game.course = course; game.big = big.transform; game.mini = model.transform; game.landScene = ctx.Island.sceneId;
@@ -57,6 +57,13 @@ namespace EverythingWorld.World
 
             // the board, benches, lamps, palms and the caddy
             Placard(mk, f.P(0, 0, pd / 2f + 2.6f) + f.Right * (pw / 2f + 1.6f), f.Fwd, "THE RIVIERA LINKS\n18 holes · you'll need to be smaller", 3.6f, .15f);
+            // a second board that changes: your best round, and whether the playlist is unlocked
+            {
+                var bp = G(f.P(0, 0, pd / 2f + 2.6f) - f.Right * (pw / 2f + 1.6f)); var br = Quaternion.LookRotation(f.Fwd);
+                foreach (var e in new[] { -1f, 1f }) mk.Box(white, bp + f.Right * e * 1.9f + up * .8f, new Vector3(.1f, 1.6f, .1f), br);
+                mk.Box(white, bp + up * 1.35f, new Vector3(4f, .7f, .08f), br); mk.Box(navy, bp + up * 1.72f, new Vector3(4f, .06f, .1f), br); Col(bp + up * .9f, new Vector3(4f, 1.8f, .15f), br);
+                game.recordText = ArtistBits.Label(ctx.Root, "", bp + up * 1.36f + f.Fwd * .05f, f.Fwd, .14f, Navy, TextAnchor.MiddleCenter);
+            }
             TeakBench(mk, f.P(-(pw / 2f + 2.2f), 0, 0), f.Right); TeakBench(mk, f.P(pw / 2f + 2.2f, 0, -1f), -f.Right);
             foreach (var (x, z) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) Lamp(ctx, mk, G(f.P(x * (pw / 2f + 1.3f), 0, z * (pd / 2f + 1.3f))));
             foreach (var e in new[] { -1f, 1f }) Palm(ctx, mk, G(f.P(e * (pw / 2f + 3.4f), 0, -(pd / 2f + 2.6f))), 8.5f);

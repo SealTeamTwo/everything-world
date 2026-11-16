@@ -30,6 +30,11 @@ namespace EverythingWorld.Activities
         }
     }
 
+    /// A mark on the big course: LandCuller leaves everything under a "...Life" script alone, and it must leave this
+    /// alone, because the course is switched off when the land is built (so it has no size or place to judge it by)
+    /// and is only ever switched on with the player standing in it.
+    public class GolfSkyLife : MonoBehaviour { }
+
     /// Draws a course from its description: every hole's floor, kerbs, obstacles, cup and flag, tee, sign and scenery,
     /// on a wide calm sea. Everything is built at the origin under one root, which the caller then puts where it
     /// likes (and copies, shrunk, for the model).
@@ -99,7 +104,7 @@ namespace EverythingWorld.Activities
                 w.Tri(water, Vector3.zero, p0, p1, Vector3.down * 5f); f.Tri(floor, Vector3.down * 2.6f, p0 + Vector3.down * 2.6f, p1 + Vector3.down * 2.6f, Vector3.down * 9f);
             }
             var wg = w.BuildSingle("Sea", root, false); if (wg != null) { var r = wg.GetComponent<MeshRenderer>(); r.shadowCastingMode = ShadowCastingMode.Off; }
-            f.BuildSingle("Sea floor", root, false);
+            var fg = f.BuildSingle("Sea floor", root, false); if (fg != null) fg.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;   // (no vast shadow on the land far below)
         }
 
         // ---------------------------------------------------------------- one hole
@@ -127,7 +132,8 @@ namespace EverythingWorld.Activities
             var t = h.tee; mk.Box(navy, t + up * .012f, new Vector3(1.5f, .02f, 1.5f)); foreach (var e in new[] { -1f, 1f }) mk.Blob(white, t + new Vector3(e * .6f, .1f, 0), Vector3.one * .09f, rng, 0f);
             Light(ht, t + up * 3f, new Color(1f, .9f, .75f), 11f, 1.1f);
             var ahead = h.route.Count > 1 ? (h.route[1] - h.route[0]).normalized : Vector2.up; var fwd = new Vector3(ahead.x, 0, ahead.y); var left = Vector3.Cross(fwd, up);
-            var sp = t + left * 4.2f + fwd * 1.5f; var board = new Vector3(sp.x, t.y + 1.9f, sp.z); var rot = Quaternion.LookRotation(fwd);
+            var off = 1f; while (off < 14f && h.TopAt(t.x + left.x * off + fwd.x * 1.5f, t.z + left.z * off + fwd.z * 1.5f) > GolfHole.Sea + .01f) off += .4f;   // out past the edge of the floor, however wide the tee's deck is
+            var sp = t + left * (off + 1.5f) + fwd * 1.5f; var board = new Vector3(sp.x, t.y + 1.9f, sp.z); var rot = Quaternion.LookRotation(fwd);
             mk.Prism(white, new Vector3(sp.x, -1.2f, sp.z), up, .09f, t.y + 2.8f, 6); mk.Box(white, board, new Vector3(2.6f, 1.1f, .08f), rot); mk.Box(navy, board + up * .6f, new Vector3(2.7f, .08f, .1f), rot);
             ArtistBits.Label(ht, $"{index + 1}", ht.TransformPoint(board + up * .22f - fwd * .05f), ht.TransformDirection(-fwd), .5f, Navy, TextAnchor.MiddleCenter);
             ArtistBits.Label(ht, $"{h.name}\npar {h.par}", ht.TransformPoint(board - up * .28f - fwd * .05f), ht.TransformDirection(-fwd), .17f, Navy, TextAnchor.MiddleCenter);
@@ -241,6 +247,7 @@ namespace EverythingWorld.Activities
                 case GolfZoneKind.Boost: Chevrons(arrow, 1.5f, .8f); break;
                 case GolfZoneKind.Current: Fill(river); Chevrons(WorldMaterials.Glow(new Color(.7f, .9f, 1f), 1.2f), 2.4f, .55f); break;
                 case GolfZoneKind.Spring: Fill(springM); break;
+                case GolfZoneKind.Fan: Chevrons(WorldMaterials.Glow(new Color(.85f, .95f, 1f), .9f), 1.1f, .4f); break;   // pale arrows where the gusts cross, pointing the way they push
                 case GolfZoneKind.Pipe: mk.Prism(brass, On(s.c) - up * .01f, up, s.r + .1f, .03f, 16); mk.Prism(cup, On(s.c) + up * .012f, up, s.r, .02f, 16); break;
             }
         }
@@ -356,7 +363,7 @@ namespace EverythingWorld.Activities
                 {
                     // where a pipe lets the ball out: a horn's bell pointing the way it will roll
                     var a = p.yaw * Mathf.Deg2Rad; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
-                    mk.Prism(brass, at - d * 1.1f + up * .75f, d - up * .45f, .16f, 1.15f, 10, 2.6f, 0f, false);
+                    mk.Prism(brass, at - d * 1.1f + up * .75f, d - up * .45f, .16f, 1.15f, 10, 2.6f, 0f, false); mk.Prism(brass, new Vector3(at.x - d.x * 1.1f, -1.2f, at.z - d.z * 1.1f), up, .07f, at.y + 1.95f, 6);
                     break;
                 }
                 case "glassbig":
