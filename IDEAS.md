@@ -133,6 +133,7 @@ Things to remember that aren't built or decided yet. Newest first.
 - Southern Rock Bayou: the riverboat sails about, carrying the CCR radio station with it.
 
 **Across the world:**
+- Small path fixes, left for later: side paths overlap the path they join with a V-shaped notch (seen in the Prog Marches); a Hub path on the coast slope sinks under the ground in places.
 - Humanoid avatars instead of orbs. The map is held in human hands, which doesn't fit an orb.
 - Everything you pick up does its own thing when you use it. A toaster shoots up toast; you sip drinks (the Small Hours tea mugs) and eat food.
 - Playable instruments: the piano keys and small instruments round the world, played with the keyboard, real notes.
