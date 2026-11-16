@@ -146,7 +146,7 @@ namespace EverythingWorld.Activities
                 var drop = d * Mathf.Tan(up) - to.y; if (drop <= .05f) continue;   // (that arc cannot come down into it from here)
                 var need = Mathf.Sqrt(g * d * d / (2f * Mathf.Cos(up) * Mathf.Cos(up) * drop));
                 var off = Vector3.Angle(flat, new Vector3(to.x, 0, to.z));
-                if (off < 5f && Mathf.Abs(speed - need) / need < .09f) { var dir = new Vector3(to.x, 0, to.z).normalized; v = (dir * Mathf.Cos(up) + Vector3.up * Mathf.Sin(up)) * need; return true; }
+                if (off < 9f && Mathf.Abs(speed - need) / need < .17f) { var dir = new Vector3(to.x, 0, to.z).normalized; v = (dir * Mathf.Cos(up) + Vector3.up * Mathf.Sin(up)) * need; return true; }
             }
             return false;
         }
@@ -228,7 +228,8 @@ namespace EverythingWorld.Activities
                 {
                     if (!charging && mouse.leftButton.wasPressedThisFrame) { charging = true; chargeT = 0f; }
                     // the wind-up fills once and holds at full (the dots show what it will do the whole time)
-                    if (charging) { chargeT += dt; power = Mathf.Clamp01(chargeT / 1.25f); if (mouse.rightButton.wasPressedThisFrame || kb.qKey.wasPressedThisFrame) charging = false; }
+                    if (charging) { chargeT += dt * (arcGood ? .3f : 1f); power = Mathf.Clamp01(chargeT / 1.5f);   // (the wind-up dawdles while the dots are gold, so there is time to let go)
+                    if (mouse.rightButton.wasPressedThisFrame || kb.qKey.wasPressedThisFrame) charging = false; }
                     if (charging) { Shot(power, out arcFrom, out arcV); arcGood = Helped(arcFrom, ref arcV); }
                     if (charging && !mouse.leftButton.isPressed)
                     {
@@ -273,7 +274,7 @@ namespace EverythingWorld.Activities
                     if (was.y > ring.y && p.y <= ring.y)
                     {
                         var t = (was.y - ring.y) / Mathf.Max(.0001f, was.y - p.y); var at = Vector3.Lerp(was, p, t); at.y = ring.y;
-                        if ((at - ring).magnitude < h.r - BallR * .35f) Scored(k);
+                        if ((at - ring).magnitude < h.r) Scored(k);
                     }
                 }
             }
