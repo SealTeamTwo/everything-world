@@ -17,6 +17,10 @@ namespace EverythingWorld.World
         readonly Dictionary<Material, List<int>> tris = new Dictionary<Material, List<int>>();
 
         public int VertexCount => verts.Count;
+        Material lastIn, lastOut; bool lastSet, lastKind; Color lastCol; List<int> lastList;
+        /// Triangles that are only skin (a bevel's edge strips and corners), by their first vertex: colliders leave
+        /// them out, since nobody can feel a 4 cm edge, and every collider triangle costs time to prepare.
+        HashSet<int> skin; bool skinning;
 
         /// One triangle facing away from 'inside'.
         public void Tri(Material m, Vector3 a, Vector3 b, Vector3 c, Vector3 inside, Vector2 ua = default, Vector2 ub = default, Vector2 uc = default)
@@ -24,10 +28,17 @@ namespace EverythingWorld.World
             var n = Vector3.Cross(b - a, c - a);
             if (Vector3.Dot(n, (a + b + c) / 3f - inside) < 0) { (b, c) = (c, b); (ub, uc) = (uc, ub); }
             if (ua == default && ub == default && uc == default) { ua = GrainUV(a, n); ub = GrainUV(b, n); uc = GrainUV(c, n); }
-            // a surface kind: draw with the kind's shared material, the colour going into the mesh
-            var col = Color.white;
-            if (WorldMaterials.KindOf(m, out var shared, out var lin)) { m = shared; col = lin; if (cols == null) { cols = new List<Color>(verts.Count + 3); for (var i = 0; i < verts.Count; i++) cols.Add(Color.white); } }
-            if (!tris.TryGetValue(m, out var list)) tris[m] = list = new List<int>();
+            // a surface kind: draw with the kind's shared material, the colour going into the mesh (remembered for
+            // the last material asked for, since shapes come many triangles at a time)
+            if (!lastSet || m != lastIn)
+            {
+                lastSet = true; lastIn = m; lastKind = WorldMaterials.KindOf(m, out var shared, out var lin);
+                lastOut = lastKind ? shared : m; lastCol = lastKind ? lin : Color.white;
+                if (!tris.TryGetValue(lastOut, out lastList)) tris[lastOut] = lastList = new List<int>();
+            }
+            var col = lastCol; var list = lastList;
+            if (lastKind && cols == null) { cols = new List<Color>(verts.Count + 3); for (var i = 0; i < verts.Count; i++) cols.Add(Color.white); }
+            if (skinning) (skin ??= new HashSet<int>()).Add(verts.Count);
             list.Add(verts.Count); verts.Add(a); uvs.Add(ua);
             list.Add(verts.Count); verts.Add(b); uvs.Add(ub);
             list.Add(verts.Count); verts.Add(c); uvs.Add(uc);
@@ -116,6 +127,7 @@ namespace EverythingWorld.World
                 Quad(m, C(-1, e, -1, 1), C(1, e, -1, 1), C(1, e, 1, 1), C(-1, e, 1, 1), center);   // the y faces
                 Quad(m, C(-1, -1, e, 2), C(1, -1, e, 2), C(1, 1, e, 2), C(-1, 1, e, 2), center);   // the z faces
             }
+            skinning = true;
             foreach (var a in s) foreach (var c in s)
             {
                 Quad(m, C(a, c, -1, 0), C(a, c, -1, 1), C(a, c, 1, 1), C(a, c, 1, 0), center);     // edges along z
@@ -123,6 +135,7 @@ namespace EverythingWorld.World
                 Quad(m, C(-1, a, c, 1), C(-1, a, c, 2), C(1, a, c, 2), C(1, a, c, 1), center);     // edges along x
             }
             foreach (var x in s) foreach (var y in s) foreach (var z in s) Tri(m, C(x, y, z, 0), C(x, y, z, 1), C(x, y, z, 2), center);
+            skinning = false;
         }
 
         /// A tapered prism (low-poly trunk, post, log or candle) from 'start' along 'dir' for 'length'.
@@ -241,6 +254,7 @@ namespace EverythingWorld.World
                     var key = (Mathf.FloorToInt(centre.x / ChunkSize), Mathf.FloorToInt(centre.z / ChunkSize));
                     if (!chunks.TryGetValue(key, out var mk)) chunks[key] = mk = new MeshKit();
                     if (!mk.tris.TryGetValue(kv.Key, out var t)) mk.tris[kv.Key] = t = new List<int>();
+                    if (skin != null && skin.Contains(list[i])) (mk.skin ??= new HashSet<int>()).Add(mk.verts.Count);
                     t.Add(mk.verts.Count); mk.verts.Add(a); mk.uvs.Add(uvs[list[i]]);
                     t.Add(mk.verts.Count); mk.verts.Add(b); mk.uvs.Add(uvs[list[i + 1]]);
                     t.Add(mk.verts.Count); mk.verts.Add(c); mk.uvs.Add(uvs[list[i + 2]]);
@@ -255,17 +269,37 @@ namespace EverythingWorld.World
         public GameObject BuildCollider(string name, Transform parent)
         {
             if (verts.Count == 0) return null;
-            var mesh = new Mesh { name = name, indexFormat = IndexFormat.UInt32 };
-            mesh.SetVertices(verts);
-            var all = new List<int>();
-            foreach (var kv in tris) all.AddRange(kv.Value);
-            mesh.SetTriangles(all, 0);
-            mesh.RecalculateBounds();
+            var mesh = ColliderMesh(name);
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             go.AddComponent<MeshCollider>().sharedMesh = mesh;
             go.isStatic = true;
             return go;
+        }
+
+        /// The mesh for a collider: every triangle but the skin, only the corners those use.
+        Mesh ColliderMesh(string name)
+        {
+            var mesh = new Mesh { name = name, indexFormat = IndexFormat.UInt32 };
+            var all = new List<int>();
+            if (skin == null) { mesh.SetVertices(verts); foreach (var kv in tris) all.AddRange(kv.Value); }
+            else
+            {
+                var vs = new List<Vector3>(verts.Count);
+                foreach (var kv in tris)
+                {
+                    var l = kv.Value;
+                    for (var i = 0; i < l.Count; i += 3)
+                    {
+                        if (skin.Contains(l[i])) continue;
+                        all.Add(vs.Count); vs.Add(verts[l[i]]); all.Add(vs.Count); vs.Add(verts[l[i + 1]]); all.Add(vs.Count); vs.Add(verts[l[i + 2]]);
+                    }
+                }
+                mesh.SetVertices(vs);
+            }
+            mesh.SetTriangles(all, 0);
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         /// Makes the mesh as a child of 'parent' (in world coordinates). Returns null if nothing was added.
@@ -292,12 +326,13 @@ namespace EverythingWorld.World
             var i = 0;
             foreach (var kv in tris) { mesh.SetTriangles(kv.Value, i); mats[i++] = kv.Key; }
             mesh.RecalculateNormals(); // separate vertices per triangle, so the shading is flat and faceted
+            foreach (var m in mats) if (RichSurfaces.IsRich(m)) { mesh.RecalculateTangents(); break; }   // rich surfaces' relief needs them
             mesh.RecalculateBounds();
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             go.AddComponent<MeshRenderer>().sharedMaterials = mats;
-            if (collider) go.AddComponent<MeshCollider>().sharedMesh = mesh;
+            if (collider) go.AddComponent<MeshCollider>().sharedMesh = skin == null ? mesh : ColliderMesh(name + " (solid)");
             go.isStatic = true;
             return go;
         }

@@ -108,7 +108,7 @@ namespace EverythingWorld.World
         {
             shared = null; linear = Color.white;
             if (m == null || standInOf.Count == 0 || !standInOf.TryGetValue(m, out var e)) return false;
-            shared = KindMaterial(e.kind); linear = e.linear; return true;
+            shared = KindMaterial(e.kind); if (RichSurfaces.On && RichSurfaces.Has(e.kind)) shared = RichSurfaces.For(e.kind, shared); linear = e.linear; return true;
         }
 
         /// The one material for a kind: Toon shading like every plain colour (same two tones), white, taking its

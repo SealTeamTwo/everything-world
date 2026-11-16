@@ -187,6 +187,7 @@ namespace EverythingWorld.World
             var i = 0;
             foreach (var kv in byMaterial) { mesh.SetTriangles(kv.Value, i); mats[i++] = kv.Key; }
             mesh.RecalculateNormals(); // every triangle has its own vertices, so this gives flat, faceted shading
+            foreach (var m in mats) if (RichSurfaces.IsRich(m)) { mesh.RecalculateTangents(); break; }   // rich ground's relief needs them
             mesh.RecalculateBounds();
 
             var go = new GameObject(mesh.name);
@@ -262,7 +263,8 @@ namespace EverythingWorld.World
             if (cols != null)
             {
                 // one material: the colour (no longer rounded to a few shades) goes into the triangle's corners
-                var lin = TerrainColor(avg, slope, island, col, row).linear; mat = groundMat;
+                var tc = TerrainColor(avg, slope, island, col, row); var lin = tc.linear; mat = groundMat;
+                if (RichGround(island)) mat = RichSurfaces.Ground(RichSurfaces.GroundOf(tc, slope), groundMat);   // grass, earth, sand, rock or snow, with relief
                 cols.Add(lin); cols.Add(lin); cols.Add(lin);
             }
             else mat = Mat(Quantise(TerrainColor(avg, slope, island, col, row)));
@@ -271,6 +273,9 @@ namespace EverythingWorld.World
             list.Add(verts.Count); verts.Add(b);
             list.Add(verts.Count); verts.Add(c);
         }
+
+        /// Rich ground textures (RichSurfaces) on this island: tried on Lanternwood first.
+        bool RichGround(int island) => !WorldLook.Old && island >= 0 && island < kits.Length && kits[island] != null && kits[island].Land == "Lanternwood";
 
         /// Round a ground colour to one of a limited set of shades. Each distinct colour is its own material,
         /// drawn separately, and the built lands blend their ground colours smoothly: unrounded, one terrain chunk
@@ -567,10 +572,11 @@ namespace EverythingWorld.World
             {
                 var ctx = new LandContext(Data, i, landsRoot, coverAtlas);
                 MeshKit.Bevel = WorldLook.Old ? 0f : WorldLook.Bevel;   // bevelled box edges everywhere (WorldLook)
+                RichSurfaces.On = !WorldLook.Old && kits[i].Land == "Lanternwood";   // detailed textures with relief: tried on Lanternwood first
                 kits[i].Dress(ctx);
                 foreach (var a in ctx.Artists) kits[i].BuildArtist(ctx, a);
                 kits[i].Finish(ctx);
-                MeshKit.Bevel = 0f;
+                MeshKit.Bevel = 0f; RichSurfaces.On = false;
                 if (!WorldLook.Old && ctx.Root.GetComponent<NearShadows>() == null) ctx.Root.gameObject.AddComponent<NearShadows>();   // lamp shadows near you
                 if ((auditLands || ForceAudit) && Application.isEditor && QuickLands == null && (AuditOnly == null || AuditOnly.Contains(kits[i].Land.StartsWith("The ") ? kits[i].Land.Substring(4) : kits[i].Land)))
                 {
@@ -585,6 +591,7 @@ namespace EverythingWorld.World
             {
                 Debug.LogException(e); // one broken land should not stop the rest of the world
             }
+            finally { MeshKit.Bevel = 0f; RichSurfaces.On = false; }
         }
 
         /// How many different materials the built world draws with, grouped by kind (by the start of each material's
