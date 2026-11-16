@@ -90,7 +90,7 @@ namespace EverythingWorld.World
         /// For each land this one borders over ground: the border point nearest the Compass, and the nearest path to it.
         List<(Vector3 from, Vector3 to)> Gateways(LandContext ctx)
         {
-            var best = new Dictionary<string, (Vector3 p, float d)>();
+            var best = new Dictionary<string, (Vector3 p, float d)>(); var isles = new Dictionary<string, IslandWorldData.Island>();
             for (var x = ctx.MinX; x <= ctx.MaxX; x += HC)
             for (var z = ctx.MinZ; z <= ctx.MaxZ; z += HC)
             {
@@ -99,13 +99,14 @@ namespace EverythingWorld.World
                 {
                     var o = ctx.Data.IslandAt(x + dx, z + dz); if (o == null || o == ctx.Island || ctx.Ground(x + dx, z + dz) < waterY + .5f) continue;
                     var d = Vector2.Distance(new Vector2(x, z), new Vector2(center.x, center.z));
-                    if (!best.TryGetValue(o.name, out var b) || d < b.d) best[o.name] = (new Vector3(x + dx * .5f, 0, z + dz * .5f), d);
+                    if (!best.TryGetValue(o.name, out var b) || d < b.d) best[o.name] = (new Vector3(x + dx * .5f, 0, z + dz * .5f), d); isles[o.name] = o;
                 }
             }
             var list = new List<(Vector3, Vector3)>();
             foreach (var kv in best)
             {
-                var p = kv.Value.p; var to = center; var bd = float.MaxValue;
+                var p = LandCrossings.Point(ctx.Data, ctx.Island, isles[kv.Key]) ?? kv.Value.p;   // the crossing the neighbour uses too
+                var to = center; var bd = float.MaxValue;
                 foreach (var (q, _) in walkPoints) { var d = (new Vector2(q.x, q.z) - new Vector2(p.x, p.z)).sqrMagnitude; if (d < bd) { bd = d; to = q; } }
                 list.Add((p, new Vector3(to.x, 0, to.z)));
             }

@@ -98,6 +98,7 @@ namespace EverythingWorld.World
             Put("I Hate My Village", 98f, -32f, 24f); Put("Nomo", -98f, -22f, 24f);
             var avoid = new List<Vector3> { new Vector3(beach2.x, 40f, beach2.y) };
             for (var d = 0f; d <= roadL; d += 22f) avoid.Add(new Vector3(heart2.x - d, 12f, heart2.y));
+            for (var d = 24f; d <= 320f; d += 22f) avoid.Add(new Vector3(heart2.x + d, 14f, heart2.y));   // Cloth Street, east (AfroWalls)
             ArtistPlacement.Spread(data, index, 56f, heart2, 44f, 42f, avoid, keep, Land, 330f);
 
             Level(data, index, heart2, 24f, 44f, plazaY);
@@ -131,7 +132,7 @@ namespace EverythingWorld.World
         {
             MakeMaterials();
             halos = new GlowHalos();
-            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear();
+            pathCells.Clear(); walkPoints.Clear(); facing.Clear(); noGrass.Clear(); prints.Clear(); printsAt.Clear();
             center = ctx.Plaza; U = new Vector3(0, 0, 1); R = new Vector3(1, 0, 0);
             life = new GameObject("Afro life").AddComponent<AfroLife>();
             life.transform.SetParent(ctx.Root, false);
@@ -142,10 +143,13 @@ namespace EverythingWorld.World
             Roundabout(ctx, mk, solid);
             MarketRoad(ctx, mk, solid);
             Beach(ctx, mk, solid);
+            MarketStreets(ctx, mk);   // the great market (AfroWalls): Cloth Street and its cross streets
             Paths(ctx, mk, solid);
             Stalls(ctx, mk, solid);
+            MarketStalls(ctx, mk);
             Houses(ctx, mk, solid);
             Wilds(ctx, mk, solid);
+            OldStone(ctx, mk, solid);   // the old stone through it all, walling nothing off, cloth woven through it
             Sunset(ctx, mk);
             mk.Build("The Afrobeat Coast", ctx.Root, false);
             solid.BuildCollider("The Afrobeat Coast walls", ctx.Root);

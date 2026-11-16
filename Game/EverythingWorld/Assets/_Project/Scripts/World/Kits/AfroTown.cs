@@ -95,7 +95,8 @@ namespace EverythingWorld.World
         void MarketRoad(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var pts = new List<Vector3>(); for (var d = 22f; d <= roadL + .01f; d += 2f) pts.Add(G(ctx, 0, -d)); if (pts.Count < 2) return;
-            Strip(mk, pts, earth, RoadW, .14f, ctx); foreach (var p in pts) Remember(p, 1);
+            Strip(mk, pts, PrintWorld(2, 7f), RoadW, .14f, ctx); foreach (var p in pts) Remember(p, 1);   // a bolt of printed cloth unrolled down the hill (AfroCloth)
+            foreach (var e in new[] { -1f, 1f }) { var edge = new List<Vector3>(); foreach (var p in pts) edge.Add(ctx.OnGround(p.x + U.x * e * (RoadW / 2f + .3f), p.z + U.z * e * (RoadW / 2f + .3f))); Strip(mk, edge, earth, .9f, .13f, ctx); }   // red earth showing at its edges
             // strings of coloured bulbs over the road, pole to pole
             var n = 0; for (var d = 30f; d <= roadL - 6f; d += 13f, n++)
             {
@@ -133,7 +134,7 @@ namespace EverythingWorld.World
             // it stands at the highest ground under its four poles; poles, table legs and the front cloth reach down to
             // the lowest, so on a slope nothing hangs in the air
             float hi = float.MinValue, lo = float.MaxValue; foreach (var (x, zz) in new[] { (-1.4f, -.9f), (1.4f, -.9f), (1.4f, 1f), (-1.4f, 1f), (0f, .7f) }) { var q = f.P(x, 0, zz); var h = ctx.Ground(q.x, q.z); hi = Mathf.Max(hi, h); lo = Mathf.Min(lo, h); }
-            f = new PlaceFrame(new Vector3(f.o.x, hi, f.o.z), f.Fwd); var drop = hi - lo; var c1 = Paint(Cloth[i % 6]); var c2 = Paint(Cloth[(i + 3) % 6 == i % 6 ? 7 : (i * 5 + 1) % 6 == i % 6 ? 7 : (i * 5 + 1) % 6]);
+            f = new PlaceFrame(new Vector3(f.o.x, hi, f.o.z), f.Fwd); var drop = hi - lo; var c1 = PrintWorld(i * 5 + 1, 1.6f); var c2 = Paint(Cloth[(i + 3) % 6 == i % 6 ? 7 : (i * 5 + 1) % 6 == i % 6 ? 7 : (i * 5 + 1) % 6]);
             foreach (var (x, zz) in new[] { (-1.4f, -.9f), (1.4f, -.9f), (1.4f, 1f), (-1.4f, 1f) }) mk.Prism(woodM, f.P(x, -.4f - drop, zz), up, .05f, (zz > 0 ? 2.6f : 3f) + drop, 4); ArtistBits.PostCollider(ctx.Root, f.P(-1.4f, 0, 1f), 2.2f, .07f); ArtistBits.PostCollider(ctx.Root, f.P(1.4f, 0, 1f), 2.2f, .07f);
             for (var s = 0; s < 6; s++) mk.Box(s % 2 == 0 ? c1 : c2, f.P(-1.375f + s * .55f, 2.42f + (s % 2) * .012f, .1f), new Vector3(.53f, .04f, 2.5f), f.r * Quaternion.Euler(10f, 0, 0));
             mk.Box(woodM, f.P(0, .78f, .2f), new Vector3(2.6f, .08f, 1f), f.r); mk.Box(kind == 0 ? c2 : c1, f.P(0, .44f - drop / 2f, .69f), new Vector3(2.6f, .7f + drop, .03f), f.r); foreach (var x in new[] { -1.2f, 1.2f }) mk.Box(woodM, f.P(x, .37f - drop / 2f, .2f), new Vector3(.08f, .74f + drop, .9f), f.r); Col(f.P(0, .45f - drop / 2f, .2f), new Vector3(2.6f, .9f + drop, 1f), f.r);

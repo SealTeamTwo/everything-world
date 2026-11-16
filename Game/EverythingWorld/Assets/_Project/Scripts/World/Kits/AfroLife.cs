@@ -18,6 +18,8 @@ namespace EverythingWorld.World
         public Vector3 center, sunAt, fountainAt, bananasAt, heartsAt;
         public string waterSong, lastSong, essenceSong, fantasticSong, rushSong, fallSong, heartsSong;
         public Material fire, embers, sun, sunRoad, windows; public Material[] bulbs;
+        // the great cloths on the old walls (AfroCloth): they sway in the sea wind, harder with the music
+        public List<Transform> cloths = new List<Transform>(); public List<Quaternion> clothRest = new List<Quaternion>();
         public float played = -99f, rush;
         public List<Vector3> sparks = new List<Vector3>(), smoke = new List<Vector3>();
         public List<(string song, Material m, Color c)> songGlows = new List<(string, Material, Color)>();
@@ -75,6 +77,12 @@ namespace EverythingWorld.World
         void Update()
         {
             var dt = Time.deltaTime; var t = Time.time; var now = (float)(SharedChance.Now % 100000.0);
+            var gust = 1f + SurpriseDirector.Energy * .8f;
+            for (var k = 0; k < cloths.Count && k < clothRest.Count; k++)
+            {
+                if (cloths[k] == null) continue; var ph = k * 1.37f;
+                cloths[k].rotation = clothRest[k] * Quaternion.Euler((5f + 3f * Mathf.Sin(t * .37f + ph)) * gust * (.6f + .4f * Mathf.Sin(t * 1.1f + ph)), 0, Mathf.Sin(t * .8f + ph * 2f) * 2f * gust);
+            }
             var here = SkyDirector.Instance != null && SkyDirector.Instance.CurrentLand == Land;
             var d = MusicDirector.Instance; var playing = d != null && d.CurrentSlot.IsValid;
             var energy = SurpriseDirector.Energy;

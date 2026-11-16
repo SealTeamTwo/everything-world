@@ -55,7 +55,7 @@ namespace EverythingWorld.World
         /// the shared border), at least two.
         void PlanDoors(LandContext ctx)
         {
-            doors.Clear(); doorTo.Clear(); var best = new Dictionary<string, (float deg, float d)>();
+            doors.Clear(); doorTo.Clear(); var best = new Dictionary<string, (float deg, float d)>(); var isles = new Dictionary<string, IslandWorldData.Island>();
             // a door facing every bridge or causeway that lands on this land, its lane running to the bridge's end
             foreach (var b in ctx.Data.layout.bridges)
             {
@@ -71,10 +71,17 @@ namespace EverythingWorld.World
                 {
                     var o = ctx.Data.IslandAt(x + dx, z + dz); if (o == null || o == ctx.Island || ctx.Ground(x + dx, z + dz) < waterY + .5f) continue;
                     var d = GlobeDist(x, z); var deg = Mathf.Atan2(z - heart2.y, x - heart2.x) * Mathf.Rad2Deg;
-                    if (!best.TryGetValue(o.name, out var b) || d < b.d) best[o.name] = (deg, d);
+                    if (!best.TryGetValue(o.name, out var b) || d < b.d) best[o.name] = (deg, d); isles[o.name] = o;
                 }
             }
-            foreach (var kv in best) { var ok = true; foreach (var d0 in doors) if (Mathf.Abs(Mathf.DeltaAngle(d0, kv.Value.deg)) < 25f) ok = false; if (ok) doors.Add(kv.Value.deg); }
+            // toward each neighbour: at the crossing point it uses too (so this door and its gate line up); never two doors
+            // close together (a causeway's door comes first)
+            foreach (var kv in best)
+            {
+                var cp = LandCrossings.Point(ctx.Data, ctx.Island, isles[kv.Key]); var deg = cp.HasValue ? Mathf.Atan2(cp.Value.z - heart2.y, cp.Value.x - heart2.x) * Mathf.Rad2Deg : kv.Value.deg;
+                var ok = true; foreach (var d0 in doors) if (Mathf.Abs(Mathf.DeltaAngle(d0, deg)) < 40f) ok = false; if (!ok) continue;
+                doors.Add(deg); if (cp.HasValue) doorTo[deg] = cp.Value;
+            }
             var down = Mathf.Atan2(-U.z, -U.x) * Mathf.Rad2Deg; if (doors.Count < 2) { var ok = true; foreach (var d0 in doors) if (Mathf.Abs(Mathf.DeltaAngle(d0, down)) < 40f) ok = false; if (ok) doors.Add(down); }
             if (doors.Count < 2) doors.Add(down + 180f);
             // and more wherever the glass runs a long way without one: never more than about a quarter turn between doors
