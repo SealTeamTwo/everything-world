@@ -188,7 +188,7 @@ namespace EverythingWorld.World
         void BuildCaves(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var rng = new System.Random(2019);
-            var inner = WorldMaterials.Glow(new Color(.2f, .17f, .26f), .07f); var outer = WorldMaterials.Glow(new Color(.16f, .14f, .2f), .06f);
+            var inner = WorldMaterials.Surface(new Color(.34f, .29f, .42f), Surface.Stone); var outer = WorldMaterials.Surface(new Color(.26f, .23f, .32f), Surface.Stone);
             caveMap = new ShardCaveMap(); life.caves = caveMap;
             foreach (var cv in caves) caveMap.rooms.Add((cv.c, cv.R - 1f));
             foreach (var t in tubes) caveMap.tubes.Add((caves[t.a].c, caves[t.b].c, t.hw));
@@ -314,10 +314,17 @@ namespace EverythingWorld.World
         /// under its rock, craggy, falling away to the coast, and notched into a canyon where each mouth comes out.
         float Mountain(Vector2 p)
         {
-            var f = plazaY; var m = f + 95f - Vector2.Distance(p, caves[1].c) * .5f;
+            var m = Mathf.Max(plazaY + 95f - Vector2.Distance(p, caves[1].c) * .5f, Cover(p));
+            m += (Mathf.PerlinNoise(p.x * .012f + 11f, p.y * .012f + 4f) - .5f) * 16f + (Mathf.PerlinNoise(p.x * .045f + 2f, p.y * .045f + 9f) - .5f) * 6f;
+            return m;
+        }
+
+        /// The rock that must stay over every cavern, tunnel and porch, wherever it is.
+        float Cover(Vector2 p)
+        {
+            var f = plazaY; var m = float.MinValue;
             foreach (var cv in caves) m = Mathf.Max(m, f + cv.H + 10f - Mathf.Max(0f, Vector2.Distance(p, cv.c) - cv.R * .6f) * .55f);
             foreach (var t in tubes) m = Mathf.Max(m, f + t.roofH + 9f - Mathf.Max(0f, ShardCaveMap.Seg(p, caves[t.a].c, caves[t.b].c) - t.hw) * .6f);
-            m += (Mathf.PerlinNoise(p.x * .012f + 11f, p.y * .012f + 4f) - .5f) * 16f + (Mathf.PerlinNoise(p.x * .045f + 2f, p.y * .045f + 9f) - .5f) * 6f;
             return m;
         }
 
@@ -338,16 +345,19 @@ namespace EverythingWorld.World
         {
             var cd = 0f; for (var r = 12f; r <= 72f; r += 12f) { if (ctx.IsLand(x, z, r)) cd = r; else break; }
             var t = ctx.Ground(x, z); var k = Mathf.Clamp01(cd / 72f); k = k * k * (3f - 2f * k);
-            return Mathf.Lerp(t - 1f, Mountain(new Vector2(x, z)), k);
+            var q = new Vector2(x, z); var cover = Cover(q) + (Mathf.PerlinNoise(x * .045f + 2f, z * .045f + 9f) - .5f) * 4f;
+            return Mathf.Max(Mathf.Lerp(t - 1f, Mountain(q), k), cover);
         }
 
         /// The mountain itself: a rough rock surface laid over the whole cave system (you can walk on it; the caves are
         /// hollow inside it), crystals growing out of its sides and a great crystal on the summit.
         void Massif(LandContext ctx, System.Random rng)
         {
-            var up = Vector3.up; var hall = caves[1].c; const float Step = 4f, Reach = 210f;
-            var rockA = WorldMaterials.Glow(new Color(.16f, .13f, .21f), .06f); var rockB = WorldMaterials.Glow(new Color(.23f, .19f, .29f), .07f); var rockC = WorldMaterials.Glow(new Color(.11f, .09f, .15f), .05f);
-            float x0 = Mathf.Max(ctx.MinX, hall.x - Reach), x1 = Mathf.Min(ctx.MaxX, hall.x + Reach), z0 = Mathf.Max(ctx.MinZ, hall.y - Reach), z1 = Mathf.Min(ctx.MaxZ, hall.y + Reach);
+            var up = Vector3.up; var hall = caves[1].c; const float Step = 4f;
+            var rockA = WorldMaterials.Surface(new Color(.3f, .26f, .38f), Surface.Stone); var rockB = WorldMaterials.Surface(new Color(.38f, .33f, .46f), Surface.Stone); var rockC = WorldMaterials.Surface(new Color(.22f, .19f, .28f), Surface.Stone);
+            float x0 = hall.x - 200f, x1 = hall.x + 200f, z0 = hall.y - 200f, z1 = hall.y + 200f;
+            foreach (var cv in caves) { x0 = Mathf.Min(x0, cv.c.x - cv.R - 80f); x1 = Mathf.Max(x1, cv.c.x + cv.R + 80f); z0 = Mathf.Min(z0, cv.c.y - cv.R - 80f); z1 = Mathf.Max(z1, cv.c.y + cv.R + 80f); }
+            x0 = Mathf.Max(ctx.MinX, x0); x1 = Mathf.Min(ctx.MaxX, x1); z0 = Mathf.Max(ctx.MinZ, z0); z1 = Mathf.Min(ctx.MaxZ, z1);
             int nx = Mathf.CeilToInt((x1 - x0) / Step), nz = Mathf.CeilToInt((z1 - z0) / Step); var Y = new float[nx + 1, nz + 1]; var above = new bool[nx + 1, nz + 1];
             for (var i = 0; i <= nx; i++) for (var j = 0; j <= nz; j++)
             {
