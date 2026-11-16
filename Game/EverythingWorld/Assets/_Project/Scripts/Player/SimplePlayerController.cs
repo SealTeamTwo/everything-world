@@ -31,8 +31,10 @@ namespace EverythingWorld.Player
         /// Flying is locked until someone types the code into the hub's terminal (HubTerminal); it stays unlocked
         /// until the game closes.
         public static bool FlightUnlocked;
-        /// The Hub riddle's gift (HubTerminal): higher jumps and a slow, drifting fall. Until the game closes.
+        /// The Hub riddle's gift (HubTerminal): a double jump, a second jump in mid-air (the owner found the old high,
+        /// floaty jump unpleasant, 2026-11-15). Until the game closes.
         public static bool Drifting;
+        bool airJumpUsed;
         float lockedNote = -9f;
         float lastGrounded = -9f, jumpWanted = -9f;
 
@@ -111,18 +113,21 @@ namespace EverythingWorld.Player
             // walking down a slope you leave the ground for a moment every step, so jumping is allowed for a
             // moment after you were last on the ground, and a jump pressed just before you land still counts;
             // on the ground you're held down firmly, so you follow the slope instead of skipping down it
-            if (controller.isGrounded) lastGrounded = Time.time;
+            if (controller.isGrounded) { lastGrounded = Time.time; airJumpUsed = false; }
             if (keyboard.spaceKey.wasPressedThisFrame) jumpWanted = Time.time;
             if (Time.time - jumpWanted < .15f && Time.time - lastGrounded < .2f && verticalVelocity <= 0f)
             {
-                verticalVelocity = Mathf.Sqrt(2f * jumpHeight * (Drifting ? 2.5f : 1f) * -gravity); jumpWanted = -9f; lastGrounded = -9f;
+                verticalVelocity = Mathf.Sqrt(2f * jumpHeight * -gravity); jumpWanted = -9f; lastGrounded = -9f;
+            }
+            else if (Drifting && !airJumpUsed && keyboard.spaceKey.wasPressedThisFrame && !controller.isGrounded && Time.time - lastGrounded >= .2f)
+            {
+                verticalVelocity = Mathf.Sqrt(2f * jumpHeight * -gravity); airJumpUsed = true; jumpWanted = -9f;   // the second jump, in mid-air
             }
             else if (controller.isGrounded && verticalVelocity <= 0f) verticalVelocity = -6f;
             else
             {
                 if ((controller.collisionFlags & CollisionFlags.Above) != 0 && verticalVelocity > 0f) verticalVelocity = 0f;   // bumped your head
-                verticalVelocity += gravity * (Drifting && verticalVelocity < 0f ? .2f : 1f) * Time.deltaTime;
-                if (Drifting) verticalVelocity = Mathf.Max(verticalVelocity, -2.4f);   // drifting down, never dropping
+                verticalVelocity += gravity * Time.deltaTime;
             }
             move.y = verticalVelocity;
 
