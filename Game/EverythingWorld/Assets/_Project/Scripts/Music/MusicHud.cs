@@ -14,22 +14,23 @@ namespace EverythingWorld.Music
         GUIStyle style;
 
         bool show;
-        float card = -99f;   // when N was last pressed
-        const float CardSeconds = 6f;
+        bool cardOn; float cardShown;   // N switches the now-playing card on and off (it stays as you left it, next time too); cardShown fades it in and out
+        void Start() { cardOn = PlayerPrefs.GetInt("EW_NowPlayingCard", 0) == 1; }
         void Update()
         {
             var kb = UnityEngine.InputSystem.Keyboard.current; if (kb == null || EverythingWorld.World.GameKeys.Off) return;
+            cardShown = Mathf.MoveTowards(cardShown, cardOn ? 1f : 0f, UnityEngine.Time.unscaledDeltaTime * 4f);
             if (kb.f1Key.wasPressedThisFrame) show = !show;
-            if (kb.nKey.wasPressedThisFrame) card = UnityEngine.Time.unscaledTime > card + CardSeconds - .6f ? UnityEngine.Time.unscaledTime : -99f;   // N again hides it
+            if (kb.nKey.wasPressedThisFrame) { cardOn = !cardOn; PlayerPrefs.SetInt("EW_NowPlayingCard", cardOn ? 1 : 0); }
         }
 
         GUIStyle small, title, artist; static Texture2D white;
-        /// Now playing: N shows a small card in the corner for a few seconds (the song, the artist, the station and
-        /// how far through it is), then it fades away.
+        /// Now playing: N switches a small card in the corner on and off (the song, the artist, the station and how
+        /// far through it is). It stays until you press N again.
         void NowPlayingCard()
         {
-            var age = UnityEngine.Time.unscaledTime - card; if (age < 0f || age > CardSeconds) return;
-            var a = Mathf.Clamp01(age / .25f) * Mathf.Clamp01((CardSeconds - age) / .8f);
+            if (cardShown <= 0f) return;
+            var a = cardShown;
             var fonts = EverythingWorld.World.GameFonts.Box(15, TextAnchor.UpperLeft);
             small ??= new GUIStyle(fonts) { normal = { background = null, textColor = new Color(1f, .82f, .4f) }, padding = new RectOffset(0, 0, 0, 0) };
             title ??= new GUIStyle(EverythingWorld.World.GameFonts.Box(26, TextAnchor.UpperLeft, false, true)) { normal = { background = null, textColor = Color.white }, padding = new RectOffset(0, 0, 0, 0), clipping = TextClipping.Clip };
