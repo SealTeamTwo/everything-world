@@ -37,7 +37,7 @@ namespace EverythingWorld.World
             clouds.center = center; clouds.count = 36; clouds.span = 2600f; clouds.key = "fusion";
             clouds.minHeight = 150f; clouds.maxHeight = 230f; clouds.size = 3f; clouds.speed = 1.8f; clouds.cover = .32f;
             clouds.color = new Color(.78f, .56f, .6f);
-            Color E(Material m) => m != null ? m.GetColor("_EmissionColor") : Color.black;
+            Color E(Material m) => m != null && m.HasProperty("_EmissionColor") ? m.GetColor("_EmissionColor") : Color.black;   // (the water has none)
             lampBase = E(lamps); windowBase = E(windows); waterBase = E(water); grooveBase = E(grooveWater); needleBase = E(needleGlow);
             if (needle != Vector3.zero)
             {
@@ -86,7 +86,7 @@ namespace EverythingWorld.World
                 var d = new Vector3(Mathf.Cos(deg), 0, Mathf.Sin(deg)); var tan = new Vector3(-d.z, 0, d.x) * Mathf.Sign(w.y);
                 grooveBoats[k].SetPositionAndRotation(new Vector3(center.x, center.y, center.z) + d * w.x + Vector3.up * (-.05f + Mathf.Sin(t * 1.3f + k) * .03f), Quaternion.LookRotation(tan) * Quaternion.Euler(0, 0, Mathf.Sin(t * .9f + k) * 2f));
             }
-            if (grooveWater != null) { grooveWater.SetColor("_EmissionColor", grooveBase * (1f + .25f * Mathf.Sin(t * 1.1f) + energy * .6f + tidal * 1.2f)); if (grooveWater.HasProperty("_Ripple")) grooveWater.SetFloat("_Ripple", .55f * (1f + energy * .8f + tidal * 1.8f)); }
+            if (grooveWater != null) { if (grooveWater.HasProperty("_EmissionColor")) grooveWater.SetColor("_EmissionColor", grooveBase * (1f + .25f * Mathf.Sin(t * 1.1f) + energy * .6f + tidal * 1.2f)); if (grooveWater.HasProperty("_Ripple")) grooveWater.SetFloat("_Ripple", .55f * (1f + energy * .8f + tidal * 1.8f)); }
             if (needleGlow != null) needleGlow.SetColor("_EmissionColor", needleBase * (.85f + .3f * Mathf.Sin(t * 6f) + energy * .8f));
             for (var k = 0; k < ripples.Count; k++)
             {
@@ -121,7 +121,7 @@ namespace EverythingWorld.World
             if (bulbs != null) for (var i = 0; i < bulbs.Length; i++) if (bulbs[i] != null) { var ph = .5f + .5f * Mathf.Sin(now * rate * 2f + i * 2.1f); bulbs[i].SetColor("_EmissionColor", bulbBase * (.6f + .7f * ph + lift * .6f + strings * 2.2f + night * .5f)); }
             if (lamps != null) lamps.SetColor("_EmissionColor", lampBase * (1f + energy * .2f + night * 1.4f + .03f * Mathf.Sin(t * 1.7f)));
             if (windows != null) windows.SetColor("_EmissionColor", windowBase * (1f + .04f * Mathf.Sin(t * 1.1f) + night * .6f));
-            if (water != null) { water.SetColor("_EmissionColor", waterBase * (.85f + .15f * Mathf.Sin(t * .9f) + tidal * (1.4f + .7f * Mathf.Sin(t * 3f)) + galaxy * .6f)); if (water.HasProperty("_Ripple")) water.SetFloat("_Ripple", .45f * (1f + tidal * 1.8f)); }
+            if (water != null) { if (water.HasProperty("_EmissionColor")) water.SetColor("_EmissionColor", waterBase * (.85f + .15f * Mathf.Sin(t * .9f) + tidal * (1.4f + .7f * Mathf.Sin(t * 3f)) + galaxy * .6f)); if (water.HasProperty("_Ripple")) water.SetFloat("_Ripple", .45f * (1f + tidal * 1.8f)); }
 
             // the sky: teal dusk; darker for Nightrider, turquoise for the Galaxy, a warm lift for Victory Dance
             var tint = new Color(.2f, .42f, .5f); var amount = .06f;
