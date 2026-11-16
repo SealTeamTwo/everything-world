@@ -112,6 +112,7 @@ namespace EverythingWorld.World
             SunsetPoint(ctx, mk, solid);
             TheSun(ctx);
             Paths(ctx, mk, solid);
+            try { BikeGrid(ctx, mk, solid); } catch (System.Exception e) { Debug.LogWarning("An activity could not be built (the rest of the land is unaffected): " + e); }   // new and not yet played: it must never take the land down with it
             Wilds(ctx, mk, solid);
             mk.Build("The Synthwave Coast", ctx.Root, false);
             solid.BuildCollider("The Synthwave Coast walls", ctx.Root);

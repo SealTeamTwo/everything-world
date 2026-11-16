@@ -935,6 +935,9 @@ Benches with lamps sit between the places. Olivia Rodrigo has a row of purple sc
 - **The Neon Diner:** sit at the counter or in a booth; take a milkshake; play the arcade game.
 - **The Coast Road:** walk it toward the sun; sit in a parked car.
 - **Sunset Point:** sit in a car facing the sun at the end of the road.
+
+**Light bikes (the land's activity):** a slab of glowing grid with a parked bike on it and a neon sign. Press E on the bike and you shrink onto the grid: a square arena of dark glass ruled with light, high over the Coast under its own sunset. Your bike never stops and leaves a wall of light behind it; A and D (or the arrows, or the two mouse buttons) turn it by a right angle. Touch any wall, your own included, and you're out; the last one riding wins. Rounds run on the shared clock, one every 50 seconds, so friends on the grid are always in the same round; alone, three bikes ride themselves against you. Win three rounds and the grid's radio can play the whole Everything Playlist (P switches).
+
 ---
 
 ## The Groovelands (west landmass)
