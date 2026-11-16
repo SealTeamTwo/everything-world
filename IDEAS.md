@@ -210,7 +210,10 @@ The playlist is meant to be surprising and spontaneous, so the world shouldn't b
 - **More activities wanted:** basketball and pool, besides mini golf (Riviera), skating, ice fishing and the rest above.
 - **The reward is music:** doing well (going under par for the golf course, say) unlocks the full Everything Playlist while you play that activity. Before that, the activity only plays its land's songs. You can switch it back to just the land.
 - **Completionist piece in the Hub:** each activity finished adds to something in the Hub (see the pedestals idea below).
-- **Collectibles** to find around the world.
+- **One fixed bar per activity** (under par, say) for the unlock. High scores or records could be shown at the Hub.
+- **Air hockey** is another candidate.
+- **The feel to aim for** comes from party games the owner plays with friends: mini golf with everyone on the course at once, a nine-ball pool game with a twist of chance, a quick basketball shooting game. Take the feel and the kind of game only; every course, table, rule set and look is our own.
+- **Collectibles** to find around the world (not a priority yet).
 - **Later, bigger:** giant puzzles; a survive-the-waves game with friends in the Iron Range.
 
 ## Social spaces and minigames (2026-11-09, later)
