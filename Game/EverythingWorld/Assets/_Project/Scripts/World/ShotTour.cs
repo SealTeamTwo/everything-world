@@ -212,7 +212,7 @@ namespace EverythingWorld.World
                 foreach (var m in marks)
                 {
                     var what = m.name.Substring(6);
-                    if (!what.StartsWith("links") && !what.StartsWith("pool") && !what.StartsWith("hoops")) { yield return Shot(what, m.position, m.eulerAngles.y, 6f, 1f); continue; }
+                    if (!what.StartsWith("links") && !what.StartsWith("pool") && !what.StartsWith("hoops") && !what.StartsWith("hockey")) { yield return Shot(what, m.position, m.eulerAngles.y, 6f, 1f); continue; }
                     // mini golf (the Riviera Links): its course is switched off until someone plays, so it is switched on
                     // for its photos; and "links play" marks step onto the course and putt once, to photograph the game running
                     if (only != null && only.Length > 0) { var hit = false; foreach (var o in only) if (what.ToLowerInvariant().Contains(o)) hit = true; if (!hit) continue; }
@@ -225,6 +225,16 @@ namespace EverythingWorld.World
                         yield return golf.Demo(player.GetComponent<EverythingWorld.Player.PlayerInteractor>(), Mathf.Max(0, holeNo - 1), 9f);
                         yield return Shot(what, player.transform.position, player.transform.eulerAngles.y, pivot != null ? (pivot.localEulerAngles.x > 180f ? pivot.localEulerAngles.x - 360f : pivot.localEulerAngles.x) : 20f, 1.5f);
                         golf.DemoEnd();
+                    }
+                    else if (what.StartsWith("hockey play") && player != null)
+                    {
+                        var table = FindAnyObjectByType<EverythingWorld.Activities.HockeyGame>(FindObjectsInactive.Include);
+                        if (table != null)
+                        {
+                            yield return table.Demo(player.GetComponent<EverythingWorld.Player.PlayerInteractor>());
+                            yield return Shot(what, player.transform.position, player.transform.eulerAngles.y, pivot != null ? (pivot.localEulerAngles.x > 180f ? pivot.localEulerAngles.x - 360f : pivot.localEulerAngles.x) : 30f, 1.5f);
+                            table.DemoEnd();
+                        }
                     }
                     else if (what.StartsWith("hoops play") && player != null)
                     {

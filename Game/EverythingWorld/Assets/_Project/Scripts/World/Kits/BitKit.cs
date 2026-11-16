@@ -113,6 +113,7 @@ namespace EverythingWorld.World
             LevelRoad(ctx, mk, solid);
             TheRing(ctx, mk, solid);
             Paths(ctx, mk, solid);
+            try { HockeyTable(ctx, mk, solid); } catch (System.Exception e) { Debug.LogWarning("The air hockey table could not be built (the rest of the Isles is unaffected): " + e); }   // new and not yet played: it must never take the land down with it
             Wilds(ctx, mk, solid);
             mk.Build("The Game Isles", ctx.Root, false);
             solid.BuildCollider("The Game Isles walls", ctx.Root);
