@@ -198,7 +198,6 @@ namespace EverythingWorld.World
             {
                 var cv = caves[i]; var c = new Vector3(cv.c.x, plazaY, cv.c.y);
                 Shell(mk, solid, c, cv.R, cv.Hw, cv.H, cv.holes, inner, outer, 100 + i, 3.2f);
-                OuterCrystals(ctx, mk, c, cv, rng);
                 foreach (var h in cv.holes) Collar(mk, solid, c + V3(h.dir) * (cv.R - .6f), V3(h.dir), h.hw, h.wallH, h.roofH, outer);
                 Stalactites(mk, c, cv, rng);
                 IndoorSpaces.Add(c + up * cv.Hw / 2f, Quaternion.identity, new Vector3(cv.R * 1.42f, cv.Hw, cv.R * 1.42f));
@@ -225,6 +224,7 @@ namespace EverythingWorld.World
                 Sign(p1 + up * (Mouth.roofH + 3f) + d3 * .8f, d3, "THE DUBSTEP SHARDS", 1.2f, Cyan);
                 Shot(ctx, "a mouth of the shards", p1 + d3 * 24f + up * 4f, p1 + up * 6f);
             }
+            Massif(ctx, rng);
             CavePaths(ctx, mk);
             foreach (var cv in caves) CaveFloor(ctx, mk, solid, cv, rng);
         }
@@ -308,6 +308,119 @@ namespace EverythingWorld.World
             for (var d = 6f; d < len - 4f; d += 11f, lamps++) { var e = lamps % 2 == 0 ? 1f : -1f; var lp = p0 + dir * d + side * e * (hw - 1.3f); Lamp(ctx, mk, ctx.OnGround(lp.x, lp.z), lamps % 2 == 0); }
             if (rift) for (var d = 4f; d < len - 2f; d += 3.2f) { var o = p0 + dir * d; mk.Box((int)(d / 3.2f) % 2 == 0 ? shardM : shardM2, ctx.OnGround(o.x, o.z) + up * .14f, new Vector3(hw * 1.4f, .02f, .07f), Quaternion.LookRotation(dir) * Quaternion.Euler(0, (d * 37f) % 30f - 15f, 0)); }
             IndoorSpaces.Add((p0 + p1) / 2f + up * (roofH / 2f), Quaternion.LookRotation(dir), new Vector3(hw * 2f, roofH, len));
+        }
+
+        /// How high the mountain stands over a point: one great peak over the Moon Hall, every cavern and tunnel well
+        /// under its rock, craggy, falling away to the coast, and notched into a canyon where each mouth comes out.
+        float Mountain(Vector2 p)
+        {
+            var f = plazaY; var m = f + 95f - Vector2.Distance(p, caves[1].c) * .5f;
+            foreach (var cv in caves) m = Mathf.Max(m, f + cv.H + 10f - Mathf.Max(0f, Vector2.Distance(p, cv.c) - cv.R * .6f) * .55f);
+            foreach (var t in tubes) m = Mathf.Max(m, f + t.roofH + 9f - Mathf.Max(0f, ShardCaveMap.Seg(p, caves[t.a].c, caves[t.b].c) - t.hw) * .6f);
+            m += (Mathf.PerlinNoise(p.x * .012f + 11f, p.y * .012f + 4f) - .5f) * 16f + (Mathf.PerlinNoise(p.x * .045f + 2f, p.y * .045f + 9f) - .5f) * 6f;
+            return m;
+        }
+
+        bool UnderMountain(LandContext ctx, float x, float z) => caved && caves.Count > 1 && !InCanyon(new Vector2(x, z), 0f) && MountainAt(ctx, x, z) > ctx.Ground(x, z) + .5f;
+
+        /// The gorge cut into the mountain in front of each mouth: as wide as the mouth's rock frame, straight-walled.
+        const float CutW = Mouth.hw + 5.5f;
+        (float along, float lat, float len) CanyonCoords(Mouth mo, Vector2 p)
+        {
+            var cv = caves[mo.cave]; var o = cv.c + mo.dir * (cv.R + PorchL); var rel = p - o; var perp = new Vector2(-mo.dir.y, mo.dir.x);
+            return (Vector2.Dot(rel, mo.dir), Vector2.Dot(rel, perp), Mathf.Min(220f, Vector2.Distance(o, mo.end)));
+        }
+        bool InCanyon(Vector2 p, float pad) { foreach (var mo in mouths) { var (al, la, len) = CanyonCoords(mo, p); if (al > -pad && al < len + pad && Mathf.Abs(la) < CutW + pad) return true; } return false; }
+        /// Inside the patch of mountain built in each canyon's own frame (the main grid leaves these out).
+        bool InCanyonPatch(Vector2 p, float shrink) { foreach (var mo in mouths) { var (al, la, len) = CanyonCoords(mo, p); if (al > -12f + shrink && al < len - shrink && Mathf.Abs(la) < CutW + 8f - shrink) return true; } return false; }
+
+        float MountainAt(LandContext ctx, float x, float z)
+        {
+            var cd = 0f; for (var r = 12f; r <= 72f; r += 12f) { if (ctx.IsLand(x, z, r)) cd = r; else break; }
+            var t = ctx.Ground(x, z); var k = Mathf.Clamp01(cd / 72f); k = k * k * (3f - 2f * k);
+            return Mathf.Lerp(t - 1f, Mountain(new Vector2(x, z)), k);
+        }
+
+        /// The mountain itself: a rough rock surface laid over the whole cave system (you can walk on it; the caves are
+        /// hollow inside it), crystals growing out of its sides and a great crystal on the summit.
+        void Massif(LandContext ctx, System.Random rng)
+        {
+            var up = Vector3.up; var hall = caves[1].c; const float Step = 4f, Reach = 210f;
+            var rockA = WorldMaterials.Glow(new Color(.16f, .13f, .21f), .06f); var rockB = WorldMaterials.Glow(new Color(.23f, .19f, .29f), .07f); var rockC = WorldMaterials.Glow(new Color(.11f, .09f, .15f), .05f);
+            float x0 = Mathf.Max(ctx.MinX, hall.x - Reach), x1 = Mathf.Min(ctx.MaxX, hall.x + Reach), z0 = Mathf.Max(ctx.MinZ, hall.y - Reach), z1 = Mathf.Min(ctx.MaxZ, hall.y + Reach);
+            int nx = Mathf.CeilToInt((x1 - x0) / Step), nz = Mathf.CeilToInt((z1 - z0) / Step); var Y = new float[nx + 1, nz + 1]; var above = new bool[nx + 1, nz + 1];
+            for (var i = 0; i <= nx; i++) for (var j = 0; j <= nz; j++)
+            {
+                float x = x0 + i * Step, z = z0 + j * Step; var t = ctx.Ground(x, z); var m = MountainAt(ctx, x, z);
+                above[i, j] = m > t + .2f; Y[i, j] = above[i, j] ? m : t - .6f;
+            }
+            var mk = new MeshKit(); var solid = new MeshKit(); var cells = 0;
+            for (var i = 0; i < nx; i++) for (var j = 0; j < nz; j++)
+            {
+                if (!above[i, j] && !above[i + 1, j] && !above[i, j + 1] && !above[i + 1, j + 1]) continue;
+                Vector3 a = new Vector3(x0 + i * Step, Y[i, j], z0 + j * Step), b = new Vector3(x0 + (i + 1) * Step, Y[i + 1, j], z0 + j * Step), c = new Vector3(x0 + (i + 1) * Step, Y[i + 1, j + 1], z0 + (j + 1) * Step), d = new Vector3(x0 + i * Step, Y[i, j + 1], z0 + (j + 1) * Step);
+                if (InCanyonPatch(new Vector2(a.x, a.z), 4.5f) || InCanyonPatch(new Vector2(b.x, b.z), 4.5f) || InCanyonPatch(new Vector2(c.x, c.z), 4.5f) || InCanyonPatch(new Vector2(d.x, d.z), 4.5f)) continue;
+                var mid = (a + b + c + d) / 4f; var steep = Mathf.Max(Mathf.Abs(a.y - c.y), Mathf.Abs(b.y - d.y)) / (Step * 1.41f);
+                var n = Mathf.PerlinNoise(mid.x * .03f, mid.z * .03f); var mat = steep > .9f ? rockC : n > .55f ? rockB : rockA;
+                mk.Quad(mat, a, b, c, d, mid - up * 6f); solid.Quad(mat, a, b, c, d, mid - up * 6f); cells++;
+            }
+            foreach (var mo in mouths) Canyon(ctx, mk, solid, mo, rockA, rockC);
+            mk.Build("The mountain", ctx.Root, false); solid.BuildCollider("The mountain rock", ctx.Root);
+            // crystals growing out of the mountainside
+            var cr = new MeshKit(); var clusters = 0;
+            for (var k = 0; k < 900 && clusters < 150; k++)
+            {
+                float x = x0 + (float)rng.NextDouble() * (x1 - x0), z = z0 + (float)rng.NextDouble() * (z1 - z0); var t = ctx.Ground(x, z); var m = MountainAt(ctx, x, z); if (m < t + 3f || InCanyon(new Vector2(x, z), 3f)) continue;
+                var p = new Vector3(x, m, z); var s = .6f + (float)rng.NextDouble() * 1.2f; var n = 2 + rng.Next(3);
+                for (var j = 0; j < n; j++) { var dir = (up + Random3n(rng) * .45f).normalized; cr.Prism(j % 2 == 0 ? shardM : shardM2, p - up * 1f + Random3n(rng) * s, dir, s * (j == 0 ? 1f : .6f), (j == 0 ? 6f : 3f) * s + 2f, 5, .05f, (float)rng.NextDouble() * 70f); }
+                ArtistBits.PostCollider(ctx.Root, p, 3f, s); if (clusters % 4 == 0) halos.Add(p + up * 3f * s, 3f * s, clusters % 8 == 0 ? Cyan : Magenta, .25f); clusters++;
+            }
+            // the summit crystal, seen from all over the realm
+            var top = new Vector3(hall.x, MountainAt(ctx, hall.x, hall.y), hall.y);
+            cr.Prism(shardM, top - up * 3f, (up + new Vector3(.08f, 0, .05f)).normalized, 4.5f, 40f, 6, .04f, 15f);
+            for (var j = 0; j < 7; j++) { var d = Quaternion.Euler(0, j * 51f, 0) * Vector3.forward; cr.Prism(j % 2 == 0 ? shardM2 : shardM, top - up * 2f + d * 3.5f, (up + d * .5f).normalized, 2f, 14f + j * 2.4f, 5, .05f, j * 17f); }
+            ArtistBits.PostCollider(ctx.Root, top, 8f, 5f); halos.Add(top + up * 18f, 26f, Cyan, .3f);
+            cr.Build("The mountain crystals", ctx.Root, false);
+            Debug.Log($"The Dubstep Shards mountain: {cells} cells of rock, {clusters} crystal clusters, summit {top.y - plazaY:0} m over the caves");
+            Shot(ctx, "the mountain", new Vector3(hall.x, plazaY, hall.y) + new Vector3(-170f, 70f, -170f), top - up * 30f);
+        }
+
+        /// The mountain round one mouth, built in the canyon's own frame so its edges are straight: the slopes either side,
+        /// the rock over the porch, sheer walls down to the canyon floor and a rock face above the mouth's frame.
+        void Canyon(LandContext ctx, MeshKit mk, MeshKit solid, Mouth mo, Material rock, Material wall)
+        {
+            var up = Vector3.up; var cv = caves[mo.cave]; var o = cv.c + mo.dir * (cv.R + PorchL); var perp = new Vector2(-mo.dir.y, mo.dir.x); var len = Mathf.Min(220f, Vector2.Distance(o, mo.end));
+            Vector2 W2(float al, float la) => o + mo.dir * al + perp * la;
+            Vector3 V(float al, float la, out bool hi) { var q = W2(al, la); var t = ctx.Ground(q.x, q.y); var m = MountainAt(ctx, q.x, q.y); hi = m > t + .2f; return new Vector3(q.x, hi ? m : t - .6f, q.y); }
+            void Patch(float al0, float al1, float la0, float la1, int nA, int nL)
+            {
+                for (var i = 0; i < nA; i++) for (var j = 0; j < nL; j++)
+                {
+                    float a0 = Mathf.Lerp(al0, al1, i / (float)nA), a1 = Mathf.Lerp(al0, al1, (i + 1) / (float)nA), l0 = Mathf.Lerp(la0, la1, j / (float)nL), l1 = Mathf.Lerp(la0, la1, (j + 1) / (float)nL);
+                    var a = V(a0, l0, out var h1); var b = V(a1, l0, out var h2); var c = V(a1, l1, out var h3); var d = V(a0, l1, out var h4); if (!h1 && !h2 && !h3 && !h4) continue;
+                    var mid = (a + b + c + d) / 4f; mk.Quad(rock, a, b, c, d, mid - up * 6f); mk.Quad(rock, a, b, c, d, mid + up * 6f); solid.Quad(rock, a, b, c, d, mid - up * 6f);
+                }
+            }
+            var nLen = Mathf.Max(2, Mathf.CeilToInt((len + 12f) / 2f));
+            Patch(-12f, len, -CutW - 8f, -CutW, nLen, 4); Patch(-12f, len, CutW, CutW + 8f, nLen, 4); Patch(-12f, 0f, -CutW, CutW, 6, 12);
+            void Wall(Vector3 b0, Vector3 b1, Vector3 t1, Vector3 t0, Vector3 face) { if (t0.y <= b0.y + .05f && t1.y <= b1.y + .05f) return; t0.y = Mathf.Max(t0.y, b0.y); t1.y = Mathf.Max(t1.y, b1.y); var mid = (b0 + b1 + t1 + t0) / 4f; mk.Quad(wall, b0, b1, t1, t0, mid - face * 3f); mk.Quad(wall, b0, b1, t1, t0, mid + face * 3f); solid.Quad(wall, b0, b1, t1, t0, mid - face * 3f); }
+            // the sheer sides
+            foreach (var e in new[] { -1f, 1f })
+                for (var i = 0; i < nLen; i++)
+                {
+                    float a0 = Mathf.Max(0f, -12f + i * (len + 12f) / nLen), a1 = Mathf.Max(0f, -12f + (i + 1) * (len + 12f) / nLen); if (a1 <= a0) continue;
+                    var q0 = W2(a0, e * CutW); var q1 = W2(a1, e * CutW);
+                    var t0 = V(a0, e * CutW, out var h0); var t1 = V(a1, e * CutW, out var h1); if (!h0 && !h1) continue;
+                    Wall(new Vector3(q0.x, ctx.Ground(q0.x, q0.y) - .4f, q0.y), new Vector3(q1.x, ctx.Ground(q1.x, q1.y) - .4f, q1.y), t1, t0, V3(perp) * -e);
+                }
+            // the face over the mouth: from the top of the rock frame up to the mountain
+            float FrameTop(float la) { var x = Mathf.Abs(la); return plazaY + (x <= Mouth.hw + 2.5f ? Mouth.roofH + 5f : Mathf.Lerp(Mouth.roofH + 5f, Mouth.wallH + 3f, (x - Mouth.hw - 2.5f) / 3f)); }
+            for (var j = 0; j < 12; j++)
+            {
+                float l0 = Mathf.Lerp(-CutW, CutW, j / 12f), l1 = Mathf.Lerp(-CutW, CutW, (j + 1) / 12f); var q0 = W2(-.05f, l0); var q1 = W2(-.05f, l1);
+                var t0 = V(0f, l0, out _); var t1 = V(0f, l1, out _); t0 = new Vector3(q0.x, t0.y, q0.y); t1 = new Vector3(q1.x, t1.y, q1.y);
+                Wall(new Vector3(q0.x, FrameTop(l0) - .3f, q0.y), new Vector3(q1.x, FrameTop(l1) - .3f, q1.y), t1, t0, V3(mo.dir));
+            }
         }
 
         /// Giant crystals bursting out through a cavern's dome, so from outside the mountain bristles.

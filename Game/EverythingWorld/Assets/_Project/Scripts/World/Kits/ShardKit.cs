@@ -157,7 +157,7 @@ namespace EverythingWorld.World
         }
 
         bool Open(LandContext ctx, float x, float z, float pad) =>
-            ctx.IsLand(x, z, 5f) && !InFootprint(ctx, x, z, pad) && !NearPath(x, z, pad + 2f) && !InNoGrass(x, z, pad) && !InCaveZone(x, z, pad + 4f);
+            ctx.IsLand(x, z, 5f) && !InFootprint(ctx, x, z, pad) && !NearPath(x, z, pad + 2f) && !InNoGrass(x, z, pad) && !InCaveZone(x, z, pad + 4f) && !UnderMountain(ctx, x, z);
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
@@ -282,7 +282,7 @@ namespace EverythingWorld.World
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
-                if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || InCaveZone(px, pz, 1.5f)) continue;
+                if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 3.6f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f) || InCaveZone(px, pz, 1.5f) || UnderMountain(ctx, px, pz)) continue;
                 if (Mathf.PerlinNoise(px * .05f + 1f, pz * .05f + 9f) < .55f) continue;
                 var kind = WindMesh.Patch(px, pz, .02f, 71f);                                    // clusters or wisps
                 var band = Mathf.Clamp01(Mathf.PerlinNoise(px * .045f + 13f, pz * .009f + 29f));  // long fault-line bands, stretched along x

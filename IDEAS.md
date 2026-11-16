@@ -156,6 +156,7 @@ The world is a lobby: a place to exist in, enjoy and lose yourself in with frien
   - Each land decides what each mood looks like there, from its own look (shared sky system, never a shared look). Some lands never change (the Small Hours stays night); artist areas can keep their own hour.
   - Eased over about half a minute; it can start turning just before the next song (the schedule is known); all on the shared radio clock, so friends see the same sky.
   - Risk: whiplash between songs. Either change only for songs that clearly don't fit, or drift with the run of songs.
+  - **After Lana Del Rey's night quarter (2026-11-15):** the owner is sold on changing the lighting, sky and ambience of an area for specific songs. Not the majority of songs, but for the right ones it was a powerful effect. So the "change only for songs that clearly don't fit, or that deserve it" version is the one to build. Still waiting for him to say go.
   - **The owner's point:** a blue-sky, sunny, green-grass, green-tree scene is probably the most boring and least expressive look. So a "bright" mood should never fall back to plain sunny green: each land's bright version needs its own character.
 - **Generated music** only between the real songs (the wilds, crossings, the sea, a fallback), never replacing the playlist.
 
