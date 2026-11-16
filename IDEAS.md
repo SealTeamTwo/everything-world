@@ -107,7 +107,9 @@ Things to remember that aren't built or decided yet. Newest first.
 - **Mount Virtuoso:** more atmospheric and epic, with something special at the summit.
 - **Isle of Memes:** a friend couldn't tell it was vaporwave/Y2K; push the theme further.
 - **Thin and need much more:** Studio Lot Island (sparse), Latin Coast (more alive), Soul Lowlands (basic), Far Shores (very basic, a big rework), Liquid Rapids, Trance Steppe (a special theme for both), Grunge Rainwood (more energising), Nu Metal Quarry (bland, which fits the music, but more), Afrobeat Coast (more detail).
-- **Electro Foundry:** the owner loves electro; add a ton.
+- **Electro Foundry:** the owner loves electro; add a ton. (2026-11-16: he now thinks it may not be missing anything.)
+- **Artistic spins:** give some lands an unexpected art theme fused with their own, built as art pieces that belong to that land. First idea: the Electro Foundry as tech crossed with ancient Egypt.
+- **Too much empty land (2026-11-16):** most lands are 15-40% designed; the rest is wide ground with thin random scatter. Plan: give each land a walkable heart sized to its content, with edges that suit it (tree walls, cliffs, water, fences), props grouped with a reason, open space on purpose. Ranked list: Logs/LandAudit/land_space.md.
 - **Dubstep Shards:** more about energy (crystal, electric, plasma).
 - **Lo-Fi Hills:** super vibey and cozy.
 - **Djent Spires:** a crystal mountain with an observation point at the top, reached by running through ice and crystal caves.
