@@ -110,6 +110,7 @@ namespace EverythingWorld.World
             SkyClub(ctx, mk, solid);
             Paths(ctx, mk, solid);
             MirrorRing(ctx, mk);
+            try { BowlingLane(ctx, mk, solid); } catch (System.Exception e) { Debug.LogWarning("An activity could not be built (the rest of the land is unaffected): " + e); }   // new and not yet played: it must never take the land down with it
             Wilds(ctx, mk, solid);
             mk.Build("The Glitterlands", ctx.Root, false);
             solid.BuildCollider("The Glitterlands walls", ctx.Root);

@@ -909,6 +909,9 @@ Benches with lamps sit between the places. Olivia Rodrigo has a row of purple sc
 - **The Mirrorball:** dance on the floor of light; take a drink from the glitter bar; take some photos.
 - **The Glitter Mile:** strut it.
 - **The Sky Club:** drop a record; climb the staircase of light to the floating balcony.
+
+**Bowling (the land's activity):** a little model lane on a mirrored plinth, a ball return beside it, a sign in lights. Press E on the ball return and you shrink onto the lane: the same lane ten times the size, glitter down both sides, a mirror ball over the pins. A and D move where you stand, the mouse aims, hold the button to swing and let go to bowl; while the ball rolls, A and D curl it. Ten frames, scored the proper way, strikes and spares and all. Everyone bowls at once on their own copy of the lane and sees each other's scores. Bowl 170 or better and the lane's radio can play the whole Everything Playlist (P switches).
+
 ### The Latin Coast
 *22 songs · 16 artists · 0.54 km² · built in Unity*
 
