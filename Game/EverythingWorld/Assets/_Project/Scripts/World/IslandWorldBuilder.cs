@@ -41,8 +41,10 @@ namespace EverythingWorld.World
         public float buildDistance = 1200f;
         [Tooltip("Build every land while a loading screen shows at the start (about half a minute to a minute), so there are no pauses later as you travel. Off: lands are built as you come within buildDistance of them.")]
         public bool loadAllAtStart = true;
-        [Tooltip("With Load All At Start: the loading screen builds only the lands within Build Distance of you; the rest are built afterwards in the background, a piece at a time (a land's scenery, each artist area, its finish), nearest first, using about Background Share of the time so play stays smooth.")]
+        [Tooltip("In the editor only (a built game loads every land first). With Load All At Start: the loading screen builds only the lands within Build Distance of you; the rest are built afterwards in the background, a piece at a time (a land's scenery, each artist area, its finish), nearest first, using about Background Share of the time so play stays smooth.")]
         public bool backgroundLoading = true;
+        /// Background loading is for testing in the editor; a built game builds every land behind the loading screen.
+        bool Background => backgroundLoading && Application.isEditor;
         [Range(.05f, 1f)] public float backgroundShare = .3f;
         [Tooltip("Hide grass, small props, glows and lights on built lands when they're far away (LandCuller). Turn off to compare.")]
         public bool cullByDistance = true;
@@ -88,7 +90,7 @@ namespace EverythingWorld.World
         /// How many lands the loading screen builds: all of them, or with background loading only those near you.
         int LoadScreenCount()
         {
-            if (!backgroundLoading) return pending.Count;
+            if (!Background) return pending.Count;
             var at = player != null ? player.position : new Vector3(Data.layout.spawnX, 0f, Data.layout.spawnZ); var n = 0;
             foreach (var i in pending) if (Distance(i, at) <= buildDistance) n++;
             return Mathf.Max(1, n);
@@ -621,7 +623,7 @@ namespace EverythingWorld.World
             {
                 int near = 0; for (var k = 1; k < pending.Count; k++) if (Distance(pending[k], at) < Distance(pending[near], at)) near = k;
                 // with background loading, the loading screen ends once every land near you is built
-                var rest = backgroundLoading && Distance(pending[near], at) > buildDistance;
+                var rest = Background && Distance(pending[near], at) > buildDistance;
                 if (!rest) { var li = pending[near]; pending.RemoveAt(near); loadName = Data.layout.islands[li].name; DressLand(li); loadDone++; }
                 if (pending.Count == 0 || rest)
                 {
@@ -633,7 +635,7 @@ namespace EverythingWorld.World
             }
             // background loading: the nearest unbuilt land, a piece at a time
             if (building >= 0) return;
-            if (backgroundLoading && loadAllAtStart && Time.realtimeSinceStartup >= bgNext) { StartCoroutine(BuildInBackground(at)); return; }
+            if (Background && loadAllAtStart && Time.realtimeSinceStartup >= bgNext) { StartCoroutine(BuildInBackground(at)); return; }
             int best = -1; var bestD = buildDistance;
             for (var k = 0; k < pending.Count; k++) { var d = Distance(pending[k], at); if (d <= bestD) { bestD = d; best = k; } }
             if (best < 0) return;
