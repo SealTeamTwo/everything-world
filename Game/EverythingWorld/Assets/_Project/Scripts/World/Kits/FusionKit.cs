@@ -38,7 +38,7 @@ namespace EverythingWorld.World
         {
             brick = WorldMaterials.Surface(Brick, Surface.Stone); brickDark = WorldMaterials.Surface(new Color(.42f, .24f, .2f), Surface.Stone);
             // paving and stone are faintly self-lit, so dusk never swallows the streets
-            paving = WorldMaterials.Glow(new Color(.7f, .56f, .48f), .1f); stoneM = WorldMaterials.Glow(new Color(.72f, .72f, .74f), .1f);
+            paving = WorldMaterials.Surface(new Color(.84f, .7f, .62f), Surface.Stone);   // laid stone with its texture, a shade lighter so dusk never swallows it stoneM = WorldMaterials.Glow(new Color(.72f, .72f, .74f), .1f);
             brassM = WorldMaterials.Surface(new Color(.86f, .66f, .28f), Surface.Metal); iron = WorldMaterials.Surface(new Color(.14f, .15f, .18f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.08f, .08f, .1f));
             white = WorldMaterials.Solid(new Color(.95f, .94f, .9f)); woodM = WorldMaterials.Surface(new Color(.55f, .38f, .24f), Surface.Wood);
             leafM = WorldMaterials.Surface(new Color(.3f, .52f, .34f), Surface.Foliage); leafDark = WorldMaterials.Surface(new Color(.2f, .4f, .32f), Surface.Foliage); glassDark = WorldMaterials.Surface(new Color(.2f, .28f, .36f), Surface.Glass);
