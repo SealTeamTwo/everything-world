@@ -212,6 +212,10 @@ The playlist is meant to be surprising and spontaneous, so the world shouldn't b
 - **Completionist piece in the Hub:** each activity finished adds to something in the Hub (see the pedestals idea below).
 - **One fixed bar per activity** (under par, say) for the unlock. High scores or records could be shown at the Hub.
 - **Mini golf is the big one:** expected to be one of the main things friends do. 18 holes on the Riviera, built so another course could be added one day.
+  - The first course is the Riviera's own: yacht-rock life in miniature (a yacht's deck, a swimming pool, a marina, a cocktail bar, a sunset pier). A world-tour course (each hole a tiny land) could be a second course later.
+  - The more moving parts and tricks the better (moving obstacles, ramps, water that resets the ball). Everyone putts at once, in the style of party mini golf games.
+  - A full round takes 20 to 30 minutes.
+  - Build order: the game itself on 3 holes first (shrink, putt, scores, friends, the unlock), then the other 15.
 - **Air hockey** is another candidate.
 - **The feel to aim for** comes from party games the owner plays with friends: mini golf with everyone on the course at once, a nine-ball pool game with a twist of chance, a quick basketball shooting game. Take the feel and the kind of game only; every course, table, rule set and look is our own.
 - **Collectibles** to find around the world (not a priority yet).
