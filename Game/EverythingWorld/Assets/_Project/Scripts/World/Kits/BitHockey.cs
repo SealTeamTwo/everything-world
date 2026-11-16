@@ -54,6 +54,18 @@ namespace EverythingWorld.World
                 var bp = f.P(-2.6f, 1.2f, 2.4f); mk.Box(dark, bp, new Vector3(1.9f, .7f, .06f), f.r); mk.Prism(iron, f.P(-2.6f, 0, 2.4f), up, .05f, 1.2f, 4); ArtistBits.PostCollider(ctx.Root, f.P(-2.6f, 0, 2.4f), 1.5f, .1f);
                 game.recordText = ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, Gold, TextAnchor.MiddleCenter);
             }
+            // a cabinet you can really play (ArcadeGame): BRICKS, at the back corner of the pad
+            {
+                var arcade = new GameObject("BRICKS").AddComponent<ArcadeGame>(); arcade.transform.SetParent(ctx.Root, false); arcade.landScene = ctx.Island.sceneId;
+                var cp = f.P(2.4f, 0, -2.3f); var cr = f.r; var rm = new MeshKit(); rm.Box(dark, new Vector3(0, .9f, 0), new Vector3(.8f, 1.8f, .7f)); rm.Box(GlowM(Cyan, 1.4f), new Vector3(0, 1.25f, .36f), new Vector3(.62f, .5f, .02f)); rm.Box(GlowM(Pink, 1.8f), new Vector3(0, 1.72f, .36f), new Vector3(.7f, .16f, .02f));
+                rm.Box(dark, new Vector3(0, .85f, .45f), new Vector3(.8f, .08f, .3f)); rm.Prism(iron, new Vector3(-.15f, .89f, .45f), Vector3.up, .02f, .12f, 5); rm.Blob(GlowM(Gold, 1.6f), new Vector3(-.15f, 1.03f, .45f), Vector3.one * .04f, ctx.Rng, 0f); for (var k = 0; k < 2; k++) rm.Prism(GlowM(k == 0 ? Pink : Cyan, 1.6f), new Vector3(.1f + k * .14f, .89f, .45f), Vector3.up, .035f, .02f, 8);
+                for (var r = 0; r < 3; r++) for (var c = 0; c < 5; c++) rm.Box(GlowM(new[] { Pink, Gold, Cyan }[r], 1.5f), new Vector3(-.22f + c * .11f, 1.4f - r * .06f, .372f), new Vector3(.09f, .04f, .004f));
+                var go = new GameObject("Arcade cabinet"); go.transform.SetParent(ctx.Root, false); go.transform.SetPositionAndRotation(cp, cr); rm.BuildSingle("Arcade cabinet", go.transform, false);
+                var bc = go.AddComponent<BoxCollider>(); bc.isTrigger = true; bc.center = new Vector3(0, 1f, .3f); bc.size = new Vector3(1f, 1.9f, 1.3f); go.AddComponent<ArcadeStart>().game = arcade; Col(cp + up * .9f, new Vector3(.8f, 1.8f, .7f), cr);
+                arcade.recordText = ArtistBits.Label(ctx.Root, "", cp + up * 2.05f + f.Fwd * .1f, f.Fwd, .07f, Gold, TextAnchor.MiddleCenter);
+                Shot(ctx, "arcade cabinet", cp + f.Fwd * 3f + up * 1.5f + f.Right * 1f, cp + up * 1.2f);
+                var am = new GameObject("Shot: arcade play").transform; am.SetParent(ctx.Root, false); am.SetPositionAndRotation(cp + f.Fwd * 1.6f + up * .9f, Quaternion.LookRotation(-f.Fwd));
+            }
             Folk(f.P(-2.2f, 0, -1.6f), f.Right, Resident.Pose.Stand, new[] { "Put a coin in. Well, press the post. The coin's implied.", "The far mallet plays itself till a friend takes it. It's not bad. It's not good either.", "Win one and the table's radio plays everything. Everything!" });
             Mark(at, 6f);
             Shot(ctx, "the air hockey table", f.P(3.5f, 1.8f, PD / 2f + 4.5f), at + up * .9f);

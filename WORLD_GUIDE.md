@@ -1317,6 +1317,8 @@ Theatrical islands, closest to the hub.
 
 **Air hockey (the land's activity):** a table on a checkered pad near the Arcade, a lamp at each corner. Press E at the coin post and you shrink onto the table: the same table thirty times the size, glowing over a dark floor. Move the mouse to move your mallet; first to seven. Alone, the far mallet plays itself; the first friend to join takes it over, and anyone after that watches. The real table shows the same puck and mallets. Win a game and the table's radio can play the whole Everything Playlist (P switches).
 
+**BRICKS (a cabinet you can really play):** on the air hockey pad stands an arcade cabinet. Press E and its screen fills yours: our own bat, ball and wall of bricks. Move the mouse to move the bat, click to serve; three lives; each wall you clear brings the next one lower and the ball faster. Friends at the cabinet see each other's scores. Score 5,000 and the cabinet's radio can play the whole Everything Playlist (P switches).
+
 ---
 
 ## Artist areas: the concept
