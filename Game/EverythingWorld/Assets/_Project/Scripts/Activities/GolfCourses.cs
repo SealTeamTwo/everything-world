@@ -76,7 +76,7 @@ namespace EverythingWorld.Activities
                 .Prop("palm", -6, 6).Prop("palm", 6.5f, 17).Prop("buoy", -7, 27).Prop("sailboat", 11, 8, 20).Prop("lamp", -2.9f, 12).Prop("lamp", 2.9f, 12).Done());
 
             // 2. up the gangway to the upper deck: too soft and it rolls back down
-            holes.Add(H("The Gangway", 2, "Up to the top deck. Too soft and it comes back.")
+            holes.Add(H("The Gangway", 3, "Up to the top deck. Too soft and it comes back.")
                 .On(Deck).Path(2.6f, "LRS", 0, -3, 1, 0, 12, 1, 0, 20, 2.6f, 0, 27.2f, 2.6f)
                 .On(Green).Disc(0, 32, 5.5f, 2.6f).Cut(0, 27.15f, 2.58f)
                 .Tee(0, 0).Cup(0, 33)
@@ -91,7 +91,7 @@ namespace EverythingWorld.Activities
                 .Prop("sailboat", 9, 10, 90).Prop("sailboat", 15, 10, 90).Prop("yacht", 12, 31, 90, 1.2f).Prop("palm", -6, 12).Prop("buoy", 20, 14).Prop("lamp", 10, 24.9f).Done());
 
             // 4. past the propellers
-            holes.Add(H("Propeller", 3, "Time it past the propellers.")
+            holes.Add(H("Propeller", 4, "Time it past the propellers.")
                 .On(Deck).Path(3f, "LRS", 0, -3, 1, 0, 36.85f, 1)
                 .Spinner(0, 15, 2.75f, 4, 70f).Spinner(0, 27, 2.75f, 2, -85f, .2f)
                 .On(Green).Disc(0, 42, 6, 1).Cut(0, 36.8f, 2.98f)
@@ -99,7 +99,7 @@ namespace EverythingWorld.Activities
                 .Prop("yacht", 11, 20, 180, 1.5f).Prop("buoy", -7, 10).Prop("buoy", -8, 30).Prop("palm", 8, 40).Done());
 
             // 5. the pool: round it down either side, or off the diving board and over
-            holes.Add(H("Pool Party", 3, "Round the pool, or off the diving board and over it.")
+            holes.Add(H("Pool Party", 4, "Round the pool, or off the diving board and over it.")
                 .On(Stone).Path(8f, "LRSE", 0, -3, 1, 0, 40, 1)
                 .PondStrip(0, 12.5f, 0, 24, 5f)
                 .On(Deck).Path(1.3f, "LR", 0, 4.5f, 1, 0, 11.5f, 3.6f)
@@ -128,7 +128,7 @@ namespace EverythingWorld.Activities
                 .Prop("palm", -6, 14).Prop("palm", 14, 24).Prop("parasol", 13, 36).Prop("lounger", 14.5f, 37.5f, 30).Prop("buoy", -5, 30).Done());
 
             // 8. the rowing club: boats crossing the lane
-            holes.Add(H("Rowing Club", 3, "The rowers have right of way.")
+            holes.Add(H("Rowing Club", 4, "The rowers have right of way.")
                 .On(Deck).Path(3.2f, "LRS", 0, -3, 1, 0, 39.95f, 1)
                 .Slider(-2.05f, 10, 4.1f, 0, 2.2f, 1f, 4.2f, 0f).Slider(2.05f, 19, -4.1f, 0, 2.2f, 1f, 3.6f, .35f).Slider(-2.05f, 28, 4.1f, 0, 2.2f, 1f, 3f, .6f)
                 .On(Green).Disc(0, 45, 6, 1).Cut(0, 39.95f, 3.18f)
@@ -137,7 +137,7 @@ namespace EverythingWorld.Activities
 
             // 9. the lighthouse: a ramp winding once round it to the green on top; the angled board at the end turns the ball in
             {
-                var h = H("The Lighthouse", 4, "Round and up. The board at the top turns you in.");
+                var h = H("The Lighthouse", 5, "Round and up. The board at the top turns you in.");
                 const float cx = 0f, cz = 22f, rad = 7f, top = 3.4f; var pts = new List<float> { -15, 15, 1 }; var route = new List<float> { -12, 15 };
                 for (var k = 0; k <= 24; k++)
                 {
@@ -163,7 +163,7 @@ namespace EverythingWorld.Activities
                 .Prop("cabana", 0, 33.5f, 180).Prop("palm", -10, 16).Prop("palm", 10, 16).Prop("lamp", -8, 28).Prop("lamp", 8, 28).Done());
 
             // 11. the drawbridge: jump the channel, then time the gate
-            holes.Add(H("Drawbridge", 3, "Jump the channel, then wait for the gate.")
+            holes.Add(H("Drawbridge", 4, "Jump the channel, then wait for the gate.")
                 .On(Deck).Path(2.6f, "LRS", 0, -3, 1, 0, 9, 1, 0, 15, 2.4f)
                 .Path(3f, "LR", 0, 20, 1, 0, 36.85f, 1)
                 .Gate(-3f, 29, 3f, 29, 4.4f, .5f)
@@ -190,7 +190,7 @@ namespace EverythingWorld.Activities
                 .Prop("palm", 10, 14).Prop("lounger", 8.5f, 12, 20, 1, 0).Prop("flamingo", 10, 19, 0, 1, 0).Prop("palm", -6, 22).Prop("buoy", 27, 22).Done());
 
             // 14. on the rocks: ice, and ice cubes to bounce off
-            holes.Add(H("On the Rocks", 3, "Ice. It doesn't stop when you'd like it to.")
+            holes.Add(H("On the Rocks", 4, "Ice. It doesn't stop when you'd like it to.")
                 .On(Deck).Path(4f, "LRS", 0, -3, 1, 0, 6, 1)
                 .On(Ice).Path(6f, "LRSE", 0, 6, 1, 0, 30, 1).Cut(0, 6, 3.98f).Cut(0, 30, 2.58f)
                 .On(Deck).Path(2.6f, "LR", 0, 30, 1, 0, 33.7f, 1)
@@ -220,7 +220,7 @@ namespace EverythingWorld.Activities
                 .Prop("hull", 0, 4, 0, 1, 0).Prop("hull", 2, 24, 0, 1.2f, 0).Prop("hull", 25, 27, 90, 1.3f, 0).Prop("buoy", 7, 15).Prop("buoy", 14, 20).Prop("palm", 36, 34).Done());
 
             // 17. the hotel lobby: revolving doors, and the bellhop's boom
-            holes.Add(H("Hotel Lobby", 4, "Two revolving doors and a porter's barrier.")
+            holes.Add(H("Hotel Lobby", 6, "Two revolving doors and a porter's barrier.")
                 .On(Stone).Path(3f, "LRS", 0, -3, 1, 0, 34.85f, 1)
                 .Spinner(0, 10, 2.8f, 4, 80f, 0f, "door").Spinner(0, 19, 2.8f, 4, -80f, .1f, "door")
                 .Boom(-3f, 27.5f, 4.6f, 0, 50, 3.4f)
