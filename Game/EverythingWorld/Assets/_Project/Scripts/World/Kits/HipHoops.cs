@@ -54,6 +54,13 @@ namespace EverythingWorld.World
                 mk.Box(dark, b + ct.Right * 1.5f + up * 1.2f, new Vector3(1.9f, .7f, .06f), ct.r); mk.Prism(iron, b + ct.Right * 1.5f, up, .04f, 1.2f, 5); ArtistBits.PostCollider(ctx.Root, b + ct.Right * 1.5f, 1.5f, .1f);
                 game.recordText = ArtistBits.Label(ctx.Root, "", b + ct.Right * 1.5f + up * 1.2f + ct.Fwd * .04f, ct.Fwd, .1f, Cream, TextAnchor.MiddleCenter);
             }
+            // a lit sign over the rack, so the game is not mistaken for the loose balls on the half court behind it
+            {
+                var sb = ct.P(1.6f, 0, 5.7f); foreach (var e in new[] { -1.5f, 1.5f }) { mk.Prism(iron, sb + ct.Right * e, up, .06f, 3.6f, 5); ArtistBits.PostCollider(ctx.Root, sb + ct.Right * e, 3.6f, .1f); }
+                mk.Box(dark, sb + up * 3.1f, new Vector3(3.3f, 1.1f, .08f), ct.r); mk.Box(GlowM(Gold, 2.2f), sb + up * 3.72f, new Vector3(3.4f, .08f, .12f), ct.r); mk.Box(GlowM(Gold, 2.2f), sb + up * 2.5f, new Vector3(3.4f, .08f, .12f), ct.r);
+                Sign(sb + up * 3.25f + ct.Fwd * .06f, ct.Fwd, "BASKETBALL", .42f, Gold); Sign(sb + up * 2.8f + ct.Fwd * .06f, ct.Fwd, "press E at the rack: the big court", .16f, Cream);
+                ArtistBits.PointLight(ctx.Root, sb + up * 2.2f + ct.Fwd * 1f, new Color(1f, .8f, .4f), 7f, 1.8f);
+            }
             Shot(ctx, "the ball rack", ct.P(-1f, 2f, 11f), ct.P(0, 1f, 5.5f));
             void BigMark(string name, Vector3 cam, Vector3 look) { var m = new GameObject("Shot: " + name).transform; m.SetParent(big.transform, false); m.SetPositionAndRotation(cam, Quaternion.LookRotation((look - cam).normalized)); }
             BigMark("hoops court", big.transform.position + new Vector3(-18f, 16f, -31f), big.transform.position + up * 2f); BigMark("hoops play", big.transform.position, big.transform.position + Vector3.forward);
