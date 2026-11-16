@@ -111,7 +111,7 @@ Things to remember that aren't built or decided yet. Newest first.
 - **Dubstep Shards:** more about energy (crystal, electric, plasma).
 - **Lo-Fi Hills:** super vibey and cozy.
 - **Djent Spires:** a crystal mountain with an observation point at the top, reached by running through ice and crystal caves.
-- **Discotopia:** the art for "Moskau" (Dschinghis Khan) could reference the viral animal video-game meme set to "Camel by Camel".
+- **Discotopia:** the "Camel by Camel" area (Sandy Marton) could reference the viral Animal Crossing meme set to that song.
 - **Punk Badlands:**
   - The theme is liked, but rough in low poly.
   - No trees and same-colour dunes make the bright paper boards stand out, which shows how many duplicates there are.
