@@ -215,16 +215,17 @@ namespace EverythingWorld.World
             return path;
         }
 
-        /// A flat strip laid along a path, just above the ground (ice, trodden snow).
-        static void Ribbon(LandContext ctx, MeshKit mk, Material m, List<Vector3> pts, float width, float lift)
+        /// A flat strip laid along a path, just above the ground (ice, trodden snow). Soft: its edges wander (SoftEdges),
+        /// so it doesn't read as a cut-out strip; an old road stays straight.
+        static void Ribbon(LandContext ctx, MeshKit mk, Material m, List<Vector3> pts, float width, float lift, bool soft = true)
         {
             for (var i = 0; i + 1 < pts.Count; i++)
             {
                 var dir = pts[i + 1] - pts[i]; dir.y = 0;
                 if (dir.sqrMagnitude < .01f) continue;
                 var side = Vector3.Cross(Vector3.up, dir.normalized) * width / 2f;
-                Vector3 E(Vector3 p, Vector3 s) { var q = p + s; q.y = Mathf.Max(ctx.Ground(q.x, q.z), ctx.Ground(p.x, p.z)) + lift; return q; }
-                Vector3 a = E(pts[i], -side), b = E(pts[i], side), c = E(pts[i + 1], side), d = E(pts[i + 1], -side);
+                Vector3 E(Vector3 p, Vector3 s, float seed) { var q = p + s * (soft ? SoftEdges.Wander(p.x, p.z, seed, .3f, 3f) : 1f); q.y = Mathf.Max(ctx.Ground(q.x, q.z), ctx.Ground(p.x, p.z)) + lift; return q; }
+                Vector3 a = E(pts[i], -side, 1f), b = E(pts[i], side, 2f), c = E(pts[i + 1], side, 2f), d = E(pts[i + 1], -side, 1f);
                 mk.Quad(m, a, b, c, d, (a + c) / 2f - Vector3.up);
             }
         }
@@ -313,9 +314,11 @@ namespace EverythingWorld.World
         void Clearing(LandContext ctx, MeshKit mk, Material m, Vector3 center, float radius)
         {
             var rings = Mathf.Max(4, Mathf.CeilToInt(radius / 2f)); const int spokes = 36;
+            // the edge wanders in and out a little (SoftEdges), not a perfect circle
+            float Edge(int spoke) { var a = spoke * Mathf.PI * 2f / spokes; return radius * SoftEdges.Wander(center.x + Mathf.Cos(a) * radius, center.z + Mathf.Sin(a) * radius, 3f, .13f, 5f); }
             Vector3 P(int ring, int spoke)
             {
-                var a = spoke * Mathf.PI * 2f / spokes; var rr = radius * ring / rings;
+                var a = spoke * Mathf.PI * 2f / spokes; var rr = Edge(spoke) * ring / rings;
                 var x = center.x + Mathf.Cos(a) * rr; var z = center.z + Mathf.Sin(a) * rr;
                 return new Vector3(x, ctx.Ground(x, z) + .03f, z);   // below paths (.07), so the two never flicker
             }

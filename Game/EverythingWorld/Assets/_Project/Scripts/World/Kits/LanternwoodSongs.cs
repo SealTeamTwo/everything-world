@@ -196,7 +196,7 @@ namespace EverythingWorld.World
             var up = Vector3.up; var dir = -face; var rot = Quaternion.LookRotation(dir); var side = Vector3.Cross(up, dir);
             var tar = WorldMaterials.Surface(new Color(.64f, .66f, .72f), Surface.Stone);  var paint = WorldMaterials.Surface(new Color(.95f, .85f, .4f), Surface.Painted);   // an old snow-dusted grey road (dark read as a hole)
             var pts = new List<Vector3>(); for (var d = -5f; d <= 4f; d += 1.5f) pts.Add(G(ctx, c + dir * d));
-            Ribbon(ctx, mk, tar, pts, 3.4f, .1f);
+            Ribbon(ctx, mk, tar, pts, 3.4f, .1f, false);
             for (var d = -4.5f; d <= 2.5f; d += 2.2f) mk.Box(paint, G(ctx, c + dir * d) + up * .13f, new Vector3(.12f, .02f, .9f), rot);
             mk.Blob(snowTop, G(ctx, c + dir * 5f) + up * .3f, new Vector3(2.4f, .8f, 1.4f), ctx.Rng, .2f);
             var sg = c + dir * 3.4f + side * 2.2f; sg = G(ctx, sg); mk.Prism(iron, sg, up, .05f, 2.2f, 6); ArtistBits.PostCollider(ctx.Root, sg, 2.2f, .1f);
