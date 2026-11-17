@@ -21,8 +21,10 @@ namespace EverythingWorld.Activities
     /// - Your bike never stops and leaves a wall of light behind it. A and D (or the arrows, or the two mouse buttons)
     ///   turn it left and right, always by a right angle. Touch any wall, your own included, and you're out. Last one
     ///   riding wins the round.
-    /// - Rounds run on the shared clock, one every 50 seconds (a count-in, the ride, a moment to see who won), so
-    ///   friends on the grid are always in the same round. Alone, three bikes ride themselves against you.
+    /// - A round is a count-in of four, then the ride, then three seconds to see who won, then the next count-in. It
+    ///   ends as soon as one bike is left (or no player is), so nobody waits. Whoever on the grid has the lowest
+    ///   number calls the rounds and the rest follow, so friends are always in the same one. Step on while a round is
+    ///   being ridden and it is cut short, so you ride the next together. Alone, three bikes ride themselves against you.
     /// - Win three rounds and the grid's radio can play the whole Everything Playlist (P switches).
     /// What friends share: each player's game rides their own bike and says where it is and where it has turned;
     /// each decides for itself when it has crashed.
@@ -30,12 +32,13 @@ namespace EverythingWorld.Activities
     {
         public static BikeGame Active { get; private set; }
         public Transform big; public int landScene; public string id = "synth"; public string landName = "the Coast"; public TextMesh recordText;
-        const string Channel = "bikes"; const double Period = 50, CountIn = 5, RideEnds = 45; const int Bar = 3;
+        const string Channel = "bikes"; const double CountIn = 4, MaxRide = 45, After = 3; const int Bar = 3;
+        double roundStart = -1, overAt = -1; float enteredAt; bool startDue;   // when this round's count-in began and when it was over (shared clock)
 
         readonly Bike mine = new Bike(); readonly List<Bike> robots = new List<Bike>(); readonly List<Bike> all = new List<Bike>(); System.Random rng = new System.Random(1);
         long round = -1; bool playing, inRound, wonThis, wasLocked; float shrinkT = 9f, outT = -1f, leaveHeld, nextSend, camYaw; Vector3 camAt; bool camSet; string banner = ""; float bannerUntil;
         SimplePlayerController walker; PlayerInteractor hands; Vector3 backPos; Quaternion backRot;
-        class Remote { public Bike bike = new Bike(); public long round; public float seen; public bool playing; public Color color = Color.white; public string name = "Friend"; }
+        class Remote { public Bike bike = new Bike(); public long round; public double start, over = -1; public bool inRound; public float seen; public bool playing; public Color color = Color.white; public string name = "Friend"; }
         readonly Dictionary<ulong, Remote> others = new Dictionary<ulong, Remote>();
         // drawing: a pool of glowing boxes for the walls of light, and one for each bike
         readonly List<Transform> walls = new List<Transform>(); readonly List<Transform> bodies = new List<Transform>(); readonly Dictionary<Color, Material> glows = new Dictionary<Color, Material>(); int wallsUsed, bodiesUsed;
@@ -63,7 +66,7 @@ namespace EverythingWorld.Activities
         void Enter()
         {
             walker.Take(); hands.enabled = false; IslandExplorer.Frozen = true; if (PlayerOrb.Local != null) PlayerOrb.Local.enabled = false;
-            big.gameObject.SetActive(true); Tune(); playing = true; inRound = false; mine.alive = false; mine.corners.Clear(); robots.Clear(); camSet = false; round = -1;
+            big.gameObject.SetActive(true); Tune(); playing = true; inRound = false; mine.alive = false; mine.corners.Clear(); robots.Clear(); camSet = false; round = 0; roundStart = -1; overAt = -1; enteredAt = Time.time; startDue = false;
             Say("A and D turn (or the arrows, or the mouse buttons). Don't touch a wall of light.", 6f);
         }
 
@@ -87,28 +90,28 @@ namespace EverythingWorld.Activities
             if (Active != this) return;
             if (!playing) { if (shrinkT > .55f) Enter(); else return; }
             if (outT >= 0f) { outT += Time.deltaTime; if (outT > .5f) Quit(); return; }
-            var dt = Mathf.Min(Time.deltaTime, .05f); var kb = Keyboard.current; var mouse = Mouse.current; var now = SharedChance.Now; var r = (long)(now / Period); var into = now - r * Period;
+            var dt = Mathf.Min(Time.deltaTime, .05f); var kb = Keyboard.current; var mouse = Mouse.current; var now = SharedChance.Now;
             var locked = Cursor.lockState == CursorLockMode.Locked && !MainMenu.Showing; var canAct = locked && wasLocked && kb != null && mouse != null && !PlayNotes.Active; wasLocked = locked;
 
-            if (r != round)
+            // whoever has the lowest number calls the rounds: the first as soon as they have listened for anyone already
+            // riding, the next three seconds after the last was over
+            var referee = Referee();
+            if (referee)
             {
-                // a new round: everyone on the grid lines up by their number, and alone you get three riders that ride themselves
-                var fresh = round == -1; round = r; inRound = true; wonThis = false; var ids = new List<ulong> { Me }; foreach (var kv in others) if (Time.time - kv.Value.seen < 3f && kv.Value.playing) ids.Add(kv.Key); ids.Sort();
-                BikeSim.Spawn(mine, ids.IndexOf(Me) * (ids.Count <= 4 ? 2 : 1)); robots.Clear(); rng = new System.Random((int)(r % 100000));
-                // stepping on while friends are mid-round: watch this one and line up for the next (riding straight in put you, and
-                // riders only you could see, on top of them)
-                if (fresh && ids.Count > 1 && into > 1f) { inRound = false; mine.alive = false; mine.corners.Clear(); Say("Friends are mid-round: you ride in the next one", 4f); }
-                else if (ids.Count == 1) for (var i = 1; i < 4; i++) { var b = new Bike(); BikeSim.Spawn(b, i * 2); robots.Add(b); }
-                camSet = false;
+                var sinceStart = roundStart < 0 ? -1 : now - roundStart;
+                var due = roundStart < 0 ? Time.time - enteredAt > 1.2f : overAt >= 0 ? now > overAt + After : sinceStart > CountIn + MaxRide + After;
+                if (due) { round++; roundStart = now; startDue = true; }
             }
-            all.Clear(); if (inRound) { all.Add(mine); all.AddRange(robots); } foreach (var o in others.Values) if (Time.time - o.seen < 3f && o.playing && o.round == round) all.Add(o.bike);
+            if (startDue) { startDue = false; StartRound(now); nextSend = 0f; }
+            var into = roundStart < 0 ? -1 : now - roundStart; var riding = roundStart >= 0 && into >= CountIn && into < CountIn + MaxRide && overAt < 0;
+            all.Clear(); if (inRound) { all.Add(mine); all.AddRange(robots); } foreach (var o in others.Values) if (Time.time - o.seen < 3f && o.playing && o.round == round && o.inRound) all.Add(o.bike);
 
             if (canAct)
             {
                 if (kb.pKey.wasPressedThisFrame && Unlocked) { Everything = !Everything; Tune(); Say(Everything ? "Playing the Everything Playlist" : "Playing " + landName + "'s songs", 3f); }
                 leaveHeld = kb.xKey.isPressed ? leaveHeld + dt : 0f; if (leaveHeld > .8f) { leaveHeld = 0f; outT = 0f; return; }
             }
-            if (inRound && into >= CountIn && into < RideEnds)
+            if (inRound && riding)
             {
                 if (canAct && mine.alive)
                 {
@@ -121,9 +124,29 @@ namespace EverythingWorld.Activities
                 var othersUp = 0; var othersIn = 0; foreach (var b in all) if (b != mine) { othersIn++; if (b.alive) othersUp++; }
                 if (mine.alive && othersIn > 0 && othersUp == 0 && !wonThis) Won();
             }
-            else if (inRound && into >= RideEnds && mine.alive && !wonThis && all.Count > 1) { var up = 0; foreach (var b in all) if (b.alive) up++; if (up == 1) Won(); else Say("Time: still riding", 3f); wonThis = true; }
+            // the round is over as soon as one bike is left, or no player is, or someone stepped on and is waiting
+            if (riding && referee)
+            {
+                var up = 0; foreach (var b in all) if (b.alive) up++;
+                var players = inRound && mine.alive ? 1 : 0; var waiting = inRound ? 0 : 1;
+                foreach (var o in others.Values) { if (Time.time - o.seen >= 3f || !o.playing) continue; if (o.round == round && o.inRound) { if (o.bike.alive) players++; } else waiting++; }
+                if (players == 0 || (all.Count >= 2 && up <= 1) || (waiting > 0 && into > CountIn + 1.5)) { overAt = now; nextSend = 0f; if (waiting > 0 && players > 0 && up > 1) Say("A friend stepped on: a new round for everyone", 3f); }
+            }
+            else if (inRound && roundStart >= 0 && into >= CountIn + MaxRide && overAt < 0 && mine.alive && !wonThis) { Say("Time: still riding", 3f); wonThis = true; }
             if (Time.time >= nextSend) { nextSend = Time.time + .1f; Send(); }
             Draw();
+        }
+
+        bool Referee() { var me = Me; foreach (var kv in others) if (Time.time - kv.Value.seen < 3f && kv.Value.playing && kv.Key < me) return false; return true; }
+
+        /// Lines up for the round that has just been called (or watches it, if its count-in is already over).
+        void StartRound(double now)
+        {
+            wonThis = false; overAt = -1; camSet = false; robots.Clear(); rng = new System.Random((int)(round % 100000));
+            var ids = new List<ulong> { Me }; foreach (var kv in others) if (Time.time - kv.Value.seen < 3f && kv.Value.playing) ids.Add(kv.Key); ids.Sort();
+            if (now - roundStart > CountIn - .5) { inRound = false; mine.alive = false; mine.corners.Clear(); Say("A round is on: you ride in the next one", 4f); return; }
+            inRound = true; BikeSim.Spawn(mine, ids.IndexOf(Me) * (ids.Count <= 4 ? 2 : 1));
+            if (ids.Count == 1) for (var i = 1; i < 4; i++) { var b = new Bike(); BikeSim.Spawn(b, i * 2); robots.Add(b); }   // alone: three that ride themselves
         }
 
         void Won()
@@ -187,7 +210,7 @@ namespace EverythingWorld.Activities
             using (var ms = new MemoryStream())
             using (var w = new BinaryWriter(ms))
             {
-                w.Write((byte)1); w.Write(id); w.Write(Active == this && playing); w.Write(round); w.Write(mine.alive); w.Write((byte)mine.dir); w.Write(mine.at.x); w.Write(mine.at.y);
+                w.Write((byte)2); w.Write(id); w.Write(Active == this && playing); w.Write(round); w.Write(roundStart); w.Write(overAt); w.Write(inRound); w.Write(mine.alive); w.Write((byte)mine.dir); w.Write(mine.at.x); w.Write(mine.at.y);
                 var n = Mathf.Min(mine.corners.Count, 200); w.Write((byte)n); for (var i = mine.corners.Count - n; i < mine.corners.Count; i++) { w.Write(mine.corners[i].x); w.Write(mine.corners[i].y); }
                 w.Write((byte)(PlayerOrb.Local != null ? PlayerOrb.Local.Index : 0)); w.Write(Friends.PlayerName); w.Flush(); f.Broadcast(Channel, ms.ToArray(), false);
             }
@@ -200,10 +223,16 @@ namespace EverythingWorld.Activities
             {
                 using (var r = new BinaryReader(new MemoryStream(data)))
                 {
-                    if (r.ReadByte() != 1 || r.ReadString() != id) return; if (!others.TryGetValue(from, out var o)) others[from] = o = new Remote();
-                    o.playing = r.ReadBoolean(); o.round = r.ReadInt64(); o.bike.alive = r.ReadBoolean(); o.bike.dir = r.ReadByte() % 4; o.bike.at = new Vector2(r.ReadSingle(), r.ReadSingle());
+                    if (r.ReadByte() != 2 || r.ReadString() != id) return; if (!others.TryGetValue(from, out var o)) others[from] = o = new Remote();
+                    o.playing = r.ReadBoolean(); o.round = r.ReadInt64(); o.start = r.ReadDouble(); o.over = r.ReadDouble(); o.inRound = r.ReadBoolean(); o.bike.alive = r.ReadBoolean(); o.bike.dir = r.ReadByte() % 4; o.bike.at = new Vector2(r.ReadSingle(), r.ReadSingle());
                     var n = r.ReadByte(); o.bike.corners.Clear(); for (var i = 0; i < n; i++) o.bike.corners.Add(new Vector2(r.ReadSingle(), r.ReadSingle()));
                     o.color = PlayerOrb.Palette[Mathf.Clamp(r.ReadByte(), 0, PlayerOrb.Palette.Length - 1)].color; o.name = r.ReadString(); o.seen = o.playing ? Time.time : -99f;
+                    // follow whoever is ahead (or, in the same round called twice, whoever has the lower number), and hear that a round is over
+                    if (Active == this && playing && o.playing && o.start >= 0)
+                    {
+                        if (o.round > round || (o.round == round && from < Me && System.Math.Abs(o.start - roundStart) > .01)) { round = o.round; roundStart = o.start; overAt = o.over; startDue = true; }
+                        else if (o.round == round && o.over >= 0 && overAt < 0) overAt = o.over;
+                    }
                 }
             }
             catch (System.Exception) { }
@@ -231,11 +260,12 @@ namespace EverythingWorld.Activities
             if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .7f, .9f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;
             box ??= GameFonts.Box(17, TextAnchor.MiddleLeft); big2 ??= GameFonts.Box(30, TextAnchor.MiddleCenter, true, true); small2 ??= GameFonts.Box(15, TextAnchor.MiddleCenter);
-            var now = SharedChance.Now; var into = now - (long)(now / Period) * Period; var up = 0; foreach (var b in all) if (b.alive) up++;
+            var now = SharedChance.Now; var into = roundStart < 0 ? -1 : now - roundStart; var up = 0; foreach (var b in all) if (b.alive) up++;
             GUI.Box(new Rect(12, 12, 470, 34), $"  Riding: {up} of {all.Count}  ·  rounds won: {Wins}" + (Unlocked ? "" : $" of {Bar}"), box);
             if (Everything) GUI.Box(new Rect(12, 50, 240, 30), "  Everything Playlist", box);
-            if (inRound && into < CountIn) GUI.Box(new Rect(Screen.width / 2f - 120, Screen.height / 2f - 130, 240, 70), Mathf.CeilToInt((float)(CountIn - into)).ToString(), big2);
-            else if (!inRound || into >= RideEnds) GUI.Box(new Rect(Screen.width / 2f - 200, 150, 400, 44), $"Next round in {Mathf.CeilToInt((float)(Period - into))}", small2);
+            if (inRound && into >= 0 && into < CountIn) GUI.Box(new Rect(Screen.width / 2f - 120, Screen.height / 2f - 130, 240, 70), Mathf.CeilToInt((float)(CountIn - into)).ToString(), big2);
+            else if (overAt >= 0) GUI.Box(new Rect(Screen.width / 2f - 200, 150, 400, 44), $"Next round in {Mathf.Max(1, Mathf.CeilToInt((float)(overAt + After - now)))}", small2);
+            else if (!inRound) GUI.Box(new Rect(Screen.width / 2f - 200, 150, 400, 44), roundStart < 0 ? "Getting ready..." : "Watching: you ride in the next round", small2);
             if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
             Activity.Hint(Screen.height - 66, "A and D (or arrows, or the mouse buttons) turn  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
