@@ -28,7 +28,7 @@ Not acted on yet. In the owner's words, roughly in the order he gave them:
 - **Bowling:** still really easy, and "doesn't feel very multiplayer". Some basic animations, like the ones on the screens at a bowling alley, could be fun.
 - **Basketball:** "maybe just a little bit too hard".
 - **Skating:** too easy to fall over, and it "doesn't feel very smooth and agile".
-- **Pinball:** "is broken". (No detail yet: ask what happened.)
+- **Pinball:** "is broken". When you enter, the view is not on the ball: "you definitely don't see it". And every time you shoot, you fly out of the top of the board into the sky. (My reading, unchecked: you are the ball here, the camera is not following it at the start, and the launch has nothing at the top of the table to stop it.)
 - Pool was not mentioned this time. He said he may be missing things.
 
 
