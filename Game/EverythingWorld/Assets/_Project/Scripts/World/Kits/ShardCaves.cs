@@ -83,6 +83,11 @@ namespace EverythingWorld.World
                 circ += 64f;   // room for a tunnel and a mouth between the artists
                 var ring = Mathf.Max(22f, circ / (2f * Mathf.PI)); var R = ring + foot + 7f;
                 var best = float.MaxValue; var at = Vector2.zero; var from = -1;
+                // where this cavern's artists stood before (ArtistPlaces): it settles as near there as it fits, so a
+                // cavern only moves when its own artists need more room, not because another one changed
+                var was = Vector2.zero; var wasN = 0;
+                foreach (var n in g.who) if (ArtistPlaces.TryGet(here[n], out var pin, out _)) { was += pin; wasN++; }
+                if (wasN > 0) was /= wasN;
                 for (var pi = 0; pi < caves.Count; pi++)
                     for (var deg = 0; deg < 360; deg += 15)
                     {
@@ -97,7 +102,7 @@ namespace EverythingWorld.World
                             foreach (var t in tubes) if (ok && t.a != pi && t.b != pi && ShardCaveMap.SegSeg(a0, a1, caves[t.a].c, caves[t.b].c) < 18f) ok = false;
                             foreach (var t in tubes) if (ok && (t.a == pi || t.b == pi)) { var other = caves[t.a == pi ? t.b : t.a].c - caves[pi].c; if (Vector2.Angle(other, dir) < 40f) ok = false; }
                             if (!ok) continue;
-                            var score = Lt + (pi == 1 ? 0f : 30f); if (score < best) { best = score; at = p; from = pi; }
+                            var score = wasN > 0 ? Vector2.Distance(p, was) : Lt + (pi == 1 ? 0f : 30f); if (score < best) { best = score; at = p; from = pi; }
                             break;
                         }
                     }

@@ -9,7 +9,7 @@ namespace EverythingWorld.World
         static readonly Dictionary<string, (string title, string id)[]> SongIds = new Dictionary<string, (string, string)[]>
         {
             { "Average White Band", new[] { ("Pick Up the Pieces", "2x1LQq8lsUzAA2wNj8yjC9") } },
-            { "Commodores", new[] { ("Brick House", "5VJjhHyG8NZ5xdgG6uTb3P"), ("Easy", "65e06mBpNFN6HAetXnsRYh") } },
+            { "Commodores", new[] { ("Brick House", "5VJjhHyG8NZ5xdgG6uTb3P"), ("Easy", "65e06mBpNFN6HAetXnsRYh"), ("Nightshift", "23IK8TF2MSiLnuEjaYPfVV") } },
             { "Curtis Mayfield", new[] { ("Pusherman", "7zrPswSV1yxrill5OyCuaU") } },
             { "Flea", new[] { ("Maggot Brain", "3poJZBl2yoeWbMMxX63YcE") } },
             { "Funk Factory - Michael Urbaniak", new[] { ("Rien Ne Va Plus", "7EsnZSIx0pUN5786tI7raq") } },
@@ -17,6 +17,7 @@ namespace EverythingWorld.World
             { "Ginger Root", new[] { ("Loretta", "4v3icU8NQfjM8uwIz9Ug1h") } },
             { "Incredible Bongo Band", new[] { ("Apache", "51ml2bJs9zDLv1PbzNQzPP") } },
             { "James Brown", new[] { ("People Get Up And Drive Your Funky Soul - Remix", "5U3i59kbTLrxo46TU1FRnF"), ("The Payback", "5OcyX5eg7VrJuI833qOCUc") } },
+            { "Jungle", new[] { ("Sunshine", "07lwMZLo0Nxc01nMXuiVL8") } },
             { "Kaelin Ellis", new[] { ("Move", "50rXrrhxikEix1NFRtJ6zQ") } },
             { "Lafayette Afro Rock Band", new[] { ("Malik - Remastered", "1YjXMR4JHkmjnDrnAEfMg6") } },
             { "Lettuce", new[] { ("Phyllis", "1wZc8QBnlxQZbE6lZc6QOy") } },

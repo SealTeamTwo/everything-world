@@ -8,6 +8,34 @@ namespace EverythingWorld.World
     /// well inside the land, right beside the nearest other artist area (the layout puts similar artists next
     /// to each other), without wandering far from where it was and pulled a little toward where you arrive.
     /// Everyone else stays exactly where they are.
+    /// Where every artist stood the last time the world was settled (Resources/ArtistPlaces.txt: name, scene, x, z,
+    /// radius, songs, tab-separated). It is written from a built world by "python build/take_shots.py places" and
+    /// saved with "python build/artist_places.py save"; see CLAUDE.md, "When the playlist changes".
+    public static class ArtistPlaces
+    {
+        static Dictionary<string, (int scene, Vector2 at, int songs)> places;
+        static int Size(int songs) => songs <= 2 ? songs : songs <= 5 ? 3 : songs <= 15 ? 4 : 5;   // the sizes an artist's area comes in
+        /// An artist's settled place in the land it is in now, and whether its area is still the size it was.
+        public static bool TryGet(IslandWorldData.Artist a, out Vector2 at, out bool sameSize)
+        {
+            if (places == null)
+            {
+                places = new Dictionary<string, (int, Vector2, int)>();
+                var file = Resources.Load<TextAsset>("ArtistPlaces");
+                if (file != null)
+                    foreach (var line in file.text.Split('\n'))
+                    {
+                        var f = line.TrimEnd('\r').Split('\t'); var inv = System.Globalization.CultureInfo.InvariantCulture;
+                        if (f.Length >= 6 && int.TryParse(f[1], out var scene) && float.TryParse(f[2], System.Globalization.NumberStyles.Float, inv, out var x) && float.TryParse(f[3], System.Globalization.NumberStyles.Float, inv, out var z) && int.TryParse(f[5], out var songs))
+                            places[f[0]] = (scene, new Vector2(x, z), songs);
+                    }
+            }
+            at = default; sameSize = false;
+            if (!places.TryGetValue(a.name, out var p) || p.scene != a.sceneId) return false;
+            at = p.at; sameSize = Size(p.songs) == Size(a.songs); return true;
+        }
+    }
+
     public static class ArtistPlacement
     {
         /// Spread a crowded land out so there's room to wander between the artists. The layout keeps its shape
@@ -68,15 +96,31 @@ namespace EverythingWorld.World
             var target = about ?? heart;
             var mid = Vector2.zero; foreach (var a in arts) mid += new Vector2(a.x, a.z); mid /= arts.Count;
             arts.Sort((p, q) => Station(p) != Station(q) ? (Station(p) ? -1 : 1) : p.songs != q.songs ? q.songs.CompareTo(p.songs) : string.CompareOrdinal(p.name, q.name));
-            var placed = new List<IslandWorldData.Artist>();
-            if (keep != null) foreach (var a in arts) if (keep.Contains(a.name)) placed.Add(a);
+            var placed = new List<IslandWorldData.Artist>(); var grownKeep = new List<IslandWorldData.Artist>();
+            if (keep != null) foreach (var a in arts) if (keep.Contains(a.name)) { placed.Add(a); if (ArtistPlaces.TryGet(a, out _, out var asBefore) && !asBefore) grownKeep.Add(a); }
+            // Artists who already have a place in the world keep it (ArtistPlaces), so a growing playlist adds areas in
+            // the gaps instead of moving everyone. Only an artist whose area changed size (more or fewer songs), or one
+            // now too close to a fixed artist that grew, looks for a spot again, starting from where it was.
+            var settledAt = new Dictionary<IslandWorldData.Artist, Vector2>(); var toPlace = new List<IslandWorldData.Artist>(); var stayed = 0;
             foreach (var a in arts)
             {
                 if (keep != null && keep.Contains(a.name)) continue;
+                if (ArtistPlaces.TryGet(a, out var pin, out var same))
+                {
+                    var crowded = false;
+                    foreach (var o in grownKeep) if (Vector2.Distance(pin, new Vector2(o.x, o.z)) < o.r + a.r + 4f) crowded = true;
+                    if (same && !crowded) { a.x = pin.x; a.z = pin.y; placed.Add(a); stayed++; continue; }
+                    settledAt[a] = pin;
+                }
+                toPlace.Add(a);
+            }
+            toPlace.Sort((p, q) => settledAt.ContainsKey(p) != settledAt.ContainsKey(q) ? (settledAt.ContainsKey(p) ? -1 : 1) : arts.IndexOf(p).CompareTo(arts.IndexOf(q)));
+            foreach (var a in toPlace)
+            {
                 var pos = new Vector2(a.x, a.z);
                 var off = (pos - mid) * (Station(a) ? 1f + (scale - 1f) * .6f : scale);
                 if (off.magnitude > maxReach) off = off.normalized * maxReach;
-                var goal = target + off;
+                var goal = settledAt.TryGetValue(a, out var was) ? was : target + off;
                 var foot = Mathf.Clamp(a.r * .6f, 8f, 16f);
                 bool Ok(Vector2 p)
                 {
@@ -100,7 +144,7 @@ namespace EverythingWorld.World
                 a.x = at.x; a.z = at.y;
                 placed.Add(a);
             }
-            Debug.Log($"{land ?? isl.name}: spread the artists out {scale:0.0}x, centred on where you arrive");
+            Debug.Log($"{land ?? isl.name}: spread the artists out {scale:0.0}x, centred on where you arrive ({stayed} kept their place, {toPlace.Count} found one)");
         }
 
         /// minBorder: how far an artist must be from any other land (the land audit asks for 45 m).
@@ -143,9 +187,14 @@ namespace EverythingWorld.World
 
             var arts = new List<IslandWorldData.Artist>();
             foreach (var a in data.layout.artists) if (a.sceneId == sid) arts.Add(a);
+            // an artist who already has a place in the world starts from it (ArtistPlaces), so it is not nudged again
+            var settled = new HashSet<IslandWorldData.Artist>();
+            foreach (var a in arts)
+                if ((keep == null || !keep.Contains(a.name)) && ArtistPlaces.TryGet(a, out var pin, out var same) && same) { a.x = pin.x; a.z = pin.y; settled.Add(a); }
             foreach (var a in arts)
             {
                 if (keep != null && keep.Contains(a.name)) continue;
+                if (settled.Contains(a)) continue;
                 if (Border(a.x, a.z, minBorder) >= minBorder) continue;
                 var from = new Vector2(a.x, a.z);
                 var foot = Mathf.Clamp(a.r * .6f, 8f, 16f);

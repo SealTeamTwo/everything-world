@@ -8,7 +8,7 @@ namespace EverythingWorld.World
     {
         static readonly Dictionary<string, (string title, string id)[]> SongIds = new Dictionary<string, (string, string)[]>
         {
-            { "3 Doors Down", new[] { ("Here Without You", "3NLrRZoMF0Lx6zTlYqeIo4"), ("Kryptonite", "3bbUkaQYGQHkx1TJi7gPSL"), ("Kryptonite", "6ZOBP3NvffbU4SZcrnt1k6") } },
+            { "3 Doors Down", new[] { ("Here Without You", "3NLrRZoMF0Lx6zTlYqeIo4"), ("Kryptonite", "3bbUkaQYGQHkx1TJi7gPSL") } },
             { "APG", new[] { ("Embrace", "3U3kbTHdVxOFs2gQIVrlUc") } },
             { "Badflower", new[] { ("Heroin", "74drJLr20XF1f4yqyNPRSZ") } },
             { "Breaking Benjamin", new[] { ("Anthem Of The Angels", "0qmmx55Ei3i75ViWcY6mEp"), ("Dear Agony", "0c3fJd2HRi6uHWgTljIae5"), ("Give Me A Sign", "6BWrIaoodtt7EX6kToWZw0") } },

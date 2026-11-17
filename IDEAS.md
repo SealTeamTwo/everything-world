@@ -2,6 +2,20 @@
 
 Things to remember that aren't built or decided yet. Newest first.
 
+## The playlist update of 2026-11-17 (2,166 to 2,268 songs)
+
+The owner's new export: 119 songs added, 17 removed (all the doubles), 38 new artists. The world took it without moving what was built: existing lands kept their ground, outlines, bridges, towers and artist places exactly (how, and the steps for next time: CLAUDE.md, "When the playlist changes").
+
+Still to do, for the owner:
+- **A new land, the Future Bass Arcades** (30 songs, 24 artists; a working name). The Japanese future bass and kawaii bass the owner added (Mameyudoufu, Nokae, kamome sano, PSYQUI, Snail's House, Flay!, t+pazolite, Kizuna AI...) did not fit any land, and the owner chose a land of their own. It is a bare island of sand at the western end of the Bass Reaches (its music plays, but nothing stands on it yet: no artist areas or plaques), bridged to the Southern Rock Bayou and the Electro Foundry. It needs the owner's brief (what this music means, the name, the look) and then its own kit.
+- Five artists moved into it and lost the pieces their old lands had made for them: Diveo's tree of gold leaves and Pure 100%'s misty pool (Melodic Bass Highlands), and the arcade cabinet of Mitsukiyo, technoplanet and Feryquitous (J-Rock Isles). Worth bringing those ideas along when the land is built.
+- Tony Bennett is in the Old Jazz Quarter now with a plain area; the piano and two microphones he had in the Far Shores could be rebuilt there.
+- Kyle Gordon's parody song went to the Isle of Memes.
+- **40 artists reached three songs and now have their own radio station** and a bigger area in their land's usual style: Alabama, Alan Jackson, Alice In Chains, Boston, Cage The Elephant, Commodores, Darius Rucker, Dolly Parton, DragonForce, Duke Ellington, Flatt & Scruggs, Chopin, Hank Williams Jr., Herbie Hancock, Jimmy Buffett, Bach, Johnny Cash, Journey, Justice, Louis Armstrong, Beethoven, Massive Attack, My Chemical Romance, Nickel Creek, Oasis, Panda Eyes, Queen, Rage Against The Machine, Rogue, Skrillex, Slowdive, Squarepusher, TOTO, Tara Clerkin Trio, The Band, The Strokes (one song to seven), The Weeknd, Vexare, Mozart, my bloody valentine. Flay! starts with three. None has a design of its own yet; the biggest (The Strokes, Johnny Cash, Alice In Chains, Creedence with seven, Frank Ocean with six) are the ones to think about first.
+- Five artists dropped below three songs and lost their station: 3 Doors Down, Jason Aldean, The Notorious B.I.G. and Violent Femmes (each had a song in twice), and Blue Öyster Cult (the single version of "(Don't Fear) The Reaper" was removed).
+- Placements worth a second look: Sleep (stoner metal) is in the Psychedelic Wilds, Kid Rock in the Hip-Hop Boroughs, Night Tempo in the Fusion Isthmus, Porter Robinson on the Four-on-the-Floor Steppe, Ashy Finn's "Songbird" in the Jam Band Commonwealth (placed by its sound alone: Last.fm knows nothing about it), Manowar and Horizons Edge in the Iron Range (both are power metal). One line in `build/overrides.json` moves any of them.
+- The 20 new artists without a Wikipedia page have written about-cards; the ones about small producers describe the song more than the person. Correct any the owner knows better.
+
 ## The first built-game playtest with a friend, 2026-11-16 (two feedback packs, sorted)
 
 The built game ran for 90 minutes on two computers at 57 to 60 frames a second with no errors; one Relay drop ("allocation ID not found") ended the first session after 50 minutes. Notes can be re-photographed with `python build/take_shots.py --notes <notes.txt>`.
@@ -18,8 +32,7 @@ Fixed the same evening:
 - Roads that look like roads: the Afrobeat Coast's streets, paths and open places (grained earth, wheel ruts), the Old Jazz Quarter's streets and lanes (cobbles, pale kerbs).
 
 Open, for the owner to decide:
-- Songs in the playlist twice (each pair shows twice on the plaque and plays twice as often). The same recording added twice: 3 Doors Down "Kryptonite", Dayseeker "Neon Grave", Guns N' Roses "Knockin' On Heaven's Door", Jason Aldean "Big Green Tractor", Killswitch Engage "The End of Heartache", Mr. Bill "IDM Anthem", Nico Play "La Ciruela", The Rolling Stones "Sympathy For The Devil", Violent Femmes "Blister In The Sun". Near-twins (a remaster or a different release): Eminem "Lose Yourself", The Beatles "I Am The Walrus", The Notorious B.I.G. "Juicy", Alice Coltrane "Journey in Satchidananda". Phish has four songs as studio and live versions, which is surely meant. Either remove one of each in Spotify, or have the game hide the second.
-- Tony Bennett does not belong in the Far Shores (one song, "Body and Soul"): probably the Old Jazz Quarter. Needs a data rebuild and a small area there.
+- (Done 2026-11-17: the owner took the duplicate songs out of the playlist, and Tony Bennett moved to the Old Jazz Quarter. See the playlist update above.)
 - The Heartbreak Boardwalk flooded, with one giant boardwalk over the water (a redesign).
 - A rollercoaster you can ride (the Boardwalk has one standing still).
 - Hats for the orb.

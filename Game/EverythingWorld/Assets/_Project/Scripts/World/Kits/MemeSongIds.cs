@@ -27,6 +27,7 @@ namespace EverythingWorld.World
             { "Joe Siris", new[] { ("It's Okay to Leave a Dog in a Hot Car", "7JP8bPdaQ3xunbuzai8Ggu") } },
             { "John Cena", new[] { ("The Time Is Now", "1ceQ6GnflE32iovHqnsJQA") } },
             { "Kahoot!", new[] { ("Lobby Music (Original Soundtrack)", "7IEdlE4ZwzPDxnoWFv10aj") } },
+            { "Kyle Gordon", new[] { ("If You Break Up With Me (feat. 10 Year Plan)", "1Cf2Z1W4uISIIiy8aXOXrU") } },
             { "LeviathanJPTV", new[] { ("Chug Jug With You (Number One Victory Royale)", "15RSD04RKmM1fjrBONNtqK") } },
             { "Mark Governor", new[] { ("Stadium Rave", "2Fxn9wa3Nv1QGuRptSqPHO") } },
             { "Mark Snow", new[] { ("Materia Primoris: The X-Files Theme (Main Title)", "4th0mPYPuZUs564oCu5I1U") } },

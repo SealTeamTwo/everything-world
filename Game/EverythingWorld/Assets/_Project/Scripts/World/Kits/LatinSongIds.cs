@@ -19,7 +19,7 @@ namespace EverythingWorld.World
             { "Los Lobos", new[] { ("La Bamba", "0uMMLry3hzWGn3q3loqMkm"), ("When the Circus Comes", "2svD20rFaTIFzJvtOmvveY") } },
             { "Miami Sound Machine", new[] { ("Words Get In the Way", "5xbqrbNPBTAOGDA6GD3O46") } },
             { "Natalia Lafourcade", new[] { ("Ella es Bonita", "3GLa0YFGyR9vL33Bw2kjHs"), ("Hasta la Raíz", "3lGMtkONrZdJ8kTCg6KIFf") } },
-            { "Nico Play", new[] { ("La Ciruela", "1009LeU2Wb7rDvbNnN4pXT"), ("La Ciruela", "1DVpjp2AEVJH3WEdQtlPdp") } },
+            { "Nico Play", new[] { ("La Ciruela", "1DVpjp2AEVJH3WEdQtlPdp") } },
             { "Rafa", new[] { ("Ideally Attached", "4qIzZXT8dNM8IUwC9GKbBf") } },
             { "Shakira", new[] { ("Can't Remember to Forget You (feat. Rihanna)", "7o1Pm9jpH0wFpN5g793Lnq"), ("Hips Don't Lie (feat. Wyclef Jean)", "3d0WouFnFmr0K3kjeza3fF"), ("Whenever, Wherever", "2lnzGkdtDj5mtlcOW2yRtG") } },
             { "Shawn Mendes", new[] { ("Señorita", "6v3KW9xbzN5yKLt9YKDYA2") } },

@@ -75,7 +75,7 @@ BIOME_BY_ID = {
  57: B('peak', 'conifer', .4, .55), 58: B('hill', 'dune', .5, 0),
  59: B('hill', 'flower', .5, .05), 60: B('hill', 'deciduous', .45, .05), 61: B('mountain', 'conifer', .5, .45),
  62: B('hill', 'palm', .7, .1), 63: B('hill', 'marsh', .7, 0), 64: B('mountain', 'deciduous', .9, .35),
- 65: B('hill', 'palm', .5, .05)}
+ 65: B('hill', 'palm', .5, .05), 66: B('hill', 'flower', .5, .05)}
 BIOME = [BIOME_BY_ID[s['id']] for s in SCN]
 
 # ---------- how much land each scene needs ----------
@@ -200,14 +200,30 @@ PLAN_FILE = 'world_plan.json'
 plan = json.load(open(PLAN_FILE, encoding='utf-8')) if os.path.exists(PLAN_FILE) and '--relayout' not in sys.argv else None
 if plan:
     sp = {s['id']: s for s in plan['scenes']}
-    missing = [ART[s['id']]['name'] for s in SCN if s['id'] not in sp]
-    if missing: sys.exit(f'new scenes not in {PLAN_FILE}: {missing}. Run with --relayout to place them.')
-    MPP = plan['mpp']
+    MPP = plan['mpp']; settled = np.array([s['id'] in sp for s in SCN])
+    # A new scene becomes a new island in open water, as near its most similar scenes as it fits, and nothing
+    # that exists moves. (Only for realms that are island chains: a landmass has no room to add a scene.)
+    for i_new, s in enumerate(SCN):
+        if s['id'] in sp: continue
+        if not is_chain[i_new]: sys.exit(f'new scene {ART[s["id"]]["name"]} belongs on a landmass. Run with --relayout to place it.')
+        r_new = math.sqrt(need_m2[i_new] * 1.25 / math.pi) / MPP
+        gx, gy = np.meshgrid(np.arange(MX + r_new, WW - MX - r_new, 8.0), np.arange(MY + r_new, WH - MY - r_new, 8.0))
+        ok = np.ones(gx.shape, bool); pull = np.zeros(gx.shape)
+        for j, o in enumerate(SCN):
+            if o['id'] not in sp: continue
+            q = sp[o['id']]; dj = np.hypot(gx - q['x'], gy - q['y'])
+            # (coasts wander well outside a scene's circle, so both circles are taken a third bigger)
+            ok &= dj >= (r_new + q['r']) * 1.3 + (STRAIT_M if group[j] == group[i_new] else SEA_M) / MPP
+            if o['id'] in s['neighbours'][:3] and group[j] == group[i_new]: pull += dj
+        if not ok.any(): sys.exit(f'no open water for new scene {ART[s["id"]]["name"]}. Run with --relayout.')
+        at = np.unravel_index(np.argmin(np.where(ok, pull if pull.any() else np.hypot(gx - WW / 2, gy - WH / 2), np.inf)), gx.shape)
+        sp[s['id']] = dict(id=s['id'], x=float(gx[at]), y=float(gy[at]), r=float(r_new))
+        print(f'new scene {ART[s["id"]]["name"]}: a new island at {gx[at]:.0f},{gy[at]:.0f}, radius {r_new:.0f} px')
     cx = np.array([sp[s['id']]['x'] for s in SCN]); cy = np.array([sp[s['id']]['y'] for s in SCN])
     Rpx = np.array([sp[s['id']]['r'] for s in SCN])
     print(f'using the saved layout in {PLAN_FILE}')
 else:
-    P, Rpx = place(need_m2 * 1.25)
+    P, Rpx = place(need_m2 * 1.25); settled = np.zeros(K, bool)
     cx, cy = P[:, 0] + WW / 2, P[:, 1] + WH / 2
 reach = np.ones(K)
 for attempt in range(10):
@@ -216,6 +232,10 @@ for attempt in range(10):
     ratio = need_m2 / np.maximum(have, 1)
     print(f'  pass {attempt}: {int((ratio > 1.03).sum())} scenes short of land, worst',
           ', '.join(f'{ART[SCN[i]["id"]]["name"]} {1 / ratio[i]:.0%}' for i in np.argsort(-ratio)[:3]))
+    # A scene already in the saved layout keeps its coast exactly, unless it has truly run out of room (every
+    # scene has twice its plots again in spare land, so a few percent short moves nothing): growing a scene
+    # shifts its coast, its bridges and its neighbours' borders, and the lands are built by hand on top of them.
+    ratio = np.where(settled & (ratio <= 1.25), 1.0, ratio)
     if (ratio <= 1.03).all(): break
     # landmass scenes never shrink, so landmasses stay whole; with a saved layout nothing shrinks.
     # Land grows about with the square of the reach.
@@ -444,6 +464,14 @@ for r in range(len(RLM)):
     goal = np.array([cx[isl], cy[isl]]) + dirv * Rpx[isl] * .45 + np.array([0, -Rpx[isl] * .15])
     tp = pts[np.argmin(np.hypot(*(pts - goal).T))]
     towers.append(dict(n=RLM[r]['tower'], realm=RLM[r]['name'], r=r, isl=isl, x=float(tp[0]), y=float(tp[1])))
+# a tower in the saved layout stays where it is (the rule above shifts with every change to the playlist)
+_plan_now = json.load(open(PLAN_FILE, encoding='utf-8'))
+if plan:
+    for t_ in towers:
+        sv = (plan.get('towers') or {}).get(t_['n'])
+        if sv and sv['scene'] in index_of_id: t_.update(isl=index_of_id[sv['scene']], x=sv['x'], y=sv['y'])
+_plan_now['towers'] = {t_['n']: dict(scene=SCN[t_['isl']]['id'], x=round(t_['x'], 3), y=round(t_['y'], 3)) for t_ in towers}
+json.dump(_plan_now, open(PLAN_FILE, 'w', encoding='utf-8'), indent=0)
 
 # sea lanes for boats: each realm's tower to its two nearest realms' towers, routed around land
 def curve_ok(p, c, q, a, b):
@@ -912,9 +940,29 @@ flatten(*toU(hub_x, hub_y), HUB_R_M * .75)   # the hub's plaza
 for x, z, r, isl in reserved[:K]: flatten(x, z, r)
 
 os.makedirs(UD, exist_ok=True)
+def sid_of(i): return HUB_ID if i == HUB else SCN[i]['id']
+# Lands that are already in the game keep their ground and outline exactly as they are. The hills above come from
+# where the songs sit, so they shift everywhere whenever the playlist changes, and the lands are built by hand on
+# top of them. Only a land that is new gets ground from this run (and the shallows round its shore).
+# Run with --reterrain to shape all the ground again from scratch.
+_old_layout = f'{UD}/world_layout.json'
+if os.path.exists(_old_layout) and plan and '--reterrain' not in sys.argv:
+    _ol = json.load(open(_old_layout, encoding='utf-8'))
+    if _ol['nx'] == NX and _ol['nz'] == NZ and abs(_ol['metresPerMapPixel'] - MPP) < 1e-9:
+        _oh = np.fromfile(f'{UD}/world_height.bytes', dtype='<i2').reshape(NZ, NX) / 10.0
+        _oi = np.fromfile(f'{UD}/world_island.bytes', dtype=np.uint8).reshape(NZ, NX)
+        _new_index = {sid_of(i): i for i in range(K + 1)}
+        _remap = np.full(256, 255, np.uint8)
+        for _k, _isl in enumerate(_ol['islands']): _remap[_k] = _new_index.get(_isl['sceneId'], 255)
+        _oi = _remap[_oi]                                              # the old outline, in this run's numbering
+        _known = {_isl['sceneId'] for _isl in _ol['islands']}
+        _fresh = np.isin(idv, [i for i in range(K + 1) if sid_of(i) not in _known]) & (_oi == 255)   # new land, on what was sea
+        _shore = ndi.binary_dilation(_fresh, iterations=10) & (_oi == 255)                           # and the shallows round it
+        E = np.where(_shore, E, _oh); idv = np.where(_fresh, idv, _oi).astype(np.uint8)
+        print(f'existing lands keep their ground; new land: {int(_fresh.sum()) * STEP * STEP / 1e6:.2f} km2')
+    else: print('the saved world has a different size: all the ground is shaped again')
 np.clip(np.round(E * 10), -32768, 32767).astype('<i2').tofile(f'{UD}/world_height.bytes')
 idv.tofile(f'{UD}/world_island.bytes')
-def sid_of(i): return HUB_ID if i == HUB else SCN[i]['id']
 def mix(c, d, t): return [round(float(c[k] * (1 - t) + d[k] * t)) for k in range(3)]
 islands_u = []
 for i in range(K):

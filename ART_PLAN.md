@@ -10,7 +10,7 @@ Classic, jam, prog, southern, glam and heavy metal: the old heartland of rock.
 
 ### 0. The Jam Band Commonwealth
 
-*jam band, experimental jazz, rock, newgrass, southern rock* · 109 songs · energy 0.71, acoustic 0.34, mood 0.52 · top artists: Phish, Trey Anastasio, Widespread Panic, Umphrey's McGee, Goose
+*jam band, experimental jazz, rock, newgrass, southern rock* · 106 songs · energy 0.71, acoustic 0.34, mood 0.52 · top artists: Phish, Trey Anastasio, Widespread Panic, Umphrey's McGee, Goose
 
 - **Terrain:** Vast rolling woods cut by long winding trails that loop back on themselves; open meadows used as festival lawns.
 - **Colours:** `#5E7D3A moss`, `#E8833A tie-dye orange`, `#7B4BA0 tie-dye purple`, `#3FA7A0 teal sky`
@@ -20,7 +20,7 @@ Classic, jam, prog, southern, glam and heavy metal: the old heartland of rock.
 
 ### 2. Kingdom of Classic Rock
 
-*classic rock, psychedelic rock, rock, rock and roll, glam rock* · 86 songs · energy 0.60, acoustic 0.30, mood 0.56 · top artists: The Beatles, Led Zeppelin, David Bowie, Jimi Hendrix, The Rolling Stones
+*classic rock, rock, psychedelic rock, glam rock, rock and roll* · 85 songs · energy 0.59, acoustic 0.31, mood 0.56 · top artists: The Beatles, Led Zeppelin, David Bowie, Jimi Hendrix, The Rolling Stones
 
 - **Terrain:** Old green hills worn smooth, crossed by two-lane highways and stone bridges.
 - **Colours:** `#6E9A44 grass`, `#3C5A8A denim`, `#E0A030 sunburst`, `#A0442E brick`
@@ -30,7 +30,7 @@ Classic, jam, prog, southern, glam and heavy metal: the old heartland of rock.
 
 ### 5. The Psychedelic Wilds
 
-*psychedelic rock, acid rock, psychedelic, stoner rock, neo psychedelic* · 58 songs · energy 0.66, acoustic 0.21, mood 0.53 · top artists: Grateful Dead, Tame Impala, Psychedelic Porn Crumpets, Queens of the Stone Age, Altin Gün
+*psychedelic rock, acid rock, psychedelic, stoner rock, neo psychedelic* · 60 songs · energy 0.66, acoustic 0.20, mood 0.53 · top artists: Grateful Dead, Tame Impala, Psychedelic Porn Crumpets, Queens of the Stone Age, Altin Gün
 
 - **Terrain:** Hot desert mesas with swirling strata that melt into a forest of giant mushrooms.
 - **Colours:** `#C2408C magenta`, `#B5D334 acid lime`, `#D9733B desert orange`, `#3E2A6B deep violet`
@@ -40,7 +40,7 @@ Classic, jam, prog, southern, glam and heavy metal: the old heartland of rock.
 
 ### 13. The Yacht Rock Riviera
 
-*classic rock, soft rock, yacht rock, rock, singer songwriter* · 36 songs · energy 0.63, acoustic 0.27, mood 0.66 · top artists: Elton John, Fleetwood Mac, Billy Joel, Eagles, Jimmy Buffett
+*classic rock, soft rock, yacht rock, singer songwriter, rock* · 39 songs · energy 0.63, acoustic 0.27, mood 0.68 · top artists: Elton John, Fleetwood Mac, Jimmy Buffett, Billy Joel, TOTO
 
 - **Terrain:** Palm-lined coves, white-sand beaches and a calm marina.
 - **Colours:** `#8FD3C1 seafoam`, `#EED9A6 sand`, `#F08A6B coral`, `#23395B navy`
@@ -60,7 +60,7 @@ Classic, jam, prog, southern, glam and heavy metal: the old heartland of rock.
 
 ### 17. The Folk Woods
 
-*singer songwriter, folk, folk rock, classic rock, spoken word* · 37 songs · energy 0.48, acoustic 0.49, mood 0.55 · top artists: Fenne Lily, Yusuf / Cat Stevens, Gordon Lightfoot, John Denver, Liana Flores
+*singer songwriter, folk, folk rock, classic rock, spoken word* · 39 songs · energy 0.49, acoustic 0.50, mood 0.56 · top artists: Fenne Lily, The Band, Yusuf / Cat Stevens, Gordon Lightfoot, John Denver
 
 - **Terrain:** Old-growth forest around a mountain lake, with a railway along the shore.
 - **Colours:** `#3E6B48 pine`, `#E58A3A campfire`, `#5C8FB8 lake blue`, `#F2E8D5 cream`
@@ -70,7 +70,7 @@ Classic, jam, prog, southern, glam and heavy metal: the old heartland of rock.
 
 ### 27. The Iron Range
 
-*heavy metal, metal, thrash metal, hard rock, speed metal* · 33 songs · energy 0.81, acoustic 0.08, mood 0.39 · top artists: Metallica, Black Sabbath, Elena Siegman, Anthrax, Ozzy Osbourne
+*heavy metal, metal, thrash metal, hard rock, speed metal* · 35 songs · energy 0.81, acoustic 0.07, mood 0.38 · top artists: Metallica, Black Sabbath, Elena Siegman, Anthrax, Ozzy Osbourne
 
 - **Terrain:** The tallest peaks in the world, honeycombed with mines.
 - **Colours:** `#4B4F55 iron grey`, `#8E3B1E rust`, `#F07C1E molten orange`, `#111111 black`
@@ -80,7 +80,7 @@ Classic, jam, prog, southern, glam and heavy metal: the old heartland of rock.
 
 ### 34. The Southern Rock Bayou
 
-*southern rock, classic rock, country rock, blues rock, jam band* · 25 songs · energy 0.66, acoustic 0.21, mood 0.67 · top artists: The Marshall Tucker Band, Allman Brothers Band, Creedence Clearwater Revival, Little Feat, Lynyrd Skynyrd
+*southern rock, classic rock, country rock, blues rock, jam band* · 28 songs · energy 0.66, acoustic 0.20, mood 0.67 · top artists: Creedence Clearwater Revival, The Marshall Tucker Band, Allman Brothers Band, Little Feat, Lynyrd Skynyrd
 
 - **Terrain:** Cypress swamp and slow brown rivers, between the rock hills and the country plains.
 - **Colours:** `#4E6B3A cypress`, `#6E5A3A muddy water`, `#E08A3C sunset orange`, `#9A3B2A rust red`
@@ -90,7 +90,7 @@ Classic, jam, prog, southern, glam and heavy metal: the old heartland of rock.
 
 ### 38. The Hair Metal Strip
 
-*hard rock, glam metal, classic rock, glam rock, rock* · 22 songs · energy 0.84, acoustic 0.06, mood 0.45 · top artists: Guns N' Roses, Aerosmith, Mötley Crüe, Twisted Sister, Acotto
+*hard rock, glam metal, classic rock, glam rock, heavy metal* · 21 songs · energy 0.84, acoustic 0.06, mood 0.45 · top artists: Aerosmith, Guns N' Roses, Mötley Crüe, Twisted Sister, Acotto
 
 - **Terrain:** A neon boulevard winding through a dry desert valley.
 - **Colours:** `#FF3FA4 hot pink`, `#D9A83A leopard gold`, `#111111 black`, `#C0C6CF chrome`
@@ -100,7 +100,7 @@ Classic, jam, prog, southern, glam and heavy metal: the old heartland of rock.
 
 ### 52. Arena Rock Ridge
 
-*classic rock, aor, hard rock, rock, progressive rock* · 18 songs · energy 0.71, acoustic 0.09, mood 0.53 · top artists: Blue Öyster Cult, Boston, Journey, Styx, Cheap Trick
+*classic rock, aor, hard rock, rock, progressive rock* · 19 songs · energy 0.71, acoustic 0.09, mood 0.51 · top artists: Boston, Journey, Blue Öyster Cult, Styx, Cheap Trick
 
 - **Terrain:** A long mountain ridge with a stadium carved into it.
 - **Colours:** `#C0C6CF chrome`, `#1A2340 night blue`, `#FFFFFF spotlight white`, `#F28C28 orange`
@@ -110,7 +110,7 @@ Classic, jam, prog, southern, glam and heavy metal: the old heartland of rock.
 
 ### 64. The Bluegrass Hollows
 
-*bluegrass, newgrass, americana, folk, christian bluegrass* · 28 songs · energy 0.48, acoustic 0.59, mood 0.64 · top artists: Billy Strings, Alison Krauss & Union Station, Flatt & Scruggs, Molly Tuttle, Nickel Creek
+*bluegrass, newgrass, americana, folk, christian bluegrass* · 32 songs · energy 0.50, acoustic 0.57, mood 0.65 · top artists: Billy Strings, Flatt & Scruggs, Nickel Creek, Alison Krauss & Union Station, Molly Tuttle
 
 - **Terrain:** Blue-green Appalachian ridges with deep wooded hollows, creeks and split-rail fences.
 - **Colours:** `#4A6FA5 ridge blue`, `#5B7F3A hollow green`, `#B5651D banjo wood`, `#F3E9D2 cabin cream`
@@ -124,7 +124,7 @@ Alternative, grunge, punk, emo, metalcore, prog metal and J-rock.
 
 ### 1. Metalcore Caldera
 
-*post hardcore, metalcore, screamo, hardcore, emo* · 84 songs · energy 0.91, acoustic 0.01, mood 0.32 · top artists: Killswitch Engage, Like Moths To Flames, Alexisonfire, Dayseeker, blessthefall
+*post hardcore, metalcore, screamo, emo, hardcore* · 82 songs · energy 0.91, acoustic 0.01, mood 0.32 · top artists: Killswitch Engage, Like Moths To Flames, Alexisonfire, Dayseeker, blessthefall
 
 - **Terrain:** A ring of black volcanoes around a sunken crater; lava cracks in the ground, ash drifting down.
 - **Colours:** `#2B2B2E basalt`, `#E2541E ember`, `#8C8C8C ash`, `#8E1B1B blood red`
@@ -134,7 +134,7 @@ Alternative, grunge, punk, emo, metalcore, prog metal and J-rock.
 
 ### 4. The Alt Rock Moors
 
-*alternative rock, rock, art rock, britpop, funk rock* · 64 songs · energy 0.71, acoustic 0.14, mood 0.42 · top artists: Radiohead, Gorillaz, The Cranberries, Weezer, Hootie & The Blowfish
+*alternative rock, rock, britpop, art rock, funk rock* · 67 songs · energy 0.71, acoustic 0.14, mood 0.43 · top artists: Radiohead, Gorillaz, The Cranberries, Weezer, Hootie & The Blowfish
 
 - **Terrain:** Grey-green moorland with dry-stone walls, low hills and scattered towns.
 - **Colours:** `#7A6C8F heather`, `#5D7350 moor green`, `#5B6670 slate`, `#E07B39 signal orange`
@@ -144,7 +144,7 @@ Alternative, grunge, punk, emo, metalcore, prog metal and J-rock.
 
 ### 6. The Punk Badlands
 
-*pop punk, punk rock, punk, emo, alternative rock* · 48 songs · energy 0.83, acoustic 0.08, mood 0.56 · top artists: Green Day, Fall Out Boy, Panic! At The Disco, The Offspring, Mayday Parade
+*pop punk, punk rock, punk, emo, alternative rock* · 49 songs · energy 0.84, acoustic 0.08, mood 0.55 · top artists: Green Day, Fall Out Boy, Panic! At The Disco, The Offspring, My Chemical Romance
 
 - **Terrain:** Scrappy badlands of eroded rock with suburban ruins; skate bowls carved into the ground.
 - **Colours:** `#9BD13B safety green`, `#E8458B hot pink`, `#3A3A3A asphalt`, `#C9B38A bleached tan`
@@ -154,7 +154,7 @@ Alternative, grunge, punk, emo, metalcore, prog metal and J-rock.
 
 ### 7. The Math Rock Escarpment
 
-*math rock, post rock, midwest emo, instrumental, japanese indie* · 43 songs · energy 0.70, acoustic 0.17, mood 0.33 · top artists: MONO, tricot, toe, This Will Destroy You, 65daysofstatic
+*math rock, post rock, midwest emo, instrumental, japanese indie* · 45 songs · energy 0.69, acoustic 0.19, mood 0.33 · top artists: MONO, tricot, toe, Flawed Mangoes, This Will Destroy You
 
 - **Terrain:** Sheer cliffs cut into geometric terraces, stepping down to a calm sea; waterfalls everywhere.
 - **Colours:** `#4C6A8A slate blue`, `#D8D3C6 pale stone`, `#D9822B autumn orange`, `#F1F1EE mist`
@@ -164,7 +164,7 @@ Alternative, grunge, punk, emo, metalcore, prog metal and J-rock.
 
 ### 12. The Grunge Rainwood
 
-*grunge, alternative rock, post grunge, rock, hard rock* · 40 songs · energy 0.76, acoustic 0.10, mood 0.39 · top artists: The Smashing Pumpkins, Soundgarden, Audioslave, Foo Fighters, Live
+*grunge, alternative rock, post grunge, rock, hard rock* · 43 songs · energy 0.77, acoustic 0.10, mood 0.39 · top artists: Alice In Chains, The Smashing Pumpkins, Soundgarden, Audioslave, Foo Fighters
 
 - **Terrain:** Dripping pine forest on steep slopes, with muddy logging roads.
 - **Colours:** `#2F4A3A wet pine`, `#9B2D2D flannel red`, `#5C4A36 mud`, `#8A9096 overcast`
@@ -184,7 +184,7 @@ Alternative, grunge, punk, emo, metalcore, prog metal and J-rock.
 
 ### 21. The Post-Punk Docklands
 
-*post punk, new wave, noise rock, art rock, jangle pop* · 39 songs · energy 0.69, acoustic 0.14, mood 0.49 · top artists: The Smiths, Maruja, Sonic Youth, The Cure, Black Country, New Road
+*post punk, new wave, noise rock, art rock, jangle pop* · 40 songs · energy 0.70, acoustic 0.14, mood 0.49 · top artists: The Smiths, Maruja, Sonic Youth, The Cure, Black Country, New Road
 
 - **Terrain:** A grey industrial harbour of quays, warehouses and brutalist blocks.
 - **Colours:** `#6E6E6E concrete`, `#1C1C1C black`, `#E8B33A sodium yellow`, `#3F6F4A dock green`
@@ -194,7 +194,7 @@ Alternative, grunge, punk, emo, metalcore, prog metal and J-rock.
 
 ### 28. The J-Rock Isles
 
-*j pop, j rock, japanese, anime, progressive metal* · 32 songs · energy 0.88, acoustic 0.05, mood 0.45 · top artists: Hoshikuma Minami, Sithu Aye, Ado, DEATHNYANN, Ling tosite sigure
+*j pop, j rock, anime, japanese, progressive metal* · 29 songs · energy 0.87, acoustic 0.05, mood 0.44 · top artists: Hoshikuma Minami, Sithu Aye, Ado, DEATHNYANN, Ling tosite sigure
 
 - **Terrain:** A dense neon city on steep islands, softened by cherry trees.
 - **Colours:** `#F4A7C0 sakura`, `#3DE0F5 neon cyan`, `#1B2240 night navy`, `#D93A2F torii red`
@@ -204,7 +204,7 @@ Alternative, grunge, punk, emo, metalcore, prog metal and J-rock.
 
 ### 32. The Nu Metal Quarry
 
-*post grunge, alternative rock, rock, hard rock, alternative metal* · 26 songs · energy 0.79, acoustic 0.03, mood 0.36 · top artists: Nickelback, 3 Doors Down, Breaking Benjamin, Creed, Disturbed
+*post grunge, alternative rock, rock, hard rock, alternative metal* · 25 songs · energy 0.79, acoustic 0.03, mood 0.35 · top artists: Nickelback, Breaking Benjamin, Creed, 3 Doors Down, Disturbed
 
 - **Terrain:** A huge open-pit quarry with rusted machinery on the terraces.
 - **Colours:** `#8A4B2A rust`, `#3E444A gunmetal`, `#6E7A5A toxic grey-green`, `#E8C22E warning yellow`
@@ -214,7 +214,7 @@ Alternative, grunge, punk, emo, metalcore, prog metal and J-rock.
 
 ### 35. The Oddball Backroads
 
-*alternative rock, indie rock, rock, experimental, neo psychedelic* · 28 songs · energy 0.65, acoustic 0.20, mood 0.64 · top artists: Pixies, Ween, Violent Femmes, Beck, R.E.M.
+*alternative rock, indie rock, experimental, rock, neo psychedelic* · 27 songs · energy 0.65, acoustic 0.20, mood 0.63 · top artists: Pixies, Ween, Beck, R.E.M., Violent Femmes
 
 - **Terrain:** Winding rural back roads that feel slightly wrong, overgrown with kudzu.
 - **Colours:** `#D9B13B mustard`, `#4F8F8C faded teal`, `#7A5A3A barn brown`, `#6FA03A kudzu green`
@@ -224,7 +224,7 @@ Alternative, grunge, punk, emo, metalcore, prog metal and J-rock.
 
 ### 43. The Power Metal Peaks
 
-*power metal, j rock, visual kei, heavy metal, kawaii metal* · 20 songs · energy 0.96, acoustic 0.00, mood 0.37 · top artists: BRIDEAR, Alestorm, DragonForce, HANABIE., LADYBABY
+*power metal, j rock, visual kei, heavy metal, metal* · 21 songs · energy 0.95, acoustic 0.00, mood 0.36 · top artists: BRIDEAR, DragonForce, Alestorm, HANABIE., LADYBABY
 
 - **Terrain:** Fantasy mountains with a stormy pirate cove below.
 - **Colours:** `#5A2D82 royal purple`, `#F26B1D dragonfire`, `#FF8FC8 kawaii pink`, `#9AA3AD steel`
@@ -238,7 +238,7 @@ Indie rock, shoegaze, bedroom pop and indie folk.
 
 ### 8. The Shoegaze Fens
 
-*shoegaze, dream pop, slowcore, black metal, indie rock* · 42 songs · energy 0.58, acoustic 0.18, mood 0.26 · top artists: Deafheaven, Mazzy Star, Fine, Knifeplay, M83
+*shoegaze, dream pop, slowcore, black metal, indie rock* · 44 songs · energy 0.57, acoustic 0.19, mood 0.26 · top artists: Deafheaven, Mazzy Star, Slowdive, my bloody valentine, Fine
 
 - **Terrain:** A reverb-drowned marsh of reeds, still pools and willows.
 - **Colours:** `#D7A6B3 dusty pink`, `#A79BC8 lavender haze`, `#6F8B7A fen green`, `#E9E6EE pale fog`
@@ -248,7 +248,7 @@ Indie rock, shoegaze, bedroom pop and indie folk.
 
 ### 9. The Indie Downs
 
-*indie rock, alternative rock, indie pop, bedroom pop, lo fi* · 47 songs · energy 0.65, acoustic 0.19, mood 0.47 · top artists: Death Cab for Cutie, Florence Road, Rainbow Kitten Surprise, Cusk, Dummy
+*indie rock, alternative rock, indie pop, lo fi, bedroom pop* · 47 songs · energy 0.65, acoustic 0.19, mood 0.47 · top artists: Death Cab for Cutie, Florence Road, Rainbow Kitten Surprise, Cusk, Dummy
 
 - **Terrain:** Rolling chalk downs with small market towns and hedgerows.
 - **Colours:** `#9AAE8C sage`, `#EFEDE4 chalk`, `#B0533C brick`, `#8FA7BF cloudy blue`
@@ -258,7 +258,7 @@ Indie rock, shoegaze, bedroom pop and indie folk.
 
 ### 14. Lanternwood
 
-*indie folk, indie rock, folk, singer songwriter, indie pop* · 41 songs · energy 0.50, acoustic 0.48, mood 0.39 · top artists: Phoebe Bridgers, Big Thief, Lizzy McAlpine, Daughter, Mitski
+*indie folk, indie rock, folk, singer songwriter, indie pop* · 42 songs · energy 0.49, acoustic 0.48, mood 0.39 · top artists: Phoebe Bridgers, Big Thief, Lizzy McAlpine, Daughter, Mitski
 
 - **Terrain:** Birch woods dusted with snow, small clearings and a frozen creek.
 - **Colours:** `#E8E4DA birch white`, `#3F4E6B dusk blue`, `#E9A84C lantern amber`, `#5E7D5A moss`
@@ -268,7 +268,7 @@ Indie rock, shoegaze, bedroom pop and indie folk.
 
 ### 15. The Driftwood Shore
 
-*folk, acoustic, singer songwriter, surf rock, danish* · 32 songs · energy 0.44, acoustic 0.51, mood 0.36 · top artists: Jack Johnson, Agnes Obel, Angus & Julia Stone, Shearwater, unclepat
+*folk, acoustic, singer songwriter, surf rock, danish* · 34 songs · energy 0.45, acoustic 0.51, mood 0.36 · top artists: Jack Johnson, Agnes Obel, Angus & Julia Stone, Shearwater, unclepat
 
 - **Terrain:** Sheltered beach coves, tide pools and low sea cliffs.
 - **Colours:** `#3BA3A3 sea teal`, `#B59E7E driftwood`, `#EBDDB5 sand`, `#E05A5A hibiscus`
@@ -278,7 +278,7 @@ Indie rock, shoegaze, bedroom pop and indie folk.
 
 ### 42. Garage Rock Row
 
-*indie rock, garage rock, alternative rock, region:bedroom, rock* · 18 songs · energy 0.71, acoustic 0.18, mood 0.49 · top artists: Arctic Monkeys, Cage The Elephant, Silversun Pickups, The Kooks, Kings of Leon
+*indie rock, garage rock, alternative rock, rock, region:bedroom* · 28 songs · energy 0.69, acoustic 0.20, mood 0.52 · top artists: The Strokes, Arctic Monkeys, Cage The Elephant, Silversun Pickups, The Kooks
 
 - **Terrain:** A gritty small-town main street with garages, pubs and back alleys.
 - **Colours:** `#1E1E1E leather black`, `#D9C26A nicotine yellow`, `#3C5A8A denim`, `#E0353A neon red`
@@ -288,7 +288,7 @@ Indie rock, shoegaze, bedroom pop and indie folk.
 
 ### 49. The Bedroom Pop Meadows
 
-*indie pop, indie rock, bedroom pop, lo fi, new zealand* · 23 songs · energy 0.66, acoustic 0.24, mood 0.50 · top artists: Clairo, beabadoobee, Anna Sofia, Balu Brigada, Beach Bunny
+*indie pop, indie rock, bedroom pop, lo fi, new zealand* · 24 songs · energy 0.65, acoustic 0.25, mood 0.50 · top artists: Clairo, beabadoobee, Anna Sofia, Balu Brigada, Beach Bunny
 
 - **Terrain:** Soft wildflower meadows and gentle hills.
 - **Colours:** `#F7C8A8 pastel peach`, `#A8D4F2 baby blue`, `#F5D85A daisy yellow`, `#A8E0C4 mint`
@@ -322,7 +322,7 @@ Every kind of electronic music, from ambient to riddim.
 
 ### 19. The Melodic Bass Highlands
 
-*dubstep, chillstep, future bass, trance, drumstep* · 29 songs · energy 0.71, acoustic 0.09, mood 0.20 · top artists: Seven Lions, Mr FijiWiji, Rogue, Vexare, Adventure Club
+*dubstep, chillstep, trance, progressive trance, drumstep* · 29 songs · energy 0.70, acoustic 0.09, mood 0.18 · top artists: Seven Lions, Mr FijiWiji, Rogue, Vexare, Adventure Club
 
 - **Terrain:** Big summits rising above a sea of clouds.
 - **Colours:** `#FF6F91 sunset pink`, `#845EC2 violet`, `#FFC75F gold`, `#1E1B4B indigo`
@@ -342,7 +342,7 @@ Every kind of electronic music, from ambient to riddim.
 
 ### 23. The Four-on-the-Floor Steppe
 
-*house, electronic, edm, progressive house, dance* · 34 songs · energy 0.79, acoustic 0.04, mood 0.37 · top artists: Astronaut, Zero Eden, deadmau5, Avicii, Daft Punk
+*house, electronic, edm, dance, french house* · 37 songs · energy 0.77, acoustic 0.05, mood 0.37 · top artists: Astronaut, Justice, Zero Eden, deadmau5, Avicii
 
 - **Terrain:** Flat grassland laid out in a grid of glowing dance floors.
 - **Colours:** `#2E7CF6 electric blue`, `#E33FA2 magenta`, `#111111 black`, `#FFFFFF white`
@@ -352,7 +352,7 @@ Every kind of electronic music, from ambient to riddim.
 
 ### 24. The Dubstep Shards
 
-*dubstep, bass music, riddim, deathstep, drumstep* · 30 songs · energy 0.84, acoustic 0.03, mood 0.34 · top artists: Virtual Riot, Bassnectar, Of The Trees, Panda Eyes, Skrillex
+*dubstep, bass music, riddim, deathstep, drumstep* · 32 songs · energy 0.84, acoustic 0.03, mood 0.34 · top artists: Virtual Riot, Bassnectar, Panda Eyes, Skrillex, Of The Trees
 
 - **Terrain:** Jagged crystal mountains split by deep cracks.
 - **Colours:** `#7CFF3F toxic green`, `#101010 black`, `#9B30FF electric purple`, `#20E0FF cyan`
@@ -362,7 +362,7 @@ Every kind of electronic music, from ambient to riddim.
 
 ### 33. The IDM Glitchlands
 
-*idm, glitch, psytrance, bass music, deathstep* · 30 songs · energy 0.72, acoustic 0.11, mood 0.25 · top artists: Mr. Bill, Autechre, Iglooghost, Squarepusher, Ametsub
+*idm, glitch, psytrance, bass music, deathstep* · 30 songs · energy 0.71, acoustic 0.10, mood 0.27 · top artists: Mr. Bill, Squarepusher, Autechre, Iglooghost, Ametsub
 
 - **Terrain:** Unstable ground that splits and rearranges itself into new shapes.
 - **Colours:** `#FF2E88 glitch magenta`, `#20F0FF cyan`, `#0B0B0B black`, `#BDBDBD static grey`
@@ -372,7 +372,7 @@ Every kind of electronic music, from ambient to riddim.
 
 ### 51. The Sample Gardens
 
-*experimental, electronic, plunderphonics, ambient folk, vaporwave* · 18 songs · energy 0.60, acoustic 0.49, mood 0.44 · top artists: Bibio, Atoms For Peace, The Avalanches, BLARF, Burka Band
+*experimental, electronic, plunderphonics, ambient folk, idm* · 18 songs · energy 0.60, acoustic 0.49, mood 0.44 · top artists: Bibio, Atoms For Peace, The Avalanches, BLARF, Burka Band
 
 - **Terrain:** Overgrown gardens built from collaged, mismatched pieces.
 - **Colours:** `#8FA889 sage`, `#C96A3E terracotta`, `#8CC4E0 sky`, `#D9B13B mustard`
@@ -382,7 +382,7 @@ Every kind of electronic music, from ambient to riddim.
 
 ### 54. The Trip-Hop Undercity
 
-*trip hop, downtempo, chillout, electronic, nu jazz* · 16 songs · energy 0.56, acoustic 0.18, mood 0.22 · top artists: Portishead, Hooverphonic, Massive Attack, Amon Tobin, Blue Foundation
+*trip hop, downtempo, electronic, chillout, nu jazz* · 18 songs · energy 0.59, acoustic 0.17, mood 0.26 · top artists: Massive Attack, Portishead, Hooverphonic, Amon Tobin, Blue Foundation
 
 - **Terrain:** A rainy harbour city that goes down into tunnels and vaults.
 - **Colours:** `#4F6A6E teal-grey`, `#E08A3C sodium orange`, `#0E0E10 black`, `#3A4A6B smoky blue`
@@ -430,13 +430,23 @@ Every kind of electronic music, from ambient to riddim.
 - **Props:** Light poles pulsing at 174 bpm, rope bridges, glowing buoys, a hospital-white bandstand.
 - **Light and mood:** Fast but floating.
 
+### 66. The Future Bass Arcades
+
+*future bass, j dance, electronic, progressive house, speedcore* · 30 songs · energy 0.86, acoustic 0.06, mood 0.43 · top artists: Flay!, DraGonis, Mameyudoufu, Nokae, kamome sano
+
+- **Terrain:** Not designed yet: a plain island until its kit is built with the owner.
+- **Colours:** `#7DE3F4 sky cyan`, `#FFD166 warm yellow`, `#FFFFFF white`, `#2B2D6E deep blue`
+- **Landmark:** To be decided with the owner.
+- **Props:** To be decided with the owner.
+- **Light and mood:** Bright, quick and sweet (provisional).
+
 ## The Chart Isles
 
 Pop, electropop, synthwave, country and Latin.
 
 ### 3. The Country Plains
 
-*country, classic country, acoustic country, outlaw country, modern country* · 64 songs · energy 0.60, acoustic 0.39, mood 0.56 · top artists: Zac Brown Band, Tyler Childers, Jason Aldean, Lady A, Alabama
+*country, classic country, outlaw country, acoustic country, modern country* · 72 songs · energy 0.60, acoustic 0.38, mood 0.58 · top artists: Johnny Cash, Zac Brown Band, Alabama, Tyler Childers, Alan Jackson
 
 - **Terrain:** Endless flat wheat fields and gentle swells under an enormous sky; a dirt road to the horizon.
 - **Colours:** `#D9B860 wheat`, `#A8322D barn red`, `#7FB3D9 big sky`, `#3C5A8A denim`
@@ -456,7 +466,7 @@ Pop, electropop, synthwave, country and Latin.
 
 ### 22. The Heartbreak Boardwalk
 
-*pop, indie pop, indie rock, pop rock, art pop* · 31 songs · energy 0.53, acoustic 0.39, mood 0.29 · top artists: Lana Del Rey, Olivia Rodrigo, Ashe, Billie Eilish, Avril Lavigne
+*pop, indie pop, indie rock, pop rock, alternative rock* · 32 songs · energy 0.53, acoustic 0.39, mood 0.29 · top artists: Lana Del Rey, Olivia Rodrigo, Ashe, Billie Eilish, Avril Lavigne
 
 - **Terrain:** A faded seaside boardwalk with motels and a long pier.
 - **Colours:** `#B79CED lilac`, `#F2B5C4 faded pink`, `#2E3A5F ocean dusk`, `#FF4D5E neon red`
@@ -466,7 +476,7 @@ Pop, electropop, synthwave, country and Latin.
 
 ### 31. The Glitterlands
 
-*electropop, pop, synthpop, dance pop, hyperpop* · 26 songs · energy 0.71, acoustic 0.12, mood 0.50 · top artists: Carly Rae Jepsen, Audrey Hobert, Charli xcx, Cryalot, Magdalena Bay
+*electropop, pop, synthpop, hyperpop, dance pop* · 28 songs · energy 0.72, acoustic 0.12, mood 0.50 · top artists: Carly Rae Jepsen, Audrey Hobert, Charli xcx, Cryalot, Magdalena Bay
 
 - **Terrain:** Floating candy-and-chrome platforms joined by bouncy bridges.
 - **Colours:** `#C6F04D lime`, `#C0C6CF chrome`, `#FF3FA4 hot pink`, `#8FD8FF baby blue`
@@ -486,7 +496,7 @@ Pop, electropop, synthwave, country and Latin.
 
 ### 56. The Latin Coast
 
-*latin, reggaeton, pop, mexico, latin pop* · 22 songs · energy 0.58, acoustic 0.34, mood 0.63 · top artists: Shakira, Bad Bunny, Los Lobos, Natalia Lafourcade, Nico Play
+*latin, reggaeton, pop, mexico, latin pop* · 21 songs · energy 0.60, acoustic 0.32, mood 0.64 · top artists: Shakira, Bad Bunny, Los Lobos, Natalia Lafourcade, Camila Cabello
 
 - **Terrain:** Colourful hillside towns running down to a warm bay.
 - **Colours:** `#E0338C magenta`, `#2EC4B6 turquoise`, `#F5A623 marigold`, `#C96A3E terracotta`
@@ -500,7 +510,7 @@ Soul, funk, disco, world music and jazz.
 
 ### 29. The Soul Lowlands
 
-*soul, motown, classic soul, gospel, funk* · 28 songs · energy 0.56, acoustic 0.34, mood 0.65 · top artists: Stevie Wonder, Kirk Franklin, Otis Redding, Ray Charles, Syl Johnson
+*soul, motown, classic soul, gospel, funk* · 31 songs · energy 0.56, acoustic 0.34, mood 0.65 · top artists: Stevie Wonder, Kirk Franklin, Marvin Gaye, Otis Redding, Ray Charles
 
 - **Terrain:** Warm river country with slow bends and wooden towns.
 - **Colours:** `#7B4A2D warm brown`, `#E0A43B gold`, `#4F7FA3 river blue`, `#8E2B3A velvet red`
@@ -510,7 +520,7 @@ Soul, funk, disco, world music and jazz.
 
 ### 30. The Funk Tropics
 
-*funk, soul, funk rock, jazz funk, motown* · 31 songs · energy 0.67, acoustic 0.24, mood 0.66 · top artists: The Meters, Prince, Thundercat, Commodores, Funkadelic
+*funk, soul, funk rock, jazz funk, motown* · 32 songs · energy 0.67, acoustic 0.25, mood 0.66 · top artists: The Meters, Commodores, Prince, Thundercat, Funkadelic
 
 - **Terrain:** Lush, sweaty jungle laid out entirely on the one.
 - **Colours:** `#6B2FA3 purple`, `#F2742B hot orange`, `#2F8F4A jungle green`, `#E3B341 gold`
@@ -520,7 +530,7 @@ Soul, funk, disco, world music and jazz.
 
 ### 40. The Far Shores
 
-*jazz, bossa nova, african, world, mpb* · 25 songs · energy 0.57, acoustic 0.52, mood 0.63 · top artists: Jorge Ben Jor, Mulatu Astatke, Tinariwen, Bossario, Dave Richmond
+*jazz, bossa nova, african, world, mpb* · 24 songs · energy 0.58, acoustic 0.51, mood 0.65 · top artists: Jorge Ben Jor, Mulatu Astatke, Tinariwen, Bossario, Dave Richmond
 
 - **Terrain:** A tropical coastline that turns into desert dunes inland.
 - **Colours:** `#2FA6A0 tropical teal`, `#D7A453 desert ochre`, `#F07B5A sunset coral`, `#4E8A3A palm green`
@@ -530,7 +540,7 @@ Soul, funk, disco, world music and jazz.
 
 ### 41. The Fusion Isthmus
 
-*jazz, jazz fusion, nu jazz, indie jazz, indie soul* · 30 songs · energy 0.60, acoustic 0.24, mood 0.49 · top artists: Tom Misch, Ezra Collective, Yussef Dayes, Tara Clerkin Trio, Yussef Kamaal
+*jazz, jazz fusion, nu jazz, indie jazz, indie soul* · 32 songs · energy 0.60, acoustic 0.24, mood 0.50 · top artists: Tom Misch, Ezra Collective, Tara Clerkin Trio, Yussef Dayes, Yussef Kamaal
 
 - **Terrain:** A narrow strip of land between two seas, packed with tiny streets.
 - **Colours:** `#1F6F78 deep teal`, `#C9A24A brass`, `#A0533C brick`, `#3B3F8C indigo`
@@ -550,7 +560,7 @@ Soul, funk, disco, world music and jazz.
 
 ### 48. The Old Jazz Quarter
 
-*jazz, hard bop, cool jazz, free jazz, big band* · 31 songs · energy 0.41, acoustic 0.65, mood 0.46 · top artists: Alice Coltrane, Duke Ellington, Herbie Hancock, Louis Armstrong, Billie Holiday
+*jazz, hard bop, big band, swing music, cool jazz* · 37 songs · energy 0.38, acoustic 0.65, mood 0.45 · top artists: Louis Armstrong, Alice Coltrane, Duke Ellington, Herbie Hancock, Ella Fitzgerald
 
 - **Terrain:** Smoky hill towns with cobbled squares and stone bridges.
 - **Colours:** `#1F2A44 midnight blue`, `#C9A24A brass`, `#7D7D85 smoke`, `#6E2230 oxblood`
@@ -584,7 +594,7 @@ Hip-hop, R&B and lo-fi beats.
 
 ### 11. The Hip-Hop Boroughs
 
-*hip hop, rap, trap, grime, r&b* · 55 songs · energy 0.67, acoustic 0.20, mood 0.53 · top artists: Kendrick Lamar, Logic, Black Eyed Peas, Eminem, Kanye West
+*hip hop, rap, trap, grime, neo soul* · 57 songs · energy 0.66, acoustic 0.20, mood 0.53 · top artists: Kendrick Lamar, Logic, Black Eyed Peas, Childish Gambino, Kanye West
 
 - **Terrain:** Dense city blocks on mesa tops, linked by bridges across the gaps.
 - **Colours:** `#7D7D7D concrete`, `#E3B341 gold`, `#3C2C5E night purple`, `#9E3B2E red brick`
@@ -594,7 +604,7 @@ Hip-hop, R&B and lo-fi beats.
 
 ### 25. Boom Bap Harbour
 
-*hip hop, east coast hip hop, rap, old school hip hop, gangster rap* · 25 songs · energy 0.69, acoustic 0.16, mood 0.65 · top artists: Wu-Tang Clan, Outkast, The Notorious B.I.G., JAŸ-Z, A Tribe Called Quest
+*hip hop, east coast hip hop, rap, old school hip hop, gangster rap* · 24 songs · energy 0.68, acoustic 0.15, mood 0.65 · top artists: Wu-Tang Clan, Outkast, JAŸ-Z, The Notorious B.I.G., A Tribe Called Quest
 
 - **Terrain:** Brownstone streets running down to a sunny harbour beach.
 - **Colours:** `#7A4B33 brownstone`, `#E3B341 gold`, `#2F8F4A reggae green`, `#C8372D reggae red`
@@ -614,7 +624,7 @@ Hip-hop, R&B and lo-fi beats.
 
 ### 45. The Velvet Rooftops
 
-*r&b, soul, hip hop, pop, alternative rnb* · 29 songs · energy 0.57, acoustic 0.25, mood 0.48 · top artists: Frank Ocean, Rihanna, SZA, The Weeknd, 070 Shake
+*r&b, soul, hip hop, pop, ambient jazz* · 34 songs · energy 0.55, acoustic 0.27, mood 0.46 · top artists: Frank Ocean, The Weeknd, Rihanna, SZA, 070 Shake
 
 - **Terrain:** City rooftops at night, joined by sky bridges.
 - **Colours:** `#A3162B deep red`, `#4B1C4F velvet purple`, `#E3B341 gold`, `#141B33 night blue`
@@ -624,7 +634,7 @@ Hip-hop, R&B and lo-fi beats.
 
 ### 60. The Neo Soul Quarter
 
-*neo soul, soul, r&b, alternative r&b, quiet storm* · 23 songs · energy 0.49, acoustic 0.28, mood 0.48 · top artists: Maxwell, Ms. Lauryn Hill, Solange, Erykah Badu, SAULT
+*neo soul, soul, r&b, alternative r&b, quiet storm* · 24 songs · energy 0.49, acoustic 0.29, mood 0.50 · top artists: Maxwell, Ms. Lauryn Hill, Solange, Erykah Badu, SAULT
 
 - **Terrain:** Warm brownstone streets on a low hill, with leafy courtyards and rooftop gardens.
 - **Colours:** `#8C4A2F terracotta`, `#D9A441 honey`, `#3E5B3A plant green`, `#2B1D2E plum night`
@@ -648,7 +658,7 @@ Film scores, classical, musicals, game music and novelties.
 
 ### 26. The Isle of Memes
 
-*comedy, region:novelty, parody, medieval, bardcore* · 45 songs · energy 0.67, acoustic 0.28, mood 0.60 · top artists: Stantough, Captainsparklez, The Little Singers, 90s Classics, Axzured
+*comedy, region:novelty, parody, medieval, bardcore* · 46 songs · energy 0.67, acoustic 0.28, mood 0.61 · top artists: Stantough, Captainsparklez, The Little Singers, 90s Classics, Axzured
 
 - **Terrain:** A storybook island of round hills and winding paths.
 - **Colours:** `#4A90E2 storybook blue`, `#F7A1C4 pink`, `#FFE066 candy yellow`, `#7CCB5A cartoon grass`
@@ -688,7 +698,7 @@ Film scores, classical, musicals, game music and novelties.
 
 ### 59. The Concert Isles
 
-*classical, classical piano, concerto, opera, orchestral* · 29 songs · energy 0.17, acoustic 0.90, mood 0.22 · top artists: Ancient Chinese composer, Frédéric Chopin, Johann Sebastian Bach, Ludwig van Beethoven, Wolfgang Amadeus Mozart
+*classical, classical piano, concerto, impressionism, opera* · 33 songs · energy 0.15, acoustic 0.91, mood 0.21 · top artists: Frédéric Chopin, Johann Sebastian Bach, Ludwig van Beethoven, Wolfgang Amadeus Mozart, Ancient Chinese composer
 
 - **Terrain:** Manicured hills with tiered stone terraces, like the seats of an open-air concert hall, and formal gardens with clipped hedges.
 - **Colours:** `#F2E8D5 ivory`, `#7A1F2B concert red`, `#C9A227 gilt`, `#2E3A59 evening blue`

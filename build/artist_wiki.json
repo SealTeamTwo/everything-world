@@ -111,6 +111,7 @@
   "title": "Alcest"
  },
  "Alecs DeLarge": null,
+ "Alesda!": null,
  "Alessia Cara": {
   "description": "Canadian singer and songwriter (born 1996)",
   "title": "Alessia Cara"
@@ -168,6 +169,7 @@
   "title": "American Football (band)"
  },
  "Ametsub": null,
+ "Amidst": null,
  "Amon Tobin": {
   "description": "Brazilian musician",
   "title": "Amon Tobin"
@@ -247,6 +249,7 @@
   "description": "(checked by hand)",
   "title": "Ashe (singer)"
  },
+ "Ashy Finn": null,
  "Astronaut": null,
  "Atoms For Peace": null,
  "Audiobaton": null,
@@ -374,6 +377,10 @@
  "Beedle The Bardcore": null,
  "Begin Again": null,
  "Bell Thompson": null,
+ "Bella White": {
+  "description": "Canadian-American singer-songwriter (born 2000)",
+  "title": "Bella White"
+ },
  "Belvedere": {
   "description": "Canadian punk rock band",
   "title": "Belvedere (band)"
@@ -1036,6 +1043,7 @@
   "title": "Double Take (group)"
  },
  "Douglas Holmquist": null,
+ "DraGonis": null,
  "DragonForce": {
   "description": "British power metal band",
   "title": "DragonForce"
@@ -1107,6 +1115,7 @@
   "description": "Taiwanese jazz fusion band",
   "title": "Elephant Gym"
  },
+ "Eli and Aila Wildman": null,
  "Elio Mei": {
   "description": "American singer-songwriter (born 2002)",
   "title": "Elio Mei"
@@ -1252,6 +1261,11 @@
   "description": "American bluegrass band",
   "title": "Flatt and Scruggs"
  },
+ "Flawed Mangoes": {
+  "description": "American musician",
+  "title": "Flawed Mangoes"
+ },
+ "Flay!": null,
  "Flea": {
   "description": "Australian-American musician and actor (born 1962)",
   "title": "Flea (musician)"
@@ -1594,6 +1608,7 @@
   "description": "Belgian band",
   "title": "Hooverphonic"
  },
+ "Horizons Edge": null,
  "Hoshikuma Minami": null,
  "Hot Chocolate": {
   "description": "British soul band",
@@ -1609,6 +1624,7 @@
   "title": "Huey Lewis and the News"
  },
  "Hybrid Minds": null,
+ "Hyleo": null,
  "I Hate My Village": null,
  "I Prevail": {
   "description": "American rock band",
@@ -1726,6 +1742,10 @@
  "Jake Owen": {
   "description": "American country singer (born 1981)",
   "title": "Jake Owen"
+ },
+ "Jalen Ngonda": {
+  "description": "American soul musician",
+  "title": "Jalen Ngonda"
  },
  "James Brown": {
   "description": "American musician (1933–2006)",
@@ -1962,6 +1982,10 @@
   "description": "American rapper (born 1984)",
   "title": "Kid Cudi"
  },
+ "Kid Rock": {
+  "description": "American musician (born 1971)",
+  "title": "Kid Rock"
+ },
  "Kikagaku Moyo": {
   "description": "Japanese psychedelic band",
   "title": "Kikagaku Moyo"
@@ -1998,6 +2022,10 @@
   "description": "Indian singer and actor (1929–1987)",
   "title": "Kishore Kumar"
  },
+ "Kizuna AI": {
+  "description": "Japanese virtual YouTuber",
+  "title": "Kizuna AI"
+ },
  "Klaus Johann Grobe": null,
  "Knifeplay": {
   "description": "American rock band",
@@ -2025,6 +2053,10 @@
   "title": "Kurtis Blow"
  },
  "Kyegi": null,
+ "Kyle Gordon": {
+  "description": "American comedy musician (born 1992)",
+  "title": "Kyle Gordon"
+ },
  "LADYBABY": {
   "description": "Japanese idol group",
   "title": "Ladybaby"
@@ -2109,6 +2141,7 @@
   "title": "Lettuce (band)"
  },
  "LeviathanJPTV": null,
+ "Ley Soul": null,
  "Liana Flores": {
   "description": "British singer-songwriter and guitarist",
   "title": "Liana Flores"
@@ -2240,6 +2273,10 @@
   "description": "American rapper and record producer (born 1982)",
   "title": "Lupe Fiasco"
  },
+ "Lykke Li": {
+  "description": "Swedish singer (born 1986)",
+  "title": "Lykke Li"
+ },
  "Lynyrd Skynyrd": {
   "description": "American Southern rock band",
   "title": "Lynyrd Skynyrd"
@@ -2262,6 +2299,7 @@
   "title": "MJ Lenderman"
  },
  "MONO": null,
+ "MOTTO MUSIC": null,
  "Mac DeMarco": {
   "description": "Canadian musician (born 1990)",
   "title": "Mac DeMarco"
@@ -2295,6 +2333,7 @@
   "description": "American electronic music group",
   "title": "Major Lazer"
  },
+ "Mameyudoufu": null,
  "Manchester Orchestra": {
   "description": "American indie rock band",
   "title": "Manchester Orchestra"
@@ -2306,6 +2345,10 @@
  "Manilla Road": {
   "description": "American heavy metal band",
   "title": "Manilla Road"
+ },
+ "Manowar": {
+  "description": "American heavy metal band",
+  "title": "Manowar"
  },
  "Manteeny": null,
  "Manu Dibango": {
@@ -2444,6 +2487,10 @@
   "description": "American singer and songwriter (1958–2009)",
   "title": "Michael Jackson"
  },
+ "Michael Kiwanuka": {
+  "description": "English singer-songwriter (born 1987)",
+  "title": "Michael Kiwanuka"
+ },
  "Michael Lementi": null,
  "MicroDragon": null,
  "Mike Posner": {
@@ -2499,6 +2546,7 @@
   "description": "Canadian indie pop musician",
   "title": "Monsune"
  },
+ "Moon Jelly": null,
  "Moondog": {
   "description": "American composer (1916–1999)",
   "title": "Moondog"
@@ -2637,9 +2685,17 @@
   "description": "American hard rock band",
   "title": "Night Ranger"
  },
+ "Night Tempo": {
+  "description": "South Korean music producer (born 1986)",
+  "title": "Night Tempo"
+ },
  "Nili Brosh": {
   "description": "Israeli-American guitarist",
   "title": "Nili Brosh"
+ },
+ "Ninajirachi": {
+  "description": "Australian music producer and DJ (born 1999)",
+  "title": "Ninajirachi"
  },
  "Nirvana": {
   "description": "American rock band (1987–1994)",
@@ -2662,6 +2718,7 @@
   "description": "Irish music producer and DJ",
   "title": "Noisestorm"
  },
+ "Nokae": null,
  "Nomo": {
   "description": "Musical artist",
   "title": "Nomo (band)"
@@ -2683,6 +2740,7 @@
   "description": "American electronic music duo",
   "title": "Odesza"
  },
+ "OISHII": null,
  "OUT IN FRONT": null,
  "Oasis": {
   "description": "English rock band",
@@ -2755,6 +2813,7 @@
   "description": "South Korean singer (born 1977)",
   "title": "Psy"
  },
+ "PSYQUI": null,
  "Pacific Soul": {
   "description": "Polynesian pop band",
   "title": "Pacific Soul"
@@ -2786,6 +2845,10 @@
  "Parliament": {
   "description": "American funk band most prominent during the 1970s",
   "title": "Parliament (band)"
+ },
+ "Passenger": {
+  "description": "English musician (born 1984)",
+  "title": "Passenger (singer)"
  },
  "Passion Pit": {
   "description": "American electropop band",
@@ -2841,6 +2904,10 @@
  "Petite Meller": {
   "description": "French-Israeli singer",
   "title": "Petite Meller"
+ },
+ "Phantogram": {
+  "description": "American electronic rock duo",
+  "title": "Phantogram (band)"
  },
  "Pharoah Sanders": null,
  "Phil Collins": {
@@ -2905,6 +2972,10 @@
  },
  "Pond": null,
  "Porch Light": null,
+ "Porter Robinson": {
+  "description": "American electronic musician (born 1992)",
+  "title": "Porter Robinson"
+ },
  "Portishead": {
   "description": "English band",
   "title": "Portishead (band)"
@@ -2924,6 +2995,7 @@
   "description": "Indian musician and composer",
   "title": "Pritam Chakraborty"
  },
+ "Project Skylate": null,
  "Prosecutor Archangels": null,
  "Protomartyr": {
   "description": "American rock band",
@@ -3312,6 +3384,10 @@
   "description": "British musician (born 1965)",
   "title": "Slash (musician)"
  },
+ "Sleep": {
+  "description": "American stoner/doom metal band",
+  "title": "Sleep (band)"
+ },
  "Sleep Token": {
   "description": "English rock band",
   "title": "Sleep Token"
@@ -3332,6 +3408,10 @@
  "Smash Mouth": {
   "description": "American rock band",
   "title": "Smash Mouth"
+ },
+ "Snail's House": {
+  "description": "Japanese electronic musician",
+  "title": "Snail's House"
  },
  "Solange": {
   "description": "American singer and songwriter (born 1986)",
@@ -3512,6 +3592,7 @@
   "description": "Australian psychedelic music project",
   "title": "Tame Impala"
  },
+ "Tanchiky": null,
  "Tanya Tucker": {
   "description": "American country singer (born 1958)",
   "title": "Tanya Tucker"
@@ -4102,6 +4183,10 @@
   "description": "American musician and artist (1963–2003)",
   "title": "Wesley Willis"
  },
+ "Weyes Blood": {
+  "description": "American musician (born 1988)",
+  "title": "Weyes Blood"
+ },
  "Widespread Panic": {
   "description": "American rock band",
   "title": "Widespread Panic"
@@ -4232,6 +4317,7 @@
   "description": "English rock band",
   "title": "Bôa"
  },
+ "cYsmix": null,
  "cupcakKe": {
   "description": "American rapper (born 1997)",
   "title": "Cupcakke"
@@ -4255,6 +4341,7 @@
  "il:lo": null,
  "ivri": null,
  "jungle wizard": null,
+ "kamome sano": null,
  "letherette": {
   "description": "British electronic music production duo",
   "title": "Letherette"
@@ -4279,6 +4366,10 @@
  "saddyowner": null,
  "she": null,
  "sincerely": null,
+ "t+pazolite": {
+  "description": "Japanese electronic musician (born 1985)",
+  "title": "T+pazolite"
+ },
  "technoplanet": null,
  "tictacto": null,
  "tides.": null,
@@ -4286,6 +4377,7 @@
   "description": "Japanese rock band",
   "title": "Toe (band)"
  },
+ "tonytonychopper999": null,
  "tricot": {
   "description": "Japanese math rock band",
   "title": "Tricot (band)"

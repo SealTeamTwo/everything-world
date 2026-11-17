@@ -22,6 +22,7 @@ namespace EverythingWorld.World
             { "Kim Petras", new[] { ("Coconuts", "71yN0yrHej3jhKXewbmtEh") } },
             { "Lorde", new[] { ("Supercut", "6K8VQ84MqhsoakN5MjrnVR") } },
             { "Magdalena Bay", new[] { ("Image", "4O45RxFmWr88UfFlNtsXUy"), ("Mercurial World", "30YK7cZlruEW0Clyxwk2nH") } },
+            { "Ninajirachi", new[] { ("CSIRAC", "33nOHyNeOKwwjKMrF9VN4V"), ("Delete", "0CVbCtcdXAIw00YBXXbneu") } },
             { "O-Zone", new[] { ("Dragostea din tei", "52Zr0sinhWTCRrQhRRY4EP") } },
             { "Owl City", new[] { ("Good Time", "1kPpge9JDLpcj15qgrPbYX") } },
             { "Ruelle", new[] { ("Slow Motion Memory Fade", "1bjNcyllLjeEjXd2yUXZQo") } },

@@ -14,7 +14,7 @@ namespace EverythingWorld.World
             { "Halsey", new[] { ("Carry the Weight", "7p3oJMceNz5skGLw52ZOjY") } },
             { "Harry Styles", new[] { ("Sign of the Times", "5Ohxk2dO5COHF1krpoPigN") } },
             { "Holly Humberstone", new[] { ("Beauty Pageant", "5bvK9yntY8XIcNkTKSSNYr") } },
-            { "Lana Del Rey", new[] { ("Black Beauty", "63hHlajVLQnlFMAqSyePxO"), ("Brooklyn Baby", "1NZs6n6hl8UuMaX0UC0YTz"), ("Cinnamon Girl", "2mdEsXPu8ZmkHRRtAdC09e"), ("Happiness is a butterfly", "3lG6OtGDsYAOALxEmubQQm"), ("Mariners Apartment Complex", "6OG05bPAwUuV3OMvy2Vy1P"), ("Norman fucking Rockwell", "3RIgHHpnFKj5Rni1shokDj"), ("Salvatore", "21qg0IBZf8R12qHd9A3AA4"), ("Say Yes To Heaven", "6GGtHZgBycCgGBUhZo81xe"), ("Summertime Sadness", "1Ist6PR2BZR3n2z2Y5R6S1"), ("Ultraviolence", "1y3r6RXiJZNBV1EI0NggpS"), ("West Coast", "5Y6nVaayzitvsD5F7nr3DV") } },
+            { "Lana Del Rey", new[] { ("Black Beauty", "63hHlajVLQnlFMAqSyePxO"), ("Brooklyn Baby", "1NZs6n6hl8UuMaX0UC0YTz"), ("Cinnamon Girl", "2mdEsXPu8ZmkHRRtAdC09e"), ("Happiness is a butterfly", "3lG6OtGDsYAOALxEmubQQm"), ("Mariners Apartment Complex", "6OG05bPAwUuV3OMvy2Vy1P"), ("Norman fucking Rockwell", "3RIgHHpnFKj5Rni1shokDj"), ("Salvatore", "21qg0IBZf8R12qHd9A3AA4"), ("Say Yes To Heaven", "6GGtHZgBycCgGBUhZo81xe"), ("Summertime Sadness", "1Ist6PR2BZR3n2z2Y5R6S1"), ("Ultraviolence", "1y3r6RXiJZNBV1EI0NggpS"), ("West Coast", "5Y6nVaayzitvsD5F7nr3DV"), ("The Blackest Day", "45pI8224KKX9Gx5fiyvEAh") } },
             { "Lola Young", new[] { ("Messy", "3SKH53SPQbEnZR4cJPVaz2") } },
             { "Maroon 5", new[] { ("Payphone", "1LmN9SSHISbtp9LoaR5ZVJ") } },
             { "Meredith Brooks", new[] { ("Bitch", "3i6qNxyVgIdUZTTi5m25EM") } },

@@ -19,6 +19,7 @@ namespace EverythingWorld.World
             { "Do Make Say Think", new[] { ("The Landlord Is Dead", "6QXxmGsc0A2PG3alWT5bYi") } },
             { "Elephant Gym", new[] { ("春雨 Spring Rain", "5G1wOifWhpTlEhxbaQxQe5") } },
             { "Explosions In The Sky", new[] { ("Your Hand In Mine - Remastered", "4sYn64V9gqP6bpkOGw5B9k") } },
+            { "Flawed Mangoes", new[] { ("Dark", "1Ysv7rTLJ15nVVL6PSUJsH"), ("Horse", "7FWjYLhMq4jRdT49oTeljD") } },
             { "Floral", new[] { ("Marsh Partition", "3NrmXanmUQKkbJEUQlgQUv") } },
             { "God Is An Astronaut", new[] { ("New Years End", "6HpchlfDUQzjRYYQCvTWUH") } },
             { "hitohira", new[] { ("That Scene", "7vX0nAoFY2eit8q60xEXXd") } },

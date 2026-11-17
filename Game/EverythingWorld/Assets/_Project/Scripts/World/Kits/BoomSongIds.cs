@@ -22,7 +22,7 @@ namespace EverythingWorld.World
             { "RZA", new[] { ("Quentin Tarantino", "2LjEovfvxovl807CqAoJS8") } },
             { "Shabazz Palaces", new[] { ("Swerve... the reeping of all that is worthwhile (Noir not withstanding)", "6FDVvFYeywoxfp0DtQZDOR") } },
             { "T La Rock", new[] { ("It's Yours (Radio Mix)", "5Olg0sqyi5XGo7lMLNeRAy") } },
-            { "The Notorious B.I.G.", new[] { ("Big Poppa - 2005 Remaster", "2g8HN35AnVGIk7B8yMucww"), ("Juicy", "2AP7m2dBb8ULTx4Gc1rdMc"), ("Juicy - 2005 Remaster", "5ByAIlEEnxYdvpnezg7HTX") } },
+            { "The Notorious B.I.G.", new[] { ("Big Poppa - 2005 Remaster", "2g8HN35AnVGIk7B8yMucww"), ("Juicy - 2005 Remaster", "5ByAIlEEnxYdvpnezg7HTX") } },
             { "Wu-Tang Clan", new[] { ("C.R.E.A.M. (Cash Rules Everything Around Me) (feat. Method Man, Raekwon, Inspectah Deck & Buddha Monk)", "2hcnWf9j7TPl3tQWMCmdvf"), ("Da Mystery of Chessboxin' (feat. Method Man, U-God, Inspectah Deck, Raekwon, Ol' Dirty Bastard, Ghostface Killah & Masta Killa) - Radio Edit", "6hrnXzJeuXE2epZHTHiFMD"), ("Method Man (feat. Method Man, Raekwon, GZA, RZA & Ghostface Killah)", "4Ljm0j7lyA4wZ6xpd5N4AO"), ("Protect Ya Neck (feat. RZA, Method Man, Inspectah Deck, Raekwon, U-God, Ol' Dirty Bastard, Ghostface Killah & GZA)", "2OKIlDMpZD66xVmdlt1zzx"), ("Wu-Tang: 7th Chamber - Part II - Conclusion", "4mkdUdHTDfnbcie1vSmbCK") } },
         };
     }

@@ -2,7 +2,7 @@
 
 ### 🗺️ [Explore the map: sealteamtwo.github.io/everything-world](https://sealteamtwo.github.io/everything-world/)
 
-A shared Spotify playlist of 2,166 songs (and growing), turned into a world. It started as a parchment map. It is now becoming a low-poly 3D world to walk around with friends, where every land looks and feels like the music that lives there, and that music plays while you are in it.
+A shared Spotify playlist of 2,268 songs (and growing), turned into a world. It started as a parchment map. It is now becoming a low-poly 3D world to walk around with friends, where every land looks and feels like the music that lives there, and that music plays while you are in it.
 
 [![The map of the Everything World: 67 isles in 8 realms, with a flag on each land built so far](map_poster.png)](https://sealteamtwo.github.io/everything-world/)
 
@@ -10,8 +10,8 @@ A shared Spotify playlist of 2,166 songs (and growing), turned into a world. It 
 
 *November 2026*
 
-- **The world is charted.** 1,322 artists are grouped into 66 "scenes" (looser than genres: an artist's songs always stay together, and similar scenes are neighbours). Each scene is a land. The lands form 8 realms round a central Hub, 67 places in all.
-- **All 66 lands and the Hub are built** in Unity. The blue flags on the map mark them.
+- **The world is charted.** 1,360 artists are grouped into 67 "scenes" (looser than genres: an artist's songs always stay together, and similar scenes are neighbours). Each scene is a land. The lands form 8 realms round a central Hub, 68 places in all.
+- **66 of the 67 lands and the Hub are built** in Unity. The blue flags on the map mark them. The newest land, the Future Bass Arcades, arrived with new songs in November 2026 and is still a bare island.
 - **Every built land is made by hand for its own music**, not from a shared template: its own landmark, sky, light, ground and weather; an area for every artist, built from their actual songs; and things that happen when particular songs come on.
 - **Each land is laid out to be wandered.** Roads lead out from where you arrive to named places: a pizza parlour in the Punk Badlands, a summer festival in the J-Rock Isles, a flooded quarry in the Nu Metal Quarry. There are places to sit, things to use, things to pick up and throw, and small residents with something to say.
 - **Not done yet:** playing together online, and a lot of polish. So far it has only been walked by the person building it.

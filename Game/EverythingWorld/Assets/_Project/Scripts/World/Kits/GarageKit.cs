@@ -146,13 +146,30 @@ namespace EverythingWorld.World
             var pairs = Mathf.CeilToInt(arts.Count / 2f);
             var first = 45f; var last = streetLen - 70f; var step = pairs > 1 ? (last - first) / (pairs - 1) : 0f;
             slots.Clear();
+            var lots = new List<Vector2>();
             for (var i = 0; i < arts.Count; i++)
             {
                 var pair = pairs - 1 - i / 2; var side = i % 2 == 0 ? 1 : -1;
                 var t = first + pair * step + (side > 0 ? 0f : step * .35f);
-                var p = heart + bestDir * t + across * side * Setback;
-                arts[i].x = p.x; arts[i].z = p.y;
-                arts[i].r = Mathf.Min(arts[i].r, 19f);
+                lots.Add(heart + bestDir * t + across * side * Setback);
+            }
+            // a band that already has a garage keeps it (ArtistPlaces), however many songs it has now; bands new to
+            // the Row take the garages left over, the biggest nearest the casino
+            var taken = new bool[lots.Count]; var housed = new HashSet<IslandWorldData.Artist>();
+            foreach (var a in arts)
+            {
+                if (!ArtistPlaces.TryGet(a, out var pin, out _)) continue;
+                var k = -1; for (var i = 0; i < lots.Count; i++) if (!taken[i] && Vector2.Distance(lots[i], pin) < 12f && (k < 0 || Vector2.Distance(lots[i], pin) < Vector2.Distance(lots[k], pin))) k = i;
+                if (k < 0) continue;
+                taken[k] = true; housed.Add(a); a.x = lots[k].x; a.z = lots[k].y; a.r = Mathf.Min(a.r, 19f);
+            }
+            var next = 0;
+            foreach (var a in arts)
+            {
+                if (housed.Contains(a)) continue;
+                while (next < lots.Count && taken[next]) next++;
+                if (next >= lots.Count) break;
+                taken[next] = true; a.x = lots[next].x; a.z = lots[next].y; a.r = Mathf.Min(a.r, 19f);
             }
             SmoothSuburbs(data, index, heart, bestDir);
         }

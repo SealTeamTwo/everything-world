@@ -22,7 +22,7 @@ namespace EverythingWorld.World
             { "The Flaming Lips", new[] { ("Yoshimi Battles the Pink Robots, Pt. 1", "0ccCwNzXvr1Yoz91vKz31Z") } },
             { "They Might Be Giants (For Kids)", new[] { ("Hot Dog!", "0grxFyenxR3OYMdIhxRzJ6") } },
             { "Victor Jones", new[] { ("Moon Bright Rain", "1nzKrriwKIZAxjVWEqeSTm") } },
-            { "Violent Femmes", new[] { ("Blister In The Sun", "6eDwkS4IHADqk06ssrqfUX"), ("Blister In The Sun", "7jIAttgQTpLDoNtykIQXjH"), ("Kiss Off", "5fj76kVAnqRKKhAw5d06jj") } },
+            { "Violent Femmes", new[] { ("Blister In The Sun", "6eDwkS4IHADqk06ssrqfUX"), ("Kiss Off", "5fj76kVAnqRKKhAw5d06jj") } },
             { "Ween", new[] { ("Ocean Man", "6M14BiCN00nOsba4JaYsHW"), ("Roses Are Free", "5taUV8kbsjppc3Krz3KgFr"), ("She's Your Baby", "4Chah9FS9ar1F6qZR6FuoH"), ("Weed Whore - Live at Trocadero Theatre, Philadelphia, PA, 6/16/1995", "6ID6of2pyNjsedy6LYi0gd") } },
             { "Wilco", new[] { ("Too Far Apart - 2017 Remaster", "31ju3T6qfWE8yKPBwv0WSx") } },
         };

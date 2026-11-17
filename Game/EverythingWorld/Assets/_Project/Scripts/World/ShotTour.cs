@@ -43,7 +43,7 @@ namespace EverythingWorld.World
                         if (args[k] == "-ewOnly" && k + 1 < args.Length) { tour.quick = true; tour.only = args[k + 1].ToLowerInvariant().Split(new[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries); }
                     }
                     var startup = tour.lands.Length == 1 && tour.lands[0] == "startup";   // "startup": time a normal start (lands near you only), then quit
-                    var special = tour.lands.Length == 1 && (tour.lands[0] == "perf" || tour.lands[0] == "bridges" || tour.lands[0] == "about" || tour.lands[0] == "tutorial" || tour.lands[0] == "notes");   // checks that build everything but need no land audit
+                    var special = tour.lands.Length == 1 && (tour.lands[0] == "perf" || tour.lands[0] == "bridges" || tour.lands[0] == "about" || tour.lands[0] == "tutorial" || tour.lands[0] == "notes" || tour.lands[0] == "places");   // checks that build everything but need no land audit
                     IslandWorldBuilder.BuildEverything = !startup; IslandWorldBuilder.ForceAudit = !tour.quick && !startup && !special;
                     if (!tour.quick && !startup && !System.Array.Exists(tour.lands, l => l == "all")) { IslandWorldBuilder.AuditOnly = new HashSet<string>(); foreach (var l in tour.lands) IslandWorldBuilder.AuditOnly.Add(l.StartsWith("The ") ? l.Substring(4) : l); }
                     if (tour.quick)
@@ -104,6 +104,15 @@ namespace EverythingWorld.World
                 Quit(0); yield break;
             }
             if (lands.Length == 1 && lands[0] == "bridges") { yield return Bridges(data, player, pivot, cam); Quit(0); yield break; }
+            if (lands.Length == 1 && lands[0] == "places")
+            {
+                // "places": where every artist ended up once the lands had arranged them, written to Logs/Places.txt.
+                // Run it before and after the playlist changes to see which artist areas moved.
+                var sb = new StringBuilder();
+                foreach (var a in data.layout.artists) sb.Append(a.name).Append('\t').Append(a.sceneId).Append('\t').Append(a.x.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)).Append('\t').Append(a.z.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)).Append('\t').Append(a.r.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)).Append('\t').Append(a.songs).Append('\n');
+                File.WriteAllText(Path.Combine(Application.dataPath, "..", "Logs", "Places.txt"), sb.ToString());
+                Quit(0); yield break;
+            }
             if (lands.Length == 1 && lands[0] == "notes") { yield return Notes(data, player, pivot, cam); Quit(0); yield break; }
             if (lands.Length == 1 && lands[0] == "tutorial")
             {

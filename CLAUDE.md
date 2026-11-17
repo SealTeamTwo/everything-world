@@ -1,6 +1,6 @@
 # Everything World
 
-A low-poly 3D world built from a shared Spotify playlist (1,856 songs and growing). Friends load in together, travel to an island that fits their mood, and walk around while that area's music plays. Each area's look is art-directed by its music. Exploring with music is the core; activities are secondary.
+A low-poly 3D world built from a shared Spotify playlist (2,268 songs and growing). Friends load in together, travel to an island that fits their mood, and walk around while that area's music plays. Each area's look is art-directed by its music. Exploring with music is the core; activities are secondary.
 
 The owner is fairly new to Git and Unity: explain Git and Unity steps plainly, and ask before big decisions. Suggest a commit before big changes.
 
@@ -17,7 +17,7 @@ The owner is fairly new to Git and Unity: explain Git and Unity steps plainly, a
 - `Game/EverythingWorld/` — the Unity project (open this folder in Unity Hub). Its own `.gitignore` excludes Library, Temp, Logs, UserSettings, Obj, Build(s).
 - `build/` — Python data pipeline:
   - `fetch_lastfm.py` → `lastfm_cache.json` (Last.fm artist/song tags, similar artists; cached, reruns only fetch new items).
-  - `scenes.py` → `scenes.json`: 1,154 artists into 59 scenes (Louvain on tag + similar-artist + sound similarity; oversized/loose scenes split again).
+  - `scenes.py` → `scenes.json`: 1,360 artists into 67 scenes (Louvain on tag + similar-artist + sound similarity; oversized/loose scenes split again).
   - `layout_scenes.py` → `scenes_layout.json` and `review/data.js`: scenes into 8 realms (island chains), similar scenes adjacent, artists placed inside each scene.
   - Older scripts (`layout.py`, `geo.py`, `worldgen.py`, `taxonomy.py`, `classify.py`) built the original 2D map.
   - Artist "about" cards (E at a plaque, `AboutCard.cs`): `artist_wiki_match.py` matches each artist to their Wikipedia page (`artist_wiki.json`; the game fetches the summary live, credited), `artist_about_written.json` holds short written paragraphs for artists without a page, and `artist_about_build.py build <Resources/ArtistAbout.json>` combines them. New artists need a match or a paragraph.
@@ -26,6 +26,16 @@ The owner is fairly new to Git and Unity: explain Git and Unity steps plainly, a
 - `original/index.html`, `assets/` — the original 2D parchment map (44 lands, 1,856 songs). Reference only; keep it working.
 
 Scene names and look briefs live in `build/scene_art.json` (readable version: `ART_PLAN.md`). `WORLD_GUIDE.md` describes how each area, the hub and the artist areas should feel. **The owner loves these descriptions: build every land in Unity from its WORLD_GUIDE.md entry** (arrival, vibe, artist areas) together with its scene_art.json palette and landmark, and keep the guide updated when a design changes. **Every land is built individually, as its own kit, never a shared template** (the owner's decision, 2026-11-09: "some of this music means so much to us and I want to give it all its due respect"). For each land: first ask the owner what the music means to them and look at its guide entry and artists together, then build its own landmark, scenery, sky and artist areas (the biggest artists get their own designs), then refine with the owner in play. Shared systems (sky, glows, radio, zone fields, surprises, floors, plaques, HumanScale) are reused; the look is not. A big inspiration is Radiohead's *Kid A Mnesia Exhibition*: music-led spaces with a strong mood, meant for wandering. Take that feeling as inspiration only, not its look or content. Ideas not yet built or decided are in `IDEAS.md`; add new ones there when the owner mentions them. **To build a land, use the `build-land` skill (`.claude/skills/build-land/SKILL.md`)**: the full checklist from the lands so far, and the land audit (`LandAudit.cs`) that writes a report and picture to `Game/EverythingWorld/Logs/LandAudit/` during a full photo tour (`build/take_shots.py`; it's off on normal Play to keep start-up fast). On Play the lands near the spawn are built first, then every other land behind a loading screen (`IslandWorldBuilder.loadAllAtStart`; untick it to build lands only as you come within 1.2 km, `buildDistance`, which pauses briefly as each appears).
+
+## When the playlist changes
+
+The world must grow without moving what is built: the lands are made by hand on top of the ground, the outlines and the artists' places. To take a new Exportify export (Unity closed, from the repo folder):
+
+1. Save it as `build/playlist.csv` (never committed), then in `build/`: `python fetch_lastfm.py`, `python fetch_covers.py`, `python scenes.py` (existing artists keep their scene; read what it prints: where each new artist landed, and whether a new scene appeared), `python layout_scenes.py`, then `python build/export_unity.py` and `python build/islandmap.py`, then `python build/song_ids.py` (each land's song table).
+2. Wrong land for an artist: add them to `same_scene_as` in `build/overrides.json` and run from `scenes.py` again. A new scene is a new land: **ask the owner first** (new land, or join an existing one); it needs an entry in `build/scene_art.json` and a line in `BIOME_BY_ID` in `islandmap.py`, and it is built later with the `build-land` skill.
+3. `islandmap.py` keeps the saved layout (`world_plan.json`: land positions and sizes, towers), and existing lands keep their ground and outline exactly; a new scene becomes a new island in open water near its relatives (island-chain realms only). `--relayout` and `--reterrain` start again from scratch: never without the owner's say, every land would have to be checked again.
+4. Artist areas stay where they are through `Resources/ArtistPlaces.txt` (`ArtistPlaces` in `ArtistPlacement.cs`): `python build/take_shots.py places` builds the world and writes where everyone stands, `python build/artist_places.py check` lists who is new or moved (only new artists and ones whose area changed size should be), `python build/artist_places.py save` settles it. A land that places artists with its own code must use `ArtistPlaces.TryGet` too.
+5. About cards for the new artists (`artist_wiki_match.py` on just the new names, a written paragraph for the rest, `artist_about_build.py`), the guide's counts, `python build/guide_export.py`, and a look at the changed lands with the photo tour.
 
 ## Music in the game
 

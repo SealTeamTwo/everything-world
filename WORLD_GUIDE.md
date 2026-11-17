@@ -20,7 +20,7 @@ About 15.5 × 10.4 km. One big continent in the middle (the Old Kingdoms joined 
 
 ## The Everything Hub
 
-*The whole playlist, 2,166 songs · a round island in the inner sea · tower: The Everything Mast*
+*The whole playlist, 2,268 songs · a round island in the inner sea · tower: The Everything Mast*
 
 **Arriving:** A broad round island alone in the inner sea, always in golden late-afternoon light. Long causeways reach it from the Prog Marches, the Indie Downs and Studio Lot Island, and each one becomes a paved path into the plaza. Round the whole hub, a great ring of album covers turns slowly; you pass under it as you arrive.
 
@@ -52,7 +52,7 @@ About 15.5 × 10.4 km. One big continent in the middle (the Old Kingdoms joined 
 The heartland. Old hills, long roads and the tallest mountains in the world. Most of it feels like a timeless afternoon, with darker metal country in the high peaks.
 
 ### The Jam Band Commonwealth
-*109 songs · 19 artists · 0.62 km² · built in Unity*
+*106 songs · 20 artists · 0.62 km² · built in Unity*
 
 **Arriving:** Rolling woods at blue hour: a deep blue sky with a last band of orange, stars coming out, warm festival lights everywhere. You arrive at a wooden festival gate strung with lights and tie-dye tapestries, a ticket hut beside it, the trail leading off into the trees. Dirt trails wander through the woods to every artist, lantern strings sagging between posts along them.
 
@@ -72,7 +72,7 @@ The heartland. Old hills, long roads and the tallest mountains in the world. Mos
 **Artist areas:** Phish: the amphitheatre. Trey Anastasio: a giant hollow-body guitar and a brass section on stands. Widespread Panic: a great oak hung with lights over a porch stage. Umphrey's McGee: a giant ticking metronome. Goose: a giant goose. Blues Traveler: a big chrome harmonica on a stand. Oysterhead: a giant oyster with a glowing pearl. The String Cheese Incident: a cheese stick peeling into glowing strings. The Disco Biscuits: a mirror-ball biscuit. Jerry Garcia Band: a guitar under a rose arch. Rusted Root: a tree of rusted roots. Yonder Mountain String Band: a mountain cutout stage. Cbdb: a dock on a pond with a rowboat. Enya Lisa: a glowing hourglass. TAUK: a steel head with glowing gears inside. The Jauntee: a giant pink roller skate. The Werks: a mossy boulder garden. Voodoo Visionary: a low moon over a shallow pool. velvet stripe: a lone lit doorway with a faint figure in it.
 
 ### Kingdom of Classic Rock
-*86 songs · 21 artists · 0.93 km² · built in Unity*
+*85 songs · 21 artists · 0.93 km² · built in Unity*
 
 **Arriving:** A village green on old smooth hills in a long golden-hour light under a pale blue sky: the brightest, warmest land, regal and a little heavenly. A red phone box, a giant oak, royal banners round the green and a stone column topped with a gilded guitar. Two-lane country roads lined with lamps and crimson and blue banners run between dry-stone walls to every legend. On the highest hill stands the Hall of the Legends, for the ones who were cut short: an open marble rotunda on three steps, white columns under a gilded dome, an eternal flame in a bronze bowl, and round it plinths holding instruments left behind (a guitar, a microphone, a drum, a keyboard), each with a candle burning. A soft shaft of golden light rises through the eye of the dome.
 
@@ -90,7 +90,7 @@ The heartland. Old hills, long roads and the tallest mountains in the world. Mos
 Guards stand at the castle gate, a flower seller and a walker keep the village green company, you can sit on the benches outside the Royal Rock, and the jukeboxes in the lay-bys tell you what they're playing when you press them.
 
 ### The Psychedelic Wilds
-*58 songs · 30 artists · 0.56 km² · built in Unity*
+*60 songs · 31 artists · 0.56 km² · built in Unity*
 
 **Arriving:** A bright, hot day, warm gold desert under a lavender sky that slowly cycles through colours. You arrive under a giant spiral mushroom whose stalk twists up forty metres, ringed with glowing bands, under a huge spotted pink cap with glowing gills; little mushrooms and the land's name round its foot. Rainbow-painted paths wind to every artist, lined with lava-lamp plants.
 
@@ -115,7 +115,7 @@ Guards stand at the castle gate, a flower seller and a walker keep the village g
 **Artist areas:** Tame Impala: a turning kaleidoscope wheel and a painted elephant. Psychedelic Porn Crumpets: a giant glowing tomato. Iron Butterfly: an iron butterfly. Altin Gün: a giant saz on a woven carpet. CAN: a giant tin can with orange slices. Kikagaku Moyo: a dripping sun and mirrors. Spacemoth: a great glowing moth. The Olivia Tremor Control: a garden of glowing flowers. Barış Manço: a giant pink rose. Black Mountain: a black peak under a star. Boris: a wall of pink amps. Causa Sui: seven little hills. Earthless: a long red monolith rock. Elder: a little stone sanctuary arch with candles. Etran de L'AÏr: a nomad's tent with a guitar. Harmonia: three glowing spheres on rods. Khruangbin: a little propeller plane. Klaus Johann Grobe: a mirror ball over a lit floor. Mdou Moctar: an electric guitar standing in a dune. NEU!: a giant red exclamation mark. Neal Francis: an old upright piano with a lamp. Os Mutantes: a sunflower with a face. Pagan Altar: a stone altar with candles and a skull. Pond: a pond painted silver. Red Vox: two tall figures side by side, red and blue. Sweat: a giant glowing drop. The Claypool Lennon Delirium: a golden egg in a nest. Wolfmother: a giant joker card.
 
 ### The Folk Woods
-*39 songs · 27 artists · 0.52 km² · built in Unity*
+*39 songs · 26 artists · 0.52 km² · built in Unity*
 
 **Arriving:** A clear, misty morning, the sun low in the east. You arrive beside the Great Tree, a huge old oak with its roots spreading wide, a round wooden stage built round its trunk, log benches facing it, lanterns hung in its lower branches and a harmonica left on a stump. Past it lies a mountain lake, dug into the land, with mist drifting on the water.
 
@@ -133,7 +133,7 @@ Guards stand at the castle gate, a flower seller and a walker keep the village g
 - **The Woodcarver's Shed:** a carved bear, an owl and a fish, a whirligig to spin, and a rocking horse to sit on.
 
 ### The Yacht Rock Riviera
-*36 songs · 22 artists · 0.50 km² · built in Unity*
+*39 songs · 22 artists · 0.50 km² · built in Unity*
 
 **Arriving:** An endless golden-pink sunset over a calm bay, the sun itself sitting big and low on the horizon in a soft glow, a path of glittering light running across the water toward it. The land had no sea of its own, so a bay is dug into its heart: you arrive on the shore looking out over it, a lamp-lit stone promenade with a white balustrade, date palms and teak benches running all the way round.
 
@@ -175,7 +175,7 @@ Finish a full round under par and the course's radio can play the whole Everythi
 **Artist areas:** Pink Floyd: an observatory with its dome slit open and a telescope aimed at the eclipse (its lens glows for "Astronomy Domine"), a pink pig floating over a brick power station with four tall chimneys and lit windows, and two men in suits shaking hands, one of them on fire. Frank Zappa: Joe's Garage with its door up and a lit "JOE'S GARAGE" sign, furnished inside (a drum kit, amps, a workbench with tools, a guitar on a stand, an old couch, posters, a bare bulb); a flying saucer circling over stone terraces ("Inca Roads"); a heap of giant peaches that glow for "Peaches En Regalia"; a red velvet sofa floating and turning in the air ("Sofa No. 1"); striped pajamas on a washing line ("Po-Jama People"); a giant spool of floss with a glowing band and a pair of giant tweezers ("Montana"). King Crimson: a giant crimson face screaming; a meter whose needle blazes for "Red"; a dark pool under a cluster of small stars that go out one by one during "Starless"; a stone elephant with its trunk up and a glowing ring of talk ("Elephant Talk"). Rush: a red star in a circle on a pillar between temple columns, a glowing guitar on an altar in the temple ("2112"), a lattice mast whose beacon flashes Y-Y-Z in Morse, and an old console radio sending rings of light up into the air ("The Spirit Of Radio"). Electric Light Orchestra: a chrome flying saucer ringed with coloured lights over a glowing pad. The Alan Parsons Project: a golden eye on a pillar with a star above that blazes for "Sirius", and a chrome pipeline with rings of light chasing along it, racing during "Pipeline". The Moody Blues: white satin curtains on chrome frames. Manfred Mann's Earth Band: a turning searchlight. Steven Wilson: a giant hourglass. After: a blindfolded stone head. Dear Sherlock: a brass birdcage with a glowing bird. Geordie Greep: a giant gramophone. Kourosh Yaghmaei: a glowing ice flower. Each has its covers on a dark stone board, a plaque and an amber lamp.
 
 ### The Iron Range
-*30 songs · 17 artists · 0.48 km² · built in Unity*
+*35 songs · 22 artists · 0.48 km² · built in Unity*
 
 **Arriving:** Black and rust-brown mountains under a thunderstorm, lit from below by forge glow. You arrive in a ring of iron braziers before a pair of rusted gates hung open on stone posts under an iron "THE IRON RANGE" beam, and through them you see the Forge Peak, the tallest mountain in the world, raised right behind the arrival. High on its flank the forge mouth glows, a great cave framed in riveted iron girders with chains slung across it and an anvil the size of a house before it, a hammer resting on top, and from it a river of molten metal runs down the mountain between dark stone banks into a lava pool beside the arrival. Riveted iron bridges carry the trails over it.
 
@@ -193,7 +193,7 @@ Finish a full round under par and the course's radio can play the whole Everythi
 - **The Doom Bell** at the end of the west road: a great iron bell in a timber frame; toll it and the light rolls out over the range.
 
 ### The Southern Rock Bayou
-*25 songs · 10 artists · 0.64 km² · built in Unity*
+*28 songs · 10 artists · 0.64 km² · built in Unity*
 
 **Arriving:** A juke joint on stilts under a giant live oak hung with Spanish moss: a tin roof, a deep porch with rocking chairs and a slide guitar, string lights out to the plaza, a fire pit ringed with logs, motorcycles and a pickup out front, a stage inside. A slow brown river winds past it from the hills down to the sea.
 
@@ -214,7 +214,7 @@ Finish a full round under par and the course's radio can play the whole Everythi
 You can sit in the rocking chairs on the juke joint's porch too.
 
 ### The Hair Metal Strip
-*22 songs · 11 artists · 0.45 km² · built in Unity*
+*21 songs · 11 artists · 0.45 km² · built in Unity*
 
 **Arriving:** Electric violet dusk over a red desert plateau, the sun just gone and the horizon still burning orange. You arrive under a neon arch, "THE STRIP" in pink and gold, beside a giant hot-pink hairspray can. The Strip runs away ahead: a dark boulevard with a pink centre line, palms ringed with neon, chrome lamps with pink tubes, motorbikes parked in rows at the kerb.
 
@@ -233,7 +233,7 @@ You can sit in the rocking chairs on the juke joint's porch too.
 The bikes along the Strip can be sat on.
 
 ### The Bluegrass Hollows
-*28 songs · 22 artists · 0.68 km² · built in Unity*
+*32 songs · 24 artists · 0.68 km² · built in Unity*
 
 **Arriving:** A bright, clear summer afternoon in an Appalachian holler: steep green ridges rise on both sides of the creek bottom, blue haze on the far ridges, a pale moon hanging in the daytime sky. You arrive in the middle of the picking circle: seven rocking chairs round a lantern, and floating above them a banjo, a fiddle, a mandolin, a guitar and an upright bass, circling slowly, bobbing and swaying as if somebody were playing them. Behind it stands a big red barn with a gambrel roof and white trim, its great doors swung open on a porch stage with string lights, a mic and two rockers; inside, hay bales, a hayloft and a warm light.
 
@@ -252,7 +252,7 @@ The bikes along the Strip can be sat on.
 Townsfolk walk the main street, and you can sit in every rocking chair in the valley.
 
 ### Arena Rock Ridge
-*18 songs · 13 artists · 0.45 km² · built in Unity*
+*19 songs · 13 artists · 0.45 km² · built in Unity*
 
 **Arriving:** Deep night on a long pine ridge, the one true night among its neighbours: a dark blue sky full of stars, white searchlights sweeping it. You arrive at ticket booths and turnstiles under a lit "ARENA ROCK RIDGE · TONIGHT" arch, tour posters on boards. Roads lit by tall white stage lamps wind round the ridge.
 
@@ -270,7 +270,7 @@ Townsfolk walk the main street, and you can sit in every rocking chair in the va
 The tailgate chairs can be sat in.
 
 ### Metalcore Caldera
-*85 songs · 48 artists · 1.09 km² · built in Unity*
+*82 songs · 47 artists · 1.09 km² · built in Unity*
 
 **Arriving:** A basin of black obsidian and pale ash ringed by five volcanoes, their craters and lava running not orange but neon: cyan, violet and magenta. You arrive on a basalt circle ringed with cyan light and neon posts, before an obsidian slab with "METALCORE CALDERA" in cyan, a toppled amp stack and two steam vents. Just beyond is the pit arena: a round black floor with neon rings set into it, a round stage of amp stacks under a ring truss of lights in the middle, four rings of obsidian stands rising round it (open toward the arrival), four light towers, and a crowd of dark figures running a circle pit round the stage, faster as the music builds.
 
@@ -285,7 +285,7 @@ The tailgate chairs can be sat in.
 - **Scream Point** on the east rim: a round obsidian platform with one microphone facing the whole caldera. Scream, and a ring of magenta light rolls out over the basin.
 
 ### The Alt Rock Moors
-*66 songs · 27 artists · 0.54 km² · built in Unity*
+*67 songs · 28 artists · 0.54 km² · built in Unity*
 
 **Arriving:** Grey-green moorland under a moody sky with a low, warm sun, wide golden breaks of light drifting slowly across it. You arrive at a crossroads of moor roads with a red phone box, a lonely bus shelter, a white fingerpost and sodium street lamps. On the tallest hill, raised higher, stands a giant red-and-white lattice radio transmitter, 90 m tall and guyed with cables, its orange warning lights blinking together up its height. Close by, across the moor, rises a block of concrete with a tower: Radiohead's district.
 
@@ -313,7 +313,7 @@ The tailgate chairs can be sat in.
 **Artist areas:** Radiohead: the district. Red Hot Chili Peppers: a California corner, a glowing turquoise pool on a tiled deck under palms strung with lights, sun loungers, a red eight-armed neon star turning on a tall pole, a little carousel and a giant red chili pepper on a plinth. Gorillaz: a floating island with a turning windmill, and a small green hill with a lone bench and lamp. Weezer: a chrome fifties diner with a neon sign, and a round pond with a tiny island and one palm. The Cranberries: a tall stone round tower with a pointed cap and one lit window, candles at its foot, a dream cloud glowing over it, cranberry bushes. Hootie & The Blowfish: a giant pufferfish and an owl with glowing eyes on a post. Violet Grohl: a plastic-covered couch, a giant cake with a beetle on top, and a fish-shaped apple. Oasis: a giant champagne bottle with a supernova hanging over it. Muse: a ringed red planet over a lone horse. Coldplay: yellow stars on poles and a cracked crown. Pulp: a lit disco floor and a shopping trolley. Train: a smooth banded Jupiter dropping glowing drops. Rage Against The Machine: a wall of amps with red-lit heads, a microphone, burning drums and a red WAKE UP board. Smash Mouth: a shooting star. Blur: a trampoline between speakers. bôa: an elephant. Black Box Recorder: an orange flight recorder and a school desk. Dishwalla: a row of blue cars. 311: a half sun going down behind a porch swing. Everclear: fading arches of neon over a bench. For Opal: a giant horseshoe magnet. Incubus: an open-topped car with its headlights on. Lenny Kravitz: a glowing paper plane taking off, birds on a wire. New Radicals: a giant bucket hat. No Doubt: a dressing-room mirror ringed with bulbs. OUT IN FRONT: a giant capsule. Tonic: a giant pair of spectacles. Each has its covers on a slate board between stone posts, a plaque and a street lamp. Every song has a light of its own in its artist's scene that brightens while it plays: Radiohead's red ticker on the station tower for "2 + 2 = 5"; Gorillaz' island window, a lantern on the melancholy hill's bench, a little peak with a glowing cairn and a ring of glowing plastic flowers; Weezer's sign, windows, a lantern in the island's palm and a jukebox by the diner door; the Cranberries' high window, candles, dream cloud and a red line of light at the door; Hootie's owl eyes, a glowing tear under the pufferfish's eye and a lamp on the owl's post; Violet Grohl's lamp by the couch, candles on the cake and the glowing apple fish; and for everyone else the thing in their scene: stars, rings, headlights, bulbs, arches, a supermarket sign, a saddle cloth on the elephant.
 
 ### The Punk Badlands
-*49 songs · 27 artists · 0.91 km² · built in Unity*
+*49 songs · 26 artists · 0.91 km² · built in Unity*
 
 **Arriving:** A cracked cul-de-sac turning circle at a harsh, bright noon: a basketball hoop on a pole, a row of battered mailboxes, shopping carts, a green town sign ("WELCOME TO THE PUNK BADLANDS, POP. EVERYONE") with a tag sprayed across it. Just beyond, a giant drained swimming pool turned skatepark.
 
@@ -332,7 +332,7 @@ The tailgate chairs can be sat in.
 **Skating (the land's activity):** on a concrete plinth stands a little model of a skatepark, a drained swimming pool, with a board leaning by it. Press E on the board and you shrink into the park: the same pool the size of a field, high over the Badlands under its white-hot sky, with a funbox, a hump and a kicker on its floor. You're an orb on a skateboard. W pushes, S brakes, A and D steer; ride up a wall and you leave the top into the air, and Space jumps anywhere. In the air A and D spin you and Shift grabs the board: come round to any half turn and you land it, anything else is a fall, and tricks landed close together multiply. It is free skating; Enter starts a one-minute run. Friends in the park each ride their own board. Score 8,000 in a run and the park's radio can play the whole Everything Playlist (P switches). **Second pass (2026-11-17):** the park now has more to ride, each piece painted its own colour with darker sloping faces so the ramps stand out on a chequered floor: a yellow funbox with a rail along its top, a blue spine, pale green rollers, a gap jump (white kicker, orange landing ramp), a hump, a dark ledge, and five yellow rails to grind. In the air you can also flip the board (Q or E) and the grabs have names (Shift, with W or S for nose or tail); come down on a rail and you grind it. A run is 90 seconds and the bar is 30,000.
 
 ### The Math Rock Escarpment
-*43 songs · 33 artists · 0.52 km² · built in Unity*
+*45 songs · 34 artists · 0.52 km² · built in Unity*
 
 **Arriving:** A round wooden deck at the top of the land under string lights strung from four tall posts, wind chimes either side, a carved wooden sign. Just ahead the land breaks at the escarpment: a long cliff running right across it, with the sea and the falls beyond.
 
@@ -353,7 +353,7 @@ And on the quiet post-rock side below it:
 The benches at the new places can be sat on.
 
 ### The Grunge Rainwood
-*40 songs · 20 artists · 0.88 km² · built in Unity*
+*43 songs · 20 artists · 0.88 km² · built in Unity*
 
 **Arriving:** A muddy crossroads of logging roads deep in a dripping pine forest on a high plateau, puddles in the ruts, yellow road lamps on creosoted poles hazy in the drizzle. A carved wooden sign under a little mossy roof, a coffee shack with one window lit and "COFFEE" over the door, a red logging truck loaded with logs, flannel shirts on a clothesline. Behind the arrival a mossy bluff rises, and a roaring white waterfall pours off it between black rock buttresses into a dark pool. Beside the pool stands the old sawmill, now the land's venue: a long timber hall with a tin roof, its big door slid open on a lit stage (amps, a drum riser, a mic, string lights, benches for the crowd), a giant saw blade ringed in light over the door, a rusted smokestack trailing smoke, a water wheel turning in its race and stacked logs by the wall.
 
@@ -370,7 +370,7 @@ The benches at the new places can be sat on.
 The roadside benches in the forest can be sat on.
 
 ### The Post-Punk Docklands
-*39 songs · 25 artists · 0.52 km² · built in Unity*
+*40 songs · 25 artists · 0.52 km² · built in Unity*
 
 **Arriving:** Night-time melancholy. You arrive on a wet concrete square up on the plateau between brutalist tower blocks, under tall sodium lamps that pool orange light on the puddles. The tallest block, twelve floors of ribbed concrete with a lift tower and a blinking red light on top, is dark but for a single lit window high up. A cast concrete wall carries the land's name; a concrete bus shelter is pasted with flyers; a steel-and-glass phone box has its light on. West, the ground falls away to the harbour at sea level.
 
@@ -404,13 +404,13 @@ The roadside benches in the forest can be sat on.
 Someone walks the Scale all day, counting.
 
 ### The J-Rock Isles
-*29 songs · 23 artists · 0.62 km² · built in Unity*
+*29 songs · 20 artists · 0.62 km² · built in Unity*
 
 **Arriving:** A square in the middle of a neon city at dusk: a crossing painted across it, red paper lanterns strung overhead, vending machines glowing, a cherry tree, and a big neon sign with the land's name. Streets run off in a grid between tall buildings; high above, a red torii stands on the tallest roof, and up on the hill a school and a shrine.
 
 **The vibe:** Anime energy, like an opening sequence, and two halves to it. Below, the neon city: tall concrete buildings with rows of lit windows, vertical neon signs on their corners, water tanks and lit billboards on the roofs, a lit shopfront at every foot, vending machines on the corners, power poles with tangled wires and lanterns strung between them, cherry trees. Above, an anime hilltop town: little tiled houses, bamboo, stone lanterns, a long path up the hill lined with red torii to a small shrine with a sweeping roof and a view over the city, and a school partway up with a clock, a rooftop fence and a running track in its yard. A train runs along the coast on low piers, its crossing lights blinking as it comes. A dramatic dusk with big clouds lit orange and pink, cherry petals drifting down.
 
-**Artist areas:** In the city each artist has a shopfront: a two-storey shop, shutter rolled up, warm inside, an awning and the artist's name in neon, a vending machine beside it; out on the hill, a small shrine court with a red gate and stone lanterns. Hoshikuma Minami (the largest, in the city): a concert stage on the square with a wall of giant screens cycling colours, a light truss, a neon eye ("HOLLOW EYES"), a halo of light ("NIRVANA"), a pulsing heart ("CRAVE"), bubbles rising in "OXYGEN". Sithu Aye (by the school): a stage in the schoolyard with an amp and a guitar, a "SEASON 2" banner and a cardboard cut-out of a new character ("It's the Second Season, So We Need a New Character After All!"), a glowing exclamation mark ("The Noticing!"), and a sky-blue kite flying high over the school ("Skye"). Ado a neon heart, FLOW a rainbow neon arch ("COLORS"), Roselia a neon phoenix ("FIRE BIRD"), nomico a black-and-white screen with an apple ("Bad Apple!!"), Mai Yamane a blues bar sign with a saxophone, Yorushika a bus stop under a sun sign, ASIAN KUNG-FU GENERATION and Supercar a bicycle by a sea rail, King Gnu a red "SPECIALZ" sign, the game composers an arcade cabinet. Every song without its own piece has a red paper lantern that glows while it plays.
+**Artist areas:** In the city each artist has a shopfront: a two-storey shop, shutter rolled up, warm inside, an awning and the artist's name in neon, a vending machine beside it; out on the hill, a small shrine court with a red gate and stone lanterns. Hoshikuma Minami (the largest, in the city): a concert stage on the square with a wall of giant screens cycling colours, a light truss, a neon eye ("HOLLOW EYES"), a halo of light ("NIRVANA"), a pulsing heart ("CRAVE"), bubbles rising in "OXYGEN". Sithu Aye (by the school): a stage in the schoolyard with an amp and a guitar, a "SEASON 2" banner and a cardboard cut-out of a new character ("It's the Second Season, So We Need a New Character After All!"), a glowing exclamation mark ("The Noticing!"), and a sky-blue kite flying high over the school ("Skye"). Ado a neon heart, FLOW a rainbow neon arch ("COLORS"), Roselia a neon phoenix ("FIRE BIRD"), nomico a black-and-white screen with an apple ("Bad Apple!!"), Mai Yamane a blues bar sign with a saxophone, Yorushika a bus stop under a sun sign, ASIAN KUNG-FU GENERATION and Supercar a bicycle by a sea rail, King Gnu a red "SPECIALZ" sign. Every song without its own piece has a red paper lantern that glows while it plays.
 
 **Happenings:** The train runs out along the coast and back (the same train for everyone). "Bad Apple!!" drains the whole land to black and white; "COLORS" cycles the sky through every colour; "FIRE BIRD" sets the sky burning; "Skye" clears it to bright blue and the kite climbs; "OXYGEN" sends bubbles up round the stage.
 
@@ -421,7 +421,7 @@ Someone walks the Scale all day, counting.
 - **Cat Hill:** a little shrine through a torii to a giant white lucky cat whose paw waves. Ring the bell for a fortune. A dozen cats lie about, each to stroke; fish on a mat (for the cats).
 
 ### The Oddball Backroads
-*28 songs · 17 artists · 0.96 km² · built in Unity*
+*27 songs · 17 artists · 0.96 km² · built in Unity*
 
 **Arriving:** A crossroads on a hazy summer afternoon: a giant fibreglass head grinning on a plinth (its eyes follow you), a water tower leaning badly beside it with ODDBALL on the tank, a stop sign that says MAYBE, an old gas pump, a row of pink lawn flamingos, and a hand-painted sign: "THE ODDBALL BACKROADS, you are probably here".
 
@@ -449,7 +449,7 @@ Someone walks the Scale all day, counting.
 **Pinball, where you are the ball (the land's activity):** on a plinth by the roadside stands a little pinball table with a big plunger beside it. Press E on the plunger and you shrink onto the table: a long dark slope high over the Backroads, and the camera rides with the ball. Hold Space and let go to launch; A and D (or the two mouse buttons) work the flippers. Glasses that kick, a fast lane up the left side, a spring and a pipe all score; three balls a game. Everyone on the table plays their own ball at once and sees the others' balls and scores. Score 10,000 in a game and the table's radio can play the whole Everything Playlist (P switches).
 
 ### The Nu Metal Quarry
-*27 songs · 12 artists · 0.62 km² · built in Unity*
+*25 songs · 12 artists · 0.62 km² · built in Unity*
 
 **Arriving:** A gravel yard at the quarry gate: a site sign ("THE NU METAL QUARRY, HARD HATS MUST BE WORN"), a portable cabin with a lit window, oil drums burning, a floodlight tower; just ahead, the rim of a huge open pit and the haul road going down into it.
 
@@ -466,7 +466,7 @@ Someone walks the Scale all day, counting.
 - **The Crib:** the crew's canteen cabin up on blocks: two tables with benches, a tea urn, a radio to turn the dial on, a calendar stopped at August 2003, hard hats on hooks and lunch boxes to carry off.
 
 ### The Power Metal Peaks
-*20 songs · 10 artists · 0.57 km² · built in Unity*
+*21 songs · 10 artists · 0.57 km² · built in Unity*
 
 **Arriving:** A round flagstone courtyard ringed with braziers and war banners, a standing stone carved with the land's name and a great sword driven into its top. Ahead, high on the tallest peak, a castle with a dragon coiled round its keep, wings spread, head out over the battlements.
 
@@ -483,7 +483,7 @@ Someone walks the Scale all day, counting.
 - **The Neko Metal Café:** a pink café with a giant cat's head in a studded collar on the roof. Parfaits to carry, heart-backed chairs, warriors in full armour and kitten bibs, a capsule machine to turn, a tiny stage with a pink flying V.
 
 ### The Indie Downs
-*50 songs · 33 artists · 0.98 km² · built in Unity*
+*47 songs · 32 artists · 0.98 km² · built in Unity*
 
 **Arriving:** Rolling chalk downs in faded, sun-bleached colour, like an old photo of a summer day. Golden late-summer grass in deep drifts, full of poppies, cornflowers and daisies; hedgerows, copses on the hilltops, sheep grazing, round hay bales in the fields, and a giant guitar cut into the white chalk of a hillside facing the hub's causeway. The light is low, warm and hazy, and seeds and pollen float through the air all round you, drifting faster when the wind is up: the Downs' own weather, the way snow is Lanternwood's.
 
@@ -529,7 +529,7 @@ Out on the lake there is a fishing hole with a stool and a lantern, and someone 
 **Winter magic:** Snow always drifts down round you, a few flakes glinting, more in the sad songs; wisps of pale light wander low between the birches; and in many of the hushed songs (now and then in others) curtains of aurora, teal and violet, sway slowly over the frozen lake, the same for everyone.
 
 ### The Shoegaze Fens
-*42 songs · 33 artists · 0.76 km² · built in Unity*
+*44 songs · 33 artists · 0.76 km² · built in Unity*
 
 **Arriving:** You arrive inside a ruined cathedral at dusk, half sunk in a wide shallow fen. Its roof is gone except for a few stone ribs against a pink sky; tall pointed windows of pink, violet and blue stained glass glow from inside, a great rose window burns over the open west door, and one tall broken tower keeps a lit belfry above the fog. Down the nave runs a long still pool lined with candles, past rows of columns (two fallen) to a glowing orb over the altar. Outside the door the hills fall away into still, glowing water, and every artist has a little island of moss in it.
 
@@ -546,7 +546,7 @@ Out on the lake there is a fishing hole with a stool and a lantern, and someone 
 - **The Last Dance** in the south hollow: a floor of pink and violet tiles with a slow light moving across it, a mirror ball hung from a broken stone arch (pull the cord to spin it), two couples who never stopped, a chair for sitting this one out.
 
 ### The Driftwood Shore
-*32 songs · 18 artists · 0.74 km² · built in Unity*
+*34 songs · 19 artists · 0.74 km² · built in Unity*
 
 **Arriving:** The morning after a storm on a cold shore. Silver sea, silver sky, pearl mist, and a thin line of rose and gold where the light is trying to break. Low cloud races in off the sea on a strong wind, waves break on the sand, and salt mist blows across the dunes. You arrive at the heart of it: a still lagoon ringed by a low boardwalk, a little footbridge across it, and a curved arch of bleached driftwood rising out of the water over the bridge, lashed with rope, sea-glass floats and a ship's bell hanging from it and a lantern burning at each foot. The artists are spread round the lagoon; from there a long promenade with a signpost marked "the sea" runs out across the dunes to the beach.
 
@@ -566,7 +566,7 @@ Out on the lake there is a fishing hole with a stool and a lantern, and someone 
 Benches at the new places can be sat on.
 
 ### The Bedroom Pop Meadows
-*23 songs · 19 artists · 0.47 km² · built in Unity · Pyrosolstice's land*
+*24 songs · 20 artists · 0.47 km² · built in Unity · Pyrosolstice's land*
 
 **Arriving:** A deep lilac field just past sunset: the sun has gone, the sky is violet with a pink glow low down, and fireflies are coming out over the grass. In the middle lies a giant unmade bed, its duvet spilling down to the grass so you can walk up onto it, with huge pillows, a pair of giant headphones, and a bedside lamp that lights the whole field.
 
@@ -586,7 +586,7 @@ Benches at the new places can be sat on.
 Someone paces the west track with headphones on.
 
 ### Garage Rock Row
-*20 songs · 12 artists · 0.63 km² · built in Unity*
+*28 songs · 13 artists · 0.63 km² · built in Unity*
 
 **Arriving:** A gritty small-town main street late at night after rain. You arrive at one end of the Row by a zebra crossing: wet asphalt shining with neon and puddles, orange sodium street lamps, muscle cars at the kerb, and the street running away to a neon casino at the far end.
 
@@ -665,7 +665,7 @@ A few people sit about them, each with a tune they can't finish. The lamp benche
 - **The Lake:** sit in the rowing boat at the end of the jetty.
 
 ### The Four-on-the-Floor Steppe
-*34 songs · 24 artists · built in Unity*
+*37 songs · 25 artists · built in Unity*
 
 **Arriving:** In the crowd at night, in front of the Main Stage: a black deck between truss towers, a huge LED wall of pink and blue squares, speaker stacks, moving lights on the roof truss sweeping coloured beams across the sky and lasers fanning out over everyone's heads, a crowd with their hands up, a barrier and a sound desk behind you. Climb the stairs to the DJ booth and drop the beat.
 
@@ -682,7 +682,7 @@ A few people sit about them, each with a tune they can't finish. The lamp benche
 - **The camps:** sit on a bean bag in a chill-out corner; warm up by a campfire.
 
 ### The Dubstep Shards
-*30 songs · 17 artists · built in Unity*
+*32 songs · 17 artists · built in Unity*
 
 **Arriving:** The Drop Zone, a vast cavern inside a black mountain. A black stone floor cracked with cyan and magenta light, a crowd with their hands up, and in front of you the Speaker Cliff, a wall of speakers the size of a cliff face, its great woofers punching out on the kick and lasers sweeping from its top, the bass booming off the rock all round. Giant crystal shards stand round the walls and hang from the roof. Hit the sub on the mixing desk.
 
@@ -719,13 +719,13 @@ A few people sit about them, each with a tune they can't finish. The lamp benche
 - **The Stack:** watch the tower slip out of line.
 
 ### The Melodic Bass Highlands
-*29 songs · 15 artists · built in Unity*
+*29 songs · 13 artists · built in Unity*
 
 **Arriving:** The Rune Circle, at twilight. A ring of tall standing stones carved with glowing violet runes stands round a turf floor inlaid with a rune ring, a rune stone in the middle to touch, and gold lanterns at the corners. Overhead hangs a great floating island with pink-blossomed trees on it, and its waterfall pours down into a glowing pool beside the circle, spray rising.
 
 **The vibe:** Fantasy highlands where the drop lifts you off the ground: big, emotional and soaring. A violet sky with a pink horizon and pink clouds; floating islands everywhere, turned-down cones of rock with turf and blossom on top, drifting and bobbing and rising higher when the music swells, some pouring thin waterfalls into the air; crystal clusters in pink and violet growing out of the hills, rune stones, twisted trees with pink blossom, little pools ringed with rocks, and benches under floating lanterns. The Rune Road runs between rune stones to the Sky Stair: a spiral of floating stone steps round a glowing pink crystal pillar, up to a lookout island high above the land with a bench and a telescope.
 
-**Artist areas:** Most artists stand on a round dais of turf ringed with a glowing rune band, with a tall rune stone bearing their name and a little island floating over them; covers on a violet board edged in gold, and a floating crystal for each song. Seven Lions has seven stone lions in a ring round a pool, a great crystal floating and turning over it ("Creation"), a little floating rock pouring a waterfall into the pool ("The Fall"), a glowing flower ("Nepenthe") and a huge rising sun ("Days to Come"). Mr FijiWiji has a bed on a rock under the stars to lie on ("Insomnia"), a crystal ball ("The Mentalist"), paper lanterns rising from a stand ("Time to Say Goodbye"), a mask ("Cynical") and a bunch of flowers ("Gina"). Also a tiny neon skyline (Adventure Club), a giant glowing flower (Dabin), a crystal cluster (Direct), a tree of gold leaves (Diveo), a fox (Foxes), a ring of dancing crabs (Noisestorm), a dark cube of pixels (Pixel Terror), a misty pool (Pure 100%), a crescent moon (Rogue), an orb in a stone bowl (Skrux), a potion bottle (Sound Remedy), a clock face and a coiled snake (Vexare) and a sculpture of rings (Xilent).
+**Artist areas:** Most artists stand on a round dais of turf ringed with a glowing rune band, with a tall rune stone bearing their name and a little island floating over them; covers on a violet board edged in gold, and a floating crystal for each song. Seven Lions has seven stone lions in a ring round a pool, a great crystal floating and turning over it ("Creation"), a little floating rock pouring a waterfall into the pool ("The Fall"), a glowing flower ("Nepenthe") and a huge rising sun ("Days to Come"). Mr FijiWiji has a bed on a rock under the stars to lie on ("Insomnia"), a crystal ball ("The Mentalist"), paper lanterns rising from a stand ("Time to Say Goodbye"), a mask ("Cynical") and a bunch of flowers ("Gina"). Also a tiny neon skyline (Adventure Club), a giant glowing flower (Dabin), a crystal cluster (Direct), a fox (Foxes), a ring of dancing crabs (Noisestorm), a dark cube of pixels (Pixel Terror), a crescent moon (Rogue), an orb in a stone bowl (Skrux), a potion bottle (Sound Remedy), a clock face and a coiled snake (Vexare) and a sculpture of rings (Xilent).
 
 **Happenings:** The floating islands bob and drift and rise when the music swells; the great crystal turns faster on the drop; paper lanterns rise and fall; spray lifts from the pool; motes of light drift; the runes breathe with the music. "Crab Rave" turns everything orange and the crabs dance. "Time to Say Goodbye" sends the lanterns high into the sky. "Insomnia" brings deep blue night and stars. "Bloom" brings pink petals. "The Fall" brightens the waterfalls and brings soft rain. "Days to Come" is a golden dawn. "Retro City" flickers neon pink and blue. "Nightfall" turns dark violet.
 
@@ -733,6 +733,13 @@ A few people sit about them, each with a tune they can't finish. The lamp benche
 - **The Rune Circle:** touch the rune stone and watch the islands rise; stand by the waterfall pool.
 - **The Rune Road:** walk between the rune stones.
 - **The Sky Stair:** climb the floating steps to the lookout and look over every island.
+
+### The Future Bass Arcades
+*30 songs · 24 artists · 0.78 km² · not built yet*
+
+The newest land (November 2026): an island of its own at the western end of the Bass Reaches, with bridges to the Southern Rock Bayou and the Electro Foundry. It holds the fast, bright, melodic electronic music from Japan and the producers who love it: future bass, kawaii bass and the rhythm-game end of hardcore (Mameyudoufu, Nokae, kamome sano, PSYQUI, Snail's House, Flay!, t+pazolite, Kizuna AI and more).
+
+For now it is a bare island of sand, like every land before it was built: its music plays when you walk onto it, but there are no artist areas, plaques, landmark or sky of its own yet. Its name is a working name. Like every land it will be designed with the owner first (what the music means, then its own kit).
 
 ### The Liquid Rapids
 *22 songs · 20 artists · built in Unity*
@@ -767,7 +774,7 @@ A few people sit about them, each with a tune they can't finish. The lamp benche
 - **The Crate Walk:** walk under the rose arches to the marble machine and turn its crank.
 
 ### The Trip-Hop Undercity
-*16 songs · 12 artists · built in Unity*
+*18 songs · 13 artists · built in Unity*
 
 **Arriving:** On the Platform of an old subway station, deep underground at three in the morning: a vaulted concrete ceiling on columns lit cold blue and warning red, white tiles with a blue stripe, the station's name in red enamel on the back wall, a train standing at the platform with its windows lit, benches, a hanging clock, and a ticket machine that sells you a ticket to somewhere else.
 
@@ -839,7 +846,7 @@ A few people sit about them, each with a tune they can't finish. The lamp benche
 Bright, saturated, everyone-knows-these. Where the world feels most like a theme park.
 
 ### The Country Plains
-*64 songs · 44 artists · 0.58 km² · built in Unity*
+*72 songs · 44 artists · 0.58 km² · built in Unity*
 
 **Arriving:** The Square in the little town of Wheatley, at golden hour. A water tower on four legs with the town's name across the tank, a flagpole, a green with benches round it, a gas pump and a pickup, a horse at a hitching rail, a lemonade stand with glasses to carry. The sun is low and gold, the shadows long, and the evening is coming on slow.
 
@@ -872,7 +879,7 @@ Bright, saturated, everyone-knows-these. Where the world feels most like a theme
 - **K-Pop Square:** take a light stick, do the choreography.
 
 ### The Heartbreak Boardwalk
-*31 songs · 14 artists · 0.47 km² · built in Unity*
+*32 songs · 14 artists · 0.47 km² · built in Unity*
 
 **Arriving:** The Promenade, at dusk. A circle of weathered boards round an old white bandstand with a striped roof and one lamp lit, benches turned to face the sunset, a payphone, a fortune-teller machine, a shuttered stall. The sun sits low and pink over the sea and the sky goes violet above it. The Boardwalk runs from here all the way down to the water and out along the Pier.
 
@@ -895,7 +902,7 @@ Benches with lamps sit between the places. Olivia Rodrigo has a row of purple sc
 - **The Heartbreak Motel:** lie back by the empty pool.
 - **The Pier:** look through the telescope; get a table by the rail at the Last Chance Café.
 ### The Glitterlands
-*26 songs · 20 artists · 0.46 km² · built in Unity*
+*28 songs · 21 artists · 0.46 km² · built in Unity*
 
 **Arriving:** Under the Mirrorball, at dusk. A disco ball as big as a house turns high over a floor of glowing tiles, hung by chains from four light pillars, throwing specks of light everywhere. Round the floor: banks of pink and lilac cloud, a glitter bar with drinks to carry, a photo booth, people dancing. The sky is lilac with a pink horizon and glitter is always drifting down.
 
@@ -913,7 +920,7 @@ Benches with lamps sit between the places. Olivia Rodrigo has a row of purple sc
 **Bowling (the land's activity):** a little model lane on a mirrored plinth, a ball return beside it, a sign in lights. Press E on the ball return and you shrink onto the lane: the same lane ten times the size, glitter down both sides, a mirror ball over the pins. A and D move where you stand, the mouse aims, hold the button to swing and let go to bowl; while the ball rolls, A and D curl it. Ten frames, scored the proper way, strikes and spares and all. Everyone bowls at once on their own copy of the lane and sees each other's scores. Your line sways and you swing by pushing the mouse forward, as in golf, so each ball has to be timed. Bowl 180 or better and the lane's radio can play the whole Everything Playlist (P switches).
 
 ### The Latin Coast
-*22 songs · 16 artists · 0.54 km² · built in Unity*
+*21 songs · 16 artists · 0.54 km² · built in Unity*
 
 **Arriving:** La Plaza, at sunset. A jacaranda in full purple flower in the middle of the square, wrapped in fairy lights, with a white tiled bench round its trunk; papel picado strung from the tree out to the lanterns; a tiled dance floor full of people dancing; a mariachi band on a little striped stage; an aguas frescas stall with cups to carry; and the church, white with a yellow bell tower and a bell you can ring.
 
@@ -954,7 +961,7 @@ Benches with lamps sit between the places. Olivia Rodrigo has a row of purple sc
 Warm, humid, rhythmic. River country, smoky towns and coastline.
 
 ### The Soul Lowlands
-*28 songs · 20 artists · 0.69 km² · built in Unity*
+*31 songs · 22 artists · 0.69 km² · built in Unity*
 
 **Arriving:** The town square of a wooden river town at golden hour: brick underfoot, a magnolia in a round planter with benches round it, globe lamps strung together with bulbs, the town clock. On one side stands The Royal, a theatre with a tall blade sign and a marquee of chasing bulbs; beside it a white chapel with its doors open and the choir inside. Main Street runs away east toward the river.
 
@@ -975,7 +982,7 @@ Warm, humid, rhythmic. River country, smoky towns and coastline.
 - **The Landing and the Lowlands Belle:** a boardwalk over the water with lamps and benches, and the riverboat alongside: walk aboard, pull the whistle, sit in a deck chair at the bow.
 
 ### The Fusion Isthmus
-*30 songs · 18 artists · 0.78 km² · built in Unity*
+*32 songs · 19 artists · 0.78 km² · built in Unity*
 
 **Arriving:** A small brick square at blue hour, just after sunset: the sky deep teal, brass lamps lit, a brass star set in the paving, a skate ledge with a brass edge, pots of plants. Brass Lane leads north to the canal. (The plan called this a strip of land between two seas; the map has no such seas, so the water here is a canal.)
 
@@ -996,7 +1003,7 @@ Warm, humid, rhythmic. River country, smoky towns and coastline.
 - **The buskers:** on corners out of town, each with an open case and something to say.
 
 ### The Old Jazz Quarter
-*31 songs · 26 artists · 0.75 km² · built in Unity*
+*37 songs · 27 artists · 0.75 km² · built in Unity*
 
 **Arriving:** Cobble Square, a little past midnight, in the rain. The whole town is in black and white, like an old photograph of a jazz club: wet grey cobbles, tall dark houses, pools of lamplight, steam rising from a grating. A clock on a post has stopped at five past twelve. On one side of the square a red neon marquee says THE BLUE MODE: the only red in town.
 
@@ -1017,7 +1024,7 @@ Warm, humid, rhythmic. River country, smoky towns and coastline.
 - **The Side Pocket (pool, the land's activity):** an open-sided hall near the square: iron posts, a flat dark roof, white neon, a pool table under a three-shade lamp, stools to watch from. Press E at the cue rack and you shrink onto the table: the same table thirty times the size, in a great dark room under its lamp. The camera circles the cue ball; a line shows what it will meet and where that ball will go; hold the button to swing, let go to play. Alone, clear the table with the black last in as few shots as you can. With friends it is eight-ball in two sides, taken in the order people came to the table. The real table in the hall shows the same balls, so anyone beside it can watch. Beat a friend, or clear the table alone in 24 shots or fewer, and the table's radio can play the whole Everything Playlist (P switches).
 
 ### The Funk Tropics
-*30 songs · 19 artists · 0.65 km² · built in Unity*
+*32 songs · 20 artists · 0.65 km² · built in Unity*
 
 **Arriving:** A clearing in a neon jungle at night, ringed with lights, a big "1" set in the ground. A path of light-up paving, the One, runs straight ahead to the Mothership: a flying saucer landed in the jungle on three legs, lights racing round her rim, her ramp let down onto a stage. Behind you the One becomes Funk Street.
 
@@ -1036,13 +1043,13 @@ Warm, humid, rhythmic. River country, smoky towns and coastline.
 - **The giant shoes:** platform shoes the size of a bench, to sit on.
 
 ### The Far Shores
-*21 songs · 15 artists · 0.79 km² · built in Unity*
+*24 songs · 18 artists · 0.79 km² · built in Unity*
 
 **Arriving:** The Compass, on a bright blue afternoon: a pale stone plaza with a compass rose in black, white, teal and coral set into it, and a signpost of far-off cities with the minutes to walk to each. A trolley of suitcases, a rack of postcards, an ice-cream cart. West, a wide walk of black and white waves runs downhill between two rows of palms to a teal sea. East, the green gives out and golden dunes begin.
 
 **The vibe:** Easy, sunny happiness, and the feeling of travelling: a coast of many countries where every stop is somewhere else. The whole land is a pop-up book of the world, opened beside a real, glittering sea: paper set against glass and water. The palms are folded paper, origami cranes circle overhead, and every artist's covers hang on a giant postage stamp. Round the walkable heart the book's pages fold up: rows of cut-out palms and folded paper hills, paper waves by the shore, a paper sun or cloud on a stick here and there. You can't walk through them, but out beyond them giant folded mountains and palm cut-outs stand in the rest of the land, and a fleet of giant paper boats bobs offshore. A lane leads out through the pages to each neighbouring land. Against all that soft, matte paper, the glass: a clear glass stream runs from a little spring by the Compass down beside the Promenade to the sea, with paper boats sailing on it; at the bottom of the Promenade a giant wave of glass curls over the walk in paper foam, and you pass under it to the beach; on the sand lies a ship in a bottle the size of a room, and glass rock pools with a paper starfish and a message in a bottle to pick up. The Promenade has a port of call for each artist on either side, with striped canvas roofs, globe lamps, benches, a coconut stand and a kite seller. At the bottom is a white beach with umbrellas and loungers, a sandcastle, surfboards stuck in the sand, and a round thatched beach bar. Behind the Compass the Caravan Track goes off into the dunes, past flags, cairns, a well and three resting camels, to a camp of dark tents round a fire. White clouds, a sea breeze, butterflies. It is the only blue sky in the Groovelands.
 
-**Artist areas:** Most artists have a port of call: a little pavilion with a striped canvas roof and their name on a board, a bench, and one thing from their song beside it; covers on a cream card in a white frame. Jorge Ben Jor has the beach bar: a round counter under a thatched cone with stools, drinks to carry, and a corner of samba drums to play; a treasure chest full of toys ("Meus Filhos, Meu Tesouro"); a deck chair, a pile of books and a football ("O Filósofo"). Mulatu Astatke has an eight-sided thatched pavilion on the edge of the dunes: a vibraphone to play, congas, a coffee ceremony with a cup to carry, a wise man's chair, and strings of old photographs hung between the posts. Tinariwen have the camp in the dunes: a great dark tent over rugs and cushions, a fire, three guitars and a small amp to play, and sweet tea to carry. Also Elis Regina's stick, stone, little stream and paper boat; Marcos Valle's mobile of gold stars; Rodrigo y Gabriela's two chairs and two guitars facing each other under paper flags, with a crocodile to greet; Herb Alpert's flea circus; Santo & Johnny's steel guitar by a hammock under a pale moon lamp; Tony Bennett's piano and two microphones; Harry Belafonte's banana boat and tally board; Keith Mansfield's open-air cinema; Dave Richmond's travel bureau; Esperanza Spalding's bass and a dish of thirty silver coins; Robert Stillman's saxophone in a ring of stones; Bossario's record player by a deck chair.
+**Artist areas:** Most artists have a port of call: a little pavilion with a striped canvas roof and their name on a board, a bench, and one thing from their song beside it; covers on a cream card in a white frame. Jorge Ben Jor has the beach bar: a round counter under a thatched cone with stools, drinks to carry, and a corner of samba drums to play; a treasure chest full of toys ("Meus Filhos, Meu Tesouro"); a deck chair, a pile of books and a football ("O Filósofo"). Mulatu Astatke has an eight-sided thatched pavilion on the edge of the dunes: a vibraphone to play, congas, a coffee ceremony with a cup to carry, a wise man's chair, and strings of old photographs hung between the posts. Tinariwen have the camp in the dunes: a great dark tent over rugs and cushions, a fire, three guitars and a small amp to play, and sweet tea to carry. Also Elis Regina's stick, stone, little stream and paper boat; Marcos Valle's mobile of gold stars; Rodrigo y Gabriela's two chairs and two guitars facing each other under paper flags, with a crocodile to greet; Herb Alpert's flea circus; Santo & Johnny's steel guitar by a hammock under a pale moon lamp; Harry Belafonte's banana boat and tally board; Keith Mansfield's open-air cinema; Dave Richmond's travel bureau; Esperanza Spalding's bass and a dish of thirty silver coins; Robert Stillman's saxophone in a ring of stones; Bossario's record player by a deck chair.
 
 **Happenings:** "Águas de Março" brings a warm shower across the land. Mulatu Astatke's "Tezeta" turns the whole day the colour of an old photograph. "Sleep Walk" dims the afternoon to a lilac dusk and the globe lamps come up. Tinariwen's songs raise the wind, blow sand across the dunes and make the fire leap. "Banana Boat (Day-O)" brightens everything: daylight come. "Estrelar" sends gold sparkles up round Marcos Valle's. "Mas, Que Nada!" rains petals on the beach bar.
 
@@ -1116,7 +1123,7 @@ Warm, humid, rhythmic. River country, smoky towns and coastline.
 City islands joined by bridges. Dusk into night, with one sunny beach.
 
 ### The Hip-Hop Boroughs
-*55 songs · 43 artists · 0.57 km² · built in Unity*
+*57 songs · 44 artists · 0.57 km² · built in Unity*
 
 **Arriving:** The Block, at golden hour, on top of the mesa. A concrete square with a half court and a ball, a brick mural with the land's name on it in gold, a winners' podium with a trophy on the top step, a cypher round a boombox, a purple lowrider. The sun is low and gold and every shadow is long. Straight ahead, at the end of Victory Avenue, stands the Tower, with a boombox the size of a house on its roof.
 
@@ -1135,7 +1142,7 @@ City islands joined by bridges. Dusk into night, with one sunny beach.
 **The Court (basketball, the land's activity):** by the Block's half court stand a ball rack and a little model of a full street court. Press E at the rack and you shrink onto that court: the roof of a tall brick block high over the Boroughs, fenced, in the same golden light. Here you walk about as you always do. Click a ball to pick it up (it bounces at your side as you move), hold the button to wind up a shot, let go to shoot where you're looking. Six baskets, each keeping count of everyone's baskets: The Regular and The Other End, The High One, The Little One, The Shuttle (it slides to and fro) and The Bin on the ground. It is freestyle: no clock, no score to beat. Score in all six, over as many visits as it takes, and the court's radio can play the whole Everything Playlist (P switches). **Rebuilt (2026-11-17):** the court is half as big again with much bigger rings and boards, and the ball is nearly twice the size and bouncy: it dribbles to the floor and back while you hold it. Shots always go up in a good arc; while you wind up, a line of dots shows the flight and turns gold when it is going in (a shot that is nearly right is helped the rest of the way). A friend dribbling beside you can have the ball taken off them with a click.
 
 ### The Velvet Rooftops
-*29 songs · 23 artists · 0.48 km² · built in Unity*
+*34 songs · 23 artists · 0.48 km² · built in Unity*
 
 **Arriving:** Beside the Pool, on the tallest roof of a drowned city, late at night. The water came up long ago; the island is the tops of towers standing out of a dark, still sea, and all round it more towers rise from the water with their windows still lit in bands, a red light blinking on each. The pool glows turquoise. Behind the bar, VELVET in tall pink neon.
 
@@ -1153,7 +1160,7 @@ City islands joined by bridges. Dusk into night, with one sunny beach.
 - **The telescope:** look down into the drowned city.
 
 ### Boom Bap Harbour
-*25 songs · 16 artists · 0.47 km² · built in Unity*
+*24 songs · 16 artists · 0.47 km² · built in Unity*
 
 **Arriving:** The top of the Block on a hot summer afternoon, your back to a brick wall with the island's name sprayed across it. A boombox on a milk crate, a hot-dog cart under a yellow umbrella, an old-timer on the next crate along. In front of you a street of brownstones with stoops runs downhill to the harbour, and half way down a train rumbles over it on rusted green iron.
 
@@ -1188,7 +1195,7 @@ City islands joined by bridges. Dusk into night, with one sunny beach.
 - **The cats:** stroke them.
 
 ### The Neo Soul Quarter
-*23 songs · 13 artists · 0.48 km² · built in Unity*
+*24 songs · 14 artists · 0.48 km² · built in Unity*
 
 **Arriving:** The Courtyard, on a candlelit evening. A tiled court under strings of honey-coloured lights, and in one corner a monstera the size of a house, still in its pot. A book and record stall, a circle of floor cushions round a low table of candles, tea and incense. The sky is plum; every window round the court is lit.
 
@@ -1232,7 +1239,7 @@ City islands joined by bridges. Dusk into night, with one sunny beach.
 Theatrical islands, closest to the hub.
 
 ### The Isle of Memes
-*45 songs · 41 artists · 0.58 km² · built in Unity*
+*46 songs · 42 artists · 0.58 km² · built in Unity*
 
 **Arriving:** The Homepage, in a pastel dream of the old internet. A plaza of checkered pink and violet marble under a giant glossy orb that hovers and turns; a pink-haired marble bust on a tall plinth in the middle of an aqua fountain throwing up bubbles; a cursor as tall as a house; a hit counter that says you are visitor 000001; and over the way out, a loading bar stuck at 99%.
 
@@ -1265,7 +1272,7 @@ Theatrical islands, closest to the hub.
 - **The sets:** climb the rock on the savannah; sing on the stage in the backyard; lie in the hammock; sit round the campfire.
 
 ### The Concert Isles
-*29 songs · 24 artists · 0.49 km² · built in Unity*
+*33 songs · 24 artists · 0.49 km² · built in Unity*
 
 **Arriving:** The Moon Terrace: a round marble terrace in moonlight, a balustrade along the sea side, a tiered fountain glowing pale blue, low hedges dotted with white flowers and clipped cones in stone pots, and at the edge a black grand piano facing a huge pale moon low over the sea. Sit and play.
 

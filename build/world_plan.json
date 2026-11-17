@@ -396,6 +396,54 @@
 "x": 1120.235,
 "y": 1622.453,
 "r": 135.188
+},
+{
+"id": 66,
+"x": 2024.342,
+"y": 2818.342,
+"r": 136.342
 }
-]
+],
+"towers": {
+"The Record Stack": {
+"scene": 13,
+"x": 2016.0,
+"y": 1962.0
+},
+"The Amp Stack Spire": {
+"scene": 1,
+"x": 2144.0,
+"y": 910.0
+},
+"The Lo-Fi Lighthouse": {
+"scene": 9,
+"x": 2682.0,
+"y": 1380.0
+},
+"The Subwoofer Spire": {
+"scene": 19,
+"x": 2854.0,
+"y": 2594.0
+},
+"The Hit Parade Tower": {
+"scene": 22,
+"x": 3596.0,
+"y": 1890.0
+},
+"The Bandstand Tower": {
+"scene": 30,
+"x": 1430.0,
+"y": 1452.0
+},
+"The Boombox Tower": {
+"scene": 25,
+"x": 1174.0,
+"y": 794.0
+},
+"The Overture Spire": {
+"scene": 36,
+"x": 2750.0,
+"y": 1802.0
+}
+}
 }

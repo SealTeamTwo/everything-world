@@ -19,7 +19,7 @@ namespace EverythingWorld.World
             { "Jimmy Eat World", new[] { ("The Middle", "6GG73Jik4jUlQCkKg9JuGO") } },
             { "Less Than Jake", new[] { ("Gainesville Rock City", "527mMOhIzkT4wTBKUChkX7") } },
             { "Mayday Parade", new[] { ("I Swear This Time I Mean It", "2OYTFaOB4D1bWLXaT5mrfH"), ("Miserable At Best", "1ONoPkp5XIuw3tZ1GzrNKZ") } },
-            { "My Chemical Romance", new[] { ("Dead!", "0uukw2CgEIApv4IWAjXrBC"), ("Welcome to the Black Parade", "5wQnmLuC1W7ATsArWACrgW") } },
+            { "My Chemical Romance", new[] { ("Dead!", "0uukw2CgEIApv4IWAjXrBC"), ("Welcome to the Black Parade", "5wQnmLuC1W7ATsArWACrgW"), ("Helena - 2025 Mix", "5Oi4bcuLV8D3YJ6w4FBEUz") } },
             { "Neck Deep", new[] { ("Staircase Wit", "0rQybU8pbJFcaUU7Mqju0z") } },
             { "Panic! At The Disco", new[] { ("Death of a Bachelor", "1BECwm5qkaBwlbfo4kpYx8"), ("Don't Threaten Me with a Good Time", "2fh3bZ8jZhMxOcfESE9nQY"), ("High Hopes", "1rqqCSm0Qe4I9rUvWncaom"), ("I Write Sins Not Tragedies", "4bPQs0PHn4xbipzdPfn6du"), ("Nine in the Afternoon - Single Mix", "1S30kHvkkdMkcuCTGSgS41") } },
             { "Patti Smith", new[] { ("Gloria: In Excelsis Deo", "272Z4tzaSMMcgrZ0R494S2") } },

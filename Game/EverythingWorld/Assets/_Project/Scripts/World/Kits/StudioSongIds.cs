@@ -21,7 +21,7 @@ namespace EverythingWorld.World
             { "Phil Harris", new[] { ("The Bare Necessities - From \"The Jungle Book\" Soundtrack", "7wbbw0cwvQUnGYautJ2Eun") } },
             { "Phineas and Ferb", new[] { ("Ain't Got Rhythm", "3F58l9SSJF6QDsN1tw4cJX"), ("Disco Miniature Golfing Queen", "3iqbmQrLIkHcBvSt2LOgi7"), ("Gitchee Gitchee Goo", "7xOuAIh0n2ftmVmK4UBHub"), ("I'm Lindana and I Wanna Have Fun", "3uJ0Sma98KPcto6erXN6O6"), ("Kick It Up A Notch", "7bVJcOojfwAUVoLA6wVKyf"), ("S.I.M.P. (Squirrels in My Pants)", "7ymrbUUrrqvUKBMmdRvieZ"), ("Summer Belongs to You", "18OvaNHgJBhNJN2Qo7FWFd"), ("You Snuck Your Way Right Into My Heart", "45MJXr9uooeBZJbXRegFMB") } },
             { "Piero Umiliani", new[] { ("Mah nà mah nà", "3Mz27X48Ey7MbfLOmSzkBK") } },
-            { "Pritam", new[] { ("Kesariya (From \"Brahmastra\") - Tu Fuljhadiyo Wale Tyohaaro Jesi - Happy Diwali", "6VBhH7CyP56BXjp8VsDFPZ") } },
+            { "Pritam", new[] { ("Kesariya (From \"Brahmastra\")", "6VBhH7CyP56BXjp8VsDFPZ") } },
             { "Sharpay Evans", new[] { ("Fabulous", "6jyXQ8HGI7ikECGA0670uo") } },
             { "SpongeBob SquarePants", new[] { ("Campfire Song Song", "3LHMFgMolEbhhGBC47OuAi") } },
             { "The Disneyland Children's Chorus", new[] { ("It's a Small World - From \"It's a Small World\"", "5ouuPi1o6eOVSgHn2exemw") } },

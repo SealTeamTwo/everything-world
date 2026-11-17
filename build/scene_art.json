@@ -472,6 +472,13 @@
    "palette": ["#E07A1F sunset orange", "#1E8449 palm green", "#F4D03F kente gold", "#7D3C98 night purple"],
    "landmark": "An open-air shrine-club with a horn section stage, like a big night in Lagos.",
    "props": "Market stalls of printed fabric, danfo buses, talking drums, beach bonfires.",
-   "mood": "Joyful and rhythmic."}
+   "mood": "Joyful and rhythmic."},
+  {"id": 66, "anchors": ["Mameyudoufu", "Nokae", "kamome sano"],
+   "name": "The Future Bass Arcades",
+   "terrain": "Not designed yet: a plain island until its kit is built with the owner.",
+   "palette": ["#7DE3F4 sky cyan", "#FFD166 warm yellow", "#FFFFFF white", "#2B2D6E deep blue"],
+   "landmark": "To be decided with the owner.",
+   "props": "To be decided with the owner.",
+   "mood": "Bright, quick and sweet (provisional)."}
  ]
 }

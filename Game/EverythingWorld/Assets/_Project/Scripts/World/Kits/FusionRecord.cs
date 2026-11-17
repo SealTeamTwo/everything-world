@@ -70,21 +70,26 @@ namespace EverythingWorld.World
                 for (var t = 0; t < Tracks.Length; t++) if (System.Array.IndexOf(Tracks[t], a.name) >= 0) b = t;
                 bands[b].Add(a);
             }
+            // artists who already have a place on the record keep it (ArtistPlaces); the rest find a free stretch
+            var seated = new HashSet<IslandWorldData.Artist>();
+            for (var b = 0; b < 3; b++) foreach (var a in bands[b]) if (ArtistPlaces.TryGet(a, out var pin, out var same) && same) { a.x = pin.x; a.z = pin.y; seated.Add(a); }
+            var anySeated = seated.Count > 0;
             for (var b = 0; b < 3; b++)
             {
                 var list = bands[b]; if (list.Count == 0) continue; var step = 360f / list.Count;
                 for (var k = 0; k < list.Count; k++)
                 {
                     var a = list[k]; var r = RingPathR(b) - RingW / 2f - 2.5f - Foot(a);
+                    if (seated.Contains(a)) continue;
                     for (var tryA = 0f; tryA < 360f; tryA += 3f)
                     {
                         var deg = 17f + b * 31f + k * step + tryA; var clear = true;
                         foreach (var s in Spokes) if (Mathf.Abs(Mathf.DeltaAngle(deg, s)) * Mathf.Deg2Rad * r < Foot(a) + 6f) clear = false;
                         if (Mathf.Abs(Mathf.DeltaAngle(deg, armAngle)) * Mathf.Deg2Rad * r < Foot(a) + 8f) clear = false;
                         var p = heart2 + new Vector2(Mathf.Cos(deg * Mathf.Deg2Rad), Mathf.Sin(deg * Mathf.Deg2Rad)) * r;
-                        foreach (var o in data.layout.artists) if (o != a && o.sceneId == isl.sceneId && Vector2.Distance(new Vector2(o.x, o.z), p) < Foot(o) + Foot(a) + 6f && list.IndexOf(o) < k && list.Contains(o)) clear = false;
+                        foreach (var o in data.layout.artists) if (o != a && o.sceneId == isl.sceneId && Vector2.Distance(new Vector2(o.x, o.z), p) < Foot(o) + Foot(a) + 6f && (anySeated ? seated.Contains(o) : list.IndexOf(o) < k && list.Contains(o))) clear = false;
                         if (!clear || data.IslandAt(p.x, p.y) != isl) continue;
-                        a.x = p.x; a.z = p.y; break;
+                        a.x = p.x; a.z = p.y; seated.Add(a); break;
                     }
                 }
             }

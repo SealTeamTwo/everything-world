@@ -112,9 +112,21 @@ namespace EverythingWorld.World
             arts.Sort((p, q) => HasStation(p) != HasStation(q) ? (HasStation(p) ? -1 : 1) : p.songs != q.songs ? q.songs.CompareTo(p.songs) : string.CompareOrdinal(p.name, q.name));
             var placed = new List<Vector3>(); var stations = new List<Vector2>();
             islands.Clear(); islands.Add(new Vector3(heart.x, CathR, heart.y));
+            // artists who already have an islet keep it (ArtistPlaces); new ones, and ones whose islet changed size,
+            // settle after them (one that was here before goes as near its old islet as it fits)
+            var settled = new HashSet<IslandWorldData.Artist>(); var wasAt = new Dictionary<IslandWorldData.Artist, Vector2>();
             foreach (var a in arts)
             {
-                var best = float.MaxValue; var at = Vector2.zero;
+                if (!ArtistPlaces.TryGet(a, out var pin, out var same)) continue;
+                if (!same) { wasAt[a] = pin; continue; }
+                a.x = pin.x; a.z = pin.y; settled.Add(a);
+                placed.Add(new Vector3(pin.x, Mathf.Max(a.r, IslandR(a) + 6f), pin.y)); islands.Add(new Vector3(pin.x, IslandR(a), pin.y));
+                if (HasStation(a)) stations.Add(pin);
+            }
+            foreach (var a in arts)
+            {
+                if (settled.Contains(a)) continue;
+                var best = float.MaxValue; var at = Vector2.zero; var hadPlace = wasAt.TryGetValue(a, out var old);
                 var need = Mathf.Max(a.r, IslandR(a) + 6f);
                 for (var r = CathR + 8f + need; r < 330f; r += 4f)
                 {
@@ -128,10 +140,11 @@ namespace EverythingWorld.World
                         foreach (var p in placed) if (Vector2.Distance(cand, new Vector2(p.x, p.z)) < p.y + need + 6f) { ok = false; break; }
                         if (!ok) continue;
                         var score = r;
-                        if (HasStation(a)) foreach (var s in stations) score -= Mathf.Min(Vector2.Distance(cand, s), 200f) * .4f;
+                        if (hadPlace) score = Vector2.Distance(cand, old);
+                        else if (HasStation(a)) foreach (var s in stations) score -= Mathf.Min(Vector2.Distance(cand, s), 200f) * .4f;
                         if (score < best) { best = score; at = cand; }
                     }
-                    if (best < float.MaxValue && !HasStation(a) && r > best + 30f) break;
+                    if (best < float.MaxValue && !HasStation(a) && !hadPlace && r > best + 30f) break;
                 }
                 if (best == float.MaxValue) { Debug.LogWarning("The Shoegaze Fens: no room in the fen for " + a.name); continue; }
                 a.x = at.x; a.z = at.y;
