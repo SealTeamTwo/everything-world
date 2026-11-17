@@ -173,10 +173,11 @@ namespace EverythingWorld.World
         }
 
         /// A bank of cloud: soft lumps, pink and lilac.
-        void CloudBank(MeshKit mk, Vector3 g, float s, System.Random rng)
+        void CloudBank(MeshKit mk, Vector3 g, float s, System.Random rng, bool firm = false)
         {
             var up = Vector3.up; var n = 4 + rng.Next(4); for (var k = 0; k < n; k++) mk.Blob(k % 3 == 0 ? cloudPink : cloudM, g + up * (.4f + (float)rng.NextDouble() * .8f) * s + new Vector3((float)rng.NextDouble() - .5f, 0, (float)rng.NextDouble() - .5f) * 3f * s, new Vector3(1.4f, .9f, 1.3f) * s * (.7f + (float)rng.NextDouble() * .6f), rng, .1f);
             noGrass.Add(new Vector3(g.x, 1.8f * s, g.z));
+            if (firm) ArtistBits.PostCollider(rootT, g - up * .3f, 1.5f * s + .3f, 1.45f * s);   // the banks on the ground are firm: you walk round them, not through (a friend's note, 2026-11-16)
         }
 
         /// A mirror ball on a curved post, with a spotlight on it.
@@ -273,7 +274,7 @@ namespace EverythingWorld.World
                 // how much the ground falls across a footprint (half-width hw, half-depth hd) round p
                 float Fall(float hw, float hd) { float lo = p.y, hi = p.y; foreach (var (a, b) in new[] { (-1f, -1f), (1f, -1f), (1f, 1f), (-1f, 1f) }) { var q = p + sd0 * a * hw + f * b * hd; var h = ctx.Ground(q.x, q.z); lo = Mathf.Min(lo, h); hi = Mathf.Max(hi, h); } return hi - lo; }
                 // a cloud bank shrinks where it would spill over a path (no extra random numbers, so the rest stays put)
-                if (roll < .36f) { var cs = .8f + s * 1.2f; while (cs > .7f && NearPath(px, pz, cs * 3.2f + 1f)) cs -= .15f; CloudBank(mk, p, cs, rng); clouds++; }
+                if (roll < .36f) { var cs = .8f + s * 1.2f; while (cs > .7f && NearPath(px, pz, cs * 3.2f + 1f)) cs -= .15f; CloudBank(mk, p, cs, rng, true); clouds++; }
                 else if (roll < .46f) { if (!Open(ctx, px, pz, 6f) || Fall(2.8f, 2.8f) > .5f) continue; DanceFloor(mk, solid, p, Quaternion.LookRotation(f), 4, 4); BallPost(ctx, mk, p - f * 3f, f, 1.1f, floors % 2 == 0); noGrass.Add(new Vector3(p.x, 4f, p.z)); floors++; }
                 else if (roll < .52f) { if (Fall(2.6f, .4f) > .6f) continue; var side = Vector3.Cross(up, f); for (var k = 0; k <= 10; k++) { var a = Mathf.PI * k / 10f; mk.Box(crystal, p + up * Mathf.Sin(a) * 3.4f + side * Mathf.Cos(a) * 2.4f, new Vector3(.4f, .8f, .4f), Quaternion.LookRotation(f) * Quaternion.Euler(0, 0, -Mathf.Cos(a) * 60f + 45f)); } foreach (var e in new[] { -2.4f, 2.4f }) ArtistBits.PostCollider(ctx.Root, p + side * e, 1.4f, .3f); halos.Add(p + up * 3f, 2f, Lilac, .2f); arches++; }
                 else if (roll < .58f) { for (var k = 0; k < 3; k++) { var bp = p + Quaternion.Euler(0, k * 120f, 0) * Vector3.forward * .4f; var h = 2.6f + k * .5f; mk.Prism(white, bp, up, .006f, h, 3); Heart(mk, Paint(Disco[(balloons + k) % Disco.Length]), bp + up * (h + .4f), f, .45f); } balloons++; }

@@ -283,14 +283,18 @@ namespace EverythingWorld.World
                 var a = (a0 + k * 16f) * Mathf.Deg2Rad; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)); var tan = new Vector3(-d.z, 0, d.x); var h = (k + 1) * H / steps;
                 var sp = pv + d * ((Ri + Ro) / 2f) + up * (h - .12f); var rot = Quaternion.LookRotation(tan);
                 mk.Box(brassM, sp, new Vector3(Ro - Ri, .12f, .95f), rot); solid.Box(brassM, sp - up * .1f, new Vector3(Ro - Ri, .32f, .95f), rot);
-                var rail = pv + d * (Ro - .05f) + up * h; mk.Prism(iron, rail - up * .05f, up, .025f, 1.05f, 4); if (k % 2 == 0) mk.Box(brassM, rail + up * 1f, new Vector3(.06f, .05f, 1.2f), rot); solid.Box(iron, rail + up * .6f, new Vector3(.1f, 1.3f, 1.05f), rot);
+                var rail = pv + d * (Ro - .05f) + up * h; mk.Prism(iron, rail - up * .05f, up, .025f, 1.05f, 4); if (k >= steps - 3) continue;   // (the last steps have no outer rail: you step off them onto the platform)
+                if (k % 2 == 0) mk.Box(brassM, rail + up * 1f, new Vector3(.06f, .05f, 1.2f), rot); solid.Box(iron, rail + up * .6f, new Vector3(.1f, 1.3f, 1.05f), rot);
             }
-            // the platform at the top, railed all round but where the stair arrives
-            var top = pv + up * H; mk.Prism(darkM, top - up * .3f, up, Ro + 1.6f, .3f, 32); solid.Box(darkM, top - up * .15f, new Vector3(Ro * 2f + 3f, .3f, Ro * 2f + 3f), Quaternion.identity);
+            { var ae = (a0 + (steps - .45f) * 16f) * Mathf.Deg2Rad; var de = new Vector3(Mathf.Cos(ae), 0, Mathf.Sin(ae)); var er = Quaternion.LookRotation(de); var ep = pv + de * ((Ri + Ro) / 2f) + up * H; mk.Box(brassM, ep + up * 1f, new Vector3(.06f, .05f, Ro - Ri), er); solid.Box(iron, ep + up * .6f, new Vector3(.1f, 1.3f, Ro - Ri), er); }   // a rail across the end of the stair
+            // the platform at the top: a railed ring round the outside of the stair, which comes up inside it. (It was a
+            // whole disc, and the stair ran into its underside two metres short of the top: a friend's note, 2026-11-16.)
+            var top = pv + up * H; const float PlatIn = Ro - .1f, PlatOut = Ro + 3.2f;
             for (var k = 0; k < 32; k++)
             {
-                var a = k * 360f / 32f; var d = new Vector3(Mathf.Cos(a * Mathf.Deg2Rad), 0, Mathf.Sin(a * Mathf.Deg2Rad)); if (Mathf.Abs(Mathf.DeltaAngle(a, a0 + steps * 16f)) < 22f) continue;
-                var rp = top + d * (Ro + 1.45f); var rot = Quaternion.LookRotation(new Vector3(-d.z, 0, d.x)); mk.Prism(iron, rp, up, .03f, 1.05f, 4); mk.Box(brassM, rp + up * 1.05f, new Vector3(.06f, .05f, 1.4f), rot); solid.Box(iron, rp + up * .6f, new Vector3(.12f, 1.3f, 1.4f), rot);
+                var a = k * 360f / 32f; var d = new Vector3(Mathf.Cos(a * Mathf.Deg2Rad), 0, Mathf.Sin(a * Mathf.Deg2Rad)); var rot = Quaternion.LookRotation(new Vector3(-d.z, 0, d.x));
+                var seg = new Vector3(PlatOut - PlatIn, .3f, PlatOut * Mathf.PI * 2f / 32f + .08f); mk.Box(darkM, top + d * ((PlatIn + PlatOut) / 2f) - up * .15f, seg, rot); solid.Box(darkM, top + d * ((PlatIn + PlatOut) / 2f) - up * .15f, seg, rot);
+                var rp = top + d * (PlatOut - .1f); mk.Prism(iron, rp, up, .03f, 1.05f, 4); mk.Box(brassM, rp + up * 1.05f, new Vector3(.06f, .05f, 1.75f), rot); solid.Box(iron, rp + up * .6f, new Vector3(.12f, 1.3f, 1.75f), rot);
             }
             // the arm: from the pivot head, in over the record, down to the headshell; a counterweight behind
             var head = top + up * 2.2f; var needleAt = RecAt(armAngle - 26f, Grooves[1] + ChW / 2f, .05f); var shell = needleAt + up * 3.2f;
@@ -301,7 +305,7 @@ namespace EverythingWorld.World
             var glow = new Material(WorldMaterials.Glow(new Color(.55f, 1f, 1f), 2.4f)) { name = "Needle glow" }; mk.Prism(glow, needleAt - up * .02f, up, 1.1f, .04f, 16);
             halos.Add(needleAt + up * .4f, 3.5f, new Color(.55f, 1f, 1f), .7f); ArtistBits.PointLight(ctx.Root, needleAt + up * 1.5f, new Color(.55f, 1f, 1f), 18f, 2.6f);
             life.needle = needleAt; life.needleGlow = glow;
-            Shot(ctx, "the record from the tonearm", top + up * 1.7f + face * 2f, new Vector3(heart2.x, quayY, heart2.y));
+            Shot(ctx, "the record from the tonearm", top + up * 1.7f + face * (Ro + 1.6f), new Vector3(heart2.x, quayY, heart2.y));
             Shot(ctx, "the tonearm from the grooves", RecAt(armAngle - 50f, RingPathR(1), 1.7f), needleAt + up * 4f);
         }
     }

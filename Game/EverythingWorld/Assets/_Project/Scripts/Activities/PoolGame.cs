@@ -271,6 +271,7 @@ namespace EverythingWorld.Activities
             {
                 var r = Roster(); if (r.Count > 0 && r[0].id == Me) { shooter = Me; seq++; phase = rules.winner >= 0 ? Phase.Over : Phase.Aim; SendState(true); }
             }
+            if (phase == Phase.Aim && !versus && !charging) { var ro = Roster(); if (ro.Count > 1 && ro[0].id == Me) { NewGame(); Say("A friend is at the table: eight-ball", 4f); } }   // (a friend arrived mid-shot)
             if (phase == Phase.Aim && canAct)
             {
                 if (!charging && mouse.leftButton.wasPressedThisFrame) { charging = true; power = 0f; phaseT = 0f; }
@@ -369,7 +370,13 @@ namespace EverythingWorld.Activities
                     if (!others.TryGetValue(from, out var o)) others[from] = o = new Remote();
                     o.playing = r.ReadBoolean(); o.joined = r.ReadDouble(); o.color = PlayerOrb.Palette[Mathf.Clamp(r.ReadByte(), 0, PlayerOrb.Palette.Length - 1)].color; o.name = r.ReadString(); o.seen = Time.time;
                     if (kind == "bye") { o.playing = false; return; }
-                    if (kind == "hello") { if (haveState && Active == this) SendState(true); return; }
+                    if (kind == "hello")
+                    {
+                        // a friend has stepped up to a table you were clearing alone: whoever was here first racks a game of eight-ball for everyone
+                        var here = Active == this && phase != Phase.ShrinkIn && phase != Phase.ShrinkOut;
+                        if (here && o.playing && !versus && phase != Phase.Roll) { var ro = Roster(); if (ro.Count > 1 && ro[0].id == Me) { NewGame(); Say(o.name + " joined: eight-ball", 4f); return; } }
+                        if (haveState && Active == this) SendState(true); return;
+                    }
                     if (kind == "balls") { if (phase == Phase.Roll) return; var from0 = r.BaseStream.Position; ReadBalls(r, out var bs, false); if (bs < seq) return; r.BaseStream.Position = from0; ReadBalls(r, out bs, true); return; }
                     if (kind == "state")
                     {

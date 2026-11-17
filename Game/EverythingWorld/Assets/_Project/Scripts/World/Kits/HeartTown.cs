@@ -59,7 +59,7 @@ namespace EverythingWorld.World
         void Promenade(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = ctx.OnGround(center.x, center.z); var rng = new System.Random(3);
-            mk.Prism(boards, c - up * .28f, up, 18f, .42f, 30); for (var k = 0; k < 30; k++) { var d = Quaternion.Euler(0, k * 12f, 0) * D; mk.Box(boardsDark, c + up * .16f + d * 9f, new Vector3(.06f, .01f, 17f), Quaternion.LookRotation(d)); }
+            mk.Prism(boards, c - up * .28f, up, 18f, .42f, 30); solid.Prism(boards, c - up * 5f, up, 18f, 5.14f, 30);   /* solid all the way down, so it holds you where it reaches out over water or a slope */ for (var k = 0; k < 30; k++) { var d = Quaternion.Euler(0, k * 12f, 0) * D; mk.Box(boardsDark, c + up * .16f + d * 9f, new Vector3(.06f, .01f, 17f), Quaternion.LookRotation(d)); }
             for (var k = 0; k < 12; k++) Remember(c + Quaternion.Euler(0, k * 30f, 0) * D * 17f, 1);
             // the bandstand: an octagon, white posts, a striped roof, a single lamp
             var bs = c - D * 2f + S * 6f + up * .14f; mk.Prism(white, bs, up, 4f, .6f, 8); solid.Prism(white, bs - up * .3f, up, 4f, .9f, 8); for (var k = 0; k < 8; k++) { var p = bs + Quaternion.Euler(0, k * 45f + 22.5f, 0) * Vector3.forward * 3.7f; mk.Prism(white, p + up * .6f, up, .1f, 3f, 6); ArtistBits.PostCollider(ctx.Root, p, 3.6f, .12f); }
@@ -137,8 +137,21 @@ namespace EverythingWorld.World
             var start = ctx.OnGround(a.x, a.z) + up * .3f; var deck0 = new Vector3(a.x, deckY, a.z) + D * 8f; var rampMid = (start + deck0) / 2f; var rampDir = deck0 - start;
             mk.Box(boards, rampMid, new Vector3(5f, .2f, rampDir.magnitude + .2f), Quaternion.LookRotation(rampDir.normalized)); solid.Box(boards, rampMid - up * .2f, new Vector3(5f, .5f, rampDir.magnitude + .2f), Quaternion.LookRotation(rampDir.normalized));
             var mid = deck0 + D * len / 2f; mk.Box(boards, mid, new Vector3(5f, .2f, len), rot); solid.Box(boards, mid - up * .3f, new Vector3(5f, .6f, len), rot);
-            for (var d = 0f; d <= len; d += 4f) { foreach (var e in new[] { -2.3f, 2.3f }) { var pp = deck0 + D * d + S * e; mk.Prism(woodM, new Vector3(pp.x, waterY - 3f, pp.z), up, .14f, deckY - waterY + 3f, 5); mk.Prism(woodM, pp, up, .05f, 1f, 4); } mk.Box(woodM, deck0 + D * d + up * 1f, new Vector3(4.7f, .06f, .06f), Quaternion.LookRotation(S)); Remember(deck0 + D * d, 1); }
-            foreach (var e in new[] { -2.4f, 2.4f }) { mk.Box(woodM, mid + S * e + up * 1f, new Vector3(.08f, .08f, len), rot); solid.Box(woodM, mid + S * e + up * .6f, new Vector3(.2f, 1.2f, len), rot); }
+            for (var d = 0f; d <= len; d += 4f) { foreach (var e in new[] { -2.3f, 2.3f }) { var pp = deck0 + D * d + S * e; mk.Prism(woodM, new Vector3(pp.x, waterY - 3f, pp.z), up, .14f, deckY - waterY + 3f, 5); if (d <= len - 8f) mk.Prism(woodM, pp, up, .05f, 1f, 4); } Remember(deck0 + D * d, 1); }
+            // the rail runs down both sides of the pier and then round the outside of the café's deck (it used to run on
+            // through the café's tables, with a stray bar down the middle of the pier: friends' notes, 2026-11-16)
+            var railLen = len - 8f; var railMid = deck0 + D * railLen / 2f;
+            foreach (var e in new[] { -2.4f, 2.4f }) { mk.Box(woodM, railMid + S * e + up * 1f, new Vector3(.08f, .08f, railLen), rot); solid.Box(woodM, railMid + S * e + up * .6f, new Vector3(.2f, 1.2f, railLen), rot); }
+            {
+                var co = deck0 + D * (len - 4f);
+                void Rail(Vector3 from, Vector3 to) { var m = (from + to) / 2f; var along = to - from; var q = Quaternion.LookRotation(along.normalized); mk.Box(woodM, m + up * 1f, new Vector3(.08f, .08f, along.magnitude), q); solid.Box(woodM, m + up * .6f, new Vector3(.2f, 1.2f, along.magnitude), q); mk.Prism(woodM, from, up, .05f, 1f, 4); mk.Prism(woodM, to, up, .05f, 1f, 4); mk.Prism(woodM, m, up, .05f, 1f, 4); }
+                foreach (var e in new[] { -1f, 1f })
+                {
+                    Rail(co - D * 4f + S * e * 2.4f, co - D * 4f + S * e * 4.9f);   // out along the front of the deck
+                    Rail(co - D * 4f + S * e * 4.9f, co + D * 3.9f + S * e * 4.9f);   // down its side
+                }
+                Rail(co + D * 3.9f - S * 4.9f, co + D * 3.9f + S * 4.9f);   // and across the far end, behind the café
+            }
             for (var d = 6f; d <= len; d += 12f) GlobeLamp(ctx, mk, deck0 + D * d + S * 2.3f * ((int)(d / 12f) % 2 == 0 ? 1f : -1f), ((int)(d / 12f)) % 2 == 0);
             // people fishing; a telescope; a café at the end with its light on
             for (var k = 0; k < 3; k++) { var fp = deck0 + D * (14f + k * 16f) + S * 1.9f * (k % 2 == 0 ? 1f : -1f); Folk(fp, S * (k % 2 == 0 ? 1f : -1f), Resident.Pose.Sit, new[] { "Haven't caught a thing in three summers. That's not why I'm here.", "Listen. The water under the boards. Like breathing.", "Some nights the lights on the coaster come on by themselves. I've stopped asking." }, Local(Residents.Tool.Rod), null, .3f); }
@@ -202,6 +215,9 @@ namespace EverythingWorld.World
             mk.GableRoof(Paint(new Color(.5f, .44f, .5f)), f.P(0, .8f + H, 0), new Vector3(Dp + .8f, 0, W + .8f), 1.6f, Quaternion.LookRotation(f.Right));
             mk.Box(boards, f.P(0, .8f, Dp / 2f + .9f), new Vector3(W, .12f, 1.8f), f.r); solid.Box(boards, f.P(0, .4f, Dp / 2f + .9f), new Vector3(W, .8f, 1.8f), f.r); for (var k = 0; k < 2; k++) { mk.Box(boards, f.P(-W * .25f, .2f + k * .3f, Dp / 2f + 1.9f + (1 - k) * .3f), new Vector3(1.4f, .1f, .34f), f.r); } { var st = f.P(-W * .25f, 0, Dp / 2f + 2.05f); var sl = Lowest(st, .7f); if (f.o.y - sl > .1f) mk.Box(boardsDark, f.P(-W * .25f, (sl - f.o.y) / 2f + .05f, Dp / 2f + 2.05f), new Vector3(1.3f, f.o.y - sl + .3f, .6f), f.r); }   // the steps reach down to the ground
             mk.Box(woodM, f.P(-W * .25f, 1.85f, Dp / 2f + .06f), new Vector3(.9f, 2f, .04f), f.r); mk.Box(i % 2 == 0 ? windowM : Paint(new Color(.32f, .34f, .44f)), f.P(W * .22f, 2.2f, Dp / 2f + .06f), new Vector3(1.4f, 1f, .04f), f.r); if (i % 2 == 0) halos.Add(f.P(W * .22f, 2.2f, Dp / 2f + .5f), 1.2f, new Color(1f, .78f, .5f), .3f);
+            // a porch roof on two posts, for the swing to hang from (its ropes went up to nothing: friends' note, 2026-11-16)
+            mk.Box(Paint(new Color(.5f, .44f, .5f)), f.P(0, 3.26f, Dp / 2f + .95f), new Vector3(W + .3f, .1f, 2.1f), f.r * Quaternion.Euler(5f, 0, 0)); mk.Box(woodM, f.P(0, 3.14f, Dp / 2f + 1.2f), new Vector3(W - .4f, .1f, .1f), f.r);
+            foreach (var x in new[] { -1f, 1f }) { mk.Prism(woodM, f.P(x * (W / 2f - .3f), .8f, Dp / 2f + 1.7f), up, .08f, 2.3f, 5); ArtistBits.PostCollider(ctx.Root, f.P(x * (W / 2f - .3f), .8f, Dp / 2f + 1.7f), 2.3f, .1f); }
             // the porch swing
             var sw = f.P(W * .22f, .9f, Dp / 2f + 1.2f); mk.Box(woodM, sw + up * .5f, new Vector3(1.6f, .06f, .5f), f.r); mk.Box(woodM, sw + up * .8f - f.Fwd * .24f, new Vector3(1.6f, .5f, .05f), f.r); foreach (var e in new[] { -.75f, .75f }) mk.Prism(dark, sw + up * .5f + f.Right * e, up, .01f, 1.8f, 3); Interact.Seat(tlife.transform, sw + up * .55f, f.Fwd, "Sit on the swing").seatHeight = .5f;
             if (i % 3 == 0) Folk(f.P(-W * .3f, .86f, Dp / 2f + 1f), f.Fwd, Resident.Pose.Lean, new[] { "Lived here forty summers. The paint gave up before I did.", "The wind brings the music from the motel. Same three songs. I don't mind.", "Evening. Sit on the swing if you want. It squeaks in a nice key." });

@@ -106,7 +106,7 @@ namespace EverythingWorld.World
         void Harbour(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var hc = G(ctx, streetL + 6f, 0); var rng = new System.Random(77); var rot = Quaternion.LookRotation(D);
-            harbourC = hc; haveHarbour = true; mk.Prism(cobble, hc - up * .28f, up, 14f, .42f, 26); for (var k = 0; k < 10; k++) Remember(hc + Quaternion.Euler(0, k * 36f, 0) * D * 13f, 1);
+            harbourC = hc; haveHarbour = true; mk.Prism(cobble, hc - up * .28f, up, 14f, .42f, 26); solid.Prism(cobble, hc - up * 5f, up, 14f, 5.14f, 26);   /* solid all the way down: where it reaches out over the water you walked through it (a friend's note, 2026-11-16) */ for (var k = 0; k < 10; k++) Remember(hc + Quaternion.Euler(0, k * 36f, 0) * D * 13f, 1);
             if (toSea)
             {
                 // the quay: a stone pier out over the water, bollards, nets drying

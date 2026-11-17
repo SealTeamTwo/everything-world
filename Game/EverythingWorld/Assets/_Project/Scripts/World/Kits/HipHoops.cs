@@ -52,7 +52,7 @@ namespace EverythingWorld.World
                 var go = new GameObject("Ball rack"); go.transform.SetParent(ctx.Root, false); go.transform.SetPositionAndRotation(b, ct.r); rm.BuildSingle("Ball rack", go.transform, false);
                 var bc = go.AddComponent<BoxCollider>(); bc.isTrigger = true; bc.center = new Vector3(0, .7f, 0); bc.size = new Vector3(1.4f, 1.5f, .8f); go.AddComponent<HoopsStart>().game = game; Col(b + up * .55f, new Vector3(1.2f, 1.1f, .35f), ct.r);
                 mk.Box(dark, b + ct.Right * 1.5f + up * 1.2f, new Vector3(1.9f, .7f, .06f), ct.r); mk.Prism(iron, b + ct.Right * 1.5f, up, .04f, 1.2f, 5); ArtistBits.PostCollider(ctx.Root, b + ct.Right * 1.5f, 1.5f, .1f);
-                game.recordText = ArtistBits.Label(ctx.Root, "", b + ct.Right * 1.5f + up * 1.2f + ct.Fwd * .04f, ct.Fwd, .1f, Cream, TextAnchor.MiddleCenter);
+                game.recordText = SignFit.On(ArtistBits.Label(ctx.Root, "", b + ct.Right * 1.5f + up * 1.2f + ct.Fwd * .04f, ct.Fwd, .1f, Cream, TextAnchor.MiddleCenter), 1.75f);
             }
             // a lit sign over the rack, so the game is not mistaken for the loose balls on the half court behind it
             {

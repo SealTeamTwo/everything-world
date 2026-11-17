@@ -208,7 +208,7 @@ namespace EverythingWorld.World
         void Harbour(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = ctx.OnGround(beach2.x, beach2.y); var rng = new System.Random(36); var along = Quaternion.LookRotation(D);
-            mk.Prism(sandM, c - up * .26f, up, 19f, .34f, 26); for (var k = 0; k < 8; k++) Remember(c + Quaternion.Euler(0, k * 45f, 0) * D * 10f, 1); Remember(c, 1);
+            mk.Prism(sandM, c - up * .26f, up, 19f, .34f, 26); solid.Prism(sandM, c - up * 5f, up, 19f, 5.08f, 26);   /* solid all the way down, so it holds you where it reaches out over water or a slope */ for (var k = 0; k < 8; k++) Remember(c + Quaternion.Euler(0, k * 45f, 0) * D * 10f, 1); Remember(c, 1);
             // a pier straight out over the water, lamps on it, somebody fishing off the end
             var deckY = waterY + 1.8f; const float pl = 30f; var p0 = c + D * 8f; var pc = p0 + D * pl / 2f; pc.y = deckY; mk.Box(woodM, pc, new Vector3(4f, .2f, pl), along); solid.Box(woodM, pc - up * .4f, new Vector3(4f, 1f, pl), along);
             for (var d = 0f; d <= pl; d += 5f) foreach (var e in new[] { -1f, 1f }) { var p = p0 + D * d + S * e * 2f; p.y = waterY - 2f; mk.Prism(trunkM, p, up, .16f, 4.6f, 6); if (d % 10f < 1f) { var lp = p0 + D * d + S * e * 1.8f; lp.y = deckY + .1f; StreetLight(ctx, mk, lp, -S * e); } }

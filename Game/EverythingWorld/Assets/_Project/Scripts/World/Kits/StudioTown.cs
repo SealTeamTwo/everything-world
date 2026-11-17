@@ -124,7 +124,7 @@ namespace EverythingWorld.World
         void TheTank(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var tc = G(ctx, streetL + 22f, 0); var rot = Quaternion.LookRotation(D); var rng = new System.Random(88);
-            mk.Prism(concrete, tc - up * .28f, up, 24f, .42f, 32); for (var k = 0; k < 12; k++) Remember(tc + Quaternion.Euler(0, k * 30f, 0) * D * 22f, 1); Remember(tc - D * 10f, 1);
+            mk.Prism(concrete, tc - up * .28f, up, 24f, .42f, 32); solid.Prism(concrete, tc - up * 5f, up, 24f, 5.14f, 32);   /* solid all the way down, so it holds you where it reaches out over water or a slope */ for (var k = 0; k < 12; k++) Remember(tc + Quaternion.Euler(0, k * 30f, 0) * D * 22f, 1); Remember(tc - D * 10f, 1);
             // the tank: a wide pool of glowing sea behind a low wall
             mk.Prism(concrete, tc + up * .14f, up, 15f, .9f, 28); mk.Prism(seaM, tc + up * 1.06f, up, 14.2f, .02f, 28); solid.Prism(concrete, tc - up * .2f, up, 15f, 1.3f, 16); for (var k = 0; k < 28; k++) { var d = Quaternion.Euler(0, k * 12.86f, 0) * D; Remember(tc + d * 16f, 1); }
             // the painted sky backdrop, a great curved wall

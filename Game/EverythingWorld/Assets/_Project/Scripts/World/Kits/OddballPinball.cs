@@ -49,7 +49,7 @@ namespace EverythingWorld.World
                 var go = new GameObject("Plunger"); go.transform.SetParent(ctx.Root, false); go.transform.SetPositionAndRotation(f.P(1.5f, 0, .8f), f.r); rm.BuildSingle("Plunger", go.transform, false);
                 var bc = go.AddComponent<BoxCollider>(); bc.isTrigger = true; bc.center = new Vector3(0, .8f, 0); bc.size = new Vector3(.9f, 1.7f, .9f); go.AddComponent<PinballStart>().game = game; BoxCol(ctx.Root, f.P(1.5f, .5f, .8f), new Vector3(.3f, 1f, .3f), f.r);
                 var bp = f.P(-1.7f, 1.2f, 1.9f); mk.Box(dark, bp, new Vector3(1.9f, .7f, .06f), f.r); mk.Prism(metal, f.P(-1.7f, 0, 1.9f), up, .05f, 1.2f, 4); ArtistBits.PostCollider(ctx.Root, f.P(-1.7f, 0, 1.9f), 1.5f, .1f);
-                game.recordText = ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, Cream, TextAnchor.MiddleCenter);
+                game.recordText = SignFit.On(ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, Cream, TextAnchor.MiddleCenter), 1.75f);
             }
             noGrass.Add(new Vector3(at.x, 5f, at.z));
             Shot(ctx, "the pinball table", f.P(3f, 1.8f, PW / 2f + 4f), at + up * .9f);

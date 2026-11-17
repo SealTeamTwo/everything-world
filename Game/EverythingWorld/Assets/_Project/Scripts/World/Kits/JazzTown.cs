@@ -153,7 +153,7 @@ namespace EverythingWorld.World
             foreach (var (a, b) in new[] { (19f, StreamOff - StreamHalf - 1.4f), (StreamOff + StreamHalf + 1.4f, top) })
             {
                 var pts = new List<Vector3>(); for (var d = a; ; d += 2f) { var dd = Mathf.Min(d, b); pts.Add(ctx.OnGround(c.x + U.x * dd, c.z + U.z * dd)); if (dd >= b) break; }
-                Strip(mk, pts, cobble, StreetW, .15f, ctx); foreach (var p in pts) Remember(p, 1);
+                CobbleRoad(mk, pts, StreetW, .15f, ctx); foreach (var p in pts) Remember(p, 1);
                 for (var i = 3; i < pts.Count; i += 8, n++) { var e = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + R * e * (StreetW / 2f + .9f); if (InRiver(lp.x, lp.z, 2f)) continue; fixtures.Add(new Vector3(lp.x, .3f, lp.z)); StreetLamp(ctx, mk, ctx.OnGround(lp.x, lp.z), -R * e, n % 2 == 0); }
             }
             Shot(ctx, "up lamp street", ctx.OnGround(c.x + U.x * 24f, c.z + U.z * 24f) + Vector3.up * 2f, ctx.OnGround(c.x + U.x * 110f, c.z + U.z * 110f) + Vector3.up * 6f);

@@ -2,6 +2,29 @@
 
 Things to remember that aren't built or decided yet. Newest first.
 
+## The first built-game playtest with a friend, 2026-11-16 (two feedback packs, sorted)
+
+The built game ran for 90 minutes on two computers at 57 to 60 frames a second with no errors; one Relay drop ("allocation ID not found") ended the first session after 50 minutes. Notes can be re-photographed with `python build/take_shots.py --notes <notes.txt>`.
+
+Fixed the same evening:
+- Pool with a friend never started a shared game (the second player could only watch): now whoever was there first racks eight-ball when a friend steps up.
+- Light bikes: stepping on while a friend is mid-round put you on top of them and their self-riding bikes; now you watch that round and ride the next.
+- The record boards (pool, skating and the rest) ran their words off the board: the letters now shrink to fit.
+- The Heartbreak Boardwalk: the screen "split in four" during "Mariners Apartment Complex" (the lighthouse beam was two crossed planes pointing at you; now a cone); beach-house swings hang from a porch roof; the pier's rail goes round the outside of the café deck, and the stray bar down the middle of the pier is gone.
+- The Fusion Isthmus: house roofs were upside down; the tonearm tower's stair ran into the underside of its platform; the canal's rowing boat can be stood on and ridden.
+- The Riviera: no balustrade or lamp across the marina's gateway.
+- The Dubstep Shards: the land's name sat inside a hill (every land's name now clears the ground near it).
+- Solid ground: the beach terrace in the Far Shores, the harbour in the Latin Coast (and the same kind of terrace in five other lands) where they reach out over water; the cloud banks on the ground in the Glitterlands.
+- Roads that look like roads: the Afrobeat Coast's streets, paths and open places (grained earth, wheel ruts), the Old Jazz Quarter's streets and lanes (cobbles, pale kerbs).
+
+Open, for the owner to decide:
+- Songs in the playlist twice (the same song added as two different Spotify tracks), so they show twice on plaques and play twice as often: 3 Doors Down "Kryptonite", Dayseeker "Neon Grave", Eminem "Lose Yourself", Guns N' Roses "Knockin' On Heaven's Door", HANABIE. (2), Jason Aldean "Big Green Tractor", Killswitch Engage "The End of Heartache", Mr. Bill "IDM Anthem", Nico Play "La Ciruela", Phish (3), The Rolling Stones "Sympathy For The Devil", Violent Femmes "Blister In The Sun", Yorushika (2), toe (2). Alice Coltrane has two different recordings of "Journey in Satchidananda". Either remove one of each in Spotify, or have the game hide the second.
+- Tony Bennett does not belong in the Far Shores (one song, "Body and Soul"): probably the Old Jazz Quarter. Needs a data rebuild and a small area there.
+- The Heartbreak Boardwalk flooded, with one giant boardwalk over the water (a redesign).
+- A rollercoaster you can ride (the Boardwalk has one standing still).
+- Hats for the orb.
+- "Synthwave is glitchy because of the bots": the mid-round fix above covers one cause; ask what it looked like if it happens again.
+
 ## The owner's note-taking tour, 2026-11-15 (T notes, sorted)
 
 102 notes and 46 snapshots over about 40 lands (`Logs/Live/notes.txt`, not in the repo). Overall: "a lot more pure time and effort dedicated to each land individually will go a long way."

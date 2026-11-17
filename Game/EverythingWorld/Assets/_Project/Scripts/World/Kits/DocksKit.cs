@@ -327,7 +327,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; var c = ctx.OnGround(center.x, center.z);
             var toSea = hasHarbour ? new Vector3(harbour2.x - c.x, 0, harbour2.y - c.z).normalized : Vector3.left; var sd = Vector3.Cross(up, toSea);
-            mk.Prism(concrete, c - up * .25f, up, 14f, .33f, 24);
+            mk.Prism(concrete, c - up * .25f, up, 14f, .33f, 24); solid.Prism(concrete, c - up * 5f, up, 14f, 5.08f, 24);   /* solid all the way down, so it holds you where it reaches out over water or a slope */
             for (var k = 0; k < 12; k++) for (var j = 0; j < 4; j++) { var a = k * Mathf.PI / 6f; var r = 3.5f + j * 3.2f; mk.Box(darkConcrete, c + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * r + up * .09f, new Vector3(.06f, .02f, 3f), Quaternion.Euler(0, -a * Mathf.Rad2Deg, 0)); }
             for (var k = 0; k < 7; k++) { var a = k * .9f + .3f; var r = ctx.Range(3f, 11f); Puddle(mk, c + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * r + up * .15f, ctx.Range(.7f, 1.8f)); }
             // the name, cast on a low concrete wall facing the square, on the side away from the sea

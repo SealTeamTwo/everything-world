@@ -41,7 +41,7 @@ Scene names and look briefs live in `build/scene_art.json` (readable version: `A
 ## Feedback from players
 
 - While playing, T writes a note and P takes a photo (`PlayNotes.cs`, `LiveSnapshot.cs`). In the editor they go to `Game/EverythingWorld/Logs/Live/`; in a built game, to the game's own data folder.
-- F9, or "Pack my feedback to send" in the menu, makes one zip on the Desktop (`Feedback.cs`): the notes, the photos as JPGs, the computer and game details, a page per play session (time in each land and activity, frame rate, pauses, errors), the activity records and the game's log. Nothing of Spotify's goes in. The player sends the file themselves; unzip it and read `READ ME FIRST - info.txt` and `notes.txt` first.
+- F9, or "Pack my feedback to send" in the menu, makes one zip on the Desktop (`Feedback.cs`): the notes, the photos as JPGs, the computer and game details, a page per play session (time in each land and activity, frame rate, pauses, errors), the activity records and the game's log. Nothing of Spotify's goes in. The player sends the file themselves; unzip it and read `READ ME FIRST - info.txt` and `notes.txt` first. To see what a note was about, `python build/take_shots.py --notes <its notes.txt>` (Unity closed) stands where each note and photo was made and photographs the spot at eye height and from above, into `Game/EverythingWorld/Logs/Shots/Notes/`.
 
 ## Secrets and private data (never commit)
 

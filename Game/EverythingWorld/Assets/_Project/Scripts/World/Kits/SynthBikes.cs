@@ -46,7 +46,7 @@ namespace EverythingWorld.World
                 var go = new GameObject("Light bike"); go.transform.SetParent(ctx.Root, false); go.transform.SetPositionAndRotation(f.P(0, .02f, .3f), f.r * Quaternion.Euler(0, 35f, 0)); rm.BuildSingle("Light bike", go.transform, false);
                 var bc = go.AddComponent<BoxCollider>(); bc.isTrigger = true; bc.center = new Vector3(0, .7f, 0); bc.size = new Vector3(1.2f, 1.5f, 2.4f); go.AddComponent<BikeStart>().game = game; Col(f.P(0, .5f, .3f), new Vector3(.6f, 1f, 2f), f.r * Quaternion.Euler(0, 35f, 0));
                 var bp = f.P(-2.2f, 1.2f, 2.2f); mk.Box(dark, bp, new Vector3(1.9f, .7f, .06f), f.r); mk.Prism(chrome, f.P(-2.2f, 0, 2.2f), up, .05f, 1.2f, 4); ArtistBits.PostCollider(ctx.Root, f.P(-2.2f, 0, 2.2f), 1.5f, .1f);
-                game.recordText = ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, Cream, TextAnchor.MiddleCenter);
+                game.recordText = SignFit.On(ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, Cream, TextAnchor.MiddleCenter), 1.75f);
             }
             Mark(at, 5.5f);
             Shot(ctx, "the light bikes", f.P(3.5f, 1.8f, PW / 2f + 4.5f), at + up * .9f);

@@ -93,9 +93,12 @@ namespace EverythingWorld.Activities
             if (r != round)
             {
                 // a new round: everyone on the grid lines up by their number, and alone you get three riders that ride themselves
-                round = r; inRound = true; wonThis = false; var ids = new List<ulong> { Me }; foreach (var kv in others) if (Time.time - kv.Value.seen < 3f && kv.Value.playing) ids.Add(kv.Key); ids.Sort();
+                var fresh = round == -1; round = r; inRound = true; wonThis = false; var ids = new List<ulong> { Me }; foreach (var kv in others) if (Time.time - kv.Value.seen < 3f && kv.Value.playing) ids.Add(kv.Key); ids.Sort();
                 BikeSim.Spawn(mine, ids.IndexOf(Me) * (ids.Count <= 4 ? 2 : 1)); robots.Clear(); rng = new System.Random((int)(r % 100000));
-                if (ids.Count == 1) for (var i = 1; i < 4; i++) { var b = new Bike(); BikeSim.Spawn(b, i * 2); robots.Add(b); }
+                // stepping on while friends are mid-round: watch this one and line up for the next (riding straight in put you, and
+                // riders only you could see, on top of them)
+                if (fresh && ids.Count > 1 && into > 1f) { inRound = false; mine.alive = false; mine.corners.Clear(); Say("Friends are mid-round: you ride in the next one", 4f); }
+                else if (ids.Count == 1) for (var i = 1; i < 4; i++) { var b = new Bike(); BikeSim.Spawn(b, i * 2); robots.Add(b); }
                 camSet = false;
             }
             all.Clear(); if (inRound) { all.Add(mine); all.AddRange(robots); } foreach (var o in others.Values) if (Time.time - o.seen < 3f && o.playing && o.round == round) all.Add(o.bike);

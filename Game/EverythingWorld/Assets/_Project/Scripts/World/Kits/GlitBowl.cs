@@ -43,7 +43,7 @@ namespace EverythingWorld.World
                 var go = new GameObject("Ball return"); go.transform.SetParent(ctx.Root, false); go.transform.SetPositionAndRotation(f.P(1.7f, 0, 1f), f.r); rm.BuildSingle("Ball return", go.transform, false);
                 var bc = go.AddComponent<BoxCollider>(); bc.isTrigger = true; bc.center = new Vector3(0, .6f, 0); bc.size = new Vector3(1f, 1.4f, 1.5f); go.AddComponent<BowlStart>().game = game; Col(f.P(1.7f, .35f, 1f), new Vector3(.5f, .7f, 1.1f), f.r);
                 var bp = f.P(-1.9f, 1.2f, 1.9f); mk.Box(dark, bp, new Vector3(1.9f, .7f, .06f), f.r); mk.Prism(chrome, f.P(-1.9f, 0, 1.9f), up, .05f, 1.2f, 4); ArtistBits.PostCollider(ctx.Root, f.P(-1.9f, 0, 1.9f), 1.5f, .1f);
-                game.recordText = ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, Cream, TextAnchor.MiddleCenter);
+                game.recordText = SignFit.On(ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, Cream, TextAnchor.MiddleCenter), 1.75f);
             }
             Mark(at, 5f);
             Shot(ctx, "the bowling plinth", f.P(3f, 2f, PW / 2f + 4f), at + up * .9f);

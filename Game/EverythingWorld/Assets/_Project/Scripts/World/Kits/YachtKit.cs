@@ -250,6 +250,9 @@ namespace EverythingWorld.World
                 pts.Add(new Vector3(x, Mathf.Max(ctx.Ground(x, z), bayY + .6f), z));
             }
             if (pts.Count > 1) Strip(ctx, mk, pts, stone, PromW, .08f, bayY + .6f);
+            // where the marina's pier meets the promenade: no balustrade or lamp across its gateway (a friend's note, 2026-11-16)
+            var gateDir = new Vector3(bayC.x - center.x, 0, bayC.y - center.z).normalized; var gate = new Vector3(bayC.x, 0, bayC.y) - gateDir * (BayEdge(bayC.x - gateDir.x, bayC.y - gateDir.z) + 3f);
+            bool AtGate(Vector3 q) { var to = q - gate; to.y = 0; return to.magnitude < 3.4f; }
             for (var k = 0; k < 96; k++)
             {
                 var a = k * Mathf.PI * 2f / 96f; var d = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
@@ -258,9 +261,9 @@ namespace EverythingWorld.World
                 p.y = Mathf.Max(ctx.Ground(p.x, p.z), bayY + .6f);
                 Remember(p + d * 2.5f, 500);
                 var a1 = (k + 1) * Mathf.PI * 2f / 96f; var d1 = new Vector3(Mathf.Cos(a1), 0, Mathf.Sin(a1)); var r1 = BayEdge(bayC.x + d1.x, bayC.y + d1.z) + 1.4f; var p1 = new Vector3(bayC.x + d1.x * r1, 0, bayC.y + d1.z * r1); p1.y = Mathf.Max(ctx.Ground(p1.x, p1.z), bayY + .6f);
-                if (k % 8 != 3) { mk.Box(white, (p + p1) / 2f + Vector3.up * .95f, new Vector3(.2f, .12f, Vector3.Distance(p, p1) + .05f), Quaternion.LookRotation(p1 - p)); solid.Box(white, (p + p1) / 2f + Vector3.up * .5f, new Vector3(.25f, 1f, Vector3.Distance(p, p1) + .05f), Quaternion.LookRotation(p1 - p)); for (var b = 0; b < 3; b++) mk.Prism(white, Vector3.Lerp(p, p1, b / 3f) + Vector3.up * .05f, Vector3.up, .08f, .85f, 6, .6f); }
+                if (k % 8 != 3 && !AtGate(p) && !AtGate(p1) && !AtGate((p + p1) / 2f)) { mk.Box(white, (p + p1) / 2f + Vector3.up * .95f, new Vector3(.2f, .12f, Vector3.Distance(p, p1) + .05f), Quaternion.LookRotation(p1 - p)); solid.Box(white, (p + p1) / 2f + Vector3.up * .5f, new Vector3(.25f, 1f, Vector3.Distance(p, p1) + .05f), Quaternion.LookRotation(p1 - p)); for (var b = 0; b < 3; b++) mk.Prism(white, Vector3.Lerp(p, p1, b / 3f) + Vector3.up * .05f, Vector3.up, .08f, .85f, 6, .6f); }
                 var land = p + d * (PromW + .6f); land.y = Mathf.Max(ctx.Ground(land.x, land.z), bayY + .6f);
-                if (k % 4 == 0) Lamp(ctx, mk, p + d * .4f);
+                if (k % 4 == 0 && !AtGate(p + d * .4f)) Lamp(ctx, mk, p + d * .4f);
                 if (k % 6 == 2) Palm(ctx, mk, land + d * 1.2f, ctx.Range(9f, 12f));
                 if (k % 12 == 7) { var br = Quaternion.LookRotation(-d); mk.Box(teak, land + Vector3.up * .45f, new Vector3(1.8f, .08f, .5f), br); mk.Box(teak, land + Vector3.up * .8f + d * .25f, new Vector3(1.8f, .5f, .06f), br); solid.Box(teak, land + Vector3.up * .5f, new Vector3(1.9f, 1f, .6f), br); Interact.Bench(life.transform, land + Vector3.up * .5f - Vector3.Cross(Vector3.up, d) * .5f, land + Vector3.up * .5f + Vector3.Cross(Vector3.up, d) * .5f, -d); }
             }

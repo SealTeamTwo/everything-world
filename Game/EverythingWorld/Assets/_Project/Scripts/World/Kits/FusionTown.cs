@@ -145,7 +145,7 @@ namespace EverythingWorld.World
             }
             // a little rowing boat that drifts the length of the canal and back
             var rm = new MeshKit(); rm.Box(woodM, new Vector3(0, .12f, 0), new Vector3(1.2f, .36f, 3f), Quaternion.identity); rm.Box(WorldMaterials.Surface(Paints[2], Surface.Painted), new Vector3(0, .32f, 0), new Vector3(1.3f, .06f, 3.1f), Quaternion.identity); rm.Blob(bulbM[0], new Vector3(0, .7f, 1.3f), Vector3.one * .12f, prng, 0f); rm.Prism(iron, new Vector3(0, .3f, 1.3f), Vector3.up, .02f, .4f, 4);
-            var rgo = rm.BuildSingle("Rowing boat", tlife.transform, false); tlife.rowboat = rgo.transform; tlife.rowA = P(-L + 5f, -1.6f, -1.2f); tlife.rowB = P(L - 5f, -1.6f, -1.2f);
+            var rgo = rm.BuildSingle("Rowing boat", tlife.transform, false); tlife.rowboat = rgo.transform; RideAlong.On(rgo, new Vector3(0, .17f, 0), new Vector3(1.3f, .36f, 3.1f));   /* you can step onto it and ride the canal (a friend's note, 2026-11-16) */ tlife.rowA = P(-L + 5f, -1.6f, -1.2f); tlife.rowB = P(L - 5f, -1.6f, -1.2f);
             Shot(ctx, "the canal and the piano bridge", P(-16f, -(CanalHalf + 4f), 2.2f), P(22f, 4f, 4f));
             Shot(ctx, "along the canal", P(-L + 14f, CanalHalf + 3.5f, 2f), P(L, 0, 2f));
         }
@@ -180,7 +180,7 @@ namespace EverythingWorld.World
         {
             var up = Vector3.up; const float W = 11.6f; var st = 2 + (i * 7 % 3 == 0 ? 1 : 0); var H = st * 3.2f + .6f; var paint = WorldMaterials.Surface(Paints[i % Paints.Length], Surface.Painted); var rng = new System.Random(i * 13 + 5);
             mk.Box(paint, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, HouseD), f.r); solid.Box(paint, f.P(0, H / 2f - .3f, 0), new Vector3(W, H + .6f, HouseD), f.r); mk.Box(stoneM, f.P(0, H + .1f, HouseD / 2f - .1f), new Vector3(W + .2f, .24f, .5f), f.r);
-            if (i % 2 == 0) foreach (var e in new[] { -1f, 1f }) mk.Box(brickDark, f.P(0, H + 1.1f, e * HouseD / 4f), new Vector3(W, .16f, HouseD / 2f + .7f), f.r * Quaternion.Euler(-e * 32f, 0, 0)); else mk.Box(brickDark, f.P(0, H + .5f, 0), new Vector3(W - .6f, .8f, HouseD - .6f), f.r);
+            if (i % 2 == 0) foreach (var e in new[] { -1f, 1f }) mk.Box(brickDark, f.P(0, H + 1.1f, e * HouseD / 4f), new Vector3(W, .16f, HouseD / 2f + .7f), f.r * Quaternion.Euler(e * 32f, 0, 0)); else mk.Box(brickDark, f.P(0, H + .5f, 0), new Vector3(W - .6f, .8f, HouseD - .6f), f.r);
             mk.Box(brickDark, f.P(W / 2f - 1.6f, H + 1.7f, -1f), new Vector3(.8f, 2f, .8f), f.r);
             // the door, the ground-floor window, a step, pots
             var dx = (i % 2 == 0 ? -1f : 1f) * (W / 2f - 2f); mk.Box(WorldMaterials.Surface(Paints[(i + 3) % Paints.Length] * .7f, Surface.Painted), f.P(dx, 1.1f, HouseD / 2f + .02f), new Vector3(1.05f, 2.2f, .06f), f.r); mk.Box(stoneM, f.P(dx, 2.3f, HouseD / 2f + .03f), new Vector3(1.4f, .16f, .1f), f.r); mk.Box(stoneM, f.P(dx, .08f, HouseD / 2f + .4f), new Vector3(1.6f, .16f, .7f), f.r); mk.Blob(brassM, f.P(dx + .34f, 1.1f, HouseD / 2f + .07f), Vector3.one * .05f, rng, 0f);

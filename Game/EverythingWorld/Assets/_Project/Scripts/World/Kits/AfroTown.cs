@@ -65,7 +65,7 @@ namespace EverythingWorld.World
         void Roundabout(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = ctx.OnGround(center.x, center.z);
-            mk.Prism(earth, c - up * .28f, up, 23f, .4f, 30);
+            mk.Prism(plazaEarth, c - up * .28f, up, 23f, .4f, 30);
             // the Big Drum on its island, east of where you arrive: beat it
             var di = c + R * 11f + up * .12f; mk.Prism(concrete, di - up * .1f, up, 4.6f, .5f, 20); solid.Prism(concrete, di - up * .4f, up, 4.6f, .8f, 14); mk.Prism(Paint(Paints[0]), di + up * .4f, up, 4.7f, .08f, 20); for (var k = 0; k < 10; k++) mk.Box(k % 2 == 0 ? dark : white, di + up * .2f + Quaternion.Euler(0, k * 36f, 0) * Vector3.forward * 4.62f, new Vector3(1.5f, .4f, .06f), Quaternion.Euler(0, k * 36f, 0));
             var dm = new MeshKit(); Drum(dm, Vector3.zero, 8f, WorldMaterials.Glow(new Color(.96f, .9f, .78f), .3f)); for (var k = 0; k < 3; k++) dm.Prism(Paint(Cloth[k]), new Vector3(0, .5f + k * 1.9f, 0), Vector3.up, k == 1 ? .96f : 1.3f, .12f, 10);
@@ -209,7 +209,7 @@ namespace EverythingWorld.World
         void Beach(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = ctx.OnGround(beach2.x, beach2.y); var rng = new System.Random(88);
-            mk.Prism(sand, c - up * .26f, up, 21f, .34f, 28); solid.Prism(sand, c - up * .26f, up, 21f, .34f, 20); for (var d = roadL; d <= roadL + 4f; d += 2f) Remember(G(ctx, 0, -d), 1); for (var k = 0; k < 16; k++) { var rp = c + Quaternion.Euler(0, k * 22.5f, 0) * U * 21f; Remember(ctx.OnGround(rp.x, rp.z), 2); }   // its rim: lanes leave from there, never across the fires
+            mk.Prism(plazaSand, c - up * .26f, up, 21f, .34f, 28); solid.Prism(sand, c - up * 5f, up, 21f, 5.08f, 20); for (var d = roadL; d <= roadL + 4f; d += 2f) Remember(G(ctx, 0, -d), 1); for (var k = 0; k < 16; k++) { var rp = c + Quaternion.Euler(0, k * 22.5f, 0) * U * 21f; Remember(ctx.OnGround(rp.x, rp.z), 2); }   // its rim: lanes leave from there, never across the fires
             // three bonfires with logs round them
             var fires = new[] { c + U * 9f - R * 3f, c - U * 10f - R * 1f, c - R * 13f + U * 1f }; var fi = 0;
             foreach (var fp in fires)

@@ -786,7 +786,9 @@ namespace EverythingWorld.World
             {
                 var go = new GameObject("Name: " + isl.name);
                 go.transform.SetParent(root, false);
-                go.transform.position = new Vector3(isl.labelX, Data.HeightAt(isl.labelX, isl.labelZ) + 45f, isl.labelZ);
+                // above the highest ground near it, not just the ground beneath it (the Shards' name sat inside a hill)
+                var top = Data.HeightAt(isl.labelX, isl.labelZ); for (var dx = -100f; dx <= 100f; dx += 20f) for (var dz = -100f; dz <= 100f; dz += 20f) top = Mathf.Max(top, Data.HeightAt(isl.labelX + dx, isl.labelZ + dz));
+                go.transform.position = new Vector3(isl.labelX, top + 45f, isl.labelZ);
                 var text = go.AddComponent<TextMesh>();
                 text.text = isl.name;
                 text.font = font; text.fontSize = 64; text.characterSize = 1.6f;

@@ -124,7 +124,8 @@ namespace EverythingWorld.World
         void Beach(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var c = ctx.OnGround(beach2.x, beach2.y); var rng = new System.Random(52);
-            mk.Prism(sandM, c - up * .26f, up, 23f, .34f, 30); for (var k = 0; k < 8; k++) Remember(c + Quaternion.Euler(0, k * 45f, 0) * U * 12f, 1); Remember(c, 1);
+            mk.Prism(sandM, c - up * .26f, up, 23f, .34f, 30); solid.Prism(sandM, c - up * 5f, up, 23f, 5.08f, 30);   // solid all the way down: where it reaches out over the water you walked through it (a friend's note, 2026-11-16)
+            for (var k = 0; k < 8; k++) Remember(c + Quaternion.Euler(0, k * 45f, 0) * U * 12f, 1); Remember(c, 1);
             // umbrellas and loungers, facing the sea
             var un = 0; foreach (var (u, r) in new[] { (9f, -8f), (4f, -13f), (-5f, -12f), (-11f, -7f), (14f, 2f), (-15f, 3f) }) { var g = c + U * u + R * r; g.y = Mathf.Max(ctx.Ground(g.x, g.z) + .06f, c.y + .1f); if (InFootprint(ctx, g.x, g.z, 1f)) continue; Umbrella(ctx, mk, g, -R, un++); }
             Folk(c + U * 4f - R * 11.9f + up * .5f, -R, Resident.Pose.Sit, new[] { "I'm not asleep. I'm listening with my eyes closed.", "Wake me when the tide's come all the way in. ...It doesn't, here. That's the idea." }, null, null, .4f);

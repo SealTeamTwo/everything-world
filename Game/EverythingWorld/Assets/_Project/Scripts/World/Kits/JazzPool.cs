@@ -67,7 +67,7 @@ namespace EverythingWorld.World
             // a board for your best, two stools, somebody watching
             {
                 var bp = f.P(-PW / 2f + .35f, 1.7f, 0); mk.Box(dark, bp, new Vector3(.06f, .9f, 2.6f), f.r);
-                game.recordText = ArtistBits.Label(ctx.Root, "", bp + f.Right * .05f, f.Right, .1f, Paper, TextAnchor.MiddleCenter);
+                game.recordText = SignFit.On(ArtistBits.Label(ctx.Root, "", bp + f.Right * .05f, f.Right, .1f, Paper, TextAnchor.MiddleCenter), 2.4f);
             }
             foreach (var e in new[] { -1.6f, 1.6f }) { var sp = f.P(-PW / 2f + 1.3f, 0, e); mk.Prism(iron, sp, up, .04f, .72f, 5); mk.Prism(dark, sp + up * .72f, up, .19f, .06f, 10); ArtistBits.PostCollider(ctx.Root, sp, .75f, .17f); Interact.Seat(tlife.transform, sp + up * .8f, f.Right, "Sit and watch"); }
             Folk(f.P(PW / 2f - 1.2f, 0, 1.6f), -f.Right, Resident.Pose.Stand, new[] { "Take a cue. It's a bigger table than it looks, once you're on it.", "Beat somebody, or clear it in thirty, and the radio in there plays everything.", "The black goes last. It always goes last. That's the whole of the law." });

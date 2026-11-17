@@ -52,7 +52,7 @@ namespace EverythingWorld.World
                 var go = new GameObject("Coin post"); go.transform.SetParent(ctx.Root, false); go.transform.SetPositionAndRotation(b, f.r); rm.BuildSingle("Coin post", go.transform, false);
                 var bc = go.AddComponent<BoxCollider>(); bc.isTrigger = true; bc.center = new Vector3(0, .7f, 0); bc.size = new Vector3(.9f, 1.5f, .9f); go.AddComponent<HockeyStart>().game = game; Col(b + up * .55f, new Vector3(.34f, 1.1f, .3f), f.r);
                 var bp = f.P(-2.6f, 1.2f, 2.4f); mk.Box(dark, bp, new Vector3(1.9f, .7f, .06f), f.r); mk.Prism(iron, f.P(-2.6f, 0, 2.4f), up, .05f, 1.2f, 4); ArtistBits.PostCollider(ctx.Root, f.P(-2.6f, 0, 2.4f), 1.5f, .1f);
-                game.recordText = ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, Gold, TextAnchor.MiddleCenter);
+                game.recordText = SignFit.On(ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, Gold, TextAnchor.MiddleCenter), 1.75f);
             }
             // a cabinet you can really play (ArcadeGame): BRICKS, at the back corner of the pad
             {
@@ -62,7 +62,7 @@ namespace EverythingWorld.World
                 for (var r = 0; r < 3; r++) for (var c = 0; c < 5; c++) rm.Box(GlowM(new[] { Pink, Gold, Cyan }[r], 1.5f), new Vector3(-.22f + c * .11f, 1.4f - r * .06f, .372f), new Vector3(.09f, .04f, .004f));
                 var go = new GameObject("Arcade cabinet"); go.transform.SetParent(ctx.Root, false); go.transform.SetPositionAndRotation(cp, cr); rm.BuildSingle("Arcade cabinet", go.transform, false);
                 var bc = go.AddComponent<BoxCollider>(); bc.isTrigger = true; bc.center = new Vector3(0, 1f, .3f); bc.size = new Vector3(1f, 1.9f, 1.3f); go.AddComponent<ArcadeStart>().game = arcade; Col(cp + up * .9f, new Vector3(.8f, 1.8f, .7f), cr);
-                arcade.recordText = ArtistBits.Label(ctx.Root, "", cp + up * 2.05f + f.Fwd * .1f, f.Fwd, .07f, Gold, TextAnchor.MiddleCenter);
+                arcade.recordText = SignFit.On(ArtistBits.Label(ctx.Root, "", cp + up * 2.05f + f.Fwd * .1f, f.Fwd, .07f, Gold, TextAnchor.MiddleCenter), 1.0f);
                 Shot(ctx, "arcade cabinet", cp + f.Fwd * 3f + up * 1.5f + f.Right * 1f, cp + up * 1.2f);
                 var am = new GameObject("Shot: arcade play").transform; am.SetParent(ctx.Root, false); am.SetPositionAndRotation(cp + f.Fwd * 1.6f + up * .9f, Quaternion.LookRotation(-f.Fwd));
             }

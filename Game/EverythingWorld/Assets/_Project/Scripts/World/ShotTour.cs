@@ -22,6 +22,7 @@ namespace EverythingWorld.World
         string[] lands;
         string[] only;   // quick mode: take only the photos whose name contains one of these (lower case); empty = the usual photos, no songs
         bool quick;
+        string notesFile;   // "notes": the notes.txt of a feedback pack
         const int W = 1600, H = 900;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -38,10 +39,11 @@ namespace EverythingWorld.World
                     for (var k = 0; k < args.Length; k++)
                     {
                         if (args[k] == "-ewQuick") tour.quick = true;
+                        if (args[k] == "-ewNotes" && k + 1 < args.Length) tour.notesFile = args[k + 1];
                         if (args[k] == "-ewOnly" && k + 1 < args.Length) { tour.quick = true; tour.only = args[k + 1].ToLowerInvariant().Split(new[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries); }
                     }
                     var startup = tour.lands.Length == 1 && tour.lands[0] == "startup";   // "startup": time a normal start (lands near you only), then quit
-                    var special = tour.lands.Length == 1 && (tour.lands[0] == "perf" || tour.lands[0] == "bridges" || tour.lands[0] == "about" || tour.lands[0] == "tutorial");   // checks that build everything but need no land audit
+                    var special = tour.lands.Length == 1 && (tour.lands[0] == "perf" || tour.lands[0] == "bridges" || tour.lands[0] == "about" || tour.lands[0] == "tutorial" || tour.lands[0] == "notes");   // checks that build everything but need no land audit
                     IslandWorldBuilder.BuildEverything = !startup; IslandWorldBuilder.ForceAudit = !tour.quick && !startup && !special;
                     if (!tour.quick && !startup && !System.Array.Exists(tour.lands, l => l == "all")) { IslandWorldBuilder.AuditOnly = new HashSet<string>(); foreach (var l in tour.lands) IslandWorldBuilder.AuditOnly.Add(l.StartsWith("The ") ? l.Substring(4) : l); }
                     if (tour.quick)
@@ -102,6 +104,7 @@ namespace EverythingWorld.World
                 Quit(0); yield break;
             }
             if (lands.Length == 1 && lands[0] == "bridges") { yield return Bridges(data, player, pivot, cam); Quit(0); yield break; }
+            if (lands.Length == 1 && lands[0] == "notes") { yield return Notes(data, player, pivot, cam); Quit(0); yield break; }
             if (lands.Length == 1 && lands[0] == "tutorial")
             {
                 // photographs the tutorial walk and the pearly gates at each stop (no menu, no fades)
@@ -553,6 +556,37 @@ namespace EverythingWorld.World
             report.Insert(0, $"Bridge audit: {data.layout.bridges.Length} crossings, {bad} with problems" + System.Environment.NewLine + System.Environment.NewLine);
             File.WriteAllText(Path.Combine(Application.dataPath, "..", "Logs", "BridgeAudit.txt"), report.ToString());
             Debug.Log($"Bridge audit: {data.layout.bridges.Length} crossings, {bad} with problems. Report: Logs/BridgeAudit.txt");
+        }
+
+        /// "notes": stands where each note and photo of a feedback pack was made (the lines of its notes.txt, given with
+        /// "-ewNotes <file>") and photographs what the player was looking at, then the same spot from behind and above.
+        IEnumerator Notes(IslandWorldData data, SimplePlayerController player, Transform pivot, Camera cam)
+        {
+            var dir = Path.Combine(Application.dataPath, "..", "Logs", "Shots", "Notes"); Directory.CreateDirectory(dir); foreach (var f in Directory.GetFiles(dir, "*.png")) File.Delete(f);
+            if (string.IsNullOrEmpty(notesFile) || !File.Exists(notesFile)) { Debug.LogError("Shot tour: no notes file at " + notesFile); yield break; }
+            string[] compass = { "north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west" };
+            var list = new StringBuilder("["); var n = 0; var culler = FindAnyObjectByType<LandCuller>();
+            foreach (var line in File.ReadAllLines(notesFile))
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(line, @"at x (-?\d+) z (-?\d+), eyes ([\d.]+) m above the ground, facing ([a-z-]+) \(looking (\w+)\)");
+                if (!m.Success) continue;
+                float x = float.Parse(m.Groups[1].Value), z = float.Parse(m.Groups[2].Value), eyes = float.Parse(m.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture);
+                var yaw = Mathf.Max(0, System.Array.IndexOf(compass, m.Groups[4].Value)) * 45f; var look = m.Groups[5].Value; var pitch = look == "down" ? 32f : look == "up" ? -28f : 4f;
+                var at = eyes < 2.2f ? Feet(new Vector3(x, 0, z)) : new Vector3(x, data.HeightAt(x, z) + eyes - .75f, z);
+                var label = line.StartsWith("NOTE") ? line.Substring(line.IndexOf('"') + 1, Mathf.Max(0, line.LastIndexOf('"') - line.IndexOf('"') - 1)) : "photo " + line.Substring(0, 3);
+                var back = Quaternion.Euler(0, yaw, 0) * Vector3.back;
+                for (var v = 0; v < 2; v++)
+                {
+                    var p = v == 0 ? at : at + back * 13f + Vector3.up * 9f;
+                    player.transform.SetPositionAndRotation(p, Quaternion.Euler(0f, yaw, 0f)); if (pivot != null) pivot.localEulerAngles = new Vector3(v == 0 ? pitch : 30f, 0f, 0f);
+                    if (culler != null) culler.Refresh();
+                    var until = Time.realtimeSinceStartup + (v == 0 ? 3.5f : 1f); while (Time.realtimeSinceStartup < until) yield return null;
+                    var name = label + (v == 0 ? "" : " (from above)"); var file = $"{n:00}_{Safe(name)}.png"; Capture(cam, Path.Combine(dir, file));
+                    if (n > 0) list.Append(','); list.Append("{\"file\":\"").Append(file).Append("\",\"name\":\"").Append(name.Replace("\"", "'").Replace("\\", "/")).Append("\"}"); n++;
+                }
+            }
+            File.WriteAllText(Path.Combine(dir, "shots.json"), list.Append("]").ToString());
+            Debug.Log($"Shot tour: {n} photos of the notes' places");
         }
 
         static string Path2(Transform t) { var s = t.name; for (var p = t.parent; p != null && s.Length < 90; p = p.parent) s = p.name + " / " + s; return s; }

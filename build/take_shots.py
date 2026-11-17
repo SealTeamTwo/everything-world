@@ -13,6 +13,11 @@ audit and the song moments are skipped, and with --only just the photos whose na
     python take_shots.py --only "sal,legal wall" "The Punk Badlands"       # just those places
     python take_shots.py --only "carousel,record player" "The Electric Fields" "The Bedroom Pop Meadows"
 
+A friend's feedback pack: stand where each of its notes and photos was made and photograph what they were looking
+at, then the same spot from behind and above (Logs/Shots/Notes/):
+
+    python take_shots.py --notes "C:/Users/me/Desktop/EverythingWorld feedback - .../notes.txt"
+
 In quick mode the other lands are bare ground, so don't judge far views from it, and the audit reports are
 not refreshed. Use the full tour when a land is first built or redesigned.
 
@@ -82,15 +87,17 @@ def sheets(folder):
 
 def main():
     args = sys.argv[1:]
-    quick, only = False, None
+    quick, only, notes = False, None, None
     while args and args[0].startswith('--'):
         flag = args.pop(0)
         if flag == '--quick':
             quick = True
         elif flag == '--only' and args:
             quick, only = True, [w.strip() for w in args.pop(0).split(',') if w.strip()]
+        elif flag == '--notes' and args:
+            notes = os.path.abspath(args.pop(0)); args = ['notes']
         else:
-            sys.exit('Unknown option ' + flag + ' (use --quick or --only "word,word")')
+            sys.exit('Unknown option ' + flag + ' (use --quick, --only "word,word" or --notes <notes.txt>)')
     if quick and (not args or 'all' in args or 'perf' in args):
         sys.exit('Quick mode needs the names of the lands to photograph.')
     lands = args or ['all']
@@ -104,6 +111,8 @@ def main():
         cmd += ['-ewQuick']
     if only:
         cmd += ['-ewOnly', ';'.join(only)]
+    if notes:
+        cmd += ['-ewNotes', notes]
     print('Unity is photographing', ', '.join(lands), '(no window; this takes a few minutes)...')
     t0 = time.time()
     try:

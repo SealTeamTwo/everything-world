@@ -46,16 +46,19 @@ namespace EverythingWorld.World
             if (steps != null) { stepBase = new Color[steps.Length]; for (var i = 0; i < steps.Length; i++) stepBase[i] = E(steps[i]); }
             if (beam != null)
             {
-                // two long soft beams, back to back, each two crossed planes so they read from any side
-                var v = new List<Vector3>(); var c = new List<Color>(); var t = new List<int>();
+                // two long soft beams, back to back, each a cone of light. (They were two crossed planes, and when the
+                // beam stayed on you those planes cut the whole view into four: friends' note, 2026-11-16.)
+                var v = new List<Vector3>(); var c = new List<Color>(); var t = new List<int>(); const int Sides = 14;
                 foreach (var dir in new[] { 1f, -1f })
-                    foreach (var across in new[] { Vector3.right, Vector3.up })
+                {
+                    var b = v.Count; var fwd = Vector3.forward * dir;
+                    for (var k = 0; k <= Sides; k++)
                     {
-                        var b = v.Count; var fwd = Vector3.forward * dir;
-                        v.Add(-across * .5f); v.Add(across * .5f); v.Add(fwd * 150f + across * 11f); v.Add(fwd * 150f - across * 11f);
-                        var col = new Color(1f, .93f, .75f, .5f); c.Add(col); c.Add(col); c.Add(new Color(1, 1, 1, 0)); c.Add(new Color(1, 1, 1, 0));
-                        t.AddRange(new[] { b, b + 1, b + 2, b, b + 2, b + 3 });
+                        var a = k * Mathf.PI * 2f / Sides; var across = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0);
+                        v.Add(across * .5f); c.Add(new Color(1f, .93f, .75f, .3f)); v.Add(fwd * 150f + across * 11f); c.Add(new Color(1, 1, 1, 0));
                     }
+                    for (var k = 0; k < Sides; k++) { var q = b + k * 2; t.AddRange(new[] { q, q + 1, q + 3, q, q + 3, q + 2 }); }
+                }
                 var mesh = new Mesh { name = "Lighthouse beam" }; mesh.SetVertices(v); mesh.SetColors(c); mesh.SetTriangles(t, 0); mesh.RecalculateBounds();
                 var go = new GameObject("Beam"); go.transform.SetParent(beam, false); go.AddComponent<MeshFilter>().sharedMesh = mesh;
                 var r = go.AddComponent<MeshRenderer>(); beamMat = Additive("Lighthouse beam"); r.sharedMaterial = beamMat; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;

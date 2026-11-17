@@ -46,7 +46,7 @@ namespace EverythingWorld.World
                 var go = new GameObject("Skateboard"); go.transform.SetParent(ctx.Root, false); go.transform.SetPositionAndRotation(f.P(1.9f, 0, 1.1f), f.r); rm.BuildSingle("Skateboard", go.transform, false);
                 var bc = go.AddComponent<BoxCollider>(); bc.isTrigger = true; bc.center = new Vector3(0, .6f, 0); bc.size = new Vector3(.9f, 1.3f, .9f); go.AddComponent<SkateStart>().game = game;
                 var bp = f.P(-1.9f, 1.2f, 1.9f); mk.Box(dark, bp, new Vector3(1.9f, .7f, .06f), f.r); mk.Prism(metal, f.P(-1.9f, 0, 1.9f), up, .05f, 1.2f, 4); ArtistBits.PostCollider(ctx.Root, f.P(-1.9f, 0, 1.9f), 1.5f, .1f);
-                game.recordText = ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, new Color(.96f, .95f, .9f), TextAnchor.MiddleCenter);
+                game.recordText = SignFit.On(ArtistBits.Label(ctx.Root, "", bp + f.Fwd * .04f, f.Fwd, .1f, new Color(.96f, .95f, .9f), TextAnchor.MiddleCenter), 1.75f);
             }
             Shot(ctx, "the skate plinth", f.P(3f, 2f, PW / 2f + 4f), at + up * .9f);
             void BigMark(string name, Vector3 cam, Vector3 look) { var m = new GameObject("Shot: " + name).transform; m.SetParent(big.transform, false); m.SetPositionAndRotation(cam, Quaternion.LookRotation((look - cam).normalized)); }

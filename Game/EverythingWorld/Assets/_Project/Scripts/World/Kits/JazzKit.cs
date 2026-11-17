@@ -22,7 +22,7 @@ namespace EverythingWorld.World
         static readonly Color[] Walls = { new Color(.3f, .31f, .34f), new Color(.21f, .22f, .25f), new Color(.4f, .41f, .44f), new Color(.17f, .18f, .21f), new Color(.5f, .5f, .53f), new Color(.26f, .26f, .29f) };
         const float PathW = 3.2f, StreetW = 5f, StreamHalf = 3.6f, StreamOff = 58f, HouseW = 10f, HouseD = 9f;
 
-        Material cobble, stoneM, brassM, iron, dark, white, grey, leafM, leafDark, trunkM, waterM, puddleM, lampM, poolM, windowM, neonM, blueM, goldM, starM;
+        Material cobble, stoneM, brassM, iron, dark, white, grey, leafM, leafDark, trunkM, waterM, puddleM, lampM, poolM, windowM, neonM, blueM, goldM, starM, roadCobble, kerbM;
         // the marquee's bulbs: three sets, so they can chase
         readonly Material[] bulbM = new Material[3];
         GlowHalos halos; Vector3 center, U, R, streamC; JazzLife life;
@@ -38,7 +38,9 @@ namespace EverythingWorld.World
         void MakeMaterials()
         {
             // the streets are faintly self-lit, so the night never swallows them
-            cobble = WorldMaterials.Glow(new Color(.4f, .41f, .45f), .14f); stoneM = WorldMaterials.Glow(new Color(.62f, .63f, .67f), .12f);
+            cobble = WorldMaterials.Glow(new Color(.4f, .41f, .45f), .14f);
+            // the streets and lanes: wet cobbles with a pale kerb, so they read as roads (they were one flat grey: a friend's note, 2026-11-16)
+            roadCobble = WorldMaterials.Surface(new Color(.62f, .64f, .72f), Surface.Stone); kerbM = WorldMaterials.Surface(new Color(.8f, .8f, .84f), Surface.Stone); stoneM = WorldMaterials.Glow(new Color(.62f, .63f, .67f), .12f);
             brassM = WorldMaterials.Glow(new Color(.9f, .68f, .28f), .18f); iron = WorldMaterials.Surface(new Color(.1f, .1f, .12f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.05f, .05f, .06f));
             white = WorldMaterials.Glow(new Color(.93f, .93f, .92f), .1f); grey = WorldMaterials.Surface(new Color(.34f, .35f, .38f), Surface.Stone);
             leafM = WorldMaterials.Surface(new Color(.3f, .32f, .33f), Surface.Foliage); leafDark = WorldMaterials.Surface(new Color(.18f, .19f, .21f), Surface.Foliage); trunkM = WorldMaterials.Surface(new Color(.09f, .09f, .1f), Surface.Bark);
@@ -244,6 +246,18 @@ namespace EverythingWorld.World
         bool Open(LandContext ctx, float x, float z, float pad) =>
             ctx.IsLand(x, z, 5f) && !InRiver(x, z, pad) && !InFootprint(ctx, x, z, pad) && !NearPath(x, z, pad + 2f) && !InNoGrass(x, z, pad);
 
+        /// A cobbled road: the cobbles, and on the streets a pale kerb down each side.
+        void CobbleRoad(MeshKit mk, List<Vector3> pts, float w, float lift, LandContext ground)
+        {
+            Strip(mk, pts, roadCobble, w, lift, ground); if (w < 4.5f || pts.Count < 2) return;
+            foreach (var e in new[] { -1f, 1f })
+            {
+                var kerb = new List<Vector3>();
+                for (var i = 0; i < pts.Count; i++) { var t = pts[Mathf.Min(i + 1, pts.Count - 1)] - pts[Mathf.Max(i - 1, 0)]; t.y = 0; var side = Vector3.Cross(Vector3.up, t.normalized); kerb.Add(pts[i] + side * (e * (w / 2f + .12f))); }
+                Strip(mk, kerb, kerbM, .4f, lift + .05f, ground);
+            }
+        }
+
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
             // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
@@ -392,7 +406,7 @@ namespace EverythingWorld.World
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
-                Strip(mk, pts, cobble, PathW, .14f, ctx);
+                CobbleRoad(mk, pts, PathW, .14f, ctx);
                 // a lamp now and then (never on another lane or the street)
                 for (var i = 8; i < pts.Count; i += 13)
                 {

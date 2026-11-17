@@ -22,7 +22,7 @@ namespace EverythingWorld.World
         static readonly Color[] Cloth = { new Color(.95f, .3f, .15f), new Color(1f, .8f, .15f), new Color(.1f, .55f, .3f), new Color(.2f, .3f, .75f), new Color(.6f, .2f, .6f), new Color(1f, .5f, .1f), new Color(.1f, .1f, .12f), new Color(.95f, .95f, .9f) };
         const float PathW = 3f, RoadW = 7f;
 
-        Material earth, sand, concrete, tin, rustM, iron, dark, white, woodM, palmTrunk, leafM, leafDark, fireM, emberM, sunM, sunRoadM, windowM;
+        Material earth, sand, concrete, tin, rustM, iron, dark, white, woodM, palmTrunk, leafM, leafDark, fireM, emberM, sunM, sunRoadM, windowM, roadM, rutM, plazaEarth, plazaSand;
         // the strings of bulbs: three colours, so they can chase
         readonly Material[] bulbM = new Material[3];
         GlowHalos halos; Vector3 center, U, R; AfroLife life;
@@ -37,6 +37,10 @@ namespace EverythingWorld.World
         {
             // the road, the sand and the walls are faintly self-lit, so dusk never swallows the town
             earth = WorldMaterials.Glow(new Color(.72f, .36f, .2f), .16f); sand = WorldMaterials.Glow(new Color(.92f, .76f, .5f), .14f); concrete = WorldMaterials.Glow(new Color(.7f, .66f, .62f), .1f);
+            // the streets, paths and open places: packed earth and sand you can see the grain of, paler than the red ground round
+            // them so they read as roads (they were one flat glowing colour: friends' notes, 2026-11-16)
+            roadM = WorldMaterials.Surface(new Color(.9f, .62f, .4f), Surface.Ground); rutM = WorldMaterials.Surface(new Color(.74f, .46f, .28f), Surface.Ground);
+            plazaEarth = WorldMaterials.Surface(new Color(.84f, .5f, .3f), Surface.Ground); plazaSand = WorldMaterials.Surface(new Color(.98f, .84f, .58f), Surface.Ground);
             tin = WorldMaterials.Surface(new Color(.62f, .62f, .64f), Surface.Metal); rustM = WorldMaterials.Surface(new Color(.6f, .32f, .18f), Surface.Metal); iron = WorldMaterials.Surface(new Color(.14f, .13f, .15f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.07f, .06f, .08f));
             white = WorldMaterials.Glow(new Color(.95f, .93f, .88f), .1f); woodM = WorldMaterials.Surface(new Color(.5f, .34f, .22f), Surface.Wood); palmTrunk = WorldMaterials.Surface(new Color(.46f, .36f, .28f), Surface.Bark);
             leafM = WorldMaterials.Glow(new Color(.16f, .5f, .26f), .08f); leafDark = WorldMaterials.Surface(new Color(.1f, .34f, .22f), Surface.Foliage);
@@ -195,6 +199,18 @@ namespace EverythingWorld.World
         bool Open(LandContext ctx, float x, float z, float pad) =>
             ctx.IsLand(x, z, 5f) && !InFootprint(ctx, x, z, pad) && !NearPath(x, z, pad + 2f) && !InNoGrass(x, z, pad);
 
+        /// A packed-earth road: the strip itself and, on the wide ones, two darker wheel ruts worn down it.
+        void EarthRoad(MeshKit mk, List<Vector3> pts, float w, float lift, LandContext ground)
+        {
+            Strip(mk, pts, roadM, w, lift, ground); if (w < 4.5f || pts.Count < 2) return;
+            foreach (var e in new[] { -1f, 1f })
+            {
+                var rut = new List<Vector3>();
+                for (var i = 0; i < pts.Count; i++) { var t = pts[Mathf.Min(i + 1, pts.Count - 1)] - pts[Mathf.Max(i - 1, 0)]; t.y = 0; var side = Vector3.Cross(Vector3.up, t.normalized); rut.Add(pts[i] + side * (e * w * .2f)); }
+                Strip(mk, rut, rutM, .45f, lift + .02f, ground);
+            }
+        }
+
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
             // Laid in narrow lanes across its width with every vertex on its own ground (raised only a little where the
@@ -307,7 +323,7 @@ namespace EverythingWorld.World
                     pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
                 }
                 if (pts.Count < 2) return;
-                Strip(mk, pts, earth, PathW, .13f, ctx);
+                EarthRoad(mk, pts, PathW, .13f, ctx);
                 for (var i = 7; i < pts.Count; i += 11, n++)
                 {
                     var s = n % 2 == 0 ? 1f : -1f; var lp = pts[i] + side * s * (PathW / 2f + .8f);

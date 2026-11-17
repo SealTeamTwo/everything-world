@@ -78,7 +78,7 @@ namespace EverythingWorld.World
         void MirrorRing(LandContext ctx, MeshKit mk)
         {
             var c = ctx.OnGround(center.x, center.z); var rng = new System.Random(3);
-            for (var k = 0; k < 8; k++) { var d = Quaternion.Euler(0, k * 45f + 10f, 0) * D; if (Vector3.Angle(d, D) < 30f) continue; var g = c + d * 21f; if (LaneNear(g.x, g.z, 6f)) continue; CloudBank(mk, g, 1.4f, rng); }
+            for (var k = 0; k < 8; k++) { var d = Quaternion.Euler(0, k * 45f + 10f, 0) * D; if (Vector3.Angle(d, D) < 30f) continue; var g = c + d * 21f; if (LaneNear(g.x, g.z, 6f)) continue; CloudBank(mk, g, 1.4f, rng, true); }
         }
 
         // ---------------------------------------------------------------- the Glitter Mile

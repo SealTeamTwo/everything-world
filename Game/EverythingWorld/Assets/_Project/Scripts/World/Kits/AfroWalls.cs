@@ -44,7 +44,7 @@ namespace EverythingWorld.World
                     var cp = new List<Vector3>();
                     for (var s = RoadW / 2f + .5f; s <= 110f; s += 2f) { var q = Wp(e * s, d); if (!ctx.IsLand(q.x, q.z, 10f) || InFootprint(ctx, q.x, q.z, 3f) || ctx.Ground(q.x, q.z) < waterY + 2f) break; cp.Add(ctx.OnGround(q.x, q.z)); }
                     if (cp.Count < 10) continue;
-                    Strip(mk, cp, earth, 5f, .14f, ctx); foreach (var p in cp) Remember(p, 3); streets.Add((cp[0], cp[cp.Count - 1]));
+                    EarthRoad(mk, cp, 5f, .14f, ctx); foreach (var p in cp) Remember(p, 3); streets.Add((cp[0], cp[cp.Count - 1]));
                 }
             // printed cloth roofs over Cloth Street on poles, and strings of bulbs between
             var n = 0;

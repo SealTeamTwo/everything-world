@@ -184,4 +184,21 @@ namespace EverythingWorld.World
             return l;
         }
     }
+    /// Keeps a sign's words inside its board: whenever the text changes, the letters shrink until the widest line fits
+    /// 'width' metres (the activity record boards, whose words grow as records are set).
+    public class SignFit : MonoBehaviour
+    {
+        public float width = 1.7f; float full; int measure; string last; TextMesh t; MeshRenderer r;
+        public static TextMesh On(TextMesh text, float width) { if (text != null) text.gameObject.AddComponent<SignFit>().width = width; return text; }
+        void Awake() { t = GetComponent<TextMesh>(); r = GetComponent<MeshRenderer>(); full = t != null ? t.characterSize : 0f; }
+        void LateUpdate()
+        {
+            if (t == null || r == null) return;
+            // (measured the frame after the words change, once the letters have been laid out at full size)
+            if (t.text != last) { last = t.text; t.characterSize = full; measure = 2; return; }
+            if (measure <= 0 || --measure > 0) return;
+            var w = r.localBounds.size.x * transform.lossyScale.x;
+            if (w > width && w > 0f) t.characterSize = full * width / w;
+        }
+    }
 }

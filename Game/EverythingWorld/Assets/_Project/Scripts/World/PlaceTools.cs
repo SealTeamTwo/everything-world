@@ -106,4 +106,23 @@ namespace EverythingWorld.World
         public float left;
         void Update() { left -= Time.deltaTime; if (left <= 0f) gameObject.SetActive(false); }
     }
+    /// Something that moves and can be stood on (a drifting boat): it is solid, and whoever stands on it is carried along.
+    public class RideAlong : MonoBehaviour
+    {
+        Vector3 half, last; float top; EverythingWorld.Player.SimplePlayerController player; CharacterController body;
+        public static RideAlong On(GameObject go, Vector3 center, Vector3 size)
+        {
+            var bc = go.AddComponent<BoxCollider>(); bc.center = center; bc.size = size;
+            var r = go.AddComponent<RideAlong>(); r.half = size / 2f; r.top = center.y + size.y / 2f; return r;
+        }
+        void OnEnable() { last = transform.position; }
+        void LateUpdate()
+        {
+            var moved = transform.position - last; last = transform.position; if (moved.sqrMagnitude < 1e-10f || moved.sqrMagnitude > 4f) return;
+            if (player == null) { player = FindAnyObjectByType<EverythingWorld.Player.SimplePlayerController>(); if (player == null) return; body = player.GetComponent<CharacterController>(); }
+            if (body == null || !body.enabled) return;
+            var feet = transform.InverseTransformPoint(player.transform.position + body.center - Vector3.up * (body.height / 2f));
+            if (Mathf.Abs(feet.x) < half.x + .2f && Mathf.Abs(feet.z) < half.z + .2f && feet.y > top - .35f && feet.y < top + .5f) body.Move(moved);
+        }
+    }
 }
