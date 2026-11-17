@@ -207,7 +207,7 @@ namespace EverythingWorld.Player
 
         void StampAt(Rect r, Color c, string words, float angle, int size = 15)
         {
-            var m = GUI.matrix; GUIUtility.RotateAroundPivot(angle, r.center);
+            var m = GUI.matrix; GUIUtility.RotateAroundPivot(angle, r.center * EverythingWorld.World.Ui.Scale);
             var old = GUI.color; GUI.color = new Color(c.r, c.g, c.b, .85f); GUI.DrawTexture(r, ring); GUI.color = old;
             stampText.fontSize = size; stampText.normal.textColor = new Color(c.r * .8f, c.g * .8f, c.b * .8f, .9f);
             GUI.Label(new Rect(r.x + r.width * .16f, r.y + r.height * .16f, r.width * .68f, r.height * .68f), words, stampText);
@@ -217,16 +217,16 @@ namespace EverythingWorld.Player
         static string Clip(string s, int max) => string.IsNullOrEmpty(s) || s.Length <= max ? s ?? "" : s.Substring(0, max - 1) + "…";
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             Styles();
             if (showing != null && !open)
             {
-                var w = Mathf.Min(520f, Screen.width - 40f); var r = new Rect((Screen.width - w) / 2f, 54f, w, 34f);
+                var w = Mathf.Min(520f, EverythingWorld.World.Ui.W - 40f); var r = new Rect((EverythingWorld.World.Ui.W - w) / 2f, 54f, w, 34f);
                 GUI.Box(r, showing, toast);
             }
             if (!open || book == null) return;
-            float W = Mathf.Min(1060f, Screen.width - 50f), H = Mathf.Min(680f, Screen.height - 50f);
-            var bk = new Rect((Screen.width - W) / 2f, (Screen.height - H) / 2f, W, H);
+            float W = Mathf.Min(1060f, EverythingWorld.World.Ui.W - 50f), H = Mathf.Min(680f, EverythingWorld.World.Ui.H - 50f);
+            var bk = new Rect((EverythingWorld.World.Ui.W - W) / 2f, (EverythingWorld.World.Ui.H - H) / 2f, W, H);
             GUI.DrawTexture(new Rect(bk.x - 8f, bk.y - 8f, bk.width + 16f, bk.height + 16f), cover);   // the cover
             var left = new Rect(bk.x, bk.y, bk.width * .4f, bk.height); var right = new Rect(left.xMax, bk.y, bk.width - left.width, bk.height);
             GUI.DrawTexture(left, paperD); GUI.DrawTexture(right, paper); GUI.DrawTexture(new Rect(left.xMax - 2f, bk.y, 4f, bk.height), ink);

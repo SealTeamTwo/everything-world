@@ -88,7 +88,7 @@ namespace EverythingWorld.Player
         }
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             string text = null;
             if (seated != null) return;   // standing up with E goes without saying
             else if (held != null) text = "E  Put down   ·   Click  Throw";
@@ -98,7 +98,7 @@ namespace EverythingWorld.Player
             // the prompt takes the colour of its cue (blue sit, yellow use, white pick up, pink talk)
             style.normal.textColor = seated != null ? InteractCues.SitColor : held != null ? InteractCues.CarryColor : Color.Lerp(InteractCues.ColorOf(looking), Color.white, .25f);
             var sz = style.CalcSize(new GUIContent(text)); var bw = Mathf.Max(320f, sz.x + 16f);
-            GUI.Box(new Rect(Screen.width / 2f - bw / 2f, Screen.height / 2f + 40, bw, Mathf.Max(36f, sz.y + 4f)), text, style);
+            GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - bw / 2f, EverythingWorld.World.Ui.H / 2f + 40, bw, Mathf.Max(36f, sz.y + 4f)), text, style);
         }
     }
 }

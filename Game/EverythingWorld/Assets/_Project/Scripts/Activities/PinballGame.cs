@@ -192,19 +192,19 @@ namespace EverythingWorld.Activities
         GUIStyle box, big2, small2; static Texture2D white;
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
-            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .8f, .9f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
+            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .8f, .9f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), white); GUI.color = keep; }
             if (Active != this || !playing || play == null || MainMenu.Showing) return;
             box ??= GameFonts.Box(17, TextAnchor.MiddleLeft); big2 ??= GameFonts.Box(26, TextAnchor.MiddleCenter, true, true); small2 ??= GameFonts.Box(15, TextAnchor.MiddleCenter);
             GUI.Box(new Rect(12, 12, 470, 34), $"  Score {play.score:N0}  ·  balls {play.ballsLeft}" + (Best > 0 ? $"  ·  your best {Best:N0}" : ""), box);
             var y = 50f; if (Everything) { GUI.Box(new Rect(12, y, 240, 30), "  Everything Playlist", box); y += 34f; }
             foreach (var o in others.Values) if (Time.time - o.seen < 3f) { GUI.Box(new Rect(12, y, 330, 28), $"  {o.name}: {o.score:N0}", box); y += 30f; }
-            if (Time.time - play.lastHitAt < 1.2f && play.lastHit.Length > 0 && Time.time > bannerUntil) GUI.Box(new Rect(Screen.width / 2f - 150, 96, 300, 40), play.lastHit, small2);
+            if (Time.time - play.lastHitAt < 1.2f && play.lastHit.Length > 0 && Time.time > bannerUntil) GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 150, 96, 300, 40), play.lastHit, small2);
             if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
-            if (charging) { var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small2); var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
-            Activity.Hint(Screen.height - 66, play.ballsLeft <= 0 ? "Enter  New game   ·   hold X  Leave the table" : !play.inPlay ? "Hold Space and let go to launch  ·  hold X to leave" : "A and D (or the mouse buttons) work the flippers  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
+            if (charging) { var w = 360f; var r = new Rect(EverythingWorld.World.Ui.W / 2f - w / 2f, EverythingWorld.World.Ui.H - 96, w, 22); GUI.Box(r, "", small2); var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
+            Activity.Hint(EverythingWorld.World.Ui.H - 66, play.ballsLeft <= 0 ? "Enter  New game   ·   hold X  Leave the table" : !play.inPlay ? "Hold Space and let go to launch  ·  hold X to leave" : "A and D (or the mouse buttons) work the flippers  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
     }
 }

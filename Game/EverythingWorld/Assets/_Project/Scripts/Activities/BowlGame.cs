@@ -218,7 +218,7 @@ namespace EverythingWorld.Activities
         void DrawToon()
         {
             var t = Time.time - toonAt; if (toon == null || t > 2.6f || Event.current.type != EventType.Repaint) return;
-            const float w = 460f, h = 170f; var r = new Rect(Screen.width / 2f - w / 2f, 150f, w, h); var c = new Vector2(r.center.x, r.y + h * .62f);
+            const float w = 460f, h = 170f; var r = new Rect(EverythingWorld.World.Ui.W / 2f - w / 2f, 150f, w, h); var c = new Vector2(r.center.x, r.y + h * .62f);
             Fill(r, new Color(.04f, .03f, .1f, .92f)); Fill(new Rect(r.x, r.y, w, 4), new Color(1f, .4f, .8f)); Fill(new Rect(r.x, r.yMax - 4, w, 4), new Color(.3f, .9f, 1f));
             var flash = Color.HSVToRGB(Mathf.Repeat(t * 1.6f, 1f), .7f, 1f); var word = ""; var pin = new Color(.97f, .96f, .92f);
             switch (toon)
@@ -257,7 +257,7 @@ namespace EverythingWorld.Activities
             var rows = new List<(string name, string marks, int total)> { (Friends.PlayerName, Marks(card.rolls), card.Total) };
             foreach (var o in others.Values) if (Time.time - o.seen < 4f) rows.Add((o.name, Marks(o.rolls), o.total));
             if (rows.Count < 2) return;   // alone, the card on the left says it all
-            const float w = 470f; var x = Screen.width - w - 12f; var y = 12f;
+            const float w = 470f; var x = EverythingWorld.World.Ui.W - w - 12f; var y = 12f;
             GUI.Box(new Rect(x, y, w, 26), "  TONIGHT'S BOWLERS", box); y += 28f;
             rows.Sort((a, b) => b.total.CompareTo(a.total));
             foreach (var (name, marks, total) in rows) { GUI.Box(new Rect(x, y, w, 28), $"  {(name.Length > 10 ? name.Substring(0, 10) : name),-10}  {marks}", box); GUI.Box(new Rect(x + w - 62, y, 62, 28), total.ToString(), small2); y += 30f; }
@@ -308,10 +308,10 @@ namespace EverythingWorld.Activities
         GUIStyle box, big2, small2; static Texture2D white;
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
-            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .8f, .95f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
+            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .8f, .95f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;
             box ??= GameFonts.Box(17, TextAnchor.MiddleLeft); big2 ??= GameFonts.Box(26, TextAnchor.MiddleCenter, true, true); small2 ??= GameFonts.Box(15, TextAnchor.MiddleCenter);
             var (f, b) = card.At; var rolls = ""; foreach (var r in card.rolls) rolls += (r == 10 ? "X" : r.ToString()) + " ";
@@ -320,8 +320,8 @@ namespace EverythingWorld.Activities
             foreach (var o in others.Values) if (Time.time - o.seen < 4f) { GUI.Box(new Rect(12, y, 330, 28), $"  {o.name}: {o.total}  (frame {o.frame + 1})", box); y += 30f; }
             if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
             DrawToon(); DrawBoard();
-            if (charging) { var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small2); var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
-            Activity.Hint(Screen.height - 66, card.Done ? "Enter  New game   ·   hold X  Leave the lane" : sim.rolling ? "A and D curl the ball" : (charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go as the line crosses your mark  ·  pull back to ease off") : "A and D move  ·  mouse aims  ·  hold click and push forward to swing  ·  hold X to leave") + (Unlocked ? "  ·  P playlist" : ""), small2);
+            if (charging) { var w = 360f; var r = new Rect(EverythingWorld.World.Ui.W / 2f - w / 2f, EverythingWorld.World.Ui.H - 96, w, 22); GUI.Box(r, "", small2); var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
+            Activity.Hint(EverythingWorld.World.Ui.H - 66, card.Done ? "Enter  New game   ·   hold X  Leave the lane" : sim.rolling ? "A and D curl the ball" : (charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go as the line crosses your mark  ·  pull back to ease off") : "A and D move  ·  mouse aims  ·  hold click and push forward to swing  ·  hold X to leave") + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
     }
 }

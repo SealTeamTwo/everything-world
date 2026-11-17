@@ -112,14 +112,14 @@ namespace EverythingWorld.Activities
         GUIStyle box, big2, small2, capStyle; static Texture2D white;
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (Active != this || MainMenu.Showing) return;
             white ??= Texture2D.whiteTexture; box ??= GameFonts.Box(17, TextAnchor.MiddleLeft); big2 ??= GameFonts.Box(26, TextAnchor.MiddleCenter, true, true); small2 ??= GameFonts.Box(15, TextAnchor.MiddleCenter);
-            var keep = GUI.color; var h = Screen.height * .78f; var w = h / BricksPlay.Top; var x0 = Screen.width / 2f - w / 2f; var y0 = Screen.height / 2f - h / 2f + 10f;
+            var keep = GUI.color; var h = EverythingWorld.World.Ui.H * .78f; var w = h / BricksPlay.Top; var x0 = EverythingWorld.World.Ui.W / 2f - w / 2f; var y0 = EverythingWorld.World.Ui.H / 2f - h / 2f + 10f;
             void Fill(float x, float y, float fw, float fh, Color c) { GUI.color = c; GUI.DrawTexture(new Rect(x0 + x * w, y0 + (BricksPlay.Top - y - fh) * w, fw * w, fh * w), white); }   // (field units, y up)
             if (Event.current.type == EventType.Repaint)
             {
-                GUI.color = new Color(0, 0, 0, .55f); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white);
+                GUI.color = new Color(0, 0, 0, .55f); GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), white);
                 GUI.color = new Color(.25f, .9f, 1f); GUI.DrawTexture(new Rect(x0 - 6, y0 - 6, w + 12, h + 12), white); GUI.color = new Color(.03f, .03f, .09f); GUI.DrawTexture(new Rect(x0, y0, w, h), white);
                 for (var r = 0; r < BricksPlay.Rows; r++) for (var c = 0; c < BricksPlay.Cols; c++) if (play.Brick(c, r))
                     {
@@ -140,7 +140,7 @@ namespace EverythingWorld.Activities
             var y = 50f; if (Everything) { GUI.Box(new Rect(12, y, 240, 30), "  Everything Playlist", box); y += 34f; }
             foreach (var o in others.Values) if (Time.time - o.seen < 4f) { GUI.Box(new Rect(12, y, 330, 28), $"  {o.name}: {o.score:N0}", box); y += 30f; }
             if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, y0 + h * .45f, big2);
-            Activity.Hint(Screen.height - 40, play.lives <= 0 ? "Click  New game   ·   E  Step away" : !play.served ? "Click to serve  ·  E to step away" : "Move the mouse  ·  E to step away" + (Unlocked ? "  ·  P playlist" : ""), small2);
+            Activity.Hint(EverythingWorld.World.Ui.H - 40, play.lives <= 0 ? "Click  New game   ·   E  Step away" : !play.served ? "Click to serve  ·  E to step away" : "Move the mouse  ·  E to step away" + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
     }
 }

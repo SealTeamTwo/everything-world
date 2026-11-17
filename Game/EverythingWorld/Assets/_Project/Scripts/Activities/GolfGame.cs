@@ -340,14 +340,14 @@ namespace EverythingWorld.Activities
         GUIStyle box, big2, small, cell; static Texture2D white;
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             // the shrink: the screen washes out as you go in, and clears again as you arrive (and the same coming back)
             var wash = phase == Phase.ShrinkOut ? phaseT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
-            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .93f, .8f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
+            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .93f, .8f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), white); GUI.color = keep; }
             if (Active != this || sim == null || MainMenu.Showing) return;
             box ??= GameFonts.Box(17, TextAnchor.MiddleLeft); big2 ??= GameFonts.Box(26, TextAnchor.MiddleCenter, true, true); small ??= GameFonts.Box(15, TextAnchor.MiddleCenter);
-            cell ??= new GUIStyle(GameFonts.Box(14, TextAnchor.MiddleCenter)) { normal = { background = null }, padding = new RectOffset(0, 0, 0, 0) };
+            cell ??= new GUIStyle(GameFonts.Box(22, TextAnchor.MiddleCenter)) { normal = { background = null }, padding = new RectOffset(0, 0, 0, 0) };
             var gh = course.holes[hole]; var total = 0; var parSoFar = 0; for (var i = 0; i < card.Length; i++) if (card[i] > 0) { total += card[i]; parSoFar += course.holes[i].par; }
             var vs = total - parSoFar; var left = Mathf.Max(0, Mathf.CeilToInt(HoleSeconds - (Time.time - holeStarted)));
             GUI.Box(new Rect(12, 12, 470, 34), $"  Hole {hole + 1}/{course.holes.Length}  ·  {gh.name}  ·  par {gh.par}  ·  strokes {strokes}", box);
@@ -356,16 +356,16 @@ namespace EverythingWorld.Activities
 
             if (phase == Phase.Aim)
             {
-                var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small);
+                var w = 360f; var r = new Rect(EverythingWorld.World.Ui.W / 2f - w / 2f, EverythingWorld.World.Ui.H - 96, w, 22); GUI.Box(r, "", small);
                 if (charging) { var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
-                Activity.Hint(Screen.height - 66, charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go to putt  ·  pull back to ease off") : "Aim with the mouse  ·  hold click and push forward to swing  ·  scroll to zoom  ·  Tab scores  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small);
+                Activity.Hint(EverythingWorld.World.Ui.H - 66, charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go to putt  ·  pull back to ease off") : "Aim with the mouse  ·  hold click and push forward to swing  ·  scroll to zoom  ·  Tab scores  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small);
             }
             else if (phase == Phase.HoleDone)
             {
                 var waiting = 0; foreach (var o in others.Values) if (StillOn(o)) waiting++;
-                if (waiting > 0) Activity.Hint(Screen.height - 66, (waiting == 1 ? "Waiting for one more ball" : $"Waiting for {waiting} more balls") + "  ·  click to watch", small);
+                if (waiting > 0) Activity.Hint(EverythingWorld.World.Ui.H - 66, (waiting == 1 ? "Waiting for one more ball" : $"Waiting for {waiting} more balls") + "  ·  click to watch", small);
             }
-            else if (phase == Phase.RoundDone) Activity.Hint(Screen.height - 66, "Enter  Play again   ·   hold X  Leave the course", small);
+            else if (phase == Phase.RoundDone) Activity.Hint(EverythingWorld.World.Ui.H - 66, "Enter  Play again   ·   hold X  Leave the course", small);
 
             var kb = Keyboard.current;
             if (phase == Phase.HoleDone || phase == Phase.RoundDone || (kb != null && kb.tabKey.isPressed)) Card();
@@ -375,11 +375,11 @@ namespace EverythingWorld.Activities
         {
             var rows = new List<(string name, Color c, int[] card)> { (Friends.PlayerName, PlayerOrb.Local != null ? PlayerOrb.Local.Color : Color.white, card) };
             foreach (var o in others.Values) if (Fresh(o)) rows.Add((o.name, o.color, o.card));
-            var n = course.holes.Length; const float nameW = 170f, colW = 30f, rowH = 26f; var w = nameW + colW * n + 70f + 24f; var h = rowH * (rows.Count + 2) + 20f;
-            var x = Screen.width / 2f - w / 2f; var y = Mathf.Max(170f, Screen.height / 2f - h / 2f - 40f);
-            GUI.Box(new Rect(x, y, w, h), "", box); x += 12f; y += 10f; var keep = GUI.contentColor;
-            GUI.contentColor = new Color(1f, .9f, .7f); GUI.Label(new Rect(x, y, nameW, rowH), "Hole", cell); for (var i = 0; i < n; i++) GUI.Label(new Rect(x + nameW + i * colW, y, colW, rowH), (i + 1).ToString(), cell); GUI.Label(new Rect(x + nameW + n * colW, y, 70f, rowH), "Total", cell);
-            y += rowH; GUI.contentColor = new Color(.8f, .85f, .9f); GUI.Label(new Rect(x, y, nameW, rowH), "Par", cell); for (var i = 0; i < n; i++) GUI.Label(new Rect(x + nameW + i * colW, y, colW, rowH), course.holes[i].par.ToString(), cell); GUI.Label(new Rect(x + nameW + n * colW, y, 70f, rowH), course.Par.ToString(), cell);
+            var n = course.holes.Length; const float nameW = 230f, rowH = 40f, totalW = 130f; var colW = Mathf.Min(54f, (EverythingWorld.World.Ui.W - 80f - nameW - totalW - 24f) / n); var w = nameW + colW * n + totalW + 24f; var h = rowH * (rows.Count + 2) + 24f;
+            var x = EverythingWorld.World.Ui.W / 2f - w / 2f; var y = Mathf.Max(170f, EverythingWorld.World.Ui.H / 2f - h / 2f - 40f);
+            GUI.Box(new Rect(x, y, w, h), "", box); x += 12f; y += 12f; var keep = GUI.contentColor;
+            GUI.contentColor = new Color(1f, .9f, .7f); GUI.Label(new Rect(x, y, nameW, rowH), "Hole", cell); for (var i = 0; i < n; i++) GUI.Label(new Rect(x + nameW + i * colW, y, colW, rowH), (i + 1).ToString(), cell); GUI.Label(new Rect(x + nameW + n * colW, y, totalW, rowH), "Total", cell);
+            y += rowH; GUI.contentColor = new Color(.8f, .85f, .9f); GUI.Label(new Rect(x, y, nameW, rowH), "Par", cell); for (var i = 0; i < n; i++) GUI.Label(new Rect(x + nameW + i * colW, y, colW, rowH), course.holes[i].par.ToString(), cell); GUI.Label(new Rect(x + nameW + n * colW, y, totalW, rowH), course.Par.ToString(), cell);
             foreach (var (name, c, sc) in rows)
             {
                 y += rowH; var total = 0; var par = 0; GUI.contentColor = Color.Lerp(c, Color.white, .35f); GUI.Label(new Rect(x, y, nameW, rowH), name, cell);
@@ -389,7 +389,7 @@ namespace EverythingWorld.Activities
                     GUI.contentColor = s == 0 ? new Color(1, 1, 1, .35f) : s < course.holes[i].par ? new Color(.5f, .95f, 1f) : s == course.holes[i].par ? Color.white : new Color(1f, .75f, .45f);
                     GUI.Label(new Rect(x + nameW + i * colW, y, colW, rowH), s == 0 ? "·" : s.ToString(), cell);
                 }
-                GUI.contentColor = Color.white; GUI.Label(new Rect(x + nameW + n * colW, y, 70f, rowH), total == 0 ? "" : $"{total} ({(total - par == 0 ? "E" : (total - par).ToString("+0;-0"))})", cell);
+                GUI.contentColor = Color.white; GUI.Label(new Rect(x + nameW + n * colW, y, totalW, rowH), total == 0 ? "" : $"{total} ({(total - par == 0 ? "E" : (total - par).ToString("+0;-0"))})", cell);
             }
             GUI.contentColor = keep;
         }

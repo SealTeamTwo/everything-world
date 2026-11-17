@@ -82,10 +82,10 @@ namespace EverythingWorld.World
         void OnDestroy() { var kb = Keyboard.current; if (kb != null) kb.onTextInput -= OnChar; Active = false; }
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (Active)
             {
-                var w = Mathf.Min(900f, Screen.width - 80f); var box = new Rect((Screen.width - w) / 2f, Screen.height - 230f, w, 170f);
+                var w = Mathf.Min(900f, EverythingWorld.World.Ui.W - 80f); var box = new Rect((EverythingWorld.World.Ui.W - w) / 2f, EverythingWorld.World.Ui.H - 230f, w, 170f);
                 GUI.color = new Color(0, 0, 0, .75f); GUI.DrawTexture(box, Texture2D.whiteTexture); GUI.color = Color.white;
                 var head = new GUIStyle(GUI.skin.label) { fontSize = 16 }; head.normal.textColor = new Color(1f, .85f, .5f);
                 GUI.Label(new Rect(box.x + 16, box.y + 10, box.width - 32, 24), "A note for Claude (Enter to save, Esc to throw away)", head);
@@ -97,7 +97,7 @@ namespace EverythingWorld.World
             if (flash <= 0f) return;
             var style = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleCenter };
             style.normal.textColor = new Color(1f, 1f, 1f, Mathf.Clamp01(flash));
-            GUI.Label(new Rect(0, Screen.height - 70, Screen.width, 40), flashText, style);
+            GUI.Label(new Rect(0, EverythingWorld.World.Ui.H - 70, EverythingWorld.World.Ui.W, 40), flashText, style);
         }
     }
 }

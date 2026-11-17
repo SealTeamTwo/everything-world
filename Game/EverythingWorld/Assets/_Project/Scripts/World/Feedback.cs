@@ -205,11 +205,11 @@ namespace EverythingWorld.World
 
         GUIStyle style;
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (flash <= 0f || MainMenu.Showing || string.IsNullOrEmpty(flashText)) return;
             style ??= GameFonts.Box(18, TextAnchor.MiddleCenter, true);
-            var keep = GUI.color; GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(flash)); var w = Mathf.Min(Screen.width - 40f, 860f);
-            var h = style.CalcHeight(new GUIContent(flashText), w) + 6f; GUI.Box(new Rect(Screen.width / 2f - w / 2f, Screen.height * .3f, w, h), flashText, style); GUI.color = keep;
+            var keep = GUI.color; GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(flash)); var w = Mathf.Min(EverythingWorld.World.Ui.W - 40f, 860f);
+            var h = style.CalcHeight(new GUIContent(flashText), w) + 6f; GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - w / 2f, EverythingWorld.World.Ui.H * .3f, w, h), flashText, style); GUI.color = keep;
         }
     }
 }

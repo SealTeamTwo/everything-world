@@ -215,15 +215,15 @@ namespace EverythingWorld.Player
         }
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (!Flying && Time.time - lockedNote < 2.5f)
             {
                 hudStyle ??= EverythingWorld.World.GameFonts.Box(16, TextAnchor.MiddleCenter);
-                GUI.Box(new Rect(Screen.width / 2f - 200, 12, 400, 30), "You can't fly. Not yet, anyway.", hudStyle);
+                GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 200, 12, 400, 30), "You can't fly. Not yet, anyway.", hudStyle);
             }
             if (!Flying) return;
             hudStyle ??= EverythingWorld.World.GameFonts.Box(16, TextAnchor.MiddleCenter);
-            GUI.Box(new Rect(Screen.width / 2f - 230, 12, 460, 30), "Flying  ·  Space up, Ctrl down, Shift faster  ·  F to land", hudStyle);
+            GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 230, 12, 460, 30), "Flying  ·  Space up, Ctrl down, Shift faster  ·  F to land", hudStyle);
         }
 
         static void SetCursorLocked(bool locked)

@@ -82,11 +82,11 @@ namespace EverythingWorld.World
         }
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (flash <= 0f) return;
             var style = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleCenter };
             style.normal.textColor = new Color(1f, 1f, 1f, Mathf.Clamp01(flash));
-            GUI.Label(new Rect(0, Screen.height - 70, Screen.width, 40), flashText, style);
+            GUI.Label(new Rect(0, EverythingWorld.World.Ui.H - 70, EverythingWorld.World.Ui.W, 40), flashText, style);
         }
     }
 }

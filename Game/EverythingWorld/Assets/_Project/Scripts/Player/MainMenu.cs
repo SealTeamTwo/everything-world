@@ -148,13 +148,13 @@ namespace EverythingWorld.Player
         }
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (!open || Skip) return;
             Styles(); GUI.depth = -50;
             var w = IslandWorldBuilder.Instance; var lay = w != null ? w.Data.layout : null;
-            const float W = 500f; var left = new Rect(0, 0, W, Screen.height);
-            GUI.DrawTexture(left, panel); GUI.DrawTexture(new Rect(W - 2f, 0, 2f, Screen.height), gold);
-            float x = 44f, y = Screen.height * .12f;
+            const float W = 500f; var left = new Rect(0, 0, W, EverythingWorld.World.Ui.H);
+            GUI.DrawTexture(left, panel); GUI.DrawTexture(new Rect(W - 2f, 0, 2f, EverythingWorld.World.Ui.H), gold);
+            float x = 44f, y = EverythingWorld.World.Ui.H * .12f;
             var tt = new GUIContent("THE EVERYTHING\nWORLD"); var th = title.CalcHeight(tt, W - 60f); GUI.Label(new Rect(x, y, W - 60f, th), tt, title); y += th + 10f;
             GUI.Label(new Rect(x, y, W - 70f, 24f), "A world built from one shared playlist.", sub); y += 26f;
             if (lay != null) GUI.Label(new Rect(x, y, W - 70f, 24f), $"{lay.hubSongs:N0} songs  ·  {lay.hubArtists:N0} artists  ·  {lay.islands.Length - 1} lands", small);
@@ -204,12 +204,12 @@ namespace EverythingWorld.Player
             if (w != null && !ready)
             {
                 var (done, total, name) = w.LoadProgress;
-                var by = Screen.height - 74f;
+                var by = EverythingWorld.World.Ui.H - 74f;
                 GUI.Label(new Rect(x, by, W - 70f, 22f), name != null ? $"Building {name}…" : "Building the world…", small);
                 GUI.DrawTexture(new Rect(x, by + 26f, W - 90f, 5f), faint); GUI.DrawTexture(new Rect(x, by + 26f, (W - 90f) * (total > 0 ? done / (float)total : 0f), 5f), gold);
                 GUI.Label(new Rect(x, by + 36f, W - 70f, 22f), $"{done} of {total} lands", small);
             }
-            else if (!entered) GUI.Label(new Rect(x, Screen.height - 50f, W - 70f, 22f), "The world is ready.", small);
+            else if (!entered) GUI.Label(new Rect(x, EverythingWorld.World.Ui.H - 50f, W - 70f, 22f), "The world is ready.", small);
         }
 
         void FriendsPage(float x, float y, float W)

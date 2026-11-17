@@ -256,18 +256,18 @@ namespace EverythingWorld.Activities
         GUIStyle box, big2, small2; static Texture2D white;
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
-            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .95f, .85f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
+            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .95f, .85f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;
             box ??= GameFonts.Box(17, TextAnchor.MiddleLeft); big2 ??= GameFonts.Box(24, TextAnchor.MiddleCenter, true, true); small2 ??= GameFonts.Box(15, TextAnchor.MiddleCenter);
             GUI.Box(new Rect(12, 12, 470, 34), runLeft >= 0f ? $"  Run: {sim.score - runStart:N0}  ·  {Mathf.CeilToInt(runLeft)} s left" : $"  Free skating  ·  {sim.score:N0}" + (Best > 0 ? $"  ·  your best run {Best:N0}" : ""), box);
             var y = 50f; if (Everything) { GUI.Box(new Rect(12, y, 240, 30), "  Everything Playlist", box); y += 34f; }
             foreach (var o in others.Values) if (Time.time - o.seen < 3f) { GUI.Box(new Rect(12, y, 330, 28), $"  {o.name}: {o.score:N0}", box); y += 30f; }
-            if (sim.saidT > 0f && sim.lastTrick.Length > 0 && Time.time > bannerUntil) GUI.Box(new Rect(Screen.width / 2f - 200, 96, 400, 44), sim.lastPoints > 0 ? $"{sim.lastTrick}   +{sim.lastPoints:N0}" : sim.lastTrick, small2);
+            if (sim.saidT > 0f && sim.lastTrick.Length > 0 && Time.time > bannerUntil) GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 200, 96, 400, 44), sim.lastPoints > 0 ? $"{sim.lastTrick}   +{sim.lastPoints:N0}" : sim.lastTrick, small2);
             if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
-            Activity.Hint(Screen.height - 66, "W push  ·  S brake  ·  A D steer and spin  ·  Space jump  ·  Q E flip  ·  Shift grab  ·  land on a rail to grind  ·  " + (runLeft < 0f ? "Enter 90-second run  ·  " : "") + "hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
+            Activity.Hint(EverythingWorld.World.Ui.H - 66, "W push  ·  S brake  ·  A D steer and spin  ·  Space jump  ·  Q E flip  ·  Shift grab  ·  land on a rail to grind  ·  " + (runLeft < 0f ? "Enter 90-second run  ·  " : "") + "hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
     }
 }

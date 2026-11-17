@@ -13,9 +13,9 @@ namespace EverythingWorld.Activities
         /// The line of keys along the bottom: as wide as its words, and on two lines if the window is too narrow for one.
         public static void Hint(float y, string text, UnityEngine.GUIStyle style)
         {
-            var max = UnityEngine.Screen.width - 24f; var w = style.CalcSize(new UnityEngine.GUIContent(text)).x + 8f; var keep = style.wordWrap; var h = 28f;
+            var max = EverythingWorld.World.Ui.W - 24f; var w = style.CalcSize(new UnityEngine.GUIContent(text)).x + 8f; var keep = style.wordWrap; var h = 28f;
             if (w > max) { w = max; style.wordWrap = true; h = style.CalcHeight(new UnityEngine.GUIContent(text), w) + 2f; y -= h - 28f; }
-            UnityEngine.GUI.Box(new UnityEngine.Rect(UnityEngine.Screen.width / 2f - w / 2f, y, w, h), text, style); style.wordWrap = keep;
+            UnityEngine.GUI.Box(new UnityEngine.Rect(EverythingWorld.World.Ui.W / 2f - w / 2f, y, w, h), text, style); style.wordWrap = keep;
         }
         static float cheerAt = -99f; static UnityEngine.Color cheerA, cheerB; static int cheerSeed;
         /// A burst of confetti over the whole screen, for a moment worth it (a strike, a birdie, a goal, a round won).
@@ -25,7 +25,7 @@ namespace EverythingWorld.Activities
         public static void DrawCheer()
         {
             var t = UnityEngine.Time.time - cheerAt; if (t > 1.9f || UnityEngine.Event.current.type != UnityEngine.EventType.Repaint) return;
-            var keep = UnityEngine.GUI.color; float W = UnityEngine.Screen.width, H = UnityEngine.Screen.height;
+            var keep = UnityEngine.GUI.color; float W = EverythingWorld.World.Ui.W, H = EverythingWorld.World.Ui.H;
             for (var i = 0; i < 80; i++)
             {
                 float h1 = UnityEngine.Mathf.Repeat(UnityEngine.Mathf.Sin(i * 12.9898f + cheerSeed) * 43758.5f, 1f), h2 = UnityEngine.Mathf.Repeat(UnityEngine.Mathf.Sin(i * 78.233f + cheerSeed) * 24634.6f, 1f), h3 = UnityEngine.Mathf.Repeat(UnityEngine.Mathf.Sin(i * 39.425f + cheerSeed) * 12414.3f, 1f);
@@ -39,10 +39,10 @@ namespace EverythingWorld.Activities
         /// A game's message across the top of the screen: as wide as it needs (up to most of the screen), wrapped, never cut off.
         public static void Banner(string text, float y, UnityEngine.GUIStyle style)
         {
-            var c = new UnityEngine.GUIContent(text); var w = UnityEngine.Mathf.Min(UnityEngine.Screen.width - 40f, 940f); var keep = style.wordWrap; style.wordWrap = true;
+            var c = new UnityEngine.GUIContent(text); var w = UnityEngine.Mathf.Min(EverythingWorld.World.Ui.W - 40f, 940f); var keep = style.wordWrap; style.wordWrap = true;
             var longest = 0f; foreach (var l in text.Split((char)10)) longest = UnityEngine.Mathf.Max(longest, style.CalcSize(new UnityEngine.GUIContent(l)).x);
             w = UnityEngine.Mathf.Clamp(longest + 8f, 300f, w); var h = style.CalcHeight(c, w) + 4f;
-            UnityEngine.GUI.Box(new UnityEngine.Rect(UnityEngine.Screen.width / 2f - w / 2f, y, w, h), text, style); style.wordWrap = keep;
+            UnityEngine.GUI.Box(new UnityEngine.Rect(EverythingWorld.World.Ui.W / 2f - w / 2f, y, w, h), text, style); style.wordWrap = keep;
         }
     }
 
@@ -431,10 +431,10 @@ namespace EverythingWorld.Activities
         GUIStyle box, big2, small2; static Texture2D white;
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = phase == Phase.ShrinkOut ? phaseT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
-            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(.85f, .9f, 1f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
+            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(.85f, .9f, 1f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), white); GUI.color = keep; }
             if (Active != this || phase == Phase.ShrinkIn || MainMenu.Showing) return;
             box ??= GameFonts.Box(17, TextAnchor.MiddleLeft); big2 ??= GameFonts.Box(26, TextAnchor.MiddleCenter, true, true); small2 ??= GameFonts.Box(15, TextAnchor.MiddleCenter);
             string top, second;
@@ -448,12 +448,12 @@ namespace EverythingWorld.Activities
             if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
             if (phase == Phase.Aim)
             {
-                var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small2);
+                var w = 360f; var r = new Rect(EverythingWorld.World.Ui.W / 2f - w / 2f, EverythingWorld.World.Ui.H - 96, w, 22); GUI.Box(r, "", small2);
                 if (charging) { var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
-                Activity.Hint(Screen.height - 66, charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go to play  ·  pull back to ease off") : "Aim with the mouse (Shift for fine)  ·  hold click and push forward to swing  ·  scroll to zoom  ·  hold R new game  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
+                Activity.Hint(EverythingWorld.World.Ui.H - 66, charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go to play  ·  pull back to ease off") : "Aim with the mouse (Shift for fine)  ·  hold click and push forward to swing  ·  scroll to zoom  ·  hold R new game  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
             }
-            else if (phase == Phase.Over) Activity.Hint(Screen.height - 66, "Enter  New game   ·   hold X  Leave the table", small2);
-            else if (phase == Phase.Watch) Activity.Hint(Screen.height - 66, "Look round with the mouse  ·  hold X to leave", small2);
+            else if (phase == Phase.Over) Activity.Hint(EverythingWorld.World.Ui.H - 66, "Enter  New game   ·   hold X  Leave the table", small2);
+            else if (phase == Phase.Watch) Activity.Hint(EverythingWorld.World.Ui.H - 66, "Look round with the mouse  ·  hold X to leave", small2);
         }
     }
 }

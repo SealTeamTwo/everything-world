@@ -369,18 +369,18 @@ namespace EverythingWorld.Activities
         GUIStyle box, big2, small2; static Texture2D white;
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
-            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .9f, .75f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
+            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .9f, .75f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;
             box ??= GameFonts.Box(17, TextAnchor.MiddleLeft); big2 ??= GameFonts.Box(24, TextAnchor.MiddleCenter, true, true); small2 ??= GameFonts.Box(15, TextAnchor.MiddleCenter);
             var list = ""; for (var i = 0; i < hoops.Count; i++) list += (i > 0 ? "   " : "") + ((Made & (1 << i)) != 0 ? "● " : "○ ") + hoops[i].name;
             GUI.Box(new Rect(12, 12, 860, 34), "  " + list, box);
             if (Everything) GUI.Box(new Rect(12, 50, 240, 30), "  Everything Playlist", box);
             if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
-            if (charging && held != null) { var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small2); var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
-            Activity.Hint(Screen.height - 66, held == null ? "Click a ball to pick it up (or one a friend is dribbling, to steal it)  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : "") : charging ? (arcGood ? "Gold: it's going in. Let go!" : "Let go to shoot  ·  look up for a higher arc  ·  right click to cancel") : "Hold click to wind up a shot  ·  E put it down  ·  hold X to leave", small2);
+            if (charging && held != null) { var w = 360f; var r = new Rect(EverythingWorld.World.Ui.W / 2f - w / 2f, EverythingWorld.World.Ui.H - 96, w, 22); GUI.Box(r, "", small2); var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
+            Activity.Hint(EverythingWorld.World.Ui.H - 66, held == null ? "Click a ball to pick it up (or one a friend is dribbling, to steal it)  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : "") : charging ? (arcGood ? "Gold: it's going in. Let go!" : "Let go to shoot  ·  look up for a higher arc  ·  right click to cancel") : "Hold click to wind up a shot  ·  E put it down  ·  hold X to leave", small2);
         }
     }
 }

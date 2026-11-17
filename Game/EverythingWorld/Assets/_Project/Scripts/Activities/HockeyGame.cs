@@ -239,17 +239,17 @@ namespace EverythingWorld.Activities
         GUIStyle box, big2, small2; static Texture2D white;
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
-            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(.8f, .9f, 1f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
+            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(.8f, .9f, 1f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;
             box ??= GameFonts.Box(17, TextAnchor.MiddleLeft); big2 ??= GameFonts.Box(26, TextAnchor.MiddleCenter, true, true); small2 ??= GameFonts.Box(15, TextAnchor.MiddleCenter);
             var seat = Seat(); var mine = seat == 1 ? 1 : 0; var r = Roster(); var them = r.Count > 1 ? (others.TryGetValue(r[seat == 0 ? 1 : 0].id, out var o) ? o.name : "Friend") : "The table";
             GUI.Box(new Rect(12, 12, 470, 34), seat < 2 ? $"  You {sim.score[mine]}  ·  {them} {sim.score[1 - mine]}  ·  first to {Target}" : $"  {sim.score[0]} - {sim.score[1]}  ·  first to {Target}  (watching)", box);
             if (Everything) GUI.Box(new Rect(12, 50, 240, 30), "  Everything Playlist", box);
             if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
-            Activity.Hint(Screen.height - 66, winner >= 0 && seat == 0 ? "Enter  New game   ·   hold X  Leave the table" : seat < 2 ? "Move the mouse to move your mallet  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : "") : "Hold X to leave", small2);
+            Activity.Hint(EverythingWorld.World.Ui.H - 66, winner >= 0 && seat == 0 ? "Enter  New game   ·   hold X  Leave the table" : seat < 2 ? "Move the mouse to move your mallet  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : "") : "Hold X to leave", small2);
         }
     }
 }

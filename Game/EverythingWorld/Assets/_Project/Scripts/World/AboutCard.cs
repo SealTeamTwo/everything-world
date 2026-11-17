@@ -134,11 +134,11 @@ namespace EverythingWorld.World
         }
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (artist == null) return;
             Styles();
-            float w = Mathf.Min(820f, Screen.width - 60f), h = Mathf.Min(560f, Screen.height - 80f);
-            var r = new Rect((Screen.width - w) / 2f, (Screen.height - h) / 2f, w, h);
+            float w = Mathf.Min(820f, EverythingWorld.World.Ui.W - 60f), h = Mathf.Min(560f, EverythingWorld.World.Ui.H - 80f);
+            var r = new Rect((EverythingWorld.World.Ui.W - w) / 2f, (EverythingWorld.World.Ui.H - h) / 2f, w, h);
             GUI.Box(r, GUIContent.none, card);
             GUI.DrawTexture(new Rect(r.x, r.y, r.width, 3f), line);
             const float pad = 26f, pic = 200f;

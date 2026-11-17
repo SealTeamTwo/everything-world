@@ -180,16 +180,16 @@ namespace EverythingWorld.World
         }
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             var t = Time.time;
             if (wasHere && t - arrived < 9f && player != null && !player.Controlled)
             {
                 big ??= GameFonts.Box(22, TextAnchor.MiddleCenter, false, true); hud ??= GameFonts.Box(16, TextAnchor.MiddleCenter);
-                GUI.Box(new Rect(Screen.width / 2f - 150, 54, 300, 38), "HYPER!", big);
-                GUI.Box(new Rect(Screen.width / 2f - 360, 96, 720, 30), "Shift sprints  ·  Space, then Space again in the air  ·  jump at a wall to kick off it  ·  touch a rail to ride it", hud);
+                GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 150, 54, 300, 38), "HYPER!", big);
+                GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 360, 96, 720, 30), "Shift sprints  ·  Space, then Space again in the air  ·  jump at a wall to kick off it  ·  touch a rail to ride it", hud);
             }
-            if (t - splashed < 2.2f) { hud ??= GameFonts.Box(16, TextAnchor.MiddleCenter); GUI.Box(new Rect(Screen.width / 2f - 150, 168, 300, 30), "Splash! Back where you last stood.", hud); }
-            if (t - starNote < 2.5f) { hud ??= GameFonts.Box(16, TextAnchor.MiddleCenter); GUI.Box(new Rect(Screen.width / 2f - 90, 132, 180, 30), "★ " + starCount + (starCount == 1 ? " star" : " stars"), hud); }
+            if (t - splashed < 2.2f) { hud ??= GameFonts.Box(16, TextAnchor.MiddleCenter); GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 150, 168, 300, 30), "Splash! Back where you last stood.", hud); }
+            if (t - starNote < 2.5f) { hud ??= GameFonts.Box(16, TextAnchor.MiddleCenter); GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 90, 132, 180, 30), "★ " + starCount + (starCount == 1 ? " star" : " stars"), hud); }
         }
 
         void OnDisable()

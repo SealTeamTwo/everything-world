@@ -39,7 +39,7 @@ namespace EverythingWorld.Music
 
             var slot = director != null ? director.CurrentSlot : default;
             var playing = director != null && director.PlayingScene != null && slot.IsValid && !MusicDirector.Silent;
-            var box = new Rect(24, Screen.height - 148, 460, 124);
+            var box = new Rect(24, EverythingWorld.World.Ui.H - 148, 460, 124);
             var keep = GUI.color; GUI.color = new Color(1f, 1f, 1f, a);
             GUI.Box(box, "", fonts);
             if (!playing) GUI.Label(new Rect(box.x + 18, box.y + 46, 420, 30), "No music here", artist);
@@ -62,7 +62,7 @@ namespace EverythingWorld.Music
 
         /// The music details (for checking Spotify): F1 shows and hides them.
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (director == null || EverythingWorld.Player.MainMenu.Showing) return;
             NowPlayingCard();
             if (!show) return;

@@ -185,7 +185,7 @@ namespace EverythingWorld.World
         }
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (nearTower == null || IslandWorldBuilder.Instance == null || Frozen) return;
             style ??= GameFonts.Box(17, TextAnchor.UpperLeft);
             var towers = IslandWorldBuilder.Instance.Towers;
@@ -195,7 +195,7 @@ namespace EverythingWorld.World
                 var info = towers[i].GetComponent<TowerInfo>();
                 text += info == nearTower ? $"\n   (you are here) {info.towerName}" : $"\n{i + 1}  {info.towerName}  ({info.realm})";
             }
-            GUI.Box(new Rect(Screen.width - 432, 12, 420, 62 + 21 * towers.Count), text, style);
+            GUI.Box(new Rect(EverythingWorld.World.Ui.W - 432, 12, 420, 62 + 21 * towers.Count), text, style);
         }
     }
 }

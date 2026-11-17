@@ -755,7 +755,7 @@ namespace EverythingWorld.World
         // ---------- the loading screen ----------
         GUIStyle loadTitle, loadText; Texture2D loadBack, loadBar, loadBarOff;
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (!Loading || EverythingWorld.Player.MainMenu.Showing) return;   // the title screen shows the progress itself
             if (loadBack == null)
             {
@@ -766,13 +766,13 @@ namespace EverythingWorld.World
                 loadText = new GUIStyle { font = GameFonts.Speech, fontSize = 18, alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(.85f, .83f, .8f) } };
             }
             GUI.depth = -100;
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), loadBack);
-            var cy = Screen.height / 2f;
-            GUI.Label(new Rect(0, cy - 90, Screen.width, 60), "THE EVERYTHING WORLD", loadTitle);
-            GUI.Label(new Rect(0, cy - 20, Screen.width, 30), loadName != null ? $"Building {loadName}\u2026" : "Getting ready\u2026", loadText);
-            var w = Mathf.Min(520f, Screen.width - 80f); var bar = new Rect((Screen.width - w) / 2f, cy + 24, w, 8);
+            GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), loadBack);
+            var cy = EverythingWorld.World.Ui.H / 2f;
+            GUI.Label(new Rect(0, cy - 90, EverythingWorld.World.Ui.W, 60), "THE EVERYTHING WORLD", loadTitle);
+            GUI.Label(new Rect(0, cy - 20, EverythingWorld.World.Ui.W, 30), loadName != null ? $"Building {loadName}\u2026" : "Getting ready\u2026", loadText);
+            var w = Mathf.Min(520f, EverythingWorld.World.Ui.W - 80f); var bar = new Rect((EverythingWorld.World.Ui.W - w) / 2f, cy + 24, w, 8);
             GUI.DrawTexture(bar, loadBarOff); GUI.DrawTexture(new Rect(bar.x, bar.y, bar.width * (loadTotal > 0 ? loadDone / (float)loadTotal : 0f), bar.height), loadBar);
-            GUI.Label(new Rect(0, cy + 40, Screen.width, 30), $"{loadDone} of {loadTotal} lands", loadText);
+            GUI.Label(new Rect(0, cy + 40, EverythingWorld.World.Ui.W, 30), $"{loadDone} of {loadTotal} lands", loadText);
         }
 
         // ---------- island name signs ----------

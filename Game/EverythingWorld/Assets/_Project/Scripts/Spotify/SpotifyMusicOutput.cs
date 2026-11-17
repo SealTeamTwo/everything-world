@@ -123,10 +123,10 @@ namespace EverythingWorld.Spotify
 
         Texture2D barOn, barOff;
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (Time.unscaledTime > volumeShownUntil) return;
             volumeStyle ??= EverythingWorld.World.GameFonts.Box(16, TextAnchor.MiddleLeft);
-            var r = new Rect(Screen.width / 2f - 210, Screen.height - 90, 420, 34);
+            var r = new Rect(EverythingWorld.World.Ui.W / 2f - 210, EverythingWorld.World.Ui.H - 90, 420, 34);
             if (volumeNote != null || volume < 0) { volumeStyle.alignment = TextAnchor.MiddleCenter; GUI.Box(r, volumeNote ?? "Spotify volume…", volumeStyle); return; }
             volumeStyle.alignment = TextAnchor.MiddleLeft; GUI.Box(r, $"Spotify volume  {volume}%", volumeStyle);
             if (barOn == null) { barOn = new Texture2D(1, 1); barOn.SetPixel(0, 0, new Color(1f, .82f, .45f)); barOn.Apply(); barOff = new Texture2D(1, 1); barOff.SetPixel(0, 0, new Color(1f, 1f, 1f, .18f)); barOff.Apply(); }

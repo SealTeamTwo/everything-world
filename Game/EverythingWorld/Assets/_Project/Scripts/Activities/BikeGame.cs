@@ -265,21 +265,21 @@ namespace EverythingWorld.Activities
         GUIStyle box, big2, small2; static Texture2D white;
 
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
-            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .7f, .9f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
+            if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .7f, .9f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;
             box ??= GameFonts.Box(17, TextAnchor.MiddleLeft); big2 ??= GameFonts.Box(30, TextAnchor.MiddleCenter, true, true); small2 ??= GameFonts.Box(15, TextAnchor.MiddleCenter);
             var now = SharedChance.Now; var into = roundStart < 0 ? -1 : now - roundStart; var up = 0; foreach (var b in all) if (b.alive) up++;
             GUI.Box(new Rect(12, 12, 470, 34), $"  Riding: {up} of {all.Count}  ·  rounds won: {Wins}" + (Unlocked ? "" : $" of {Bar}"), box);
             if (Everything) GUI.Box(new Rect(12, 50, 240, 30), "  Everything Playlist", box);
             { var ty = Everything ? 84f : 50f; foreach (var kv in tally) { GUI.Box(new Rect(12, ty, 260, 28), $"  {kv.Key}: {kv.Value}", box); ty += 30f; } }
-            if (inRound && into >= 0 && into < CountIn) GUI.Box(new Rect(Screen.width / 2f - 120, Screen.height / 2f - 130, 240, 70), Mathf.CeilToInt((float)(CountIn - into)).ToString(), big2);
-            else if (overAt >= 0) GUI.Box(new Rect(Screen.width / 2f - 200, 150, 400, 44), $"Next round in {Mathf.Max(1, Mathf.CeilToInt((float)(overAt + After - now)))}", small2);
-            else if (!inRound) GUI.Box(new Rect(Screen.width / 2f - 200, 150, 400, 44), roundStart < 0 ? "Getting ready..." : "Watching: you ride in the next round", small2);
+            if (inRound && into >= 0 && into < CountIn) GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 120, EverythingWorld.World.Ui.H / 2f - 130, 240, 70), Mathf.CeilToInt((float)(CountIn - into)).ToString(), big2);
+            else if (overAt >= 0) GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 200, 150, 400, 44), $"Next round in {Mathf.Max(1, Mathf.CeilToInt((float)(overAt + After - now)))}", small2);
+            else if (!inRound) GUI.Box(new Rect(EverythingWorld.World.Ui.W / 2f - 200, 150, 400, 44), roundStart < 0 ? "Getting ready..." : "Watching: you ride in the next round", small2);
             if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
-            Activity.Hint(Screen.height - 66, "A and D (or arrows, or the mouse buttons) turn  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
+            Activity.Hint(EverythingWorld.World.Ui.H - 66, "A and D (or arrows, or the mouse buttons) turn  ·  hold X to leave" + (Unlocked ? "  ·  P playlist" : ""), small2);
         }
     }
 }

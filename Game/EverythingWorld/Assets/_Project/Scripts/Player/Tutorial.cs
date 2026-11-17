@@ -69,10 +69,10 @@ namespace EverythingWorld.Player
 
         Texture2D whiteTex;
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (white <= 0f) return;
             if (whiteTex == null) { whiteTex = new Texture2D(1, 1); whiteTex.SetPixel(0, 0, new Color(1f, .99f, .96f)); whiteTex.Apply(); }
-            GUI.depth = -200; var old = GUI.color; GUI.color = new Color(1, 1, 1, white); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), whiteTex); GUI.color = old;
+            GUI.depth = -200; var old = GUI.color; GUI.color = new Color(1, 1, 1, white); GUI.DrawTexture(new Rect(0, 0, EverythingWorld.World.Ui.W, EverythingWorld.World.Ui.H), whiteTex); GUI.color = old;
         }
 
         // ---------------------------------------------------------------- the walk

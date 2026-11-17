@@ -119,7 +119,7 @@ namespace EverythingWorld.Player
         /// glowing dot, their name and how far away they are. Off the screen, the marker waits at the edge, on the
         /// side they're on. Close by and in plain view it goes away (their orb and name are enough).
         void OnGUI()
-        {
+        { EverythingWorld.World.Ui.Begin();
             if (remotes.Count == 0 || MainMenu.Showing || Event.current.type != EventType.Repaint || EverythingWorld.Activities.Activity.Any) return;
             var cam = Camera.main; if (cam == null) return;
             tagStyle ??= new GUIStyle(GameFonts.Box(15, TextAnchor.MiddleCenter)) { padding = new RectOffset(8, 8, 3, 3) };
@@ -133,15 +133,15 @@ namespace EverythingWorld.Player
                 var blocked = dist > .6f && Physics.Linecast(from, p - to / dist * .5f, ~0, QueryTriggerInteraction.Ignore);
                 if (inView && !blocked && dist < 20f) continue;   // plainly there
                 var sp = cam.WorldToScreenPoint(p + Vector3.up * .25f);
-                var at = new Vector2(sp.x, Screen.height - sp.y);
-                var centre = new Vector2(Screen.width / 2f, Screen.height / 2f);
+                var at = EverythingWorld.World.Ui.FromScreen(sp);
+                var centre = new Vector2(EverythingWorld.World.Ui.W / 2f, EverythingWorld.World.Ui.H / 2f);
                 const float edge = 46f;
-                var onScreen = sp.z > 0f && at.x > edge && at.x < Screen.width - edge && at.y > edge && at.y < Screen.height - edge;
+                var onScreen = sp.z > 0f && at.x > edge && at.x < EverythingWorld.World.Ui.W - edge && at.y > edge && at.y < EverythingWorld.World.Ui.H - edge;
                 if (!onScreen)
                 {
                     // to the edge, on their side (behind you: the opposite way, so it still points the right way round)
                     var d = at - centre; if (sp.z < 0f) d = -d; if (d.sqrMagnitude < 1f) d = Vector2.down;
-                    var sx = (Screen.width / 2f - edge) / Mathf.Max(.001f, Mathf.Abs(d.x)); var sy = (Screen.height / 2f - edge) / Mathf.Max(.001f, Mathf.Abs(d.y));
+                    var sx = (EverythingWorld.World.Ui.W / 2f - edge) / Mathf.Max(.001f, Mathf.Abs(d.x)); var sy = (EverythingWorld.World.Ui.H / 2f - edge) / Mathf.Max(.001f, Mathf.Abs(d.y));
                     at = centre + d * Mathf.Min(sx, sy);
                 }
                 var c = r.orb.Color; var size = onScreen ? 22f : 18f;
@@ -150,7 +150,7 @@ namespace EverythingWorld.Player
                 GUI.color = Color.white;
                 var text = $"{r.label.text}{(r.orb.shades ? "  \u00b7  shades on" : "")}  \u00b7  {(dist < 1000f ? $"{dist:0} m" : $"{dist / 1000f:0.0} km")}";
                 var tw = tagStyle.CalcSize(new GUIContent(text)).x;
-                var lx = Mathf.Clamp(at.x - tw / 2f, 6f, Screen.width - tw - 6f); var ly = at.y + size / 2f + 3f; if (ly > Screen.height - 34f) ly = at.y - size / 2f - 30f;
+                var lx = Mathf.Clamp(at.x - tw / 2f, 6f, EverythingWorld.World.Ui.W - tw - 6f); var ly = at.y + size / 2f + 3f; if (ly > EverythingWorld.World.Ui.H - 34f) ly = at.y - size / 2f - 30f;
                 GUI.Label(new Rect(lx, ly, tw, 26f), text, tagStyle);
             }
             GUI.color = keep;
