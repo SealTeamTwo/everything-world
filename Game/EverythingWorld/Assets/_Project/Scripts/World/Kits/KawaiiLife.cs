@@ -27,6 +27,9 @@ namespace EverythingWorld.World
         public List<(Transform t, Vector3 axis, float speed)> spinners = new List<(Transform, Vector3, float)>();
         public List<(Transform t, Vector3 home)> starsToGet = new List<(Transform, Vector3)>();
         public List<Vector3> milkFeet = new List<Vector3>();
+        /// The milk round the Cake: where it is, and how high. Fall in and you are put back on the last firm thing you stood on.
+        public System.Func<float, float, bool> inMilk; public float milkY;
+        readonly List<(float t, Vector3 at)> firm = new List<(float, Vector3)>(); float nextFirm, splashed = -99f; int splashes;
         public List<(string song, Material m, Color c)> songGlows = new List<(string, Material, Color)>();
         readonly Dictionary<string, float> songAmount = new Dictionary<string, float>();
         readonly Dictionary<Transform, float> starBack = new Dictionary<Transform, float>();
@@ -127,6 +130,19 @@ namespace EverythingWorld.World
             foreach (var (tr, home, ph) in floaters) if (tr != null) { tr.position = home + Vector3.up * (Mathf.Sin(t * .9f + ph) * 1.1f + pulse * .25f); tr.Rotate(0f, dt * 14f, 0f, Space.World); }
             foreach (var (tr, axis, sp) in spinners) if (tr != null) tr.Rotate(axis, dt * sp * (1f + energy), Space.Self);
 
+            // the milk: remember where you last stood firm, and put you back there if you fall in
+            if (here && player != null && inMilk != null && !player.Flying && !player.Controlled && !player.Seated)
+            {
+                var pos = player.transform.position; var feetY = pos.y - player.Height / 2f; var overMilk = inMilk(pos.x, pos.z);
+                if (overMilk && feetY < milkY + .15f)
+                {
+                    Burst(new Vector3(pos.x, milkY + .3f, pos.z), 80, 6f);
+                    var back = firm.Count > 0 ? firm[0].at : center + Vector3.up * 2f; for (var i = firm.Count - 1; i >= 0; i--) if (t - firm[i].t > .9f) { back = firm[i].at; break; }
+                    player.Warp(back); splashed = t; splashes++; firm.Clear(); firm.Add((t - 2f, back));
+                }
+                else if (player.Grounded && feetY > milkY + 1.2f && t >= nextFirm) { nextFirm = t + .3f; firm.Add((t, pos)); if (firm.Count > 12) firm.RemoveAt(0); }
+            }
+
             // stars: spin, and burst when you reach one
             var pp = player != null ? player.transform.position : Vector3.one * 99999f;
             foreach (var (tr, home) in starsToGet)
@@ -172,6 +188,7 @@ namespace EverythingWorld.World
                 GUI.Box(new Rect(Screen.width / 2f - 150, 54, 300, 38), "HYPER!", big);
                 GUI.Box(new Rect(Screen.width / 2f - 360, 96, 720, 30), "Shift sprints  ·  Space, then Space again in the air  ·  jump at a wall to kick off it  ·  touch a rail to ride it", hud);
             }
+            if (t - splashed < 2.2f) { hud ??= GameFonts.Box(16, TextAnchor.MiddleCenter); GUI.Box(new Rect(Screen.width / 2f - 150, 168, 300, 30), "Splash! Back where you last stood.", hud); }
             if (t - starNote < 2.5f) { hud ??= GameFonts.Box(16, TextAnchor.MiddleCenter); GUI.Box(new Rect(Screen.width / 2f - 90, 132, 180, 30), "★ " + starCount + (starCount == 1 ? " star" : " stars"), hud); }
         }
 

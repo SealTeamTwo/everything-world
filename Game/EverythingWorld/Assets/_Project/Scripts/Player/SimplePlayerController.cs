@@ -52,6 +52,10 @@ namespace EverythingWorld.Player
             if (velocity.y != 0f) { verticalVelocity = velocity.y; lastGrounded = -9f; airJumpUsed = false; }
             thrown = new Vector3(velocity.x, 0f, velocity.z);
         }
+        /// Puts you somewhere else at once (the body's middle), standing still: a land setting you back after a fall.
+        public void Warp(Vector3 middle) { if (Controlled || Seated) return; var on = controller.enabled; controller.enabled = false; transform.position = middle; controller.enabled = on; verticalVelocity = 0f; thrown = Vector3.zero; lastGrounded = -9f; }
+        public bool Grounded => controller != null && controller.enabled && controller.isGrounded;
+        public float Height => controller != null ? controller.height : 1.8f;
         /// How fast you are moving over the ground, in metres a second (for things that react to speed).
         public float GroundSpeed { get; private set; }
         float lockedNote = -9f;

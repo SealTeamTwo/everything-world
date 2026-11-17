@@ -41,7 +41,7 @@ namespace EverythingWorld.World
             pinkM = WorldMaterials.Glow(Pink, .14f); yellowM = WorldMaterials.Glow(Yellow, .14f); sodaM = WorldMaterials.Glow(Soda, .14f); mintM = WorldMaterials.Glow(Mint, .12f); lilacM = WorldMaterials.Glow(Lilac, .14f); cherryM = WorldMaterials.Glow(Cherry, .2f);
             stick = WorldMaterials.Surface(new Color(.95f, .93f, .9f), Surface.Painted); glass = WorldMaterials.Glow(new Color(.75f, .95f, 1f), .5f);
             lampM = new Material(WorldMaterials.Glow(Yellow, 1.5f)) { name = "Kawaii lamps" }; jellyM = new Material(WorldMaterials.Glow(new Color(1f, .4f, .7f), 1.1f)) { name = "Kawaii jelly" };
-            railM = new Material(WorldMaterials.Glow(Soda, 1.3f)) { name = "Kawaii rails" }; milkM = new Material(WorldMaterials.Glow(new Color(1f, .8f, .88f), .7f)) { name = "Kawaii milk" }; starM = new Material(WorldMaterials.Glow(Yellow, 1.8f)) { name = "Kawaii stars" };
+            railM = new Material(WorldMaterials.Glow(Soda, 1.3f)) { name = "Kawaii rails" }; milkM = new Material(WorldMaterials.Glow(new Color(1f, .5f, .7f), .1f)) { name = "Kawaii milk" }; starM = new Material(WorldMaterials.Glow(Yellow, 1.8f)) { name = "Kawaii stars" };
         }
 
         Material GlowM(Color c, float s = 1.4f) => WorldMaterials.Glow(c, s * .65f);
@@ -77,39 +77,53 @@ namespace EverythingWorld.World
         public override void ShapeGround(IslandWorldData data, int index)
         {
             var isl = data.layout.islands[index]; heart2 = new Vector2(isl.labelX, isl.labelZ); waterY = data.layout.waterLevel;
-            // the cake's tiers: every seven metres of height becomes a flat with a short steep riser up to the next
+            // the three rings: the Cake in the middle, the Milk round it, the Crust along the shore (KawaiiMilk.cs)
+            ShapeZones(data, index);
+            // the Cake's tiers: every seven metres of height becomes a flat with a short steep riser up to the next
             for (var i = 0; i < data.heights.Length; i++)
             {
-                if (data.islandIds[i] != index) continue; var h = data.heights[i]; if (h < 3f) continue;
+                if (zone[i] != 3) continue; var h = Mathf.Max(data.heights[i], CakeMin + .2f);
                 var b = Mathf.Floor(h / Tier) * Tier; var f = (h - b) / Tier;
-                data.heights[i] = Mathf.Max(3f, b + .4f * f + Ease(.72f, 1f, f) * (Tier - .4f));
+                data.heights[i] = Mathf.Max(CakeMin, b + .4f * f + Ease(.72f, 1f, f) * (Tier - .4f));
             }
-            bool Inside(Vector2 p, float m) { if (data.IslandAt(p.x, p.y) != isl) return false; for (var k = 0; k < 12; k++) { var a = k * Mathf.PI / 6f; if (data.IslandAt(p.x + Mathf.Cos(a) * m, p.y + Mathf.Sin(a) * m) != isl) return false; } return true; }
             plazaY = Mathf.Max(data.HeightAt(heart2.x, heart2.y), waterY + 6f);
-            // the Parfait stands a little way off the plaza, toward whichever side has the most land
+            // the Parfait stands a little way off the plaza, toward the widest stretch of milk
             var far = 0f;
-            for (var k = 0; k < 12; k++) { var dir = new Vector2(Mathf.Sin(k * Mathf.PI / 6f), Mathf.Cos(k * Mathf.PI / 6f)); var len = 40f; while (len < 420f && Inside(heart2 + dir * (len + 20f), 24f)) len += 10f; if (len > far) { far = len; D2 = dir; } }
+            for (var k = 0; k < 12; k++) { var dir = new Vector2(Mathf.Sin(k * Mathf.PI / 6f), Mathf.Cos(k * Mathf.PI / 6f)); var len = March(dir, 1, 200f); if (len > far) { far = len; D2 = dir; } }
             S2 = new Vector2(-D2.y, D2.x); parfait2 = P2(62f, 0);
-            // the Runs, four ways out from the summit, as far as each has land
+            // the Runs, four ways out from the summit to the Cake's edge; their rails go on over the milk to the Crust.
+            // The courses come back between them.
             for (var r = 0; r < 4; r++)
             {
-                var ang = (r * 90f + 135f) * Mathf.Deg2Rad; var dir = (D2 * Mathf.Cos(ang) + S2 * Mathf.Sin(ang)).normalized; var len = 60f;
-                while (len < 460f && Inside(heart2 + dir * (len + 14f), 22f)) len += 8f;
-                runDir[r] = dir; runLen[r] = len;
+                var ang = (r * 90f + 135f) * Mathf.Deg2Rad; var dir = (D2 * Mathf.Cos(ang) + S2 * Mathf.Sin(ang)).normalized;
+                runDir[r] = dir; runLen[r] = Mathf.Max(60f, March(dir, 3, 60f, true) - 8f);
+                var crustIn = March(dir, 1, runLen[r]); runCrust[r] = heart2 + dir * ((crustIn < 0f ? runLen[r] + 120f : crustIn) + 14f);
+            }
+            for (var w = 0; w < 4; w++) courseDir[w] = (runDir[w] + runDir[(w + 1) % 4]).normalized;
+            // a causeway from each bridge: from the Crust's inner edge straight to the Cake
+            causeways.Clear();
+            foreach (var b in data.layout.bridges)
+            {
+                if (b.a != index && b.b != index) continue; var end = b.a == index ? new Vector2(b.ax, b.az) : new Vector2(b.bx, b.bz);
+                var dir = (end - heart2).normalized; var cake = March(dir, 3, 60f, true); var crustIn = March(dir, 1, cake + 8f); if (cake < 0f || crustIn < 0f) continue;
+                causeways.Add((heart2 + dir * (crustIn + 5f), heart2 + dir * (cake - 5f)));
             }
             var avoid = new List<Vector3> { new Vector3(parfait2.x, 34f, parfait2.y) };
             for (var d = 0f; d <= 62f; d += 16f) avoid.Add(new Vector3(heart2.x + D2.x * d, 12f, heart2.y + D2.y * d));
             for (var r = 0; r < 4; r++) for (var d = 20f; d <= runLen[r] + 16f; d += 14f) { var p = heart2 + runDir[r] * d; avoid.Add(new Vector3(p.x, 13f, p.y)); }
+            for (var w = 0; w < 4; w++) { var e = March(courseDir[w], 3, 60f, true); var p = heart2 + courseDir[w] * (e - 8f); avoid.Add(new Vector3(p.x, 14f, p.y)); }
+            foreach (var (_, cake2) in causeways) avoid.Add(new Vector3(cake2.x, 16f, cake2.y));
+            // (the milk is not ground you can stand on, so the artists settle on the Cake)
             foreach (var a in data.layout.artists) if (a.sceneId == isl.sceneId) a.r = Mathf.Max(a.r, Foot(a) + 6f);
-            ArtistPlacement.Spread(data, index, 58f, heart2, 44f, 40f, avoid, null, Land, 330f);
+            ArtistPlacement.Spread(data, index, 52f, heart2, 44f, 40f, avoid, null, Land, 185f);
             Level(data, index, heart2, 24f, 36f, plazaY);
-            parfaitY = Mathf.Max(data.HeightAt(parfait2.x, parfait2.y), waterY + 4f);
+            parfaitY = Mathf.Max(data.HeightAt(parfait2.x, parfait2.y), CakeMin);
             Level(data, index, parfait2, 22f, 32f, parfaitY);
             foreach (var a in data.layout.artists)
             {
                 if (a.sceneId != isl.sceneId) continue;
                 // each artist stands on a tier: the flat of the tier their spot is nearest, with room to stand back from it
-                var tier = Mathf.Max(Mathf.Round(data.HeightAt(a.x, a.z) / Tier) * Tier, waterY + 3f);
+                var tier = Mathf.Max(Mathf.Round(data.HeightAt(a.x, a.z) / Tier) * Tier, CakeMin);
                 Level(data, index, new Vector2(a.x, a.z), Foot(a) + 5f, Foot(a) + 20f, tier);
             }
         }
@@ -122,7 +136,7 @@ namespace EverythingWorld.World
                 for (var col = 0; col < data.Nx; col++)
                 {
                     var x = col * data.Step; if (Mathf.Abs(x - c.x) > blend) continue;
-                    var i = r * data.Nx + col; if (data.islandIds[i] != index) continue;
+                    var i = r * data.Nx + col; if (data.islandIds[i] != index || zone[i] != 3) continue;   // only the Cake is levelled: its sides stay sheer
                     var d = Vector2.Distance(new Vector2(x, z), c);
                     if (d < flat) data.heights[i] = level;
                     else if (d < blend) data.heights[i] = Mathf.Lerp(level, data.heights[i], Ease(0f, 1f, (d - flat) / (blend - flat)));
@@ -148,8 +162,11 @@ namespace EverythingWorld.World
             Plaza(ctx, mk, solid);
             Parfait(ctx, mk, solid);
             Runs(ctx, mk, solid);
+            Causeways(ctx, mk, solid);
             Paths(ctx, mk, solid);
-            Wilds(ctx, mk, solid);
+            Moat(ctx, mk);
+            Courses(ctx, mk, solid);
+            Edging(ctx, mk, solid);
             People(ctx);
             mk.Build("The Kawaii Cascades", ctx.Root, false);
             solid.BuildCollider("The Kawaii Cascades walls", ctx.Root);

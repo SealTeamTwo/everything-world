@@ -149,22 +149,18 @@ namespace EverythingWorld.World
                 Strip(mk, pts, mat, RoadW, .08f + r * .008f, ctx); foreach (var p in pts) Remember(p, 2 + r);
                 for (var d = 34f; d < len - 10f; d += 36f) { var g = G(center + dir * d); if (Drop(g, 3f) < 2.2f) Boost(mk, g, dir, col); }
                 for (var d = 28f; d < len; d += 24f) { var e = (Mathf.RoundToInt(d / 24f) % 2 == 0) ? 1f : -1f; var lp = G(center + dir * d + side * e * (RoadW / 2f + 1f)); if (!InFootprint(ctx, lp.x, lp.z, 1f)) Lamp(ctx, mk, lp, Mathf.RoundToInt(d / 24f) % 2 == 0, r); }
-                // the gate at the far end, and the return geyser beyond it
-                var end = G(center + dir * len); var gate = G(center + dir * (len - 6f));
+                // the gate at the Cake's edge, where the road stops and the rail flies on over the milk
+                var gate = G(center + dir * (len - 6f));
                 foreach (var e in new[] { -1f, 1f }) { var gp = G(gate + side * e * 4.6f); var lo = Lowest(gp, .5f) - .2f; for (var k = 0; k < 7; k++) mk.Prism(k % 2 == 0 ? white : mat, new Vector3(gp.x, lo + k * 1f, gp.z), up, .34f, 1f, 8); ArtistBits.PostCollider(ctx.Root, gp, 7f, .4f); }
                 mk.Box(Paint(col), gate + up * 7.2f, new Vector3(10.4f, 1.5f, .3f), Quaternion.LookRotation(dir)); mk.Box(white, gate + up * 7.2f, new Vector3(10.8f, 1.9f, .2f), Quaternion.LookRotation(dir));
                 Sign(gate + up * 7.2f - dir * .2f, -dir, RunName[r], .5f, Ink); Sign(gate + up * 7.2f + dir * .2f, dir, RunName[r], .5f, Ink);
-                var back = (new Vector3(center.x - end.x, 0, center.z - end.z)).normalized;
-                Jelly(end + side * 5f, 2.2f, back * 30f + up * 34f, col, HyperCourse.Kind.Geyser);
-                Board(mk, G(end + side * 9.5f - dir * 2f), -dir, "RETURN GEYSER", col, 4.6f, 1.3f, .34f);
-                Bench(mk, G(end - side * 9f - dir * 12f), side, r);
                 // the rail: from the Parfait's rim over the road to just before the gate, on candy-cane posts
                 var start = topC + (dir * .9f + new Vector3(parfait2.x - center.x, 0, parfait2.y - center.z).normalized * -.1f).normalized * rimR; start.y = topC.y + .3f;
-                var stop = G(center + dir * (len - 16f)) + up * 2.2f; var rail = new List<Vector3>(); const int n = 34;
+                var stop = G(V3(runCrust[r])) + up * 2.2f; var rail = new List<Vector3>(); const int n = 46;   /* it comes down on the Crust */
                 for (var i = 0; i <= n; i++)
                 {
                     var t = i / (float)n; var p = Vector3.Lerp(start, stop, t); p.y = Mathf.Lerp(start.y, stop.y, Mathf.Pow(t, .75f)) + Mathf.Sin(t * Mathf.PI) * 6f;
-                    p.y = Mathf.Max(p.y, ctx.Ground(p.x, p.z) + 3.4f); if (i == n) p.y = stop.y; rail.Add(p);
+                    p.y = Mathf.Max(p.y, Mathf.Max(ctx.Ground(p.x, p.z), MilkY) + 3.4f); if (i == n) p.y = stop.y; rail.Add(p);
                 }
                 // smooth it once so the kinks where it meets the ground's clearance are soft
                 for (var pass = 0; pass < 2; pass++) for (var i = 1; i < n; i++) { var p = rail[i]; p.y = Mathf.Max(p.y, (rail[i - 1].y + rail[i + 1].y) / 2f); rail[i] = p; }
@@ -175,89 +171,18 @@ namespace EverythingWorld.World
                     mk.Box(railM, (a + b) / 2f, new Vector3(.5f, .14f, seg.magnitude + .05f), rot); mk.Box(i % 2 == 0 ? white : mat, (a + b) / 2f - up * .12f, new Vector3(.22f, .16f, seg.magnitude + .05f), rot);
                     if (i % 4 == 2 && i > 3)
                     {
-                        var g = ctx.OnGround(a.x, a.z); if (!ctx.IsLand(g.x, g.z, 1f) || a.y - g.y < 2f) continue; var lo = Lowest(g, .4f) - .2f; var hgt = a.y - .2f - lo; var bandsN = Mathf.Max(2, Mathf.RoundToInt(hgt / 1.2f));
+                        var g = ctx.OnGround(a.x, a.z); if (a.y - g.y < 2f) continue; var lo = Lowest(g, .4f) - .2f;   /* the posts stand in the milk too */ var hgt = a.y - .2f - lo; var bandsN = Mathf.Max(2, Mathf.RoundToInt(hgt / 1.2f));
                         for (var k = 0; k < bandsN; k++) mk.Prism(k % 2 == 0 ? white : cherryM, new Vector3(g.x, lo + k * hgt / bandsN, g.z), up, .2f, hgt / bandsN, 7);
                         ArtistBits.PostCollider(ctx.Root, g, Mathf.Min(hgt, 4f), .26f); Mark(g, .8f);
                     }
                 }
                 halos.Add(start, 2.4f, col, .35f);
-                Shot(ctx, RunName[r], G(center + dir * (len * .45f) + side * 16f) + up * 9f, -side - up * .2f + dir * .3f);
+                // where the rail lands: a flag and a sign pointing to the courses either side
+                var land = G(V3(runCrust[r])); mk.Prism(stick, land + side * 4f, up, .1f, 6f, 6); mk.Box(Paint(col), land + side * 4f + up * 5.3f + dir * .9f, new Vector3(.06f, 1.2f, 1.8f), Quaternion.LookRotation(dir)); ArtistBits.PostCollider(ctx.Root, land + side * 4f, 4f, .2f);
+                Board(mk, G(land + dir * 7f), -dir, "COURSES BACK: LEFT AND RIGHT", col, 7.4f, 1.3f, .3f);
+                Shot(ctx, RunName[r], G(center + dir * (len * .6f) + side * 16f) + up * 12f, -side - up * .2f + dir * .5f);
             }
             Debug.Log($"The Kawaii Cascades: Runs of {runLen[0]:0}, {runLen[1]:0}, {runLen[2]:0} and {runLen[3]:0} m, {course.rails.Count} rails");
-        }
-
-        // ---------------------------------------------------------------- the rest of the cake
-        void Wilds(LandContext ctx, MeshKit mk, MeshKit solid)
-        {
-            int pads = 0, geysers = 0, hops = 0, arches = 0, cakes = 0, trees = 0, bears = 0, falls = 0, benches = 0; var rng = new System.Random(6603); var up = Vector3.up;
-            const float cell = 21f;
-            for (var x = ctx.MinX; x < ctx.MaxX; x += cell)
-            for (var z = ctx.MinZ; z < ctx.MaxZ; z += cell)
-            {
-                float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = (float)rng.NextDouble(); var s = (float)rng.NextDouble(); var k = rng.Next(600);
-                if (!Open(ctx, px, pz, 4f)) continue;
-                var p = ctx.OnGround(px, pz); var f = FaceTo(p, NearestWalk(p)); var rot = Quaternion.LookRotation(f); var side = Vector3.Cross(up, f); var drop = Drop(p, 5f);
-                // strawberry milk pouring down a riser: where the ground falls away steeply
-                if (drop > 4.5f)
-                {
-                    if (roll > .5f) continue;
-                    var lowDir = Vector3.forward; var lowest = float.MaxValue; for (var a = 0; a < 12; a++) { var d = Quaternion.Euler(0, a * 30f, 0) * Vector3.forward; var h = ctx.Ground(p.x + d.x * 6f, p.z + d.z * 6f); if (h < lowest) { lowest = h; lowDir = d; } }
-                    var foot = ctx.OnGround(p.x + lowDir.x * 6.5f, p.z + lowDir.z * 6.5f); var head = ctx.OnGround(p.x - lowDir.x * 3f, p.z - lowDir.z * 3f); if (head.y - foot.y < 4f || !ctx.IsLand(foot.x, foot.z, 2f)) continue;
-                    var w = 3f + s * 3f; var sr = Quaternion.LookRotation(lowDir); var mid = (head + foot) / 2f; var span = head - foot;
-                    mk.Box(milkM, mid + up * .25f, new Vector3(w, .12f, span.magnitude + 1f), Quaternion.LookRotation(span.normalized)); mk.Prism(Paint(new Color(1f, .88f, .92f)), foot - up * .3f, up, w * .9f, .42f, 14); mk.Prism(milkM, foot + up * .13f, up, w * .78f, .02f, 14);
-                    life.milkFeet.Add(foot + up * .3f); halos.Add(foot + up * .5f, w, new Color(1f, .7f, .85f), .2f); Mark(foot, w); falls++; continue;
-                }
-                if (drop > 2.2f) continue;      // everything else wants level ground
-                if (roll < .13f) { Jelly(p, 1.6f + s * .5f, up * (17f + s * 6f), Sweet[k % 4]); pads++; }
-                else if (roll < .19f)
-                {
-                    // a geyser under a floating donut: it fires you up through the hole
-                    var h = 16f + s * 10f; Jelly(p, 1.9f, up * Mathf.Sqrt(2f * 38f * (h + 6f)), Soda, HyperCourse.Kind.Geyser);
-                    var dm = new MeshKit(); for (var a = 0; a < 14; a++) { var d = Quaternion.Euler(0, a * 25.7f, 0) * Vector3.forward; dm.Blob(a % 2 == 0 ? SweetM(k) : SweetM(k + 1), d * 4.2f, new Vector3(1.5f, 1.1f, 1.5f), rng, .12f); dm.Box(white, d * 4.2f + up * .9f, new Vector3(.5f, .06f, .14f), Quaternion.Euler(0, a * 60f, 0)); }
-                    var dg = dm.BuildSingle("Floating donut", ctx.Root, false); dg.transform.position = p + up * h; life.floaters.Add((dg.transform, p + up * h, s * 6f)); halos.Add(p + up * h, 5f, Sweet[k % 6], .15f); geysers++;
-                }
-                else if (roll < .29f)
-                {
-                    // a hop of floating macarons, each higher than the last, a star over the top one
-                    var n = 3 + rng.Next(3); var at = p; var turn = (s - .5f) * 50f; var d = f;
-                    for (var i = 0; i < n; i++) { at += d * (4.6f + i * .3f); d = Quaternion.Euler(0, turn, 0) * d; var gy = ctx.Ground(at.x, at.z); if (!ctx.IsLand(at.x, at.z, 1f)) break; var c = new Vector3(at.x, Mathf.Max(gy + 1.6f, p.y + 2.2f + i * 2.1f), at.z); Macaron(mk, solid, c, 1.7f, k + i); if (i == n - 1) Star(c + up * 2.2f); }
-                    Mark(p, 2f); hops++;
-                }
-                else if (roll < .37f)
-                {
-                    // a donut standing on edge, big enough to run through
-                    var R = 3.4f + s * 1.2f; var c = p + up * (R + .2f);
-                    for (var a = 0; a < 16; a++) { var ang = a * 22.5f * Mathf.Deg2Rad; var q = c + side * Mathf.Cos(ang) * R + up * Mathf.Sin(ang) * R; mk.Blob(a % 4 == 3 ? white : SweetM(k), q, new Vector3(.95f, .95f, .8f), rng, .1f); }
-                    // solid where the ring comes down to the ground on each side; open through the middle
-                    foreach (var e in new[] { -1f, 1f }) for (var a = 0; a < 3; a++) { var off = R * (1f - a * .16f); ArtistBits.PostCollider(ctx.Root, p + side * e * off, R * (.55f + a * .5f), .75f); }
-                    Mark(p, R + 1f); arches++;
-                }
-                else if (roll < .47f)
-                {
-                    // a cupcake as big as a shed: a pleated case, frosting, a sweet on top (you can stand on it)
-                    var R = 2f + s * 1.4f; var h = R * 1.1f; var lo = Lowest(p, R) - .2f;
-                    mk.Prism(SweetM(k), new Vector3(p.x, lo, p.z), up, R * .8f, p.y + h - lo, 12, 1.25f); solid.Prism(SweetM(k), new Vector3(p.x, lo, p.z), up, R * .9f, p.y + h - lo, 10, 1.1f);
-                    mk.Blob(k % 2 == 0 ? white : pinkM, p + up * (h + R * .35f), new Vector3(R * 1.15f, R * .5f, R * 1.15f), rng, .16f); mk.Blob(white, p + up * (h + R * .8f), new Vector3(R * .7f, R * .4f, R * .7f), rng, .16f); solid.Prism(white, p + up * h, up, R * 1.05f, R * .9f, 10, .5f);
-                    mk.Blob(cherryM, p + up * (h + R * 1.25f), Vector3.one * R * .28f, rng, .1f); Mark(p, R * 1.3f); cakes++;
-                }
-                else if (roll < .66f)
-                {
-                    // a lollipop tree: a tall stick, a swirled disc, or three smaller ones
-                    var h = 4f + s * 4f; var lo = Lowest(p, .3f) - .2f; mk.Prism(stick, new Vector3(p.x, lo, p.z), up, .14f, p.y + h - lo, 7);
-                    var n = k % 3 == 0 ? 3 : 1; for (var i = 0; i < n; i++) { var c = p + up * (h + (n == 1 ? 1.2f : .4f + i * .9f)) + (n == 1 ? Vector3.zero : Quaternion.Euler(0, i * 120f, 0) * f * .9f); var R = n == 1 ? 1.5f + s * .5f : .8f; mk.Prism(SweetM(k + i), c - f * .2f, f, R, .4f, 16); mk.Prism(white, c + f * .21f, f, R * .7f, .02f, 14); mk.Prism(SweetM(k + i + 2), c + f * .22f, f, R * .4f, .02f, 12); mk.Prism(white, c - f * .21f, -f, R * .7f, .02f, 14); }
-                    ArtistBits.PostCollider(ctx.Root, p, Mathf.Min(h, 4f), .24f); Mark(p, 1f); trees++;
-                }
-                else if (roll < .72f)
-                {
-                    // a gummy bear, sitting
-                    var m = GlowM(Sweet[k % 4], .7f); var sc = 1.2f + s * 1.2f;
-                    mk.Blob(m, p + up * sc * .8f, new Vector3(.9f, .9f, .75f) * sc, rng, .08f); mk.Blob(m, p + up * sc * 1.9f, new Vector3(.62f, .58f, .56f) * sc, rng, .08f);
-                    foreach (var e in new[] { -1f, 1f }) { mk.Blob(m, p + up * sc * 2.45f + side * e * sc * .45f, Vector3.one * sc * .22f, rng, .05f); mk.Blob(m, p + up * sc * 1.1f + side * e * sc * .85f + f * sc * .2f, new Vector3(.3f, .3f, .4f) * sc, rng, .05f); mk.Blob(m, p + up * sc * .3f + side * e * sc * .55f + f * sc * .7f, new Vector3(.34f, .3f, .5f) * sc, rng, .05f); mk.Box(Paint(Ink), p + up * sc * 2f + side * e * sc * .22f + f * sc * .5f, Vector3.one * sc * .1f, rot); }
-                    ArtistBits.PostCollider(ctx.Root, p, sc * 2.4f, sc * .8f); Mark(p, sc * 1.2f); bears++;
-                }
-                else if (roll < .78f) { Bench(mk, p, f, k); Lamp(ctx, mk, G(p - f * .9f + side * 1.8f), benches % 2 == 0, k); Mark(p, 2.4f); benches++; }
-            }
-            Debug.Log($"The Kawaii Cascades: {pads} jelly pads, {geysers} geysers under donuts, {hops} macaron hops, {arches} donut arches, {cakes} cupcakes, {trees} lollipop trees, {bears} gummy bears, {falls} milk falls, {benches} benches");
         }
 
         /// A star to jump for at the top of a hop: it spins, and collecting it sets off a burst (KawaiiLife).
@@ -274,13 +199,13 @@ namespace EverythingWorld.World
         {
             var c = ctx.OnGround(center.x, center.z);
             Folk(G(c + D * -9f + S * 3f), D, Resident.Pose.Wave, new[] { "Welcome to the Cascades! You're fast now. Did you notice? You're SO fast.", "Shift to sprint. Space, then Space again in the air.", "Bounce on the big jelly. Go on." });
-            Folk(G(c + S * 12f + D * 4f), -S, Resident.Pose.Stand, new[] { "Four Runs, four rails. Strawberry, Lemon, Soda, Mint.", "The geyser at the end of each Run fires you home.", "If you fall off a rail, just jump back on. It doesn't mind." });
+            Folk(G(c + S * 12f + D * 4f), -S, Resident.Pose.Stand, new[] { "Four Runs, four rails. Strawberry, Lemon, Soda, Mint.", "Ride a rail out to the Crust, then take a course back across the milk.", "Fall in the milk and you pop back where you last stood. It's only milk." });
             var pc = ctx.OnGround(parfait2.x, parfait2.y);
             Folk(G(pc - D * 17f - S * 5f), -D, Resident.Pose.Stand, new[] { "I've been meaning to climb it. For three years.", "Geyser up, cherry bounce, rail down. That's the loop.", "Stand on the cherry. You'll see the whole cake." });
             // runners doing laps of the Sugar Bowl and up and down the Runs
             var ring = new Vector3[10]; for (var k = 0; k < 10; k++) ring[k] = G(c + Quaternion.Euler(0, k * 36f, 0) * D * 22.5f);
             Folk(ring[0], S, Resident.Pose.Walk, new[] { "Lap four hundred and six!", "Can't talk, running!" }, null, ring);
-            for (var r = 0; r < 4; r += 2) { var dir = new Vector3(runDir[r].x, 0, runDir[r].y); var side = Vector3.Cross(Vector3.up, dir); var route = new List<Vector3>(); for (var d = 26f; d < runLen[r] - 12f; d += 16f) route.Add(G(c + dir * d + side * 4.4f)); if (route.Count > 2) Folk(route[0], dir, Resident.Pose.Walk, new[] { "Down by rail, back by geyser. All day.", "This Run is the best one. I say that on every Run." }, null, route.ToArray()); }
+            for (var r = 0; r < 4; r += 2) { var dir = new Vector3(runDir[r].x, 0, runDir[r].y); var side = Vector3.Cross(Vector3.up, dir); var route = new List<Vector3>(); for (var d = 26f; d < runLen[r] - 12f; d += 16f) route.Add(G(c + dir * d + side * 4.4f)); if (route.Count > 2) Folk(route[0], dir, Resident.Pose.Walk, new[] { "Out by rail, back over the milk. All day.", "This Run is the best one. I say that on every Run." }, null, route.ToArray()); }
         }
     }
 

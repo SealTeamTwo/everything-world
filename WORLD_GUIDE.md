@@ -745,11 +745,16 @@ A few people sit about them, each with a tune they can't finish. The lamp benche
 
 **Happenings:** The lamps, the jelly and the rails flash on the beat. Stars spin over the macaron hops and burst into sprinkles when you reach them. Pads puff sprinkles when they throw you. On about one song in three a shower of sprinkles falls over the whole land. Night falls and the stars come out for "dreamseeker", "Moonheart" and "Lost"; a soft rain for "Signs of Rain"; the land flashes yellow on every beat for "ENERGIZE"; the colour drains away for "Monochrome Anomaly"; gold light for "Summer Trees" and lilac for "Glass Petals".
 
-**The streets and places:** Laid out on purpose, to be run.
+**The streets and places:** Laid out on purpose, to be run. The land is a cake standing in a dish of strawberry milk, in three rings, and nothing on it is scattered: every piece is on a line.
+- **The Cake** (the middle): the tiered summit, about 470 m across, with the Sugar Bowl, the Parfait and every artist. Its sides fall sheer into the milk, with milk pouring off the edge here and there.
 - **The Sugar Bowl:** bounce on the big jelly; read the signs; sit on a wafer bench and watch the runners lap.
 - **The Parfait:** a sundae glass as tall as a tower. Climb the spiral of macarons round it, or stand on the geyser at its foot and be fired to the top in one go. The cherry on top is the biggest bounce in the land.
-- **The four Runs (Strawberry, Lemon, Soda, Mint):** a rail from the Parfait's rim down each one to the shore (touch it to ride, Space to leap off), a road of boost strips underneath, a gate at the far end, and a return geyser that fires you back toward the summit.
-- **Everywhere else:** jelly pads, geysers under floating donuts that fire you up through the hole, hops of floating macarons with a star at the top, donut arches to run through, cupcakes to stand on, lollipop trees, gummy bears, strawberry milk pouring down the risers.
+- **The Milk** (all round the Cake, 110 to 500 m wide): nothing to stand on but what was put there. Fall in and you splash and are set back on the last firm thing you stood on.
+- **The four rails (Strawberry, Lemon, Soda, Mint):** from the Parfait's rim, down each Run and on over the milk to the Crust. Touch one to ride, Space to leap off.
+- **The four courses back:** from the Crust in to the Cake, one between each pair of rails, each ending at a geyser that fires you up onto the Cake. The Macaron Steps (floating macarons), the Cupcake Rooftops (run across the tops of cupcakes standing in the milk), Lollipop Lane (small round tops on tall sticks) and the Donut Hops (rafts whose jellies throw you raft to raft through floating donuts).
+- **The Grand Circuit:** a ring of the same pieces right round the Cake, half way out across the milk, changing kind every eighth of the way. It runs clockwise.
+- **The Crust** (the biscuit rim along the shore): a ring road round the whole land, with lamps, lollipop trees and benches that look out over the milk; the rails land here and the courses start here.
+- **The causeways:** a plain wafer bridge from each of the land's two bridges across the milk to the Cake, for anyone who would rather walk.
 
 ### The Liquid Rapids
 *22 songs · 20 artists · built in Unity*
