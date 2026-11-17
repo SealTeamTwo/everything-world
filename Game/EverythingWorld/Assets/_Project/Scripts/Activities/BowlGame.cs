@@ -31,7 +31,7 @@ namespace EverythingWorld.Activities
         const float SwingTravel = 30f, MinPower = .03f;   // the swing, as in golf: hold click and push the mouse forward for power; let go below MinPower and nothing is bowled
         /// Your arm is never quite still: the line you bowl along sways a little either side of where you aim, quicker
         /// in the later frames, so a strike has to be timed and the same ball can't just be bowled again.
-        float Sway => (.75f + card.At.Item1 * .04f) * Mathf.Sin((Time.time - swayFrom) * (2.1f + card.At.Item1 * .09f));
+        float Sway => (1.5f + card.At.Item1 * .07f) * Mathf.Sin((Time.time - swayFrom) * (2.1f + card.At.Item1 * .09f));
         float swayFrom;
 
         readonly BowlSim sim = new BowlSim(); BowlCard card = new BowlCard(); Transform ball, aimBar; Transform[] pins; float[] tip = new float[10];
@@ -133,7 +133,7 @@ namespace EverythingWorld.Activities
                     if (charging && !mouse.leftButton.isPressed)
                     {
                         // a harder ball is a touch wilder
-                        charging = false; before = sim.Standing(); sim.Bowl(standX, aimDeg + Sway + Random.Range(-.12f, .12f) * (1f + power), Mathf.Lerp(4.5f, 9.5f, power)); acc = 0f;
+                        charging = false; before = sim.Standing(); sim.Bowl(standX, aimDeg + Sway + Random.Range(-.3f, .3f) * (1f + power), Mathf.Lerp(4.5f, 9.5f, power)); acc = 0f;
                     }
                 }
                 if (card.Done && (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)) { card = new BowlCard(); sim.Rack(); settle = -1f; }

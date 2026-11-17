@@ -36,7 +36,7 @@ namespace EverythingWorld.Activities
         public void Advance(float hook)
         {
             if (!rolling) return; const float dt = Step; t += dt;
-            if (!gutter) bv.x += hook * 1.1f * dt;
+            if (!gutter) bv.x += hook * .5f * dt;   // (was 1.1: you could steer every ball into the pocket after letting go)
             bv *= 1f - .03f * dt; ball += bv * dt;
             if (!gutter && Mathf.Abs(ball.x) > W / 2 && ball.y < L - .4f) { gutter = true; ball.x = Mathf.Sign(ball.x) * (W / 2 + BallR); bv = new Vector2(0, bv.magnitude * .85f); }
             if (gutter) ball.x = Mathf.Sign(ball.x) * (W / 2 + BallR);

@@ -146,7 +146,7 @@ namespace EverythingWorld.Activities
                 var drop = d * Mathf.Tan(up) - to.y; if (drop <= .05f) continue;   // (that arc cannot come down into it from here)
                 var need = Mathf.Sqrt(g * d * d / (2f * Mathf.Cos(up) * Mathf.Cos(up) * drop));
                 var off = Vector3.Angle(flat, new Vector3(to.x, 0, to.z));
-                if (off < 9f && Mathf.Abs(speed - need) / need < .17f) { var dir = new Vector3(to.x, 0, to.z).normalized; v = (dir * Mathf.Cos(up) + Vector3.up * Mathf.Sin(up)) * need; return true; }
+                if (off < 12f && Mathf.Abs(speed - need) / need < .23f)   /* (a little wider again, 2026-11-17: "maybe just a little bit too hard") */ { var dir = new Vector3(to.x, 0, to.z).normalized; v = (dir * Mathf.Cos(up) + Vector3.up * Mathf.Sin(up)) * need; return true; }
             }
             return false;
         }

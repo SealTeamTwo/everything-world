@@ -14,7 +14,7 @@ namespace EverythingWorld.Activities
     /// and you grind along it. Tricks landed close together multiply.
     public class SkateSim
     {
-        public const float Hx = 45f, Hz = 30f, R = 6f, Deck = 6f, Step = 1f / 120f, Gravity = 16f, MaxPush = 12f;
+        public const float Hx = 45f, Hz = 30f, R = 6f, Deck = 6f, Step = 1f / 120f, Gravity = 16f, MaxPush = 14f;
         static readonly float Lip = R * .951f, DeckY = R - Mathf.Sqrt(R * R - Lip * Lip);
         public const int Floor = 0, Wall = 1, DeckTop = 2, Funbox = 3, Hump = 4, Kicker = 5, Spine = 6, Rollers = 7, Lander = 8, Ledge = 9;
 
@@ -87,17 +87,17 @@ namespace EverythingWorld.Activities
             {
                 var hv = new Vector2(v.x, v.z); var sp = hv.magnitude;
                 // the board turns; what speed there is follows it (a board rolls where it points, forwards or backwards)
-                yaw += steer * (sp > 6f ? 95f : 140f) * dt; fwd = new Vector3(Mathf.Sin(yaw * Mathf.Deg2Rad), 0, Mathf.Cos(yaw * Mathf.Deg2Rad));
+                yaw += steer * Mathf.Lerp(200f, 135f, Mathf.Clamp01(sp / 12f)) * dt;   // (was 140 slow, 95 fast: it felt like steering a boat) fwd = new Vector3(Mathf.Sin(yaw * Mathf.Deg2Rad), 0, Mathf.Cos(yaw * Mathf.Deg2Rad));
                 var along = Vector2.Dot(hv, new Vector2(fwd.x, fwd.z)); hv = new Vector2(fwd.x, fwd.z) * along;
                 const float e = .15f; var g0 = Height(p.x, p.z); float gx = (Height(p.x + e, p.z) - Height(p.x - e, p.z)) / (2f * e), gz = (Height(p.x, p.z + e) - Height(p.x, p.z - e)) / (2f * e);
                 gx = Mathf.Clamp(gx, -1.8f, 1.8f); gz = Mathf.Clamp(gz, -1.8f, 1.8f);   // (the upright side of a ramp is a wall, not a launcher)
                 var steep = 1f + gx * gx + gz * gz; var pull = new Vector2(-gx, -gz) * (Gravity / steep); hv += new Vector2(fwd.x, fwd.z) * Vector2.Dot(pull, new Vector2(fwd.x, fwd.z)) * dt;
-                if (push > 0f && along < MaxPush) hv += new Vector2(fwd.x, fwd.z) * 7f * push * dt; else if (push < 0f) hv = Vector2.MoveTowards(hv, Vector2.zero, 12f * dt);
-                sp = hv.magnitude; var dec = (.35f + .012f * sp * sp) * dt; hv = sp <= dec ? Vector2.zero : hv * ((sp - dec) / sp);
+                if (push > 0f && along < MaxPush) hv += new Vector2(fwd.x, fwd.z) * 10.5f * push * dt; else if (push < 0f) hv = Vector2.MoveTowards(hv, Vector2.zero, 12f * dt);
+                sp = hv.magnitude; var dec = (.25f + .008f * sp * sp) * dt; hv = sp <= dec ? Vector2.zero : hv * ((sp - dec) / sp);
                 slopeVy = gx * hv.x + gz * hv.y; var want = g0 + slopeVy * dt;
                 var was = p; p.x += hv.x * dt; p.z += hv.y * dt; Walls(ref hv);
                 var g1 = Height(p.x, p.z);
-                if (g1 > p.y + .45f) { p = was; hv = -hv * .3f; v = new Vector3(hv.x, 0, hv.y); return; }   // rode into the upright side of something: bumped back
+                if (g1 > p.y + .45f) { p = was; hv = -hv * .12f; v = new Vector3(hv.x, 0, hv.y); return; }   // rode into the upright side of something: bumped back
                 slopeVy = Mathf.Clamp(slopeVy, -14f, 14f);
                 if (jump) { grounded = false; v = new Vector3(hv.x, Mathf.Max(slopeVy, 0f) + 5.2f, hv.y); Launch(); return; }
                 if (g1 < want - .05f && slopeVy > 1.5f) { grounded = false; v = new Vector3(hv.x, slopeVy, hv.y); Launch(); return; }   // off the lip of a wall or a ramp
@@ -128,8 +128,8 @@ namespace EverythingWorld.Activities
 
         void Launch() { spin = 0f; airTime = 0f; peak = 0f; launchY = p.y; grabT = 0f; flips = 0; flipT = -1f; flipAngle = 0f; grabName = ""; }
         /// Came round to facing along the board, and not half way through a flip.
-        bool CleanAir() { var turns = Mathf.RoundToInt(spin / 180f); var off = Mathf.Abs(spin - turns * 180f); return !(off > 42f && airTime > .25f) && !(flipT >= 0f && flipT < .8f); }
-        void Fall() { grounded = true; grinding = false; p.y = Height(p.x, p.z); fallen = true; fallT = 1.1f; combo = 0; lastTrick = "Fell"; lastPoints = 0; saidT = 1.5f; v = Vector3.zero; flipT = -1f; flipAngle = 0f; }
+        bool CleanAir() { var turns = Mathf.RoundToInt(spin / 180f); var off = Mathf.Abs(spin - turns * 180f); return !(off > 68f && airTime > .4f) && !(flipT >= 0f && flipT < .55f); }
+        void Fall() { grounded = true; grinding = false; p.y = Height(p.x, p.z); fallen = true; fallT = .65f; combo = 0; lastTrick = "Fell"; lastPoints = 0; saidT = 1.5f; v = Vector3.zero; flipT = -1f; flipAngle = 0f; }
 
         /// Points and a name for what was done in the air just ended (onto the floor, or onto a rail).
         void ScoreAir(bool ontoRail)
