@@ -20,7 +20,8 @@ namespace EverythingWorld.World
         {
             if (panel != null) return panel;
             const int n = 40; const float r = 8f; panel = new Texture2D(n, n, TextureFormat.RGBA32, false) { name = "Panel", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-            var fill = new Color(.06f, .055f, .13f, .9f); var line = new Color(1f, .9f, .72f, .55f); var top = new Color(1f, .95f, .85f, .85f);
+            // (kept without a colour of its own: Ui.Begin tints every box with the land's colour, which turns the fill a dark shade of it and the line a bright one)
+            var fill = new Color(.1f, .1f, .12f, .92f); var line = new Color(1f, 1f, 1f, .7f); var top = new Color(1f, 1f, 1f, .95f);
             for (var y = 0; y < n; y++) for (var x = 0; x < n; x++)
             {
                 // how far inside the rounded rectangle this pixel is (negative: outside)
