@@ -77,10 +77,19 @@ namespace EverythingWorld.World
         void Moat(LandContext ctx, MeshKit mk)
         {
             var d = zdata; var n = 0; var milk = new MeshKit(); var s = d.Step / 2f + .02f;
+            // the sea's own shader, in strawberry: ripples that liven with the music, paler in the shallows against the
+            // Cake and the Crust, foam round everything that stands in it, sun glitter. (A flat glowing pink if it is missing.)
+            var surface = milkM; var water = Shader.Find("Everything World/Water");
+            if (water != null)
+            {
+                surface = new Material(water) { name = "Kawaii milk sea" };
+                surface.SetColor("_Shallow", new Color(1f, .88f, .93f)); surface.SetColor("_Deep", new Color(1f, .6f, .78f)); surface.SetColor("_Foam", new Color(1f, .97f, .98f));
+                surface.SetFloat("_DepthRange", 5f); surface.SetFloat("_FoamDepth", 1.1f); surface.SetFloat("_Ripple", .75f); surface.SetFloat("_Reflect", .18f); surface.SetFloat("_Glitter", 2.2f);
+            }
             for (var i = 0; i < zone.Length; i++)
             {
                 if (zone[i] != 2) continue; int r = i / d.Nx, c = i % d.Nx; var p = new Vector3(c * d.Step, MilkY, d.layout.depth - r * d.Step);
-                milk.Quad(milkM, p + new Vector3(-s, 0, -s), p + new Vector3(-s, 0, s), p + new Vector3(s, 0, s), p + new Vector3(s, 0, -s), p - Vector3.up); n++;
+                milk.Quad(surface, p + new Vector3(-s, 0, -s), p + new Vector3(-s, 0, s), p + new Vector3(s, 0, s), p + new Vector3(s, 0, -s), p - Vector3.up); n++;
             }
             milk.Build("Strawberry milk", ctx.Root, false);
             life.inMilk = InMilk; life.milkY = MilkY;
