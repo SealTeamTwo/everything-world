@@ -271,7 +271,8 @@ namespace EverythingWorld.Player
                     if (GUI.Button(new Rect(x + 286f, y, 34f, 30f), ">")) now = (now + 1) % names.Length;
                     y += 34f; return now;
                 }
-                hat = Row("Hat", PlayerOrb.Hats, hat); eyes = Row("Eyes", PlayerOrb.EyeKinds, eyes); mouth = Row("Mouth", PlayerOrb.MouthKinds, mouth);
+                var hadHat = hat; hat = Row("Hat", PlayerOrb.Hats, hat);
+                if (hat == PlayerOrb.Ushanka && !PlayerOrb.UshankaUnlocked) hat = hadHat == 0 ? PlayerOrb.Ushanka - 1 : 0;   // (stepping past a hat you have not earned) eyes = Row("Eyes", PlayerOrb.EyeKinds, eyes); mouth = Row("Mouth", PlayerOrb.MouthKinds, mouth);
                 o.Dress(hat, eyes, mouth); y += 8f;
             }
             // mouse sensitivity

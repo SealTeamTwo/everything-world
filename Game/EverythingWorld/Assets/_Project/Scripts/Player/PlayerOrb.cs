@@ -29,7 +29,10 @@ namespace EverythingWorld.Player
         /// What an orb can wear and the face it can have: each player picks one of each in the menu, and friends see it.
         /// A hat and a face sit on the side the player is looking toward, so from any angle you can tell where a friend
         /// is looking (from behind you see the back of the hat and no face).
-        public static readonly string[] Hats = { "No hat", "Cap", "Top hat", "Cowboy hat", "Beanie", "Crown", "Party hat", "Headphones", "Halo", "Wizard hat" };
+        public static readonly string[] Hats = { "No hat", "Cap", "Top hat", "Cowboy hat", "Beanie", "Crown", "Party hat", "Headphones", "Halo", "Wizard hat", "Ushanka" };
+        /// The ushanka is not in the menu until its code has been typed at the Hub's terminal (HubTerminal). Friends who wear it are always seen wearing it.
+        public const int Ushanka = 10;
+        public static bool UshankaUnlocked { get => PlayerPrefs.GetInt("EW_HatUshanka", 0) == 1; set { PlayerPrefs.SetInt("EW_HatUshanka", value ? 1 : 0); PlayerPrefs.Save(); } }
         public static readonly string[] EyeKinds = { "Dots", "Wide", "Sleepy", "Cross", "Sparkle", "Wink", "Tall", "No eyes" };
         public static readonly string[] MouthKinds = { "Smile", "Grin", "Oh", "Flat", "Frown", "Tongue", "Cat", "No mouth" };
         public int Hat { get; private set; }
@@ -40,6 +43,8 @@ namespace EverythingWorld.Player
         public static PlayerOrb Local { get; private set; }
         /// Other players' orbs: the way they're looking (degrees, like a compass) and whether their sunglasses are on.
         public float facing; public bool shades;
+        /// How far they are looking up (negative) or down (positive), in degrees: the face, hat and glasses tip with it, part of the way.
+        public float pitch; float shownPitch;
         Transform glasses; float shadesT, shownFacing; bool facingSet;
         public Color Color { get; private set; } = new Color(.92f, .94f, 1f);
         /// Which palette colour (shared with other players as one small number).
@@ -99,8 +104,9 @@ namespace EverythingWorld.Player
         static Color Deep(Color c)
         {
             Color.RGBToHSV(c, out var h, out var s, out var v);
-            if (s < .15f) return new Color(.32f, .38f, .78f);
-            return Color.HSVToRGB(h, Mathf.Min(1f, s + .35f), Mathf.Min(v, .85f));
+            // (dark enough to stand out against the glow: at .85 bright the lines vanished into the orb)
+            if (s < .15f) return new Color(.12f, .16f, .5f);
+            return Color.HSVToRGB(h, Mathf.Min(1f, s + .4f), Mathf.Min(v, .42f));
         }
 
         ParticleSystem Wisps()
@@ -230,6 +236,12 @@ namespace EverythingWorld.Player
                     Bit(hat, cyl, Paint(.3f, .2f, .6f), new Vector3(0, .02f, 0), new Vector3(.54f, .012f, .54f));
                     for (var i = 0; i < 7; i++) Bit(hat, cyl, Paint(.3f, .2f, .6f), new Vector3(0, .05f + i * .065f, -i * i * .006f), new Vector3(.32f - i * .042f, .034f, .32f - i * .042f), Quaternion.Euler(-i * 4f, 0, 0));
                     Bit(hat, cube, Shine(1f, .9f, .4f), new Vector3(0, .1f, .155f), new Vector3(.05f, .05f, .01f), Quaternion.Euler(0, 0, 45f)); break;
+                case 10:  // ushanka: a fur crown, the front flap turned up, a flap down over each ear, a red star
+                    var fur = Shine(.5f, .34f, .2f, .35f); var trim = Shine(.86f, .78f, .64f, .3f);   // (a touch of glow: plain brown fur went black in shade)
+                    Bit(hat, ball, fur, new Vector3(0, .0f, 0), new Vector3(.46f, .34f, .46f)); Bit(hat, cube, trim, new Vector3(0, .06f, .2f), new Vector3(.34f, .13f, .05f), Quaternion.Euler(-12f, 0, 0));
+                    foreach (var s in new[] { -1f, 1f }) { Bit(hat, cube, fur, new Vector3(s * .225f, -.1f, .0f), new Vector3(.05f, .26f, .24f), Quaternion.Euler(0, 0, s * 8f)); Bit(hat, cube, trim, new Vector3(s * .24f, -.1f, .0f), new Vector3(.03f, .2f, .18f), Quaternion.Euler(0, 0, s * 8f)); Bit(hat, cube, fur, new Vector3(s * .12f, -.26f, .02f), new Vector3(.02f, .12f, .02f), Quaternion.Euler(0, 0, s * -30f)); }
+                    Bit(hat, cube, trim, new Vector3(0, -.02f, -.21f), new Vector3(.34f, .16f, .05f)); Bit(hat, ball, fur, new Vector3(0, .17f, 0), Vector3.one * .06f);
+                    Bit(hat, cube, Shine(.95f, .15f, .15f, 1.2f), new Vector3(0, .07f, .232f), new Vector3(.06f, .06f, .01f), Quaternion.Euler(0, 0, 45f)); break;
             }
         }
 
@@ -237,11 +249,11 @@ namespace EverythingWorld.Player
         {
             Color = c;
             var glow = Friend ? 1.1f : .65f;   // friends glow brighter than a lantern, so bloom picks them out
-            orbMat.SetColor("_BaseColor", c); orbMat.SetColor("_EmissionColor", c * 1.2f * glow);
+            orbMat.SetColor("_BaseColor", c); orbMat.SetColor("_EmissionColor", c * (Friend || display ? .8f : 1.2f) * glow);   // (a little less glow where the pattern is seen, so it reads)
             coreMat.SetColor("_BaseColor", c); coreMat.SetColor("_EmissionColor", Color.Lerp(c, Color.white, .35f) * 3f * glow);
             lamp.color = c;
             beamMat.SetColor("_BaseColor", new Color(c.r, c.g, c.b, Friend ? .4f : .16f)); discMat.SetColor("_BaseColor", new Color(c.r, c.g, c.b, .5f));
-            var d = Deep(c); lineMat.SetColor("_BaseColor", new Color(d.r, d.g, d.b, .95f)); lineMat2.SetColor("_BaseColor", new Color(d.r, d.g, d.b, .6f));
+            var d = Deep(c); lineMat.SetColor("_BaseColor", new Color(d.r, d.g, d.b, 1f)); lineMat2.SetColor("_BaseColor", new Color(d.r, d.g, d.b, .8f));
             if (wisps != null) { var m = wisps.main; m.startColor = new ParticleSystem.MinMaxGradient(Color.Lerp(c, Color.white, .4f), Color.Lerp(c, d, .5f)); }
         }
 
@@ -253,14 +265,16 @@ namespace EverythingWorld.Player
             if (isLocal && eye != null) at = eye.position;
             var t = Time.time + seed;
             var p = at + Vector3.up * (isLocal ? 0f : Mathf.Sin(t * 1.6f) * .06f);
-            orb.position = p; orb.rotation = Quaternion.Euler(0, t * 20f, 0);
-            if (pattern != null) { pattern.localRotation = Quaternion.Euler(18f, t * 14f, 8f); pattern2.localRotation = Quaternion.Euler(-24f, -t * 23f, -12f); }
+            orb.position = p; orb.rotation = Quaternion.Euler(0, t * 8f, 0);
+            // the two shells of lines turn against each other and tip slowly, so the pattern swirls round the orb
+            if (pattern != null) { pattern.localRotation = Quaternion.Euler(18f + Mathf.Sin(t * .5f) * 14f, t * 55f, 8f); pattern2.localRotation = Quaternion.Euler(-24f + Mathf.Cos(t * .37f) * 18f, -t * 80f, -12f); }
             var pulse = 1f + Mathf.Sin(t * 2.2f) * .04f; orb.localScale = Vector3.one * pulse;
             if (!isLocal)
             {
                 // the hat, the face and the sunglasses all sit on the side the player is looking toward
                 shownFacing = facingSet ? Mathf.LerpAngle(shownFacing, facing, 1f - Mathf.Exp(-10f * Time.deltaTime)) : facing; facingSet = true;
-                if (look != null) { look.SetPositionAndRotation(p, Quaternion.Euler(0f, shownFacing, 0f)); look.localScale = Vector3.one * (radius / .24f) * pulse; }
+                shownPitch = Mathf.Lerp(shownPitch, Mathf.Clamp(pitch * .65f, -38f, 38f), 1f - Mathf.Exp(-10f * Time.deltaTime));
+                if (look != null) { look.SetPositionAndRotation(p, Quaternion.Euler(shownPitch, shownFacing, 0f)); look.localScale = Vector3.one * (radius / .24f) * pulse; }
             }
             if (glasses != null) PlaceGlasses(p);
             // the beam: from just under the orb to the ground (or 30 m down), always turned to the camera
@@ -303,7 +317,7 @@ namespace EverythingWorld.Player
             shadesT = Mathf.MoveTowards(shadesT, shades ? 1f : 0f, Time.deltaTime / .45f);
             glasses.gameObject.SetActive(shadesT > 0f);
             if (shadesT <= 0f) return;
-            var turn = Quaternion.Euler(0f, shownFacing, 0f); var e = Mathf.SmoothStep(0f, 1f, shadesT);
+            var turn = Quaternion.Euler(shownPitch, shownFacing, 0f); var e = Mathf.SmoothStep(0f, 1f, shadesT);
             glasses.SetPositionAndRotation(p + turn * new Vector3(0f, radius * .18f + (1f - e) * .35f, radius * .93f), turn * Quaternion.Euler((1f - e) * -40f, 0f, 0f));
             glasses.localScale = Vector3.one * Mathf.Lerp(.6f, 1f, e) * (radius / .24f);
         }
@@ -360,9 +374,9 @@ namespace EverythingWorld.Player
                 float u = (x + .5f) / w, v = (y + .5f) / h; var a2 = u * Mathf.PI * 2f;
                 var wave = kind == 0 ? Mathf.Sin(a2 * 2f + v * 9f) * .09f + Mathf.Sin(a2 * 5f) * .025f : Mathf.Sin(a2 * 3f - v * 6f) * .14f;
                 var f = (v + wave) * bands; var d = Mathf.Abs(f - Mathf.Round(f));
-                var line = Mathf.Clamp01(1f - d / (kind == 0 ? .07f : .05f));
+                var line = Mathf.Clamp01(1.6f - d / (kind == 0 ? .1f : .075f) * 1.6f);   // (broader, with a solid middle)
                 var pole = Mathf.Clamp01(Mathf.Sin(v * Mathf.PI) * 3f);
-                var a = line * line * pole * (kind == 0 ? 1f : .8f + .2f * Mathf.Sin(a2 * 7f));
+                var a = line * pole * (kind == 0 ? 1f : .8f + .2f * Mathf.Sin(a2 * 7f));
                 t.SetPixel(x, y, new Color(1, 1, 1, a));
             }
             t.Apply(); return t;

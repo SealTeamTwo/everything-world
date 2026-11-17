@@ -196,7 +196,7 @@ namespace EverythingWorld.World
                 // how other players will see you: an orb a few metres ahead, at eye height, beam to the ground
                 {
                     var friend = new GameObject("Friend (photo)"); friend.SetActive(false);
-                    var fo = friend.AddComponent<EverythingWorld.Player.PlayerOrb>(); fo.isLocal = false; friend.SetActive(true); fo.Choose(7); { var pick = isl.name.Length; fo.Dress(1 + pick % 9, pick % 7, (pick * 3) % 7); } fo.facing = 180f;
+                    var fo = friend.AddComponent<EverythingWorld.Player.PlayerOrb>(); fo.isLocal = false; friend.SetActive(true); fo.Choose(7); { var pick = isl.name.Length; fo.Dress(1 + pick % 10, pick % 7, (pick * 3) % 7); } fo.facing = 150f; fo.pitch = -20f;
                     var fpos = Feet(feetAt + Vector3.forward * 3.5f + Vector3.right * .6f); friend.transform.position = fpos; fo.Place(fpos + Vector3.up * .7f);
                     yield return Shot("how others see you", feetAt, 0f, 2f, 1f);
                     Destroy(friend);

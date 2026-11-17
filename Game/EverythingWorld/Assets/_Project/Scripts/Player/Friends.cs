@@ -93,7 +93,7 @@ namespace EverythingWorld.Player
         ISession session; NetworkManager net; bool handlers; float nextSend;
         SimplePlayerController walker; Sunglasses shades;
 
-        class State { public Vector3 eye; public byte colour, shades; public string name; public float seen, stamp, yaw; }   // stamp: the sender's clock when they sent it
+        class State { public Vector3 eye; public byte colour, shades; public string name; public float seen, stamp, yaw, pitch; }   // stamp: the sender's clock when they sent it
         readonly Dictionary<ulong, State> everyone = new Dictionary<ulong, State>();   // the host's table
         class Remote
         {
@@ -278,7 +278,7 @@ namespace EverythingWorld.Player
                     using (var w = new FastBufferWriter(64 + everyone.Count * 80, Allocator.Temp, 4096))
                     {
                         w.WriteValueSafe(everyone.Count);
-                        foreach (var kv in everyone) { w.WriteValueSafe(kv.Key); w.WriteValueSafe(kv.Value.eye); w.WriteValueSafe(kv.Value.stamp); w.WriteValueSafe(kv.Value.yaw); w.WriteValueSafe(kv.Value.shades); w.WriteValueSafe(kv.Value.colour); w.WriteValueSafe(kv.Value.name); }
+                        foreach (var kv in everyone) { w.WriteValueSafe(kv.Key); w.WriteValueSafe(kv.Value.eye); w.WriteValueSafe(kv.Value.stamp); w.WriteValueSafe(kv.Value.yaw); w.WriteValueSafe(kv.Value.pitch); w.WriteValueSafe(kv.Value.shades); w.WriteValueSafe(kv.Value.colour); w.WriteValueSafe(kv.Value.name); }
                         net.CustomMessagingManager.SendNamedMessageToAll(MsgAll, w, NetworkDelivery.UnreliableSequenced);
                     }
                     foreach (var kv in everyone) if (kv.Key != net.LocalClientId) Show(kv.Key, kv.Value);
@@ -287,7 +287,7 @@ namespace EverythingWorld.Player
                 {
                     using (var w = new FastBufferWriter(96, Allocator.Temp, 512))
                     {
-                        w.WriteValueSafe(me.eye); w.WriteValueSafe(me.stamp); w.WriteValueSafe(me.yaw); w.WriteValueSafe(me.shades); w.WriteValueSafe(me.colour); w.WriteValueSafe(me.name);
+                        w.WriteValueSafe(me.eye); w.WriteValueSafe(me.stamp); w.WriteValueSafe(me.yaw); w.WriteValueSafe(me.pitch); w.WriteValueSafe(me.shades); w.WriteValueSafe(me.colour); w.WriteValueSafe(me.name);
                         net.CustomMessagingManager.SendNamedMessage(MsgMine, NetworkManager.ServerClientId, w, NetworkDelivery.UnreliableSequenced);
                     }
                 }
@@ -310,7 +310,7 @@ namespace EverythingWorld.Player
             var eye = ReportedEye ?? (walker != null && walker.cameraPivot != null ? walker.cameraPivot.position : transform.position + Vector3.up * .7f);
             var look = Camera.main != null ? Camera.main.transform.forward : transform.forward;
             if (shades == null) shades = GetComponent<Sunglasses>();
-            return new State { eye = eye, stamp = Time.realtimeSinceStartup, yaw = Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg, shades = (byte)((shades != null && shades.On ? 1 : 0) | ((PlayerOrb.Local != null ? PlayerOrb.Local.Eyes : 0) << 1) | ((PlayerOrb.Local != null ? PlayerOrb.Local.Mouth : 0) << 4)),   // (the face rides in the spare bits)
+            return new State { eye = eye, stamp = Time.realtimeSinceStartup, yaw = Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg, pitch = -Mathf.Asin(Mathf.Clamp(look.normalized.y, -1f, 1f)) * Mathf.Rad2Deg, shades = (byte)((shades != null && shades.On ? 1 : 0) | ((PlayerOrb.Local != null ? PlayerOrb.Local.Eyes : 0) << 1) | ((PlayerOrb.Local != null ? PlayerOrb.Local.Mouth : 0) << 4)),   // (the face rides in the spare bits)
                                colour = (byte)((PlayerOrb.Local != null ? PlayerOrb.Local.Index : 0) | ((PlayerOrb.Local != null ? PlayerOrb.Local.Hat : 0) << 4)), name = PlayerName };   // (and the hat with the colour)
         }
 
@@ -339,8 +339,8 @@ namespace EverythingWorld.Player
 
         void OnMine(ulong sender, FastBufferReader r)
         {
-            r.ReadValueSafe(out Vector3 eye); r.ReadValueSafe(out float stamp); r.ReadValueSafe(out float yaw); r.ReadValueSafe(out byte shades); r.ReadValueSafe(out byte colour); r.ReadValueSafe(out string name);
-            everyone[sender] = new State { eye = eye, stamp = stamp, yaw = yaw, shades = shades, colour = colour, name = name, seen = Time.time };
+            r.ReadValueSafe(out Vector3 eye); r.ReadValueSafe(out float stamp); r.ReadValueSafe(out float yaw); r.ReadValueSafe(out float pitch); r.ReadValueSafe(out byte shades); r.ReadValueSafe(out byte colour); r.ReadValueSafe(out string name);
+            everyone[sender] = new State { eye = eye, stamp = stamp, yaw = yaw, pitch = pitch, shades = shades, colour = colour, name = name, seen = Time.time };
         }
 
         void OnAll(ulong sender, FastBufferReader r)
@@ -349,9 +349,9 @@ namespace EverythingWorld.Player
             r.ReadValueSafe(out int n);
             for (var i = 0; i < n && i < 32; i++)
             {
-                r.ReadValueSafe(out ulong id); r.ReadValueSafe(out Vector3 eye); r.ReadValueSafe(out float stamp); r.ReadValueSafe(out float yaw); r.ReadValueSafe(out byte shades); r.ReadValueSafe(out byte colour); r.ReadValueSafe(out string name);
+                r.ReadValueSafe(out ulong id); r.ReadValueSafe(out Vector3 eye); r.ReadValueSafe(out float stamp); r.ReadValueSafe(out float yaw); r.ReadValueSafe(out float pitch); r.ReadValueSafe(out byte shades); r.ReadValueSafe(out byte colour); r.ReadValueSafe(out string name);
                 if (id == net.LocalClientId) continue;
-                Show(id, new State { eye = eye, stamp = stamp, yaw = yaw, shades = shades, colour = colour, name = name });
+                Show(id, new State { eye = eye, stamp = stamp, yaw = yaw, pitch = pitch, shades = shades, colour = colour, name = name });
             }
         }
 
@@ -371,7 +371,7 @@ namespace EverythingWorld.Player
             if (path.Count == 0 || s.stamp > path[path.Count - 1].t) { path.Add((s.stamp, s.eye)); if (path.Count > 40) path.RemoveAt(0); r.seen = Time.time; }
             if (r.orb.Index != (s.colour & 15)) r.orb.Choose(s.colour & 15);
             r.orb.Dress(s.colour >> 4, (s.shades >> 1) & 7, (s.shades >> 4) & 7);
-            r.orb.facing = s.yaw; r.orb.shades = (s.shades & 1) != 0;
+            r.orb.facing = s.yaw; r.orb.pitch = s.pitch; r.orb.shades = (s.shades & 1) != 0;
             if (r.label.text != s.name) r.label.text = s.name;
         }
 

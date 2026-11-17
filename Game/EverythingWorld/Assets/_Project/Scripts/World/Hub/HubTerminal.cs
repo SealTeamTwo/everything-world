@@ -142,6 +142,8 @@ namespace EverythingWorld.World
                     break;
                 case "LOCK": SimplePlayerController.FlightUnlocked = false; Print("FLIGHT LOCKED."); break;
                 case "FLY": case "FLIGHT": Print(SimplePlayerController.FlightUnlocked ? "FLIGHT IS UNLOCKED. PRESS F." : "FLIGHT IS LOCKED. ENTER THE CODE."); break;
+                case "USHANKA": case "TRAPPER":
+                    EverythingWorld.Player.PlayerOrb.UshankaUnlocked = true; Print("IT GETS COLD OUT THERE."); Print("A HAT HAS BEEN LEFT WITH YOUR THINGS (MENU, SETTINGS, HAT)."); break;
                 case "HELLO": case "HI": Print("HELLO. WELCOME TO THE HUB."); break;
                 case "RIDDLE": foreach (var l in HubRiddle) Print(l); break;
                 default: Print("UNKNOWN COMMAND. TYPE HELP."); break;
