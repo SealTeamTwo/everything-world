@@ -126,7 +126,7 @@ namespace EverythingWorld.World
                 return;
             }
             // the hat left for cold ears: its code is kept only as a fingerprint, like the flight code, so reading this file does not give it away
-            if (Hash(c) == "72b7797970d33823a07a793df98333f73077889ba12f341a66e936969c4ce153") { EverythingWorld.Player.PlayerOrb.UshankaUnlocked = true; Print("IT GETS COLD OUT THERE."); Print("A HAT HAS BEEN LEFT WITH YOUR THINGS (MENU, SETTINGS, HAT)."); return; }
+            if (Hash(c) == "8cc11c1934e3eaf4bbb6414bd25f544ee440548879523027c911911d3399c7a7") { EverythingWorld.Player.PlayerOrb.UshankaUnlocked = true; Print("IT GETS COLD OUT THERE."); Print("A HAT HAS BEEN LEFT WITH YOUR THINGS (MENU, SETTINGS, HAT)."); return; }
             if (Hash(c) == Code) { SimplePlayerController.FlightUnlocked = true; Print("ACCESS GRANTED. FLIGHT UNLOCKED."); Print("Press F to fly (until the game closes)."); return; }
             switch (c)
             {
