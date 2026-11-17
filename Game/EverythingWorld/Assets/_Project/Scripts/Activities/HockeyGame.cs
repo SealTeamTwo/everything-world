@@ -30,7 +30,7 @@ namespace EverythingWorld.Activities
         const string Channel = "hockey"; const int Target = 7;
         const float RobotSpeed = 2.5f, RobotTop = 3.3f;   // the table's own mallet: slow at the start of a point, quicker as the point goes on (it follows sim.rally)
 
-        readonly HockeySim sim = new HockeySim(); Transform[] bigBits, smallBits; bool playing, wasLocked; float shrinkT = 9f, outT = -1f, leaveHeld, nextSend, acc; double joined; int winner = -1;
+        readonly HockeySim sim = new HockeySim(); Transform[] bigBits, smallBits; bool playing, wasLocked; float shrinkT = 9f, outT = -1f, leaveHeld, nextSend, acc; double joined; int winner = -1, gameNo;
         Vector2 want; SimplePlayerController walker; PlayerInteractor hands; Vector3 backPos; Quaternion backRot; string banner = ""; float bannerUntil; Vector3 camAt, camLook; bool camSet;
         class Remote { public string name = "Friend"; public double joined; public float seen; public bool playing; public Vector2 mallet; }
         readonly Dictionary<ulong, Remote> others = new Dictionary<ulong, Remote>();
@@ -87,7 +87,7 @@ namespace EverythingWorld.Activities
         {
             walker.Take(); hands.enabled = false; IslandExplorer.Frozen = true; if (PlayerOrb.Local != null) PlayerOrb.Local.enabled = false;
             big.gameObject.SetActive(true); Tune(); joined = SharedChance.Now; playing = true; camSet = false;
-            if (Seat() == 0) { sim.Reset(); winner = -1; }
+            if (Seat() == 0) { sim.Reset(); winner = -1; gameNo++; } lastMine = 0;
             want = sim.mallet[Mathf.Clamp(Seat(), 0, 1)]; Say(Seat() > 1 ? "Two are already playing: you're watching" : "First to seven. Move the mouse to move your mallet.", 5f);
         }
 
@@ -127,23 +127,31 @@ namespace EverythingWorld.Activities
                 if (kb.pKey.wasPressedThisFrame && Unlocked) { Everything = !Everything; Tune(); Say(Everything ? "Playing the Everything Playlist" : "Playing " + landName + "'s songs", 3f); }
                 leaveHeld = kb.xKey.isPressed ? leaveHeld + dt : 0f; if (leaveHeld > .8f) { leaveHeld = 0f; outT = 0f; return; }
                 if (seat < 2) { var d = mouse.delta.ReadValue() * walker.mouseSensitivity * .012f * (seat == 0 ? 1f : -1f); want += d; want.x = Mathf.Clamp(want.x, -HockeySim.W / 2, HockeySim.W / 2); want.y = seat == 0 ? Mathf.Clamp(want.y, -HockeySim.L / 2, 0) : Mathf.Clamp(want.y, 0, HockeySim.L / 2); }
-                if (winner >= 0 && seat == 0 && (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)) { sim.Reset(); winner = -1; Say("New game", 2f); }
             }
-            if (seat == 0)
+            if (canAct && winner >= 0 && seat < 2 && (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)) { sim.Reset(); winner = -1; gameNo++; Say("New game", 2f); nextSend = 0f; }
+            if (seat < 2)
             {
-                // this game moves the puck: my mallet, and the far one from the friend there (or playing itself)
-                var far = roster.Count > 1 && others.TryGetValue(roster[1].id, out var o) ? o : null;
+                // Each player's own game moves the puck while it is in their half and tells the other where it is, so your
+                // hits land the moment you make them at either end (the far player used to see everything late). In the
+                // other half this game only follows along, and takes the other player's word.
+                var other = roster.Count > 1 && others.TryGetValue(roster[1 - seat].id, out var o) ? o : null;
+                sim.judge = other == null || Owns(seat);
                 acc += dt; var n = Mathf.Min(60, (int)(acc / HockeySim.Step)); acc -= n * HockeySim.Step;
                 for (var k = 0; k < n; k++)
                 {
-                    sim.Move(0, want, 9f, HockeySim.Step); if (far != null) sim.Move(1, far.mallet, 9f, HockeySim.Step); else sim.Move(1, sim.Robot(1), Mathf.Lerp(RobotSpeed, RobotTop, Mathf.Clamp01(sim.rally / 28f)), HockeySim.Step);
+                    sim.Move(seat, want, 9f, HockeySim.Step);
+                    if (other != null) sim.Move(1 - seat, other.mallet, 9f, HockeySim.Step); else sim.Move(1, sim.Robot(1), Mathf.Lerp(RobotSpeed, RobotTop, Mathf.Clamp01(sim.rally / 28f)), HockeySim.Step);
                     if (winner >= 0) continue; var scored = sim.Advance(HockeySim.Step);
-                    if (scored >= 0) { if (sim.score[scored] >= Target) { winner = scored; Over(); } else Say(scored == 0 ? "Goal!" : "They score", 1.5f); }
+                    if (scored >= 0) { nextSend = 0f; if (sim.score[scored] >= Target) { winner = scored; Over(); } else Say(scored == seat ? "Goal!" : "They score", 1.5f); lastMine = sim.score[seat]; }
                 }
             }
-            else if (seat == 1) { sim.mallet[1] = Vector2.MoveTowards(sim.mallet[1], new Vector2(Mathf.Clamp(want.x, -HockeySim.W / 2 + HockeySim.MalletR, HockeySim.W / 2 - HockeySim.MalletR), Mathf.Clamp(want.y, HockeySim.MalletR * .5f, HockeySim.L / 2 - HockeySim.MalletR)), 9f * dt); }
             if (Time.time >= nextSend) { nextSend = Time.time + .033f; Send(); }
         }
+
+        int lastMine;
+
+        /// Whose half the puck is in (the near end's on the line itself).
+        bool Owns(int seat) => sim.puck.y <= 0f ? seat == 0 : seat == 1;
 
         void Over()
         {
@@ -177,9 +185,9 @@ namespace EverythingWorld.Activities
             using (var ms = new MemoryStream())
             using (var w = new BinaryWriter(ms))
             {
-                w.Write((byte)1); w.Write(id); w.Write(Active == this && playing); w.Write(joined); w.Write(Friends.PlayerName); w.Write((byte)seat);
+                w.Write((byte)2); w.Write(id); w.Write(Active == this && playing); w.Write(joined); w.Write(Friends.PlayerName); w.Write((byte)seat);
                 var m = sim.mallet[Mathf.Clamp(seat, 0, 1)]; w.Write(m.x); w.Write(m.y);
-                if (seat == 0) { w.Write(sim.puck.x); w.Write(sim.puck.y); w.Write(sim.mallet[1].x); w.Write(sim.mallet[1].y); w.Write((byte)sim.score[0]); w.Write((byte)sim.score[1]); w.Write((sbyte)winner); }
+                if (seat < 2) { w.Write(sim.judge && Owns(seat)); w.Write(sim.puck.x); w.Write(sim.puck.y); w.Write(sim.pv.x); w.Write(sim.pv.y); w.Write(sim.serveWait); w.Write(sim.rally); w.Write(sim.mallet[1 - seat].x); w.Write(sim.mallet[1 - seat].y); w.Write(gameNo); w.Write((byte)sim.score[0]); w.Write((byte)sim.score[1]); w.Write((sbyte)winner); }
                 w.Flush(); f.Broadcast(Channel, ms.ToArray(), false);
             }
         }
@@ -191,11 +199,27 @@ namespace EverythingWorld.Activities
             {
                 using (var r = new BinaryReader(new MemoryStream(data)))
                 {
-                    if (r.ReadByte() != 1 || r.ReadString() != id) return; if (!others.TryGetValue(from, out var o)) others[from] = o = new Remote();
+                    if (r.ReadByte() != 2 || r.ReadString() != id) return; if (!others.TryGetValue(from, out var o)) others[from] = o = new Remote();
                     o.playing = r.ReadBoolean(); o.joined = r.ReadDouble(); o.name = r.ReadString(); var seat = r.ReadByte(); o.mallet = new Vector2(r.ReadSingle(), r.ReadSingle()); o.seen = o.playing ? Time.time : -99f;
-                    if (seat != 0 || (Active == this && playing && Seat() == 0)) return;   // only the near-end player's word on the puck counts, and not over my own if that is me
-                    sim.puck = new Vector2(r.ReadSingle(), r.ReadSingle()); sim.mallet[0] = o.mallet; var far = new Vector2(r.ReadSingle(), r.ReadSingle()); if (!(Active == this && playing && Seat() == 1)) sim.mallet[1] = far;
-                    sim.score[0] = r.ReadByte(); sim.score[1] = r.ReadByte(); var w = r.ReadSByte(); if (w != winner) { winner = w; if (winner >= 0 && Active == this && playing) Over(); }
+                    if (seat >= 2) return;
+                    var owns = r.ReadBoolean(); var rp = new Vector2(r.ReadSingle(), r.ReadSingle()); var rv = new Vector2(r.ReadSingle(), r.ReadSingle()); var wait = r.ReadSingle(); var rally = r.ReadSingle();
+                    var otherMallet = new Vector2(r.ReadSingle(), r.ReadSingle()); var game = r.ReadInt32(); int s0 = r.ReadByte(), s1 = r.ReadByte(); var w = r.ReadSByte();
+                    var mine = Active == this && playing ? Seat() : 9;
+                    if (mine >= 2) { sim.mallet[seat] = o.mallet; if (owns) { sim.puck = rp; sim.pv = rv; sim.mallet[1 - seat] = otherMallet; } }      // watching, or walking past the model
+                    else if (owns && (!Owns(mine) || seat < mine))
+                    {
+                        // the puck is theirs just now: go where they say it is (gently, unless it is far off) and as fast
+                        sim.puck = (sim.puck - rp).sqrMagnitude > .04f ? rp : Vector2.Lerp(sim.puck, rp, .5f); sim.pv = rv; sim.serveWait = wait; sim.rally = rally;
+                    }
+                    // the score: a newer game's replaces mine; in the same game a goal either of us has counted stands
+                    var before = sim.score[0] + sim.score[1];
+                    if (game > gameNo) { gameNo = game; sim.score[0] = s0; sim.score[1] = s1; winner = w; }
+                    else if (game == gameNo)
+                    {
+                        sim.score[0] = Mathf.Max(sim.score[0], s0); sim.score[1] = Mathf.Max(sim.score[1], s1);
+                        if (mine < 2 && sim.score[0] + sim.score[1] > before && w < 0) Say(sim.score[mine] > lastMine ? "Goal!" : "They score", 1.5f); if (mine < 2) lastMine = sim.score[mine];
+                        if (w >= 0 && winner < 0) { winner = w; if (Active == this && playing) Over(); }
+                    }
                 }
             }
             catch (System.Exception) { }

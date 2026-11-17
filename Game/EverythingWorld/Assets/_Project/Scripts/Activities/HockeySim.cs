@@ -9,6 +9,8 @@ namespace EverythingWorld.Activities
         public const float W = 1.2f, L = 2.4f, PuckR = .04f, MalletR = .055f, Goal = .4f, Step = 1f / 240f, MaxSpeed = 6.5f;
         public Vector2 puck, pv; public readonly Vector2[] mallet = { new Vector2(0, -.9f), new Vector2(0, .9f) }, mv = new Vector2[2]; public readonly int[] score = new int[2]; public float serveWait;
         /// Each point starts slow and gets faster the longer the puck stays in play: this is how long this one has run, and the top speed that allows.
+        /// False on a game that is only following along while the puck is in the other player's half: it never calls a goal.
+        public bool judge = true;
         public float rally; public float Cap => Mathf.Lerp(2.3f, MaxSpeed, Mathf.Clamp01(rally / 28f));
 
         public void Reset() { score[0] = score[1] = 0; Serve(0); mallet[0] = new Vector2(0, -.9f); mallet[1] = new Vector2(0, .9f); }
@@ -39,7 +41,7 @@ namespace EverythingWorld.Activities
             var inMouth = Mathf.Abs(puck.x) < Goal / 2f - PuckR * .5f;
             if (Mathf.Abs(puck.y) > L / 2 - PuckR)
             {
-                if (inMouth) { if (Mathf.Abs(puck.y) > L / 2 + PuckR) { var scorer = puck.y > 0f ? 0 : 1; score[scorer]++; Serve(1 - scorer); return scorer; } }
+                if (inMouth) { if (Mathf.Abs(puck.y) > L / 2 + PuckR) { if (!judge) { puck.y = Mathf.Sign(puck.y) * (L / 2 + PuckR); pv = Vector2.zero; return -1; } var scorer = puck.y > 0f ? 0 : 1; score[scorer]++; Serve(1 - scorer); return scorer; } }
                 else if (puck.y * pv.y > 0f) { puck.y = Mathf.Sign(puck.y) * (L / 2 - PuckR); pv.y = -pv.y * .92f; }
             }
             sp = pv.magnitude; var cap = Cap; if (sp > cap) pv *= cap / sp;
