@@ -310,8 +310,8 @@ namespace EverythingWorld.Player
             var eye = ReportedEye ?? (walker != null && walker.cameraPivot != null ? walker.cameraPivot.position : transform.position + Vector3.up * .7f);
             var look = Camera.main != null ? Camera.main.transform.forward : transform.forward;
             if (shades == null) shades = GetComponent<Sunglasses>();
-            return new State { eye = eye, stamp = Time.realtimeSinceStartup, yaw = Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg, shades = (byte)(shades != null && shades.On ? 1 : 0),
-                               colour = (byte)(PlayerOrb.Local != null ? PlayerOrb.Local.Index : 0), name = PlayerName };
+            return new State { eye = eye, stamp = Time.realtimeSinceStartup, yaw = Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg, shades = (byte)((shades != null && shades.On ? 1 : 0) | ((PlayerOrb.Local != null ? PlayerOrb.Local.Eyes : 0) << 1) | ((PlayerOrb.Local != null ? PlayerOrb.Local.Mouth : 0) << 4)),   // (the face rides in the spare bits)
+                               colour = (byte)((PlayerOrb.Local != null ? PlayerOrb.Local.Index : 0) | ((PlayerOrb.Local != null ? PlayerOrb.Local.Hat : 0) << 4)), name = PlayerName };   // (and the hat with the colour)
         }
 
         /// Where to draw a friend now: their clock runs alongside ours, Delay behind the newest thing they sent, and
@@ -369,8 +369,9 @@ namespace EverythingWorld.Player
             var path = r.path;
             if (path.Count > 0 && s.stamp < path[path.Count - 1].t - 5f) path.Clear();   // their clock restarted
             if (path.Count == 0 || s.stamp > path[path.Count - 1].t) { path.Add((s.stamp, s.eye)); if (path.Count > 40) path.RemoveAt(0); r.seen = Time.time; }
-            if (r.orb.Index != s.colour) r.orb.Choose(s.colour);
-            r.orb.facing = s.yaw; r.orb.shades = s.shades != 0;
+            if (r.orb.Index != (s.colour & 15)) r.orb.Choose(s.colour & 15);
+            r.orb.Dress(s.colour >> 4, (s.shades >> 1) & 7, (s.shades >> 4) & 7);
+            r.orb.facing = s.yaw; r.orb.shades = (s.shades & 1) != 0;
             if (r.label.text != s.name) r.label.text = s.name;
         }
 

@@ -26,6 +26,17 @@ namespace EverythingWorld.Player
         public Transform eye;                       // the local player's camera pivot (the orb sits there)
         public float radius = .24f;
 
+        /// What an orb can wear and the face it can have: each player picks one of each in the menu, and friends see it.
+        /// A hat and a face sit on the side the player is looking toward, so from any angle you can tell where a friend
+        /// is looking (from behind you see the back of the hat and no face).
+        public static readonly string[] Hats = { "No hat", "Cap", "Top hat", "Cowboy hat", "Beanie", "Crown", "Party hat", "Headphones", "Halo", "Wizard hat" };
+        public static readonly string[] EyeKinds = { "Dots", "Wide", "Sleepy", "Cross", "Sparkle", "Wink", "Tall", "No eyes" };
+        public static readonly string[] MouthKinds = { "Smile", "Grin", "Oh", "Flat", "Frown", "Tongue", "Cat", "No mouth" };
+        public int Hat { get; private set; }
+        public int Eyes { get; private set; }
+        public int Mouth { get; private set; }
+        Transform look;   // the hat and the face, turned the way the player looks
+
         public static PlayerOrb Local { get; private set; }
         /// Other players' orbs: the way they're looking (degrees, like a compass) and whether their sunglasses are on.
         public float facing; public bool shades;
@@ -71,6 +82,9 @@ namespace EverythingWorld.Player
             beam = Quad("Beam", beamMat, root.parent == null ? null : root.parent); glowDisc = Quad("Ground glow", discMat, root.parent == null ? null : root.parent);
             if (display) { lamp.enabled = false; beam.gameObject.SetActive(false); glowDisc.gameObject.SetActive(false); }
             if (!isLocal) glasses = Glasses(root.parent);
+            if (!isLocal) { look = new GameObject("Hat and face").transform; look.SetParent(root.parent, false); }
+            if (isLocal) { Hat = Mathf.Clamp(PlayerPrefs.GetInt("EW_OrbHat", 0), 0, Hats.Length - 1); Eyes = Mathf.Clamp(PlayerPrefs.GetInt("EW_OrbEyes", 0), 0, EyeKinds.Length - 1); Mouth = Mathf.Clamp(PlayerPrefs.GetInt("EW_OrbMouth", 0), 0, MouthKinds.Length - 1); }
+            else Rebuild();
             if (Friend) { beaconMat = Additive("Friend beacon", BeaconTexture()); beacon = Quad("Beacon", beaconMat, root.parent); beacon.gameObject.SetActive(false); }
             SetColor(isLocal ? Load() : Color);
         }
@@ -131,6 +145,94 @@ namespace EverythingWorld.Player
             SetColor(Palette[index].color);
         }
 
+        /// Puts on a hat and a face (and remembers them, for your own orb).
+        public void Dress(int hat, int eyes, int mouth)
+        {
+            hat = Mathf.Clamp(hat, 0, Hats.Length - 1); eyes = Mathf.Clamp(eyes, 0, EyeKinds.Length - 1); mouth = Mathf.Clamp(mouth, 0, MouthKinds.Length - 1);
+            if (hat == Hat && eyes == Eyes && mouth == Mouth) return;
+            Hat = hat; Eyes = eyes; Mouth = mouth;
+            if (isLocal) { PlayerPrefs.SetInt("EW_OrbHat", hat); PlayerPrefs.SetInt("EW_OrbEyes", eyes); PlayerPrefs.SetInt("EW_OrbMouth", mouth); }
+            Rebuild();
+        }
+
+        static Transform Bit(Transform parent, PrimitiveType kind, Material m, Vector3 at, Vector3 size, Quaternion? rot = null)
+        {
+            var b = GameObject.CreatePrimitive(kind); Destroy(b.GetComponent<Collider>()); b.transform.SetParent(parent, false);
+            b.transform.localPosition = at; b.transform.localScale = size; if (rot.HasValue) b.transform.localRotation = rot.Value;
+            var r = b.GetComponent<MeshRenderer>(); r.sharedMaterial = m; r.shadowCastingMode = ShadowCastingMode.Off; return b.transform;
+        }
+
+        /// Builds the hat and the face again (nothing for your own orb: it is round your eyes).
+        void Rebuild()
+        {
+            if (look == null) return;
+            for (var i = look.childCount - 1; i >= 0; i--) Destroy(look.GetChild(i).gameObject);
+            var M = EverythingWorld.World.WorldMaterials.Solid(new Color(.05f, .05f, .08f)); var white = EverythingWorld.World.WorldMaterials.Glow(Color.white, .7f);
+            Material Paint(float r, float g, float b) => EverythingWorld.World.WorldMaterials.Solid(new Color(r, g, b)); Material Shine(float r, float g, float b, float s = 1.4f) => EverythingWorld.World.WorldMaterials.Glow(new Color(r, g, b), s);
+            const float R = .24f; var cube = PrimitiveType.Cube; var ball = PrimitiveType.Sphere; var cyl = PrimitiveType.Cylinder;
+            // a point on the front of the orb, a little proud of it
+            Vector3 On(float x, float y) => new Vector3(x, y, Mathf.Sqrt(Mathf.Max(.0001f, R * R - x * x - y * y)) + .004f);
+
+            // ---- the eyes
+            var face = new GameObject("Face").transform; face.SetParent(look, false);
+            foreach (var s in new[] { -1f, 1f })
+            {
+                var e = On(s * .078f, .05f); var wink = Eyes == 5 && s > 0f;
+                switch (wink ? 2 : Eyes == 5 ? 0 : Eyes)
+                {
+                    case 0: Bit(face, ball, M, e, new Vector3(.05f, .05f, .02f)); Bit(face, ball, white, e + new Vector3(-.01f, .012f, .008f), Vector3.one * .014f); break;
+                    case 1: Bit(face, ball, white, e, new Vector3(.095f, .095f, .02f)); Bit(face, ball, M, e + new Vector3(0, 0, .008f), new Vector3(.048f, .048f, .014f)); Bit(face, ball, white, e + new Vector3(-.012f, .014f, .016f), Vector3.one * .016f); break;
+                    case 2: Bit(face, cube, M, e - Vector3.up * .01f, new Vector3(.07f, .016f, .012f), Quaternion.Euler(0, 0, s * -6f)); break;
+                    case 3: Bit(face, cube, M, e, new Vector3(.08f, .022f, .012f), Quaternion.Euler(0, 0, s * 24f)); Bit(face, ball, M, e - Vector3.up * .028f, new Vector3(.036f, .036f, .014f)); break;
+                    case 4: Bit(face, cube, white, e, new Vector3(.075f, .018f, .012f)); Bit(face, cube, white, e, new Vector3(.018f, .075f, .012f)); Bit(face, cube, white, e, new Vector3(.04f, .04f, .012f), Quaternion.Euler(0, 0, 45f)); break;
+                    case 6: Bit(face, ball, M, e, new Vector3(.04f, .1f, .02f)); Bit(face, ball, white, e + new Vector3(-.006f, .024f, .008f), Vector3.one * .014f); break;
+                }
+            }
+            // ---- the mouth
+            var mo = On(0f, -.065f);
+            void Arc(float up, float width, int n) { for (var i = 0; i < n; i++) { var k = i / (n - 1f) * 2f - 1f; var q = On(k * width, -.065f + (k * k - .5f) * up); Bit(face, cube, M, q, new Vector3(width * 2.4f / n, .014f, .012f), Quaternion.Euler(0, 0, k * 34f * Mathf.Sign(up))); } }
+            switch (Mouth)
+            {
+                case 0: Arc(.03f, .055f, 5); break;
+                case 1: Bit(face, cube, white, mo, new Vector3(.12f, .045f, .012f)); Bit(face, cube, M, mo + new Vector3(0, .026f, .002f), new Vector3(.13f, .012f, .012f)); Bit(face, cube, M, mo + new Vector3(0, 0, .004f), new Vector3(.01f, .045f, .008f)); break;
+                case 2: Bit(face, ball, M, mo, new Vector3(.05f, .06f, .02f)); break;
+                case 3: Bit(face, cube, M, mo, new Vector3(.085f, .015f, .012f)); break;
+                case 4: Arc(-.03f, .055f, 5); break;
+                case 5: Arc(.03f, .055f, 5); Bit(face, ball, Shine(1f, .45f, .6f, .5f), mo + new Vector3(.012f, -.03f, .004f), new Vector3(.042f, .05f, .016f)); break;
+                case 6: foreach (var s in new[] { -1f, 1f }) { Bit(face, cube, M, On(s * .02f, -.07f), new Vector3(.04f, .014f, .012f), Quaternion.Euler(0, 0, s * -32f)); Bit(face, cube, M, On(s * .05f, -.062f), new Vector3(.035f, .014f, .012f), Quaternion.Euler(0, 0, s * 28f)); } break;
+            }
+
+            // ---- the hat (its front is +z, the way the player looks)
+            if (Hat == 0) return;
+            var hat = new GameObject("Hat").transform; hat.SetParent(look, false); hat.localPosition = new Vector3(0, R * .78f, -.01f); hat.localRotation = Quaternion.Euler(-7f, 0, 0);
+            switch (Hat)
+            {
+                case 1:   // cap: a crown and a long brim out front
+                    Bit(hat, ball, Paint(.12f, .2f, .55f), new Vector3(0, .0f, 0), new Vector3(.4f, .26f, .4f)); Bit(hat, cube, Paint(.9f, .2f, .2f), new Vector3(0, .01f, .24f), new Vector3(.26f, .022f, .24f)); Bit(hat, ball, white, new Vector3(0, .13f, 0), Vector3.one * .04f); break;
+                case 2:   // top hat, with a red band and a buckle at the front
+                    Bit(hat, cyl, M, new Vector3(0, .02f, 0), new Vector3(.46f, .01f, .46f)); Bit(hat, cyl, M, new Vector3(0, .19f, 0), new Vector3(.29f, .17f, .29f)); Bit(hat, cyl, Paint(.8f, .15f, .2f), new Vector3(0, .06f, 0), new Vector3(.296f, .03f, .296f)); Bit(hat, cube, Shine(1f, .8f, .2f), new Vector3(0, .06f, .15f), new Vector3(.05f, .05f, .01f)); break;
+                case 3:   // cowboy hat: a wide brim, a pinched crown
+                    Bit(hat, cyl, Paint(.55f, .36f, .2f), new Vector3(0, .02f, 0), new Vector3(.58f, .012f, .5f)); Bit(hat, ball, Paint(.55f, .36f, .2f), new Vector3(0, .1f, 0), new Vector3(.3f, .26f, .32f)); Bit(hat, cyl, Paint(.25f, .15f, .08f), new Vector3(0, .05f, 0), new Vector3(.31f, .015f, .33f)); Bit(hat, cube, Shine(1f, .85f, .3f), new Vector3(0, .05f, .168f), new Vector3(.04f, .03f, .01f)); break;
+                case 4:   // beanie with a bobble
+                    Bit(hat, ball, Paint(.85f, .2f, .25f), new Vector3(0, -.02f, 0), new Vector3(.43f, .36f, .43f)); Bit(hat, cyl, Paint(.95f, .95f, .9f), new Vector3(0, -.04f, 0), new Vector3(.44f, .03f, .44f)); Bit(hat, ball, white, new Vector3(0, .18f, 0), Vector3.one * .1f); break;
+                case 5:   // crown: a gold band, five points, a jewel at the front
+                    Bit(hat, cyl, Shine(1f, .8f, .2f, 1f), new Vector3(0, .04f, 0), new Vector3(.34f, .035f, .34f));
+                    for (var i = 0; i < 5; i++) { var q = Quaternion.Euler(0, i * 72f, 0); Bit(hat, cube, Shine(1f, .8f, .2f, 1f), q * new Vector3(0, .12f, .15f), new Vector3(.07f, .1f, .02f), q * Quaternion.Euler(0, 0, 45f)); }
+                    Bit(hat, ball, Shine(.9f, .15f, .3f, 1.6f), new Vector3(0, .05f, .175f), Vector3.one * .05f); break;
+                case 6:   // party hat: a striped cone with a bobble
+                    for (var i = 0; i < 6; i++) Bit(hat, cyl, i % 2 == 0 ? Paint(1f, .35f, .7f) : Paint(.3f, .8f, 1f), new Vector3(0, .02f + i * .06f, 0), new Vector3(.3f - i * .048f, .03f, .3f - i * .048f));
+                    Bit(hat, ball, Shine(1f, .85f, .3f), new Vector3(0, .4f, 0), Vector3.one * .07f); break;
+                case 7:   // headphones: a band over the top, a cup each side
+                    Bit(hat, cube, M, new Vector3(0, .07f, 0), new Vector3(.4f, .03f, .06f)); foreach (var s in new[] { -1f, 1f }) { Bit(hat, cube, M, new Vector3(s * .215f, -.03f, 0), new Vector3(.03f, .22f, .06f), Quaternion.Euler(0, 0, s * 12f)); Bit(hat, cyl, M, new Vector3(s * .255f, -.17f, 0), new Vector3(.17f, .03f, .17f), Quaternion.Euler(0, 0, 90f)); Bit(hat, cyl, Shine(.3f, .9f, 1f), new Vector3(s * .29f, -.17f, 0), new Vector3(.1f, .005f, .1f), Quaternion.Euler(0, 0, 90f)); } break;
+                case 8:   // halo: a ring of light floating over the orb
+                    for (var i = 0; i < 14; i++) { var q = Quaternion.Euler(0, i * 25.7f, 0); Bit(hat, cube, Shine(1f, .9f, .5f, 2.2f), q * new Vector3(0, .14f, .17f), new Vector3(.08f, .022f, .03f), q); } break;
+                case 9:   // wizard hat: a tall bent cone with a brim and a star
+                    Bit(hat, cyl, Paint(.3f, .2f, .6f), new Vector3(0, .02f, 0), new Vector3(.54f, .012f, .54f));
+                    for (var i = 0; i < 7; i++) Bit(hat, cyl, Paint(.3f, .2f, .6f), new Vector3(0, .05f + i * .065f, -i * i * .006f), new Vector3(.32f - i * .042f, .034f, .32f - i * .042f), Quaternion.Euler(-i * 4f, 0, 0));
+                    Bit(hat, cube, Shine(1f, .9f, .4f), new Vector3(0, .1f, .155f), new Vector3(.05f, .05f, .01f), Quaternion.Euler(0, 0, 45f)); break;
+            }
+        }
+
         public void SetColor(Color c)
         {
             Color = c;
@@ -154,6 +256,12 @@ namespace EverythingWorld.Player
             orb.position = p; orb.rotation = Quaternion.Euler(0, t * 20f, 0);
             if (pattern != null) { pattern.localRotation = Quaternion.Euler(18f, t * 14f, 8f); pattern2.localRotation = Quaternion.Euler(-24f, -t * 23f, -12f); }
             var pulse = 1f + Mathf.Sin(t * 2.2f) * .04f; orb.localScale = Vector3.one * pulse;
+            if (!isLocal)
+            {
+                // the hat, the face and the sunglasses all sit on the side the player is looking toward
+                shownFacing = facingSet ? Mathf.LerpAngle(shownFacing, facing, 1f - Mathf.Exp(-10f * Time.deltaTime)) : facing; facingSet = true;
+                if (look != null) { look.SetPositionAndRotation(p, Quaternion.Euler(0f, shownFacing, 0f)); look.localScale = Vector3.one * (radius / .24f) * pulse; }
+            }
             if (glasses != null) PlaceGlasses(p);
             // the beam: from just under the orb to the ground (or 30 m down), always turned to the camera
             var ground = p - Vector3.up * 30f; var hitSomething = false;
@@ -195,7 +303,6 @@ namespace EverythingWorld.Player
             shadesT = Mathf.MoveTowards(shadesT, shades ? 1f : 0f, Time.deltaTime / .45f);
             glasses.gameObject.SetActive(shadesT > 0f);
             if (shadesT <= 0f) return;
-            shownFacing = facingSet ? Mathf.LerpAngle(shownFacing, facing, 1f - Mathf.Exp(-10f * Time.deltaTime)) : facing; facingSet = true;
             var turn = Quaternion.Euler(0f, shownFacing, 0f); var e = Mathf.SmoothStep(0f, 1f, shadesT);
             glasses.SetPositionAndRotation(p + turn * new Vector3(0f, radius * .18f + (1f - e) * .35f, radius * .93f), turn * Quaternion.Euler((1f - e) * -40f, 0f, 0f));
             glasses.localScale = Vector3.one * Mathf.Lerp(.6f, 1f, e) * (radius / .24f);

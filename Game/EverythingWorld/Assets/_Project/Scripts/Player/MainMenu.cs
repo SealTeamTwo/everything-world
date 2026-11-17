@@ -259,6 +259,21 @@ namespace EverythingWorld.Player
                 if (GUI.Button(r, GUIContent.none, swatch) && PlayerOrb.Local != null) PlayerOrb.Local.Choose(i);
             }
             y += 90f;
+            // the hat and the face (friends see them; they also show which way you are looking)
+            if (PlayerOrb.Local != null)
+            {
+                var o = PlayerOrb.Local; int hat = o.Hat, eyes = o.Eyes, mouth = o.Mouth;
+                int Row(string what, string[] names, int now)
+                {
+                    GUI.Label(new Rect(x, y, 90f, 30f), what, label);
+                    if (GUI.Button(new Rect(x + 90f, y, 34f, 30f), "<")) now = (now + names.Length - 1) % names.Length;
+                    GUI.Label(new Rect(x + 130f, y, 150f, 30f), names[now], new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
+                    if (GUI.Button(new Rect(x + 286f, y, 34f, 30f), ">")) now = (now + 1) % names.Length;
+                    y += 34f; return now;
+                }
+                hat = Row("Hat", PlayerOrb.Hats, hat); eyes = Row("Eyes", PlayerOrb.EyeKinds, eyes); mouth = Row("Mouth", PlayerOrb.MouthKinds, mouth);
+                o.Dress(hat, eyes, mouth); y += 8f;
+            }
             // mouse sensitivity
             if (walker != null)
             {

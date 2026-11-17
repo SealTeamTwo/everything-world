@@ -43,7 +43,7 @@ One thing added to each, as asked:
 - **Skating:** the view widens with speed.
 - **Air hockey, golf, pool:** the confetti only. They could each take something more of their own.
 
-Still open from the notes: **hats for the orb** (he called it "kind of really important"; not started).
+**Hats and faces for the orb are built** (2026-11-17): ten hats, eight kinds of eyes and eight mouths, picked in the menu under Settings and shared with friends (packed into the two small numbers already sent, so nothing else about playing together changed). They sit on the side the player is looking toward, which answers "a way to tell where a friend is looking from any angle". The face was the owner's idea (a face you can make your own). Seen in photos only; not yet seen by a friend in play. You cannot see your own (the orb is round your eyes): a mirror somewhere, or the Hub's colour station showing it, would fix that.
 
 
 ## The activities, as the owner and a friend found them (told 2026-11-17, from the 2026-11-16 playtest)
