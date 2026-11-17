@@ -87,15 +87,13 @@ def sheets(folder):
 
 def main():
     args = sys.argv[1:]
-    quick, only, notes, no_outline = False, None, None, False
+    quick, only, notes = False, None, None
     while args and args[0].startswith('--'):
         flag = args.pop(0)
         if flag == '--quick':
             quick = True
         elif flag == '--only' and args:
             quick, only = True, [w.strip() for w in args.pop(0).split(',') if w.strip()]
-        elif flag == '--no-outline':
-            no_outline = True
         elif flag == '--notes' and args:
             notes = os.path.abspath(args.pop(0)); args = ['notes']
         else:
@@ -115,8 +113,6 @@ def main():
         cmd += ['-ewOnly', ';'.join(only)]
     if notes:
         cmd += ['-ewNotes', notes]
-    if no_outline:
-        cmd += ['-ewNoOutline']   # the same photos without the ink outlines, to compare
     print('Unity is photographing', ', '.join(lands), '(no window; this takes a few minutes)...')
     t0 = time.time()
     try:

@@ -83,7 +83,6 @@ namespace EverythingWorld.World
 
         /// The land whose sky is showing, and how starry it is right now (for the surprises).
         public string CurrentLand => currentLand;
-        Vector4 outlineNow;
 
         bool testAurora;
         /// F8 in play: show or hide the aurora on any land, for testing.
@@ -227,9 +226,6 @@ namespace EverythingWorld.World
             Shader.SetGlobalVector("_EW_FogSun", new Vector4(sunCol.r, sunCol.g, sunCol.b, current.sunGlow));
             Shader.SetGlobalVector("_EW_FogParams", new Vector4(current.hfBase, Mathf.Max(.001f, current.hfFall), current.hfDens, .8f));
             Shader.SetGlobalVector("_EW_SunDir", sun != null ? -sun.transform.forward : Vector3.up);
-            // ink outlines (the "Ink outlines" pass on the renderer, Shaders/Outline.shader): each land's own line, or none
-            var ink = Outlines.For(currentLand); outlineNow = Vector4.Lerp(outlineNow, ink.colour, 1f - Mathf.Exp(-3f * Time.deltaTime));
-            Shader.SetGlobalVector("_EW_Outline", Outlines.Off ? Vector4.zero : outlineNow); Shader.SetGlobalVector("_EW_OutlineParams", ink.shape);
             if (cam != null)
             {
                 cam.clearFlags = CameraClearFlags.SolidColor;
@@ -489,23 +485,6 @@ namespace EverythingWorld.World
             r.sharedMaterial = FlakeMaterial(name);
             ps.Play();
             return ps;
-        }
-    }
-    /// Each land's ink outline (a test, 2026-11-17: two lands have one; the rest have none until the owner has judged it).
-    /// colour: rgb the ink, a its strength. shape: line width in pixels, the jump in depth that counts as an edge,
-    /// the corner that counts, and the distance in metres by which the lines have faded away.
-    public static class Outlines
-    {
-        /// Turn every outline off (for a before-and-after photo: "-ewNoOutline" on the command line).
-        public static bool Off = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-ewNoOutline") >= 0;
-        public static (Vector4 colour, Vector4 shape) For(string land)
-        {
-            switch (land)
-            {
-                case "The Kawaii Cascades": return (new Vector4(.1f, .08f, .32f, .9f), new Vector4(1.6f, .06f, .35f, 260f));     // deep blueberry ink, like a sticker
-                case "The Punk Badlands": return (new Vector4(.02f, .02f, .03f, 1f), new Vector4(2.2f, .05f, .3f, 220f));        // thick black marker
-                default: return (Vector4.zero, new Vector4(1.5f, .06f, .35f, 220f));
-            }
         }
     }
 }
