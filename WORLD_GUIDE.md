@@ -734,12 +734,22 @@ A few people sit about them, each with a tune they can't finish. The lamp benche
 - **The Rune Road:** walk between the rune stones.
 - **The Sky Stair:** climb the floating steps to the lookout and look over every island.
 
-### The Future Bass Arcades
-*30 songs · 24 artists · 0.78 km² · not built yet*
+### The Kawaii Cascades
+*30 songs · 24 artists · 0.78 km² · built in Unity*
 
-The newest land (November 2026): an island of its own at the western end of the Bass Reaches, with bridges to the Southern Rock Bayou and the Electro Foundry. It holds the fast, bright, melodic electronic music from Japan and the producers who love it: future bass, kawaii bass and the rhythm-game end of hardcore (Mameyudoufu, Nokae, kamome sano, PSYQUI, Snail's House, Flay!, t+pazolite, Kizuna AI and more).
+**Arriving:** The Sugar Bowl, on the summit of a mountain of cake, in bright daylight: a round floor set with sprinkles, a ring of giant lollipops, a great jelly to bounce on, and signs that tell you the one thing that matters here. You are hyper. You run more than twice as fast as anywhere else, jump high and come down quick, jump again in mid-air, and kick off any wall you touch.
 
-For now it is a bare island of sand, like every land before it was built: its music plays when you walk onto it, but there are no artist areas, plaques, landmark or sky of its own yet. Its name is a working name. Like every land it will be designed with the owner first (what the music means, then its own kit).
+**The vibe:** Hyper, sweet and very fast: the fast, bright, melodic electronic music from Japan and the producers who love it (future bass, kawaii bass, the rhythm-game end of hardcore). The land is a cake cut into tiers, blueberry-dark on the flats with bands of lemon, pink, cream and soda blue on the risers, stepping down to a sugar beach under a clear blue sky with racing pink clouds. Everything glows on the beat. It is the only land that changes how you move, and it is built to be crossed in a flow: when you leave by a bridge you slow down again, and everywhere else feels calm.
+
+**Artist areas:** Each artist stands on a giant macaron set into the cake, their name on a wafer sign, covers on a biscuit board, a lollipop that glows for each song, and one thing made from their songs. Flay! (the land's radio station) has clouds to bounce up, a crescent moon to sit in at the top, and a row of bright teddies with one grey one a little apart. DraGonis has a candy rocket on a geyser that fires you higher than almost anything; kamome sano a stack of pancakes under pouring syrup and a turning cube of light; Mameyudoufu a block of tofu with a face, a row of sweets under a stamp and a heart-shaped moon; Nokae a ring of candy-cane swords that dance. The rest have one piece each: a giant smile, a glass flower, a door standing open on the sky, a tree of gold leaves, a black-and-white cube, a party popper to fire, a ribboned stage screen, an easel, jellyfish round a signpost, an umbrella under its own rain cloud, a rice-ball car on a strip of road, a cup of green tea to sit by, a figure of eight, a misty pool, a snail whose shell is a house, a question-mark box, a red gate before purple hills, a tower of blocks, a battery.
+
+**Happenings:** The lamps, the jelly and the rails flash on the beat. Stars spin over the macaron hops and burst into sprinkles when you reach them. Pads puff sprinkles when they throw you. On about one song in three a shower of sprinkles falls over the whole land. Night falls and the stars come out for "dreamseeker", "Moonheart" and "Lost"; a soft rain for "Signs of Rain"; the land flashes yellow on every beat for "ENERGIZE"; the colour drains away for "Monochrome Anomaly"; gold light for "Summer Trees" and lilac for "Glass Petals".
+
+**The streets and places:** Laid out on purpose, to be run.
+- **The Sugar Bowl:** bounce on the big jelly; read the signs; sit on a wafer bench and watch the runners lap.
+- **The Parfait:** a sundae glass as tall as a tower. Climb the spiral of macarons round it, or stand on the geyser at its foot and be fired to the top in one go. The cherry on top is the biggest bounce in the land.
+- **The four Runs (Strawberry, Lemon, Soda, Mint):** a rail from the Parfait's rim down each one to the shore (touch it to ride, Space to leap off), a road of boost strips underneath, a gate at the far end, and a return geyser that fires you back toward the summit.
+- **Everywhere else:** jelly pads, geysers under floating donuts that fire you up through the hole, hops of floating macarons with a star at the top, donut arches to run through, cupcakes to stand on, lollipop trees, gummy bears, strawberry milk pouring down the risers.
 
 ### The Liquid Rapids
 *22 songs · 20 artists · built in Unity*

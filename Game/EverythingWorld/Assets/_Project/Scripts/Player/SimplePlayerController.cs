@@ -35,6 +35,25 @@ namespace EverythingWorld.Player
         /// floaty jump unpleasant, 2026-11-15). Until the game closes.
         public static bool Drifting;
         bool airJumpUsed;
+        /// Hyper movement, switched on by a land while you are on it (the Kawaii Cascades): you run more than twice as
+        /// fast, jump higher and come down quicker (snappy, not floaty), get a second jump in mid-air, can kick off a
+        /// wall you are touching, and things in the land can throw you (Launch).
+        public static bool Hyper;
+        public const float HyperSpeed = 2.2f, HyperJump = 2.8f, HyperGravity = 1.9f;
+        /// True while something that has taken the body (Take) still lets you look around, like a rail you ride.
+        public bool LookWhileControlled;
+        Vector3 thrown;                 // sideways speed from a launch or a boost, fading out
+        Vector3 wallNormal; float wallTime = -9f;
+        /// Throws you: 'velocity' in metres a second (its upward part replaces how fast you were rising or falling,
+        /// the rest carries you sideways and fades). Bounce pads, geysers, boost strips and the ends of rails use it.
+        public void Launch(Vector3 velocity)
+        {
+            if (Flying || Seated || Controlled) return;
+            if (velocity.y != 0f) { verticalVelocity = velocity.y; lastGrounded = -9f; airJumpUsed = false; }
+            thrown = new Vector3(velocity.x, 0f, velocity.z);
+        }
+        /// How fast you are moving over the ground, in metres a second (for things that react to speed).
+        public float GroundSpeed { get; private set; }
         float lockedNote = -9f;
         float lastGrounded = -9f, jumpWanted = -9f;
 
@@ -75,9 +94,12 @@ namespace EverythingWorld.Player
         /// Gives the body back at 'middle' (the body's middle, as transform.position was), facing 'facing'.
         public void Release(Vector3 middle, Quaternion facing)
         {
-            Controlled = false; pitch = 0f; if (cameraPivot != null) cameraPivot.localEulerAngles = Vector3.zero;
+            Controlled = false; LookWhileControlled = false; pitch = 0f; if (cameraPivot != null) cameraPivot.localEulerAngles = Vector3.zero;
             transform.SetPositionAndRotation(middle, facing); controller.enabled = true; verticalVelocity = 0f;
         }
+
+        /// Lets go of a body that was taken (Take) where it is now, keeping the way you are looking (a rail you rode).
+        public void LetGo() { Controlled = false; LookWhileControlled = false; controller.enabled = true; verticalVelocity = 0f; }
 
         /// Stands up at 'feet'.
         public void Stand(Vector3 feet)
@@ -97,8 +119,8 @@ namespace EverythingWorld.Player
 
             // (Esc opens the pause menu, MainMenu, which frees the cursor)
             if (mouse.leftButton.wasPressedThisFrame) SetCursorLocked(true);
-            if (Controlled) return;
-            if (keyboard.fKey.wasPressedThisFrame && !Seated) { if (FlightUnlocked || Flying) SetFlying(!Flying); else lockedNote = Time.time; }
+            if (Controlled && !LookWhileControlled) return;
+            if (!Controlled && keyboard.fKey.wasPressedThisFrame && !Seated) { if (FlightUnlocked || Flying) SetFlying(!Flying); else lockedNote = Time.time; }
 
             if (Cursor.lockState == CursorLockMode.Locked)
             {
@@ -108,7 +130,7 @@ namespace EverythingWorld.Player
                 if (cameraPivot != null) cameraPivot.localEulerAngles = new Vector3(pitch, 0f, 0f);
             }
 
-            if (Seated) return;   // look around, but stay put
+            if (Seated || Controlled) return;   // look around, but stay put
 
             var input = Vector2.zero;
             if (keyboard.wKey.isPressed) input.y += 1f;
@@ -119,8 +141,12 @@ namespace EverythingWorld.Player
 
             if (Flying) { Fly(keyboard, input); return; }
 
-            var speed = keyboard.leftShiftKey.isPressed ? runSpeed : walkSpeed;
+            var hyper = Hyper; var g = hyper ? gravity * HyperGravity : gravity; var jumpH = hyper ? HyperJump : jumpHeight;
+            var speed = (keyboard.leftShiftKey.isPressed ? runSpeed : walkSpeed) * (hyper ? HyperSpeed : 1f);
             var move = (transform.right * input.x + transform.forward * input.y) * speed;
+            // a throw fades quickly on the ground and slowly in the air, and pushing against it cancels it sooner
+            thrown *= Mathf.Exp(-(controller.isGrounded ? 5f : .7f) * Time.deltaTime); if (thrown.sqrMagnitude < .05f) thrown = Vector3.zero;
+            move += thrown; GroundSpeed = new Vector2(move.x, move.z).magnitude;
 
             // walking down a slope you leave the ground for a moment every step, so jumping is allowed for a
             // moment after you were last on the ground, and a jump pressed just before you land still counts;
@@ -129,17 +155,22 @@ namespace EverythingWorld.Player
             if (keyboard.spaceKey.wasPressedThisFrame) jumpWanted = Time.time;
             if (Time.time - jumpWanted < .15f && Time.time - lastGrounded < .2f && verticalVelocity <= 0f)
             {
-                verticalVelocity = Mathf.Sqrt(2f * jumpHeight * -gravity); jumpWanted = -9f; lastGrounded = -9f;
+                verticalVelocity = Mathf.Sqrt(2f * jumpH * -g); jumpWanted = -9f; lastGrounded = -9f;
             }
-            else if (Drifting && !airJumpUsed && keyboard.spaceKey.wasPressedThisFrame && !controller.isGrounded && Time.time - lastGrounded >= .2f)
+            else if (hyper && keyboard.spaceKey.wasPressedThisFrame && !controller.isGrounded && Time.time - wallTime < .18f)
             {
-                verticalVelocity = Mathf.Sqrt(2f * jumpHeight * -gravity); airJumpUsed = true; jumpWanted = -9f;   // the second jump, in mid-air
+                // a kick off the wall you are touching: up and away from it, and the mid-air jump comes back
+                verticalVelocity = Mathf.Sqrt(2f * jumpH * -g); thrown = wallNormal * 11f; airJumpUsed = false; jumpWanted = -9f; wallTime = -9f;
+            }
+            else if ((Drifting || hyper) && !airJumpUsed && keyboard.spaceKey.wasPressedThisFrame && !controller.isGrounded && Time.time - lastGrounded >= .2f)
+            {
+                verticalVelocity = Mathf.Sqrt(2f * jumpH * -g); airJumpUsed = true; jumpWanted = -9f;   // the second jump, in mid-air
             }
             else if (controller.isGrounded && verticalVelocity <= 0f) verticalVelocity = -6f;
             else
             {
                 if ((controller.collisionFlags & CollisionFlags.Above) != 0 && verticalVelocity > 0f) verticalVelocity = 0f;   // bumped your head
-                verticalVelocity += gravity * Time.deltaTime;
+                verticalVelocity += g * Time.deltaTime;
             }
             move.y = verticalVelocity;
 
@@ -172,6 +203,7 @@ namespace EverythingWorld.Player
         /// Walking into something loose (a ball of twine, a dropped duck) gives it a shove.
         void OnControllerColliderHit(ControllerColliderHit hit)
         {
+            if (Mathf.Abs(hit.normal.y) < .3f) { wallNormal = new Vector3(hit.normal.x, 0f, hit.normal.z).normalized; wallTime = Time.time; }   // a wall, for the hyper wall kick
             var rb = hit.collider.attachedRigidbody;
             if (rb == null || rb.isKinematic || hit.moveDirection.y < -.3f) return;
             var push = new Vector3(hit.moveDirection.x, 0f, hit.moveDirection.z);

@@ -32,7 +32,7 @@ Albert King	63	5435.1	4992.7	16.0	1
 Alberto Pomeranz	36	8752.4	4413.8	15.0	1
 Alcest	8	9469.5	7133.5	15.0	1
 Alecs DeLarge	37	3225.1	8368.2	15.0	1
-Alesda!	66	6496.0	1187.7	15.0	1
+Alesda!	66	6552.0	1054.3	15.0	1
 Alessia Cara	29	5187.8	6094.7	15.0	1
 Alestorm	43	7190.0	5595.7	18.0	2
 Alex Warren	10	12502.3	4225.0	15.0	1
@@ -48,7 +48,7 @@ Alvvays	8	9432.1	7223.3	15.0	1
 America	13	6326.8	4144.8	15.0	1
 American Football	7	6983.8	6232.2	15.0	1
 Ametsub	33	10100.0	1897.4	15.0	1
-Amidst	66	6480.0	1275.7	15.0	1
+Amidst	66	6532.4	1172.6	15.0	1
 Amon Tobin	54	11126.8	1301.0	15.0	1
 Amélie Farren	15	8690.4	7080.1	15.0	1
 Ancient Chinese composer	59	10155.6	4778.9	18.0	2
@@ -301,7 +301,7 @@ Dire Straits	2	6955.7	2717.2	23.0	3
 Direct	19	9298.3	2336.9	15.0	1
 Dishwalla	4	8084.8	9370.2	15.0	1
 Disturbed	32	8017.1	8892.2	18.0	2
-Diveo	66	6552.0	1267.7	15.0	1
+Diveo	66	6611.8	1204.3	15.0	1
 Dizzee Rascal	11	4065.9	8826.2	15.0	1
 Django Django	50	9691.8	6348.6	17.0	1
 Django Reinhardt	48	4790.7	4635.0	15.0	1
@@ -316,7 +316,7 @@ Don Omar	56	11783.2	4850.7	15.0	1
 Donald Byrd	48	4942.0	4441.2	15.0	1
 Double Take	26	9944.2	4065.9	15.0	1
 Douglas Holmquist	20	10839.4	2355.5	15.0	1
-DraGonis	66	6528.0	1211.7	18.0	2
+DraGonis	66	6589.2	1095.2	18.0	2
 DragonForce	43	7239.9	5713.9	22.0	3
 Drive Like Jehu	1	6485.1	6986.4	18.0	2
 Drop Nineteens	8	9321.4	7170.0	15.0	1
@@ -382,7 +382,7 @@ Fela Kuti	65	3493.4	5329.0	22.0	1
 Felipe Jara	37	3259.0	8508.2	15.0	1
 Fenne Lily	17	5553.6	4136.7	24.0	5
 Fernando Molinari	18	6427.1	5803.6	15.0	1
-Feryquitous	66	6616.0	1251.7	15.0	1
+Feryquitous	66	6733.1	1141.3	15.0	1
 Filippo Vicarelli	47	8975.0	3792.5	15.0	1
 Fine	8	9405.1	7192.2	18.0	2
 Fiona Apple	17	5531.0	4321.4	17.0	1
@@ -391,7 +391,7 @@ First Fragment	27	8017.2	3746.4	15.0	1
 First of October	26	10059.2	3865.9	15.0	1
 Flatt & Scruggs	64	6188.5	4768.2	22.0	3
 Flawed Mangoes	7	6754.2	6141.1	18.0	2
-Flay!	66	6472.0	1227.7	22.0	3
+Flay!	66	6537.1	1104.4	22.0	3
 Flea	30	4725.3	5715.2	15.0	1
 Fleetwood Mac	13	6238.8	4096.8	22.0	5
 Flight Facilities	23	8789.9	2905.6	15.0	1
@@ -498,7 +498,7 @@ Howlin' Wolf	63	5341.1	5176.7	20.0	1
 Hue Hinton	8	9330.9	7056.8	15.0	1
 Huey Lewis & The News	13	6551.4	4334.5	15.0	1
 Hybrid Minds	61	8247.6	2294.6	15.0	1
-Hyleo	66	6560.0	1187.7	15.0	1
+Hyleo	66	6638.2	1056.0	15.0	1
 I Hate My Village	65	3433.4	5377.0	16.0	1
 I Prevail	1	6895.4	7278.8	15.0	1
 I See Stars	1	6675.1	7231.4	15.0	1
@@ -617,7 +617,7 @@ King Harvest	13	6670.8	4176.8	15.0	1
 Kings of Leon	42	10074.7	5753.5	15.0	1
 Kirk Franklin	29	5487.9	6178.5	18.0	2
 Kishore Kumar	36	8692.7	4232.8	18.0	2
-Kizuna AI	66	6552.0	1307.7	15.0	1
+Kizuna AI	66	6648.6	1228.2	15.0	1
 Klaus Johann Grobe	5	6291.6	3803.4	15.0	1
 Knifeplay	8	9364.1	7169.9	18.0	2
 Korea Girl	9	8528.0	5571.7	15.0	1
@@ -699,7 +699,7 @@ M@cky88	8	9355.7	7023.1	15.0	1
 MGMT	50	9796.4	6478.1	45.0	7
 MJ Lenderman	35	8666.6	8974.0	16.0	1
 MONO	7	6705.4	6416.8	24.0	5
-MOTTO MUSIC	66	6592.0	1283.7	15.0	1
+MOTTO MUSIC	66	6700.9	1203.2	15.0	1
 Mac DeMarco	9	8664.0	5411.7	15.0	1
 Madeon	23	8549.9	2915.6	15.0	1
 Madness	21	7491.5	9201.7	18.0	2
@@ -709,7 +709,7 @@ Magdalena Bay	31	11606.3	3580.7	18.0	2
 Mahalia Jackson	29	5435.8	6176.3	15.0	1
 Mai Yamane	28	7508.4	7357.4	15.0	1
 Major Lazer	62	5315.9	8210.6	15.0	1
-Mameyudoufu	66	6568.0	1227.7	18.0	2
+Mameyudoufu	66	6710.0	1103.0	18.0	2
 Manchester Orchestra	9	8688.0	5723.7	15.0	1
 Manfred Mann's Earth Band	16	7287.9	4298.6	15.0	1
 Manilla Road	27	7927.1	3580.9	15.0	1
@@ -763,13 +763,13 @@ Milky Chance	9	8680.0	5675.7	18.0	2
 MindaRyn	28	7660.1	7331.5	15.0	1
 Missy Elliott	11	4383.1	8445.6	15.0	1
 Mitski	14	8094.5	6253.0	18.0	2
-Mitsukiyo	66	6656.0	1235.7	15.0	1
+Mitsukiyo	66	6787.6	1114.6	15.0	1
 Moby	54	10606.8	1245.0	15.0	1
 Modest Mouse	9	8520.0	5515.7	15.0	1
 Mogwai	7	6709.8	6475.0	15.0	1
 Molly Tuttle	64	6484.4	4653.6	18.0	2
 Monsune	49	8704.0	6219.7	15.0	1
-Moon Jelly	66	6456.0	1187.7	15.0	1
+Moon Jelly	66	6497.6	1045.0	15.0	1
 Moondog	48	4802.0	4553.0	15.0	1
 Mord Fustang	55	7739.0	1336.5	15.0	1
 Moth Equals	54	11014.8	1333.0	15.0	1
@@ -821,14 +821,14 @@ Noah Gallagher	53	9088.0	5723.7	115.0	3
 Noah Kahan	14	7764.5	6407.0	18.0	2
 Nobuo Uematsu	47	9475.0	3832.5	15.0	1
 Noisestorm	19	9154.3	2320.9	15.0	1
-Nokae	66	6512.0	1251.7	18.0	2
+Nokae	66	6578.8	1142.8	18.0	2
 Nomo	65	3443.4	5181.0	16.0	1
 Norma Tanega	15	8769.0	7253.0	15.0	1
 Normandie	1	6915.1	7226.4	15.0	1
 O-Zone	31	11552.6	3517.1	15.0	1
 OCS	15	8454.7	7221.5	15.0	1
 ODESZA	44	10798.6	3432.7	15.0	1
-OISHII	66	6640.0	1195.7	15.0	1
+OISHII	66	6764.4	1056.6	15.0	1
 OUT IN FRONT	4	8159.6	9408.2	15.0	1
 Oasis	4	8037.7	9139.3	22.0	3
 Of Machines	1	6495.1	7121.4	15.0	1
@@ -853,7 +853,7 @@ Oysterhead	0	5149.5	3917.8	16.0	1
 Ozzy Osbourne	27	7600.9	3694.6	20.0	2
 PISS	1	6732.9	6971.1	15.0	1
 PSY	26	10114.2	3745.9	15.0	1
-PSYQUI	66	6584.0	1155.7	15.0	1
+PSYQUI	66	6683.2	998.6	15.0	1
 Pacific Soul	49	8944.0	6559.7	15.0	1
 Pagan Altar	5	6370.9	3362.0	15.0	1
 Panama	44	11094.6	3448.7	15.0	1
@@ -909,7 +909,7 @@ Primer	58	9432.8	958.2	15.0	1
 Prince	30	4606.5	5933.1	22.0	3
 Prismatic	24	8407.3	1175.9	15.0	1
 Pritam	36	8627.1	4172.2	15.0	1
-Project Skylate	66	6512.0	1299.7	15.0	1
+Project Skylate	66	6582.5	1232.1	15.0	1
 Prosecutor Archangels	20	11176.1	2357.0	15.0	1
 Protomartyr	21	7471.2	8939.8	15.0	1
 Psychedelic Porn Crumpets	5	6098.7	3498.9	22.0	3
@@ -917,7 +917,7 @@ Public Enemy	11	3863.0	8598.5	15.0	1
 Puddle Of Mudd	32	7713.1	8668.2	15.0	1
 Pulp	4	7962.3	9207.7	18.0	2
 Punch Brothers	64	6474.9	4873.2	15.0	1
-Pure 100%	66	6528.0	1163.7	15.0	1
+Pure 100%	66	6602.0	1010.2	15.0	1
 Pyotr Ilyich Tchaikovsky	59	10506.9	4751.6	15.0	1
 Quartzone	24	8446.3	1156.9	15.0	1
 Queen	2	6832.5	3188.6	23.0	3
@@ -1029,7 +1029,7 @@ Sleeping With Sirens	1	6638.8	7020.9	15.0	1
 Slow Pulp	8	9282.7	7168.3	15.0	1
 Slowdive	8	9510.8	7020.4	22.0	3
 Smash Mouth	4	8193.3	9327.5	18.0	2
-Snail's House	66	6552.0	1131.7	15.0	1
+Snail's House	66	6636.8	963.8	15.0	1
 Solange	60	3939.1	7009.5	22.0	3
 Sonic Future	23	8824.9	2885.6	15.0	1
 Sonic Youth	21	7317.1	9086.6	22.0	3
@@ -1092,7 +1092,7 @@ Takashi Ohmama	28	7487.6	7245.2	15.0	1
 Tal Bachman	22	11355.9	3916.0	15.0	1
 Talking Heads	21	7545.6	9019.2	15.0	1
 Tame Impala	5	6017.9	3631.4	22.0	4
-Tanchiky	66	6680.0	1203.7	15.0	1
+Tanchiky	66	6822.4	1068.2	15.0	1
 Tanya Tucker	3	12024.8	5314.5	15.0	1
 Tara Clerkin Trio	41	4321.3	5430.8	22.0	3
 Taylor Swift	10	12443.3	4392.1	45.0	12
@@ -1316,7 +1316,7 @@ blessthefall	1	6604.8	7193.3	28.0	4
 blink-182	6	7217.3	8316.4	15.0	1
 boygenius	14	8204.5	6231.0	15.0	1
 bôa	4	8097.7	9072.4	15.0	1
-cYsmix	66	6576.0	1099.7	15.0	1
+cYsmix	66	6671.6	917.4	15.0	1
 cupcakKe	11	4465.2	8605.2	18.0	2
 deadmau5	23	8742.1	2951.2	22.0	3
 diaphane	33	9890.0	1993.4	15.0	1
@@ -1328,7 +1328,7 @@ hitohira	7	6955.0	6193.8	15.0	1
 il:lo	54	10950.8	1413.0	15.0	1
 ivri	8	9541.0	7166.1	15.0	1
 jungle wizard	61	8163.0	2020.0	15.0	1
-kamome sano	66	6600.0	1195.7	18.0	2
+kamome sano	66	6680.0	1042.3	18.0	2
 letherette	37	3056.8	8447.9	15.0	1
 meganeko	55	7845.7	1349.6	22.0	3
 mgk	11	4082.1	8343.6	15.0	1
@@ -1341,12 +1341,12 @@ runfromobm	53	9312.0	5395.7	15.0	1
 saddyowner	7	6983.8	6289.8	15.0	1
 she	55	7947.0	1283.5	15.0	1
 sincerely	7	6964.6	6395.4	15.0	1
-t+pazolite	66	6648.0	1275.7	15.0	1
-technoplanet	66	6624.0	1307.7	15.0	1
+t+pazolite	66	6776.0	1172.6	15.0	1
+technoplanet	66	6732.6	1237.1	15.0	1
 tictacto	51	11623.6	1284.0	15.0	1
 tides.	37	3188.8	8427.8	15.0	1
 toe	7	6852.5	6295.6	22.0	3
-tonytonychopper999	66	6520.0	1515.7	15.0	1
+tonytonychopper999	66	6602.6	1440.3	15.0	1
 tricot	7	6762.4	6241.4	22.0	4
 unclepat	15	8844.5	6633.6	18.0	2
 velvet stripe	0	4949.9	3789.3	16.0	1

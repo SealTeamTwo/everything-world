@@ -430,15 +430,15 @@ Every kind of electronic music, from ambient to riddim.
 - **Props:** Light poles pulsing at 174 bpm, rope bridges, glowing buoys, a hospital-white bandstand.
 - **Light and mood:** Fast but floating.
 
-### 66. The Future Bass Arcades
+### 66. The Kawaii Cascades
 
 *future bass, j dance, electronic, progressive house, speedcore* · 30 songs · energy 0.86, acoustic 0.06, mood 0.43 · top artists: Flay!, DraGonis, Mameyudoufu, Nokae, kamome sano
 
-- **Terrain:** Not designed yet: a plain island until its kit is built with the owner.
-- **Colours:** `#7DE3F4 sky cyan`, `#FFD166 warm yellow`, `#FFFFFF white`, `#2B2D6E deep blue`
-- **Landmark:** To be decided with the owner.
-- **Props:** To be decided with the owner.
-- **Light and mood:** Bright, quick and sweet (provisional).
+- **Terrain:** A mountain of cake: pastel terraces stepping down from a summit to the sea, rivers of strawberry milk pouring from tier to tier.
+- **Colours:** `#FFD84D lemon yellow`, `#FF8FC7 candy pink`, `#8FE8FF soda blue`, `#1B2466 blueberry`
+- **Landmark:** The Parfait: a sundae glass as tall as a tower, climbed by bouncing, with a cherry on top.
+- **Props:** Jelly bounce pads, candy-ribbon rails, soda geysers, floating macarons, lollipop trees, sprinkles.
+- **Light and mood:** Hyper, sweet and very fast: a bright day that never sits still.
 
 ## The Chart Isles
 

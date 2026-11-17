@@ -15216,24 +15216,24 @@
   },
   {
    "sceneId": 66,
-   "name": "The Future Bass Arcades",
+   "name": "The Kawaii Cascades",
    "realm": "The Bass Reaches",
    "labelX": 6652.221370716347,
    "labelZ": 1114.1013395941682,
    "tintA": [
-    144,
-    206,
-    201
+    228,
+    152,
+    171
    ],
    "tintB": [
-    220,
-    216,
+    159,
+    203,
     194
    ],
    "accent": [
-    42,
-    42,
-    92
+    30,
+    35,
+    86
    ],
    "hi": "hill",
    "lo": "flower"

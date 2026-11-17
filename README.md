@@ -11,7 +11,7 @@ A shared Spotify playlist of 2,268 songs (and growing), turned into a world. It 
 *November 2026*
 
 - **The world is charted.** 1,360 artists are grouped into 67 "scenes" (looser than genres: an artist's songs always stay together, and similar scenes are neighbours). Each scene is a land. The lands form 8 realms round a central Hub, 68 places in all.
-- **66 of the 67 lands and the Hub are built** in Unity. The blue flags on the map mark them. The newest land, the Future Bass Arcades, arrived with new songs in November 2026 and is still a bare island.
+- **All 67 lands and the Hub are built** in Unity. The blue flags on the map mark them. The newest, the Kawaii Cascades, arrived with new songs in November 2026: the one land where you move at hyper speed.
 - **Every built land is made by hand for its own music**, not from a shared template: its own landmark, sky, light, ground and weather; an area for every artist, built from their actual songs; and things that happen when particular songs come on.
 - **Each land is laid out to be wandered.** Roads lead out from where you arrive to named places: a pizza parlour in the Punk Badlands, a summer festival in the J-Rock Isles, a flooded quarry in the Nu Metal Quarry. There are places to sit, things to use, things to pick up and throw, and small residents with something to say.
 - **Not done yet:** playing together online, and a lot of polish. So far it has only been walked by the person building it.

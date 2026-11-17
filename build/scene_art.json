@@ -474,11 +474,11 @@
    "props": "Market stalls of printed fabric, danfo buses, talking drums, beach bonfires.",
    "mood": "Joyful and rhythmic."},
   {"id": 66, "anchors": ["Mameyudoufu", "Nokae", "kamome sano"],
-   "name": "The Future Bass Arcades",
-   "terrain": "Not designed yet: a plain island until its kit is built with the owner.",
-   "palette": ["#7DE3F4 sky cyan", "#FFD166 warm yellow", "#FFFFFF white", "#2B2D6E deep blue"],
-   "landmark": "To be decided with the owner.",
-   "props": "To be decided with the owner.",
-   "mood": "Bright, quick and sweet (provisional)."}
+   "name": "The Kawaii Cascades",
+   "terrain": "A mountain of cake: pastel terraces stepping down from a summit to the sea, rivers of strawberry milk pouring from tier to tier.",
+   "palette": ["#FFD84D lemon yellow", "#FF8FC7 candy pink", "#8FE8FF soda blue", "#1B2466 blueberry"],
+   "landmark": "The Parfait: a sundae glass as tall as a tower, climbed by bouncing, with a cherry on top.",
+   "props": "Jelly bounce pads, candy-ribbon rails, soda geysers, floating macarons, lollipop trees, sprinkles.",
+   "mood": "Hyper, sweet and very fast: a bright day that never sits still."}
  ]
 }

@@ -206,6 +206,13 @@
    "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#875488", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
   },
   {
+   "land": "The Kawaii Cascades",
+   "sunPitch": 48, "sunYaw": 215, "sunIntensity": 0.9, "sunColor": "#FFF0DC",
+   "skyLight": "#3E8CFF", "horizonLight": "#FF8FD0", "groundLight": "#5A62B8",
+   "fogColor": "#7FB2FF", "fogStart": 500, "fogEnd": 3600, "stars": 0.0, "sunShadows": true, "dailyWeather": false, "bloom": 1.05,
+   "weather": "", "weatherAmount": 0, "heightFog": 0.0, "heightFogColor": "#FF9AD0", "heightFogBase": 0, "heightFogFalloff": 0.05, "heightFogDensity": 0.0, "sunGlow": 0.4, "grade": 0.7
+  },
+  {
    "land": "The Ambient Mists",
    "sunPitch": 7, "sunYaw": 100, "sunIntensity": 0.9, "sunColor": "#FFB890",
    "skyLight": "#8AA6A2", "horizonLight": "#E8A884", "groundLight": "#7A8064",
