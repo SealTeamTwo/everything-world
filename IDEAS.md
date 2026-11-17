@@ -17,6 +17,11 @@ Still to do, for the owner:
 - Placements worth a second look: Sleep (stoner metal) is in the Psychedelic Wilds, Kid Rock in the Hip-Hop Boroughs, Night Tempo in the Fusion Isthmus, Porter Robinson on the Four-on-the-Floor Steppe, Ashy Finn's "Songbird" in the Jam Band Commonwealth (placed by its sound alone: Last.fm knows nothing about it), Manowar and Horizons Edge in the Iron Range (both are power metal). One line in `build/overrides.json` moves any of them.
 - The 20 new artists without a Wikipedia page have written about-cards; the ones about small producers describe the song more than the person. Correct any the owner knows better.
 
+## Looks and character for the whole game (asked 2026-11-17)
+
+- **Ink outlines: tried and taken out again the same day** ("maybe down the road but let's not do it now"). The test (a full-screen pass, a line per land, on the Kawaii Cascades and the Punk Badlands) is in the history as commit 17626c5 and its revert, ready to bring back. It suited objects more than open ground.
+- The rest of the list given to the owner, none started: a lens per land (scanlines, halftone, watercolour, grain); the orb (hats, a face, a trail, squash and stretch); an arrival card with each land's name; one designed style for the on-screen boxes; the world pulsing with the music everywhere; sound effects (he has not said whether "music only from Spotify" rules those out).
+
 ## What was done about the activities, overnight 2026-11-17 (none of it played yet)
 
 Fixes, each from the owner's notes below. Checked by compiling and by each game's demo in the photo tour, which only proves it runs alone without errors: everything about two players, and every "feels better", needs the owner and a friend.
