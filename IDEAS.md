@@ -17,6 +17,21 @@ Still to do, for the owner:
 - Placements worth a second look: Sleep (stoner metal) is in the Psychedelic Wilds, Kid Rock in the Hip-Hop Boroughs, Night Tempo in the Fusion Isthmus, Porter Robinson on the Four-on-the-Floor Steppe, Ashy Finn's "Songbird" in the Jam Band Commonwealth (placed by its sound alone: Last.fm knows nothing about it), Manowar and Horizons Edge in the Iron Range (both are power metal). One line in `build/overrides.json` moves any of them.
 - The 20 new artists without a Wikipedia page have written about-cards; the ones about small producers describe the song more than the person. Correct any the owner knows better.
 
+## The activities, as the owner and a friend found them (told 2026-11-17, from the 2026-11-16 playtest)
+
+Not acted on yet. In the owner's words, roughly in the order he gave them:
+- **Hats for the orb: "kind of really important".** (It was listed below as one idea among others; it is a priority.)
+- The Relay drop in that session was the friend's internet, not Unity or the game. Nothing to fix.
+- **Mini golf:** "probably the best thing right now"; could use a little more tweaking.
+- **Air hockey:** great for whoever starts the match, "too laggy and inconsistent" for the other player. If it were as good for both as it is for the host "it would be awesome". (My reading: the host runs the puck and the guest sees it late; the guest needs to predict it locally.)
+- **Light bikes (Synthwave):** the first person to enter is always thrown straight in with three bots. The second person joins soon after and does not see those bots. "That first round we always lost." On the second round it was just the two of them, but when one died the game kept running: it did not go to the next round. (So: wait for friends before starting or let them into the round with the same bots; share the bots; end the round when one of two is left.)
+- **Bowling:** still really easy, and "doesn't feel very multiplayer". Some basic animations, like the ones on the screens at a bowling alley, could be fun.
+- **Basketball:** "maybe just a little bit too hard".
+- **Skating:** too easy to fall over, and it "doesn't feel very smooth and agile".
+- **Pinball:** "is broken". (No detail yet: ask what happened.)
+- Pool was not mentioned this time. He said he may be missing things.
+
+
 ## The first built-game playtest with a friend, 2026-11-16 (two feedback packs, sorted)
 
 The built game ran for 90 minutes on two computers at 57 to 60 frames a second with no errors; one Relay drop ("allocation ID not found") ended the first session after 50 minutes. Notes can be re-photographed with `python build/take_shots.py --notes <notes.txt>`.
