@@ -29,7 +29,9 @@ namespace EverythingWorld.Activities
             NewGame();
         }
 
-        void Add(string what, int n) { score += n; lastHit = what; lastHitAt = time; onScore?.Invoke(what, n); }
+        /// Hits one after another (within two and a half seconds) multiply: the second counts double, up to five times.
+        public int combo; public System.Action onBig;
+        void Add(string what, int n) { combo = time - lastHitAt < 2.5f ? Mathf.Min(combo + 1, 5) : 1; n *= combo; score += n; lastHit = combo > 1 ? $"{what}  x{combo}" : what; lastHitAt = time; if (combo == 5) onBig?.Invoke(); onScore?.Invoke(what, n); }
         public void NewGame() { score = 0; ballsLeft = 3; Ready(); }
         void Ready() { var s = GolfCourses.PinStart; sim.Place(new Vector3(s.x, 0, s.z)); inPlay = false; table.movers[0].manualAngle = table.movers[0].manualPrev = LRest; table.movers[1].manualAngle = table.movers[1].manualPrev = RRest; }
 

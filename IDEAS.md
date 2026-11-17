@@ -17,6 +17,30 @@ Still to do, for the owner:
 - Placements worth a second look: Sleep (stoner metal) is in the Psychedelic Wilds, Kid Rock in the Hip-Hop Boroughs, Night Tempo in the Fusion Isthmus, Porter Robinson on the Four-on-the-Floor Steppe, Ashy Finn's "Songbird" in the Jam Band Commonwealth (placed by its sound alone: Last.fm knows nothing about it), Manowar and Horizons Edge in the Iron Range (both are power metal). One line in `build/overrides.json` moves any of them.
 - The 20 new artists without a Wikipedia page have written about-cards; the ones about small producers describe the song more than the person. Correct any the owner knows better.
 
+## What was done about the activities, overnight 2026-11-17 (none of it played yet)
+
+Fixes, each from the owner's notes below. Checked by compiling and by each game's demo in the photo tour, which only proves it runs alone without errors: everything about two players, and every "feels better", needs the owner and a friend.
+- **Pinball:** a glass lid and sides keep the ball on the table (it flew off the top on every launch); a gentler launch; the ball drawn bigger and brighter; the waiting camera sits just behind the ball and looks at it.
+- **Light bikes:** a round starts with a count-in of four when you step on (no more being dropped into one already running); it ends as soon as one bike is left or no player is; whoever has the lowest number calls the rounds and the rest follow; stepping on mid-round cuts it short so everyone rides the next together (so nobody races robots a friend cannot see).
+- **Air hockey:** each player's own game moves the puck while it is in their half, so a hit lands at once at either end. Goals are called by whoever's half they happen in. This is the change most in need of a real two-player test.
+- **Skating:** turns faster, pushes harder, rolls further; only a truly sideways landing (over 68 degrees off, was 42) or one caught early in a flip puts you down, and you are up in 0.65 s (was 1.1).
+- **Basketball:** the helping hand is a little wider (12 degrees and 23 percent of the speed, was 9 and 17).
+- **Bowling:** the line sways twice as far, the release scatters more, and the ball curls less than half as much once rolling.
+- **Mini golf:** not changed. "A little more tweaking" needs the owner to say what.
+- **Pool:** not changed; still not known whether the shared-game fix worked.
+
+One thing added to each, as asked:
+- **Every game:** a burst of confetti for its big moments (`Activity.Cheer`): a birdie or better, a basket in a new hoop, a goal, a round won, a strike or spare, a big trick, a cleared table.
+- **Bowling:** the alley's overhead screen (every bowler's card, frame by frame, top right, once a friend is bowling too) and little cartoons for a strike, a spare, a gutter ball and a turkey, yours and your friends' with their name on.
+- **Light bikes:** "X takes the round" for everyone, and tonight's tally of rounds by name.
+- **Pinball:** hits within two and a half seconds of each other multiply, up to five times.
+- **Basketball:** baskets one after another are a streak; three and you are "on fire".
+- **Skating:** the view widens with speed.
+- **Air hockey, golf, pool:** the confetti only. They could each take something more of their own.
+
+Still open from the notes: **hats for the orb** (he called it "kind of really important"; not started).
+
+
 ## The activities, as the owner and a friend found them (told 2026-11-17, from the 2026-11-16 playtest)
 
 Not acted on yet. In the owner's words, roughly in the order he gave them:

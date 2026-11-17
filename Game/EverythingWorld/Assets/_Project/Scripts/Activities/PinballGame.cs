@@ -61,7 +61,7 @@ namespace EverythingWorld.Activities
         void Enter()
         {
             walker.Take(); hands.enabled = false; IslandExplorer.Frozen = true; if (PlayerOrb.Local != null) PlayerOrb.Local.enabled = false;
-            big.gameObject.SetActive(true); Tune(); playing = true; camSet = false; play ??= new PinballPlay(); play.NewGame();
+            big.gameObject.SetActive(true); Tune(); playing = true; camSet = false; play ??= new PinballPlay(); play.onBig = () => Activity.Cheer(new Color(.4f, .9f, 1f), new Color(1f, .4f, .8f)); play.NewGame();
             if (ball == null)
             {
                 ball = Sphere("Pinball", GolfHole.BallR * 4.2f, big, out ballM);   // (drawn a little big, with a light of its own, so it is easy to find on the dark table)
@@ -193,7 +193,7 @@ namespace EverythingWorld.Activities
 
         void OnGUI()
         {
-            white ??= Texture2D.whiteTexture;
+            white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
             if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .8f, .9f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
             if (Active != this || !playing || play == null || MainMenu.Showing) return;

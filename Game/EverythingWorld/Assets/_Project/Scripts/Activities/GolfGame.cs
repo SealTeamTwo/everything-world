@@ -235,7 +235,7 @@ namespace EverythingWorld.Activities
         void FinishHole(int score)
         {
             card[hole] = score; phase = Phase.HoleDone; phaseT = 0f; waited = 0f; charging = false;
-            var par = course.holes[hole].par; Say(sim.holed ? Result(score, par) : outOfTime ? "Out of time" : "Out of strokes", 3.5f); outOfTime = false;
+            var par = course.holes[hole].par; Say(sim.holed ? Result(score, par) : outOfTime ? "Out of time" : "Out of strokes", 3.5f); if (sim.holed && score < par) Activity.Cheer(); outOfTime = false;
         }
 
         void FinishRound()
@@ -341,7 +341,7 @@ namespace EverythingWorld.Activities
 
         void OnGUI()
         {
-            white ??= Texture2D.whiteTexture;
+            white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             // the shrink: the screen washes out as you go in, and clears again as you arrive (and the same coming back)
             var wash = phase == Phase.ShrinkOut ? phaseT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
             if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .93f, .8f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }

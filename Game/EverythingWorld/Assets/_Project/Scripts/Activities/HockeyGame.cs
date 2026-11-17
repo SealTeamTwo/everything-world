@@ -142,7 +142,7 @@ namespace EverythingWorld.Activities
                     sim.Move(seat, want, 9f, HockeySim.Step);
                     if (other != null) sim.Move(1 - seat, other.mallet, 9f, HockeySim.Step); else sim.Move(1, sim.Robot(1), Mathf.Lerp(RobotSpeed, RobotTop, Mathf.Clamp01(sim.rally / 28f)), HockeySim.Step);
                     if (winner >= 0) continue; var scored = sim.Advance(HockeySim.Step);
-                    if (scored >= 0) { nextSend = 0f; if (sim.score[scored] >= Target) { winner = scored; Over(); } else Say(scored == seat ? "Goal!" : "They score", 1.5f); lastMine = sim.score[seat]; }
+                    if (scored >= 0) { nextSend = 0f; if (sim.score[scored] >= Target) { winner = scored; Over(); } else { Say(scored == seat ? "Goal!" : "They score", 1.5f); if (scored == seat) Activity.Cheer(); } lastMine = sim.score[seat]; }
                 }
             }
             if (Time.time >= nextSend) { nextSend = Time.time + .033f; Send(); }
@@ -217,7 +217,7 @@ namespace EverythingWorld.Activities
                     else if (game == gameNo)
                     {
                         sim.score[0] = Mathf.Max(sim.score[0], s0); sim.score[1] = Mathf.Max(sim.score[1], s1);
-                        if (mine < 2 && sim.score[0] + sim.score[1] > before && w < 0) Say(sim.score[mine] > lastMine ? "Goal!" : "They score", 1.5f); if (mine < 2) lastMine = sim.score[mine];
+                        if (mine < 2 && sim.score[0] + sim.score[1] > before && w < 0) { Say(sim.score[mine] > lastMine ? "Goal!" : "They score", 1.5f); if (sim.score[mine] > lastMine) Activity.Cheer(); } if (mine < 2) lastMine = sim.score[mine];
                         if (w >= 0 && winner < 0) { winner = w; if (Active == this && playing) Over(); }
                     }
                 }
@@ -240,7 +240,7 @@ namespace EverythingWorld.Activities
 
         void OnGUI()
         {
-            white ??= Texture2D.whiteTexture;
+            white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
             if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(.8f, .9f, 1f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;

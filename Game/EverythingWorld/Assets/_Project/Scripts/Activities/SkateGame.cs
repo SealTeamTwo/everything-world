@@ -124,8 +124,9 @@ namespace EverythingWorld.Activities
             Say("W pushes, A and D steer, Space jumps.\nIn the air: A and D spin, Q or E flip the board (or the mouse buttons), hold Shift to grab it (with W or S for the nose or the tail).\nCome down on a yellow rail to grind. Land facing along the board. Enter starts a run.", 14f);
         }
 
+        float baseFov = -1f; int cheered;
         void Quit()
-        {
+        { if (baseFov > 0f && Camera.main != null) Camera.main.fieldOfView = baseFov; cheered = 0;
             if (walker != null) walker.Release(backPos, backRot); if (hands != null) hands.enabled = true;
             IslandExplorer.Frozen = false; if (PlayerOrb.Local != null) PlayerOrb.Local.enabled = true; Friends.ReportedEye = null; if (MusicDirector.Instance != null) MusicDirector.Instance.Held = null;
             if (big != null) big.gameObject.SetActive(false); playing = false; Send(); Active = null; shrinkT = .55f; outT = -1f;
@@ -183,6 +184,9 @@ namespace EverythingWorld.Activities
         {
             if (Active != this || walker == null || !playing) return;
             rider.localPosition = sim.p; rider.localRotation = sim.fallen ? Quaternion.Euler(0, sim.yaw, 80f) : Lean(sim.p, sim.yaw, sim.grounded, sim.spin);
+            // the faster you roll the wider the view, so speed feels like speed; a big trick gets confetti
+            { var cam = Camera.main; if (cam != null) { if (baseFov < 0f) baseFov = cam.fieldOfView; var sp = new Vector2(sim.v.x, sim.v.z).magnitude; cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, baseFov + Mathf.Clamp01((sp - 4f) / 10f) * 14f, 1f - Mathf.Exp(-4f * Time.deltaTime)); } }
+            if (sim.score - cheered >= 800) Activity.Cheer(); cheered = sim.score;
             // the board rolls over in a flip; the rider crouches down to it in a grab
             if (rider.childCount > 3)
             {
@@ -253,7 +257,7 @@ namespace EverythingWorld.Activities
 
         void OnGUI()
         {
-            white ??= Texture2D.whiteTexture;
+            white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
             if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .95f, .85f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;

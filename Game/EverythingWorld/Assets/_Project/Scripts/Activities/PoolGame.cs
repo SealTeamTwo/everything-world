@@ -17,6 +17,25 @@ namespace EverythingWorld.Activities
             if (w > max) { w = max; style.wordWrap = true; h = style.CalcHeight(new UnityEngine.GUIContent(text), w) + 2f; y -= h - 28f; }
             UnityEngine.GUI.Box(new UnityEngine.Rect(UnityEngine.Screen.width / 2f - w / 2f, y, w, h), text, style); style.wordWrap = keep;
         }
+        static float cheerAt = -99f; static UnityEngine.Color cheerA, cheerB; static int cheerSeed;
+        /// A burst of confetti over the whole screen, for a moment worth it (a strike, a birdie, a goal, a round won).
+        /// Every game draws it (DrawCheer, first thing in its OnGUI) and sets it off where it likes.
+        public static void Cheer(UnityEngine.Color a, UnityEngine.Color b) { cheerAt = UnityEngine.Time.time; cheerA = a; cheerB = b; cheerSeed++; }
+        public static void Cheer() => Cheer(new UnityEngine.Color(1f, .8f, .2f), new UnityEngine.Color(1f, .4f, .75f));
+        public static void DrawCheer()
+        {
+            var t = UnityEngine.Time.time - cheerAt; if (t > 1.9f || UnityEngine.Event.current.type != UnityEngine.EventType.Repaint) return;
+            var keep = UnityEngine.GUI.color; float W = UnityEngine.Screen.width, H = UnityEngine.Screen.height;
+            for (var i = 0; i < 80; i++)
+            {
+                float h1 = UnityEngine.Mathf.Repeat(UnityEngine.Mathf.Sin(i * 12.9898f + cheerSeed) * 43758.5f, 1f), h2 = UnityEngine.Mathf.Repeat(UnityEngine.Mathf.Sin(i * 78.233f + cheerSeed) * 24634.6f, 1f), h3 = UnityEngine.Mathf.Repeat(UnityEngine.Mathf.Sin(i * 39.425f + cheerSeed) * 12414.3f, 1f);
+                var x = W * (.5f + (h1 - .5f) * (.25f + t * 1.5f)); var y = H * (.5f - (h2 * .8f + .25f) * t * 1.1f + t * t * .62f); var s = 6f + h3 * 9f;
+                var c = UnityEngine.Color.Lerp(cheerA, cheerB, h3); c.a = UnityEngine.Mathf.Clamp01(1.9f - t); UnityEngine.GUI.color = c;
+                UnityEngine.GUI.DrawTexture(new UnityEngine.Rect(x, y, s, s * (.5f + .5f * UnityEngine.Mathf.Abs(UnityEngine.Mathf.Sin(t * 9f + i)))), UnityEngine.Texture2D.whiteTexture);
+            }
+            UnityEngine.GUI.color = keep;
+        }
+
         /// A game's message across the top of the screen: as wide as it needs (up to most of the screen), wrapped, never cut off.
         public static void Banner(string text, float y, UnityEngine.GUIStyle style)
         {
@@ -234,10 +253,10 @@ namespace EverythingWorld.Activities
         void Cleared(int shots)
         {
             if (Best == 0 || shots < Best) PlayerPrefs.SetInt(Key("best"), shots);
-            if (shots <= SoloBar) Unlock($"Cleared in {shots}!"); else Say($"Cleared in {shots} shots. {SoloBar} or fewer unlocks the Everything Playlist.", 7f);
+            Activity.Cheer(); if (shots <= SoloBar) Unlock($"Cleared in {shots}!"); else Say($"Cleared in {shots} shots. {SoloBar} or fewer unlocks the Everything Playlist.", 7f);
             PlayerPrefs.Save(); ShowRecord();
         }
-        void Won(bool mine) { if (mine) Unlock("Your side wins!"); else Say("The other side wins", 6f); }
+        void Won(bool mine) { if (mine) { Unlock("Your side wins!"); Activity.Cheer(); } else Say("The other side wins", 6f); }
         void Unlock(string head)
         {
             if (!Unlocked) { PlayerPrefs.SetInt(Key("unlocked"), 1); Everything = true; Tune(); Say(head + "\nThe Everything Playlist is unlocked here. P switches it.", 9f); } else Say(head, 6f);
@@ -413,7 +432,7 @@ namespace EverythingWorld.Activities
 
         void OnGUI()
         {
-            white ??= Texture2D.whiteTexture;
+            white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = phase == Phase.ShrinkOut ? phaseT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
             if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(.85f, .9f, 1f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
             if (Active != this || phase == Phase.ShrinkIn || MainMenu.Showing) return;

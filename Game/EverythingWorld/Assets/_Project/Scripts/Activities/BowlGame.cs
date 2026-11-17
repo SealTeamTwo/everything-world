@@ -21,7 +21,9 @@ namespace EverythingWorld.Activities
     ///   times the size, glitter down both sides.
     /// - A and D move where you stand, the mouse aims, hold the button to swing and let go to bowl. While the ball
     ///   rolls, A and D curl it. Ten frames, scored the proper way.
-    /// - Everyone bowls at once on their own copy of the lane and sees each other's scores.
+    /// - Everyone bowls at once on their own copy of the lane. The board at the top right is the alley's overhead
+    ///   screen: every bowler's card, frame by frame, as it fills in. A strike, a spare, a gutter ball or three strikes
+    ///   running plays a little cartoon on the screen, yours and your friends' alike (with their name on it).
     /// - Bowl 180 or better and the lane's radio can play the whole Everything Playlist (P switches).
     public class BowlGame : MonoBehaviour
     {
@@ -37,7 +39,8 @@ namespace EverythingWorld.Activities
         readonly BowlSim sim = new BowlSim(); BowlCard card = new BowlCard(); Transform ball, aimBar; Transform[] pins; float[] tip = new float[10];
         bool playing, charging, wasLocked; float power, chargeT, standX, aimDeg, shrinkT = 9f, outT = -1f, leaveHeld, nextSend, acc, settle = -1f; int before; Vector3 camAt; bool camSet; string banner = ""; float bannerUntil;
         SimplePlayerController walker; PlayerInteractor hands; Vector3 backPos; Quaternion backRot;
-        class Remote { public string name = "Friend"; public int total, frame; public float seen; }
+        class Remote { public string name = "Friend"; public int total, frame; public float seen; public List<int> rolls = new List<int>(); }
+        string toon; string toonWho = ""; float toonAt = -99f;   // the cartoon on the alley's screen: what happened, to whom, when
         readonly Dictionary<ulong, Remote> others = new Dictionary<ulong, Remote>();
 
         string Key(string what) => $"EW_Bowl_{id}_{what}";
@@ -149,7 +152,9 @@ namespace EverythingWorld.Activities
                 if (settle > 1.4f)
                 {
                     settle = -1f; var got = before - sim.Standing(); var (f, b) = card.At; card.rolls.Add(got);
-                    Say(got == 10 && b == 0 ? "Strike!" : sim.Standing() == 0 ? "Spare!" : sim.gutter && got == 0 ? "Gutter" : got.ToString(), 2f);
+                    var what = What(card.rolls, got == 10 && b == 0, sim.Standing() == 0, sim.gutter && got == 0);
+                    if (what != null) Toon(what, ""); else Say(got.ToString(), 2f);
+                    nextSend = 0f;
                     if (card.Done) Over(); else if (card.FreshRack) sim.Rack(); else sim.Sweep();
                     standX = 0f; aimDeg = 0f; swayFrom = Time.time - Random.Range(0f, 3f);   // back to the middle of the approach for every ball
                 }
@@ -184,12 +189,86 @@ namespace EverythingWorld.Activities
             walker.transform.SetPositionAndRotation(camAt - body * pivot.localPosition, body); pivot.localEulerAngles = new Vector3(pitch, 0, 0);
         }
 
+        // ---------------------------------------------------------------- the alley's screen
+        /// What a roll was, for the cartoon: three strikes running is a turkey.
+        static string What(List<int> rolls, bool strike, bool spare, bool gutter)
+        {
+            var n = rolls.Count; if (strike) return n >= 3 && rolls[n - 2] == 10 && rolls[n - 3] == 10 ? "turkey" : "strike";
+            return spare ? "spare" : gutter ? "gutter" : null;
+        }
+        void Toon(string what, string who) { toon = what; toonWho = who; toonAt = Time.time; if (who.Length == 0 && what != "gutter") Activity.Cheer(); }
+
+        /// A card written the way an alley's screen shows it: X for a strike, / for a spare, - for a miss.
+        static string Marks(List<int> rolls)
+        {
+            var s = new System.Text.StringBuilder(); int f = 0, i = 0;
+            while (i < rolls.Count && f < 10)
+            {
+                if (f == 9) { for (var k = i; k < rolls.Count; k++) { var r = rolls[k]; var sp = k > i && rolls[k - 1] != 10 && rolls[k - 1] + r == 10 && (k - i == 1 || rolls[i] == 10); s.Append(r == 10 ? "X" : sp ? "/" : r == 0 ? "-" : r.ToString()); } break; }
+                if (rolls[i] == 10) { s.Append("X "); i++; }
+                else { s.Append(rolls[i] == 0 ? "-" : rolls[i].ToString()); if (i + 1 < rolls.Count) s.Append(rolls[i] + rolls[i + 1] == 10 ? "/" : rolls[i + 1] == 0 ? "-" : rolls[i + 1].ToString()); s.Append(' '); i += 2; }
+                f++;
+            }
+            return s.ToString();
+        }
+
+        void Fill(Rect r, Color c) { var keep = GUI.color; GUI.color = c; GUI.DrawTexture(r, white); GUI.color = keep; }
+
+        /// The cartoon: two and a half seconds on a dark panel under the banner, drawn from plain blocks.
+        void DrawToon()
+        {
+            var t = Time.time - toonAt; if (toon == null || t > 2.6f || Event.current.type != EventType.Repaint) return;
+            const float w = 460f, h = 170f; var r = new Rect(Screen.width / 2f - w / 2f, 150f, w, h); var c = new Vector2(r.center.x, r.y + h * .62f);
+            Fill(r, new Color(.04f, .03f, .1f, .92f)); Fill(new Rect(r.x, r.y, w, 4), new Color(1f, .4f, .8f)); Fill(new Rect(r.x, r.yMax - 4, w, 4), new Color(.3f, .9f, 1f));
+            var flash = Color.HSVToRGB(Mathf.Repeat(t * 1.6f, 1f), .7f, 1f); var word = ""; var pin = new Color(.97f, .96f, .92f);
+            switch (toon)
+            {
+                case "strike": case "turkey":
+                    // the ten pins leap apart
+                    for (var i = 0; i < 10; i++)
+                    {
+                        var row = i < 1 ? 0 : i < 3 ? 1 : i < 6 ? 2 : 3; var col = i - (row == 0 ? 0 : row == 1 ? 1 : row == 2 ? 3 : 6); var home = new Vector2((col - row / 2f) * 26f, -row * 14f);
+                        var k = Mathf.Clamp01((t - .15f) / 1.2f); var fly = home.normalized * (i == 0 ? 0f : 1f) + new Vector2(Mathf.Sin(i * 2.4f), -1f).normalized * .9f; var p = c + home + fly * (k * 150f) + Vector2.up * (k * k * 120f);
+                        Fill(new Rect(p.x - 5, p.y - 16, 10, 22), pin); Fill(new Rect(p.x - 5, p.y - 10, 10, 3), new Color(.9f, .2f, .25f));
+                    }
+                    if (t < .3f) Fill(new Rect(c.x - 12 - (1f - t / .3f) * 200f, c.y + 2, 24, 24), new Color(.3f, .6f, 1f));
+                    word = toon == "turkey" ? "TURKEY!" : "STRIKE!";
+                    if (toon == "turkey") for (var i = 0; i < 3; i++) Fill(new Rect(r.x + 24 + i * 30, r.y + 40 + Mathf.Sin(t * 9f + i) * 5f, 22, 22), flash);
+                    break;
+                case "spare":
+                    // the sweeper comes down and clears what is left
+                    for (var i = 0; i < 3; i++) { var x = c.x - 40 + i * 40; var gone = t > .5f + i * .15f; if (!gone) Fill(new Rect(x - 5, c.y - 16, 10, 22), pin); }
+                    var sx = Mathf.Lerp(r.x + 20, r.xMax - 20, Mathf.Clamp01((t - .3f) / 1f)); Fill(new Rect(sx - 4, c.y - 30, 8, 44), new Color(.6f, .6f, .7f)); Fill(new Rect(sx - 22, c.y + 8, 44, 6), new Color(.6f, .6f, .7f));
+                    word = "SPARE!"; break;
+                case "gutter":
+                    // the ball trundles sadly down the gutter
+                    Fill(new Rect(r.x + 20, c.y + 18, w - 40, 5), new Color(.25f, .25f, .35f)); var bx = Mathf.Lerp(r.x + 30, r.xMax - 40, Mathf.Clamp01(t / 2f)); Fill(new Rect(bx, c.y - 2 + Mathf.Abs(Mathf.Sin(t * 5f)) * -3f, 20, 20), new Color(.3f, .6f, 1f));
+                    for (var i = 0; i < 10; i++) Fill(new Rect(r.xMax - 150 + (i % 4) * 22, c.y - 34 - (i / 4) * 0, 8, 18), pin);
+                    word = "GUTTER..."; flash = new Color(.6f, .7f, .9f); break;
+            }
+            var keepC = GUI.color; GUI.color = flash; var bounce = toon == "gutter" ? 0f : Mathf.Abs(Mathf.Sin(t * 7f)) * 8f;
+            GUI.Label(new Rect(r.x, r.y + 14 - bounce, w, 44), word, big2); GUI.color = keepC;
+            if (toonWho.Length > 0) GUI.Label(new Rect(r.x, r.yMax - 30, w, 24), toonWho, small2);
+        }
+
+        /// The overhead screen: every bowler's card, top right.
+        void DrawBoard()
+        {
+            var rows = new List<(string name, string marks, int total)> { (Friends.PlayerName, Marks(card.rolls), card.Total) };
+            foreach (var o in others.Values) if (Time.time - o.seen < 4f) rows.Add((o.name, Marks(o.rolls), o.total));
+            if (rows.Count < 2) return;   // alone, the card on the left says it all
+            const float w = 470f; var x = Screen.width - w - 12f; var y = 12f;
+            GUI.Box(new Rect(x, y, w, 26), "  TONIGHT'S BOWLERS", box); y += 28f;
+            rows.Sort((a, b) => b.total.CompareTo(a.total));
+            foreach (var (name, marks, total) in rows) { GUI.Box(new Rect(x, y, w, 28), $"  {(name.Length > 10 ? name.Substring(0, 10) : name),-10}  {marks}", box); GUI.Box(new Rect(x + w - 62, y, 62, 28), total.ToString(), small2); y += 30f; }
+        }
+
         // ---------------------------------------------------------------- friends
         void Send()
         {
             var f = Friends.Instance; if (f == null || !f.Online) return;
             using (var ms = new MemoryStream())
-            using (var w = new BinaryWriter(ms)) { w.Write((byte)1); w.Write(id); w.Write(Active == this && playing); w.Write(card.Total); w.Write((byte)card.At.frame); w.Write(Friends.PlayerName); w.Flush(); f.Broadcast(Channel, ms.ToArray(), false); }
+            using (var w = new BinaryWriter(ms)) { w.Write((byte)2); w.Write(id); w.Write(Active == this && playing); w.Write(card.Total); w.Write((byte)card.At.frame); w.Write(Friends.PlayerName); w.Write((byte)card.rolls.Count); foreach (var roll in card.rolls) w.Write((byte)roll); w.Flush(); f.Broadcast(Channel, ms.ToArray(), false); }
         }
 
         void OnNet(ulong from, string channel, byte[] data)
@@ -199,8 +278,17 @@ namespace EverythingWorld.Activities
             {
                 using (var r = new BinaryReader(new MemoryStream(data)))
                 {
-                    if (r.ReadByte() != 1 || r.ReadString() != id) return; if (!others.TryGetValue(from, out var o)) others[from] = o = new Remote();
+                    if (r.ReadByte() != 2 || r.ReadString() != id) return; if (!others.TryGetValue(from, out var o)) others[from] = o = new Remote();
                     var on = r.ReadBoolean(); o.total = r.ReadInt32(); o.frame = r.ReadByte(); o.name = r.ReadString(); o.seen = on ? Time.time : -99f;
+                    var n = r.ReadByte(); var had = o.rolls.Count; var fresh = new List<int>(); for (var i = 0; i < n; i++) fresh.Add(r.ReadByte());
+                    // a friend's new roll: if it was a strike, a spare or a gutter ball, their cartoon plays on my screen too
+                    if (Active == this && playing && on && n == had + 1 && Time.time - toonAt > 2.6f)
+                    {
+                        var roll = fresh[n - 1]; var prev = n >= 2 ? fresh[n - 2] : -1; var probe = new BowlCard(); probe.rolls.AddRange(fresh.GetRange(0, n - 1)); var ball = probe.At.ball;
+                        var what = What(fresh, roll == 10 && ball == 0, ball > 0 && prev >= 0 && prev != 10 && prev + roll == 10, false);
+                        if (what != null) Toon(what, o.name);
+                    }
+                    o.rolls = fresh;
                 }
             }
             catch (System.Exception) { }
@@ -221,7 +309,7 @@ namespace EverythingWorld.Activities
 
         void OnGUI()
         {
-            white ??= Texture2D.whiteTexture;
+            white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
             if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .8f, .95f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;
@@ -231,6 +319,7 @@ namespace EverythingWorld.Activities
             GUI.Box(new Rect(12, 50, 470, 30), "  " + rolls, box); var y = 84f; if (Everything) { GUI.Box(new Rect(12, y, 240, 30), "  Everything Playlist", box); y += 34f; }
             foreach (var o in others.Values) if (Time.time - o.seen < 4f) { GUI.Box(new Rect(12, y, 330, 28), $"  {o.name}: {o.total}  (frame {o.frame + 1})", box); y += 30f; }
             if (Time.time < bannerUntil && banner.Length > 0) Activity.Banner(banner, 96, big2);
+            DrawToon(); DrawBoard();
             if (charging) { var w = 360f; var r = new Rect(Screen.width / 2f - w / 2f, Screen.height - 96, w, 22); GUI.Box(r, "", small2); var keep = GUI.color; GUI.color = Color.Lerp(new Color(.4f, .9f, 1f), new Color(1f, .75f, .2f), power); GUI.DrawTexture(new Rect(r.x + 3, r.y + 3, (r.width - 6) * power, r.height - 6), white); GUI.color = keep; }
             Activity.Hint(Screen.height - 66, card.Done ? "Enter  New game   ·   hold X  Leave the lane" : sim.rolling ? "A and D curl the ball" : (charging ? (power < MinPower ? "Push the mouse forward for power  ·  let go now to cancel" : "Let go as the line crosses your mark  ·  pull back to ease off") : "A and D move  ·  mouse aims  ·  hold click and push forward to swing  ·  hold X to leave") + (Unlocked ? "  ·  P playlist" : ""), small2);
         }

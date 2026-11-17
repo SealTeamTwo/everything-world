@@ -191,6 +191,7 @@ namespace EverythingWorld.Activities
         }
 
         void Tune() { var d = MusicDirector.Instance; if (d == null) return; d.Held = Everything ? d.Everything : d.Catalog != null ? d.Catalog.Get(landScene) : null; }
+        int streak; float streakAt = -99f;
         void Say(string text, float seconds) { banner = text; bannerUntil = Time.time + seconds; }
         void Drop() { if (held == null) return; held.isKinematic = false; held = null; charging = false; }
 
@@ -285,6 +286,9 @@ namespace EverythingWorld.Activities
             mine[k]++; var first = (Made & (1 << k)) == 0; if (first) Made |= 1 << k;
             if (first && MadeCount == hoops.Count && !Unlocked) { PlayerPrefs.SetInt(Key("unlocked"), 1); Everything = true; Tune(); Say("All six!\nThe Everything Playlist is unlocked here. P switches it.", 9f); }
             else Say(first ? $"{hoops[k].name}: that's {MadeCount} of {hoops.Count}" : hoops[k].name + "!", 2.5f);
+            // baskets one after another, without long between them, are a streak: three and you are on fire
+            streak = Time.time - streakAt < 14f ? streak + 1 : 1; streakAt = Time.time;
+            if (first) Activity.Cheer(); if (streak >= 3) { Say($"On fire! {streak} in a row", 2.5f); Activity.Cheer(new Color(1f, .55f, .1f), new Color(1f, .9f, .3f)); }
             PlayerPrefs.Save(); ShowRecord();
         }
 
@@ -366,7 +370,7 @@ namespace EverythingWorld.Activities
 
         void OnGUI()
         {
-            white ??= Texture2D.whiteTexture;
+            white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
             if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .9f, .75f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;

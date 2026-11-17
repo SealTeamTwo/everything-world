@@ -66,7 +66,7 @@ namespace EverythingWorld.Activities
         void Enter()
         {
             walker.Take(); hands.enabled = false; IslandExplorer.Frozen = true; if (PlayerOrb.Local != null) PlayerOrb.Local.enabled = false;
-            big.gameObject.SetActive(true); Tune(); playing = true; inRound = false; mine.alive = false; mine.corners.Clear(); robots.Clear(); camSet = false; round = 0; roundStart = -1; overAt = -1; enteredAt = Time.time; startDue = false;
+            big.gameObject.SetActive(true); Tune(); playing = true; inRound = false; mine.alive = false; mine.corners.Clear(); robots.Clear(); tally.Clear(); talliedRound = -1; camSet = false; round = 0; roundStart = -1; overAt = -1; enteredAt = Time.time; startDue = false;
             Say("A and D turn (or the arrows, or the mouse buttons). Don't touch a wall of light.", 6f);
         }
 
@@ -133,6 +133,15 @@ namespace EverythingWorld.Activities
                 if (players == 0 || (all.Count >= 2 && up <= 1) || (waiting > 0 && into > CountIn + 1.5)) { overAt = now; nextSend = 0f; if (waiting > 0 && players > 0 && up > 1) Say("A friend stepped on: a new round for everyone", 3f); }
             }
             else if (inRound && roundStart >= 0 && into >= CountIn + MaxRide && overAt < 0 && mine.alive && !wonThis) { Say("Time: still riding", 3f); wonThis = true; }
+            // when a round is over, say who took it and keep tonight's tally
+            if (overAt >= 0 && talliedRound != round)
+            {
+                talliedRound = round; string who = null; var left = 0;
+                if (inRound && mine.alive) { who = "You"; left++; }
+                foreach (var o in others.Values) if (Time.time - o.seen < 3f && o.playing && o.round == round && o.inRound && o.bike.alive) { who = o.name; left++; }
+                foreach (var b in robots) if (b.alive) { who = "A robot"; left++; }
+                if (left == 1) { tally[who] = (tally.TryGetValue(who, out var n0) ? n0 : 0) + 1; if (who != "You") Say(who + " takes the round", 3f); }
+            }
             if (Time.time >= nextSend) { nextSend = Time.time + .1f; Send(); }
             Draw();
         }
@@ -149,9 +158,11 @@ namespace EverythingWorld.Activities
             if (ids.Count == 1) for (var i = 1; i < 4; i++) { var b = new Bike(); BikeSim.Spawn(b, i * 2); robots.Add(b); }   // alone: three that ride themselves
         }
 
+        readonly Dictionary<string, int> tally = new Dictionary<string, int>(); long talliedRound = -1;   // rounds taken since you stepped on, by name
+
         void Won()
         {
-            wonThis = true; Wins++;
+            wonThis = true; Wins++; Activity.Cheer(new Color(.3f, .9f, 1f), new Color(1f, .3f, .8f));
             if (Wins >= Bar && !Unlocked) { PlayerPrefs.SetInt(Key("unlocked"), 1); Everything = true; Tune(); Say("Last one riding!\nThe Everything Playlist is unlocked here. P switches it.", 9f); }
             else Say(Unlocked ? "Last one riding!" : $"Last one riding! That's {Wins} of {Bar}", 5f);
             PlayerPrefs.Save(); ShowRecord();
@@ -255,7 +266,7 @@ namespace EverythingWorld.Activities
 
         void OnGUI()
         {
-            white ??= Texture2D.whiteTexture;
+            white ??= Texture2D.whiteTexture; Activity.DrawCheer();
             var wash = outT >= 0f ? outT / .5f : shrinkT < 1.1f ? 1f - Mathf.Abs(shrinkT - .55f) / .55f : 0f;
             if (wash > 0f && Event.current.type == EventType.Repaint) { var keep = GUI.color; GUI.color = new Color(1f, .7f, .9f, Mathf.Clamp01(wash)); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), white); GUI.color = keep; }
             if (Active != this || !playing || MainMenu.Showing) return;
@@ -263,6 +274,7 @@ namespace EverythingWorld.Activities
             var now = SharedChance.Now; var into = roundStart < 0 ? -1 : now - roundStart; var up = 0; foreach (var b in all) if (b.alive) up++;
             GUI.Box(new Rect(12, 12, 470, 34), $"  Riding: {up} of {all.Count}  ·  rounds won: {Wins}" + (Unlocked ? "" : $" of {Bar}"), box);
             if (Everything) GUI.Box(new Rect(12, 50, 240, 30), "  Everything Playlist", box);
+            { var ty = Everything ? 84f : 50f; foreach (var kv in tally) { GUI.Box(new Rect(12, ty, 260, 28), $"  {kv.Key}: {kv.Value}", box); ty += 30f; } }
             if (inRound && into >= 0 && into < CountIn) GUI.Box(new Rect(Screen.width / 2f - 120, Screen.height / 2f - 130, 240, 70), Mathf.CeilToInt((float)(CountIn - into)).ToString(), big2);
             else if (overAt >= 0) GUI.Box(new Rect(Screen.width / 2f - 200, 150, 400, 44), $"Next round in {Mathf.Max(1, Mathf.CeilToInt((float)(overAt + After - now)))}", small2);
             else if (!inRound) GUI.Box(new Rect(Screen.width / 2f - 200, 150, 400, 44), roundStart < 0 ? "Getting ready..." : "Watching: you ride in the next round", small2);
