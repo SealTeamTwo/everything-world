@@ -36,7 +36,19 @@ namespace EverythingWorld.Activities
         /// Sends the waiting ball up the launch lane: 0 = a soft plunge, 1 = full.
         public void Launch(float power)
         {
-            if (inPlay || ballsLeft <= 0) return; Ready(); sim.v = new Vector3(0, 0, Mathf.Lerp(19.5f, 24f, Mathf.Clamp01(power))); sim.moving = true; sim.grounded = true; inPlay = true; still = 0f; launched = clock;
+            if (inPlay || ballsLeft <= 0) return; Ready(); sim.v = new Vector3(0, 0, Mathf.Lerp(17f, 22f, Mathf.Clamp01(power))); sim.moving = true; sim.grounded = true; inPlay = true; still = 0f; launched = clock;
+        }
+
+        /// The table has a glass lid and sides: a fast ball can no longer hop a wall and sail off the top into the sky
+        /// (it did on every launch, 2026-11-16). It comes back off the glass a little slower.
+        void KeepOnTable()
+        {
+            var p = sim.p; var v = sim.v; var floor = 1f + Mathf.Clamp(p.z, 0f, 44f) * GolfCourses.PinSlope; var hit = false;
+            if (p.y > floor + 1.1f) { p.y = floor + 1.1f; if (v.y > 0f) v.y = -v.y * .2f; hit = true; }
+            if (p.z > 43.4f) { p.z = 43.4f; if (v.z > 0f) v.z = -v.z * .55f; hit = true; }
+            if (p.x > 10.7f) { p.x = 10.7f; if (v.x > 0f) v.x = -v.x * .6f; hit = true; }
+            if (p.x < -10.7f) { p.x = -10.7f; if (v.x < 0f) v.x = -v.x * .6f; hit = true; }
+            if (hit) { sim.p = p; sim.v = v; }
         }
 
         public void Step(float dt, bool left, bool right)
@@ -48,6 +60,7 @@ namespace EverythingWorld.Activities
                 rm.manualPrev = rm.manualAngle; rm.manualAngle = Mathf.MoveTowards(rm.manualAngle, right ? RUp : RRest, Swing * GolfSim.Step);
                 if (!inPlay) continue;
                 sim.Advance(clock); clock += GolfSim.Step;
+                KeepOnTable();
                 if (!sim.moving && fellOff) { fellOff = false; Ready(); lastHit = "Off the table: have it back"; lastHitAt = time; break; }   // not your fault: the same ball again
                 if (!sim.moving) { ballsLeft--; inPlay = false; lastHit = ballsLeft > 0 ? "Drained" : "Game over"; lastHitAt = time; break; }   // (the drain puts the ball back and stops it)
                 // a ball that falls back down the launch lane is simply launched again

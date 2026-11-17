@@ -64,8 +64,8 @@ namespace EverythingWorld.Activities
             big.gameObject.SetActive(true); Tune(); playing = true; camSet = false; play ??= new PinballPlay(); play.NewGame();
             if (ball == null)
             {
-                ball = Sphere("Pinball", GolfHole.BallR * 2.6f, big, out ballM);   // (drawn a little big, with a light of its own, so it is easy to find on the dark table)
-                { var bl = new GameObject("Ball light").AddComponent<Light>(); bl.transform.SetParent(ball, false); bl.transform.localPosition = Vector3.up * 2f; bl.type = LightType.Point; bl.range = 6f; bl.intensity = 2.2f; bl.color = new Color(1f, .95f, .8f); bl.shadows = LightShadows.None; }
+                ball = Sphere("Pinball", GolfHole.BallR * 4.2f, big, out ballM);   // (drawn a little big, with a light of its own, so it is easy to find on the dark table)
+                { var bl = new GameObject("Ball light").AddComponent<Light>(); bl.transform.SetParent(ball, false); bl.transform.localPosition = Vector3.up * 2f; bl.type = LightType.Point; bl.range = 9f; bl.intensity = 3.2f; bl.color = new Color(1f, .95f, .8f); bl.shadows = LightShadows.None; }
                 var view = big.GetComponent<GolfCourseView>(); flippers = new[] { view.movers[0], view.movers[1] };
             }
             var c = PlayerOrb.Local != null ? PlayerOrb.Local.Color : Color.white; ballM.SetColor("_BaseColor", c); ballM.SetColor("_EmissionColor", c * 1.3f);
@@ -129,8 +129,10 @@ namespace EverythingWorld.Activities
             // the camera rides behind and above the ball, looking up the table; it keeps the flippers in sight when the ball is low
             // (waiting in the launch lane, it looks straight at the ball, close, so you can see where you are)
             var waiting = !play.inPlay;
-            var follow = waiting ? new Vector3(p.x * .8f, p.y, p.z + 2f) : new Vector3(Mathf.Clamp(p.x * .7f, -6.5f, 6.5f), p.y, Mathf.Max(p.z, 6f));
-            var at = big.TransformPoint(follow + (waiting ? new Vector3(0, 8f, -9f) : new Vector3(0, 11.5f, -11f))); var look = big.TransformPoint(follow + new Vector3(0, 0, waiting ? 1.5f : 4f));
+            // (it was too far off and aimed past the ball: you could not find yourself. Now it sits close behind the
+            // ball and looks straight at it; in play it pulls back only enough to show the flippers and what is ahead.)
+            var follow = waiting ? p : new Vector3(Mathf.Clamp(p.x * .85f, -8f, 8f), p.y, Mathf.Max(p.z, 5f));
+            var at = big.TransformPoint(follow + (waiting ? new Vector3(-1.2f, 2.6f, -4.4f) : new Vector3(0, 7.5f, -8f))); var look = big.TransformPoint(follow + new Vector3(0, .2f, waiting ? .6f : 2.2f));
             if (!camSet) { camAt = at; camSet = true; } camAt = Vector3.Lerp(camAt, at, 1f - Mathf.Exp(-6f * Time.deltaTime));
             var dir = (look - at).normalized; var yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg; var pitch = -Mathf.Asin(dir.y) * Mathf.Rad2Deg; var body = Quaternion.Euler(0, yaw, 0); var pivot = walker.cameraPivot;
             walker.transform.SetPositionAndRotation(camAt - body * pivot.localPosition, body); pivot.localEulerAngles = new Vector3(pitch, 0, 0);
