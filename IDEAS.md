@@ -42,6 +42,11 @@ What he asked for in a theme: a **contrasting** one. More of the land's own lege
 - Must read by brightness and by the dark lead lines between panes, not by hue (the owner is colourblind): pale glass against deep glass, lit from inside, set at dusk so the glow carries it.
 - Not chosen: a shattered window mended with seams of gold; a stained-glass greenhouse taken over by real plants; a patchwork quilt; a music box.
 
+**4. Discotopia: agreed, the owner's own idea: everything disco it has now, crossed with ancient Egypt.**
+- Keep what is there (the light-up floor, the lights, the mirror ball) and build it as Egypt: a pyramid faced in mirror tiles, the mirror ball as the sun disc over it, obelisks that are columns of light, a sphinx, walls of carved figures caught in dance poses, a river of glitter for the Nile, the dance floor as the temple court, a booth like a golden sarcophagus.
+- Something to explore and slow down in: the inside of the pyramid, with chambers and a beam of light you turn mirrors to send onward (the tomb puzzle and the mirror ball are the same trick).
+- Ideas offered and not taken as they were: a lost temple of the mirror ball (the nearest, and where this came from), an ice age, a beehive.
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
