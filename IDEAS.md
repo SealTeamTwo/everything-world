@@ -111,7 +111,17 @@ Built from the plan above while the owner slept, each checked in photographs (th
 **5. The Neo Soul Quarter (the sleeper): built.** Kept as it is. STAY A WHILE in lights at the Courtyard; the Shell Walk to plates of shell that breathe and the sleeper's head on the shore; a gardener; staying still brings a ring of light motes, fireflies and flowers.
 - Not seen in photos: the eye opening (needs about 35 seconds of stillness); the plates moving underfoot; the one-line hint on screen.
 
-**Still to build, in his order: 6 Boom Bap Harbour (monastery mountain), 7 Velvet Rooftops (floating city and the hole), 8 Lo-Fi Hills (rest stop for spirits), 9 Hip-Hop Boroughs (the moon), 10 Roots Bay (tree of life).** Six, seven and eight are complete rebuilds of lands he has seen; nine and ten are additions to lands that stay.
+**6. Boom Bap Harbour (monastery mountain): built.** The Block, the El, the party and the harbour are untouched. A mountain (about 59 m) was raised behind where you arrive, on ground that was empty; a stair street under green iron gates, eight brick blocks stacked on terraces with fire escapes and pagoda water towers, tagged retaining walls with gaps, the Hall of the Break on the summit (masters on the stoop, the speaker gong, the dummies), junks in the harbour.
+- The mountain is new ground: the land audit found no blocked or steep paths after the stair was smoothed.
+- Not seen in photos: how the climb feels on foot; the gong; the view from the top as you turn round.
+
+**9. The Hip-Hop Boroughs (the moon): built**, out of order because it is an addition and seven and eight are rebuilds. Black sky, grey dust, the Earth huge over Victory Avenue; low gravity for you and for anything thrown (`SimplePlayerController.GravityScale`, `JumpScale`, `FastFall`; `Physics.gravity` while you are there); hold Ctrl or C to come down fast; drifting laundry, a stiff flag, craters, silver trees.
+- Not seen in photos: all of the movement (the jump height and hang time are guesses: `HipMoon.Gravity` .24 and `Jump` 3.6), the fast drop, basketball in low gravity.
+
+**10. The Roots Bay (tree of life): built.** The town untouched. The tree stands 104 m out in the bay, 260 m tall, never hidden by distance; five roots through the town in eighteen arches with lanterns; one root to walk from the beach to a ledge round the trunk, the keeper in a hollow.
+- Not seen in photos: walking the root (its rails and the ledge); how the tree looks from the neighbouring islands.
+
+**Still to build: 7 The Velvet Rooftops (floating city and the hole) and 8 The Lo-Fi Hills (rest stop for spirits).** Both are complete rebuilds of lands he has seen. The Velvet Rooftops is the largest job of the ten: the artists move up onto roofs, which means new ground (towers as terrain), bridges for paths, and the fall through the hole.
 
 ## The owner's board, sorted (2026-11-18)
 
