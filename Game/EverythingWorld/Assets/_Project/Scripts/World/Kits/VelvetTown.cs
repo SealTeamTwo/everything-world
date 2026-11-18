@@ -16,7 +16,7 @@ namespace EverythingWorld.World
         static readonly string[] TownTalk =
         {
             "It's two in the morning. It's been two in the morning for a while. Nobody's checked.", "The water came up years ago. We just moved the party to the roof.",
-            "You can walk to every roof from here. Follow the glass.", "Don't look down. Well. Do. It's beautiful. All those windows still lit.", "Slow down. You're here now.",
+            "You can walk to every roof from here. Follow the glass.", "Don't look down. Well. Do. It's beautiful. All those windows still lit.", "Slow down. You're here now.", "Follow the wide glass to the Hole. Look in. Then do what everybody does.", "If you come down out of the sky into the pool, we'll know where you've been.",
         };
 
         void TownStart(LandContext ctx)

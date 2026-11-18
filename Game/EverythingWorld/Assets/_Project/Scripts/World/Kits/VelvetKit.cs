@@ -89,6 +89,7 @@ namespace EverythingWorld.World
                 a.r = Mathf.Max(a.r, Foot(a) + 6f);
                 Level(data, index, new Vector2(a.x, a.z), Foot(a) + 1f, Foot(a) + 10f, Mathf.Max(data.HeightAt(a.x, a.z), waterY + 2.6f));
             }
+            SiteHole(data, index);
         }
 
         void Level(IslandWorldData data, int index, Vector2 c, float flat, float blend, float level)
@@ -122,6 +123,7 @@ namespace EverythingWorld.World
             TownStart(ctx);
             PoolRoof(ctx, mk, solid);
             Paths(ctx, mk, solid);
+            Hole(ctx, mk, solid);
             Wilds(ctx, mk, solid);
             Skyline(ctx, mk);
             mk.Build("The Velvet Rooftops", ctx.Root, false);
