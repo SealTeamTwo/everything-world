@@ -92,7 +92,7 @@ namespace EverythingWorld.World
 
             // candles flicker; the strings of lights breathe one after another; the windows hold steady
             var lift = t - played < 4f ? 1f - (t - played) / 4f : 0f; var dim = 1f - untitled * .7f;
-            if (candles != null) candles.SetColor("_EmissionColor", candleBase * (.8f + .3f * Mathf.PerlinNoise(t * 5f, 1.3f) + wild * .5f) * Mathf.Max(dim, .6f));
+            if (candles != null) candles.SetColor("_EmissionColor", candleBase * (.8f + .3f * Mathf.PerlinNoise(t * 5f, 1.3f) + wild * .5f + .14f * NeoGiant.Breath) * Mathf.Max(dim, .6f));   // (the flames lean with the sleeper's breath)
             if (lamps != null) lamps.SetColor("_EmissionColor", lampBase * (.9f + .08f * Mathf.Sin(t * .7f) + lift * .4f) * dim);
             if (windows != null) windows.SetColor("_EmissionColor", Color.Lerp(windowBase, new Color(.3f, .5f, 1f) * 1.2f, blue * (.5f + .5f * Mathf.Sin(t * 2.4f))) * (1f + golden * .6f) * dim);
             if (bulbs != null) for (var i = 0; i < bulbs.Length; i++) if (bulbs[i] != null) bulbs[i].SetColor("_EmissionColor", bulbBase[i] * (.75f + .3f * Mathf.Sin(t * .9f + i * 2.1f) + energy * .3f + lift * .5f + asc * .6f) * dim);
@@ -110,7 +110,7 @@ namespace EverythingWorld.World
             if (untitled > 0f) { tint = Color.Lerp(tint, new Color(.12f, .08f, .1f), untitled); amount = Mathf.Lerp(amount, .6f, untitled); }
             SkyDirector.SetSongTint(Land, tint, amount);
             var wind = clouds != null ? clouds.Wind : new Vector2(1, 0);
-            if (here) { Shader.SetGlobalFloat("_EW_Wind", .14f + .1f * energy); Shader.SetGlobalVector("_EW_WindDir", new Vector4(wind.x, 0, wind.y, 0)); }
+            if (here) { Shader.SetGlobalFloat("_EW_Wind", .14f + .1f * energy + .08f * NeoGiant.Breath); Shader.SetGlobalVector("_EW_WindDir", new Vector4(wind.x, 0, wind.y, 0)); }
 
             var cam = Camera.main; if (!here || cam == null) return; var cp = cam.transform.position;
             if (t >= nextSmoke)

@@ -94,6 +94,7 @@ namespace EverythingWorld.World
                 a.r = Mathf.Max(a.r, Foot(a) + 6f);
                 Level(data, index, new Vector2(a.x, a.z), Foot(a) + 1f, Foot(a) + 10f, Mathf.Max(data.HeightAt(a.x, a.z), waterY + 2.6f));
             }
+            SiteHead(data, index);
         }
 
         void Level(IslandWorldData data, int index, Vector2 c, float flat, float blend, float level)
@@ -127,6 +128,7 @@ namespace EverythingWorld.World
             TownStart(ctx);
             Courtyard(ctx, mk, solid);
             HoneyStreet(ctx, mk, solid);
+            Giant(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Houses(ctx, mk, solid);
             Wilds(ctx, mk, solid);
