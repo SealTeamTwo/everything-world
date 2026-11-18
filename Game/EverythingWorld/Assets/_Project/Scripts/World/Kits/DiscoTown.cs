@@ -18,7 +18,7 @@ namespace EverythingWorld.World
         static readonly Color[] Flare = { new Color(.95f, .95f, 1f), new Color(.2f, .22f, .4f), new Color(.9f, .75f, .35f), new Color(.6f, .62f, .7f) };
         static readonly string[] TownTalk =
         {
-            "You can dance, you can jive. That's not a suggestion, it's the bylaws.", "The lighthouse doesn't warn ships off. It invites them to the party.", "It's always Saturday night here. Friday was nice but we voted.",
+            "You can dance, you can jive. That's not a suggestion, it's the bylaws.", "The Pyramid's older than the Floor. Same people built both, mind. You can tell by the tiles.", "Every pharaoh we ever had is buried under a mirror ball. It's what they'd have wanted.", "The lighthouse doesn't warn ships off. It invites them to the party.", "It's always Saturday night here. Friday was nice but we voted.",
             "Stand still a second and let the light find you. There. Now you're glamorous.", "Somebody's going to start a conga line before the song's out. It's usually me.",
         };
         static readonly string[] VillaTalk =

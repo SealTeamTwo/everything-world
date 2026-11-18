@@ -19,6 +19,8 @@ namespace EverythingWorld.World
         public string queenSong, waterlooSong, winnerSong, septemberSong, rasputinSong;
         public Material[] tiles; public Material lamps, windows, floorBallM, ballM; public Transform ball, crown, dome; public Light floorLight, lightLamp, winnerLight;
         public float request = -99f, lever = -99f;
+        /// The tops of the obelisks: each sends a column of light up (DiscoEgypt).
+        public readonly List<Vector3> columns = new List<Vector3>();
         public List<(string song, Material m, Color c)> songGlows = new List<(string, Material, Color)>();
         readonly Dictionary<string, float> songAmount = new Dictionary<string, float>();
 
@@ -29,6 +31,19 @@ namespace EverythingWorld.World
 
         void Start()
         {
+            if (columns.Count > 0)
+            {
+                var colM = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit")) { name = "Obelisk light" };
+                colM.SetColor("_BaseColor", new Color(1f, .88f, .55f, .1f)); colM.SetFloat("_Surface", 1f); colM.SetFloat("_Blend", 2f);
+                colM.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha); colM.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.One);
+                colM.SetFloat("_ZWrite", 0f); colM.SetFloat("_Cull", 0f); colM.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); colM.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                foreach (var p in columns)
+                {
+                    var g = GameObject.CreatePrimitive(PrimitiveType.Cylinder); g.name = "Obelisk light"; Destroy(g.GetComponent<Collider>()); g.transform.SetParent(transform, false);
+                    g.transform.position = p + Vector3.up * 50f; g.transform.localScale = new Vector3(1f, 50f, 1f);
+                    var r = g.GetComponent<MeshRenderer>(); r.sharedMaterial = colM; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
+                }
+            }
             clouds = gameObject.AddComponent<CloudLayer>();
             clouds.center = center; clouds.count = 22; clouds.span = 2600f; clouds.key = "disco";
             clouds.minHeight = 170f; clouds.maxHeight = 240f; clouds.size = 2.6f; clouds.speed = 1.6f; clouds.cover = .2f;

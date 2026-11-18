@@ -552,10 +552,10 @@ Soul, funk, disco, world music and jazz.
 
 *disco, funk, pop, italo disco, soul* · 16 songs · energy 0.75, acoustic 0.25, mood 0.83 · top artists: ABBA, Earth, Wind & Fire, Boney M., CHIC, Die Bokjollers
 
-- **Terrain:** A glittering coastal town on terraced hills.
+- **Terrain:** A glittering coastal town on terraced hills, built as ancient Egypt: a temple court, a processional way, a pyramid.
 - **Colours:** `#E3B341 gold`, `#C0C6CF silver`, `#F2742B hot orange`, `#3FA34D afro green`
-- **Landmark:** A lighthouse topped with a giant mirror ball.
-- **Props:** Light-up dance floor tiles, platform shoes, conga drums, palm trees.
+- **Landmark:** A pyramid faced in mirror tiles holding a mirror ball over its point like a sun disc; a lighthouse topped with another.
+- **Props:** Light-up dance floor tiles, lotus columns, obelisks of light, a sphinx in sunglasses, walls of dancers, a river of glitter.
 - **Light and mood:** Sparkling, joyful night.
 
 ### 48. The Old Jazz Quarter

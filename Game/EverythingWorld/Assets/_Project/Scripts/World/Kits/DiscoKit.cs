@@ -4,7 +4,10 @@ using static EverythingWorld.World.PlaceTools;
 
 namespace EverythingWorld.World
 {
-    /// Discotopia (WORLD_GUIDE.md): a white resort town by the sea on a clear starry night, picked out in silver, gold
+    /// Discotopia (WORLD_GUIDE.md): disco crossed with ancient Egypt (DiscoEgypt.cs: the Floor is the temple court, a
+    /// processional way runs to a pyramid faced in mirror tiles with a tomb and a puzzle inside, obelisks are columns
+    /// of light, a sphinx wears sunglasses). Under that it is what it was:
+    /// a white resort town by the sea on a clear starry night, picked out in silver, gold
     /// and white light. You arrive on the Floor: a great light-up dance floor that is the town square, a mirror ball
     /// hung over it from four white arches, a DJ in a booth, a white limousine at the kerb. The Esplanade, a white
     /// promenade with silver globe lamps and a balustrade, runs out along the headland to the Lighthouse, whose lamp
@@ -126,6 +129,7 @@ namespace EverythingWorld.World
                 a.r = Mathf.Max(a.r, Foot(a) + 6f);
                 Level(data, index, new Vector2(a.x, a.z), Foot(a) + 1f, Foot(a) + 10f);
             }
+            SitePyramid(data, index, Inside);
         }
 
         void Level(IslandWorldData data, int index, Vector2 c, float flat, float blend)
@@ -162,6 +166,7 @@ namespace EverythingWorld.World
             Esplanade(ctx, mk, solid);
             Lighthouse(ctx, mk, solid);
             Belvedere(ctx, mk, solid);
+            Egypt(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Wilds(ctx, mk, solid);
             mk.Build("Discotopia", ctx.Root, false);
