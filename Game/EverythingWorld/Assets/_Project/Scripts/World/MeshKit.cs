@@ -313,6 +313,22 @@ namespace EverythingWorld.World
             return made;
         }
 
+        /// Swaps materials for others (the Lo-Fi Hills, drawn in ink where only light keeps its colour): every face in
+        /// a material 'swap' gives another for moves to that one, and faces whose colour is in the mesh (the surface
+        /// kinds) have it passed through 'tone'.
+        public void Remap(System.Func<Material, Material> swap, System.Func<Color, Color> tone)
+        {
+            var keys = new List<Material>(tris.Keys);
+            foreach (var m in keys)
+            {
+                if (cols != null && tone != null && m != null && m.IsKeywordEnabled("_USE_VERTEX_COLORS")) { foreach (var i in tris[m]) cols[i] = tone(cols[i]); continue; }
+                var to = swap != null ? swap(m) : null; if (to == null || to == m) continue;
+                var list = tris[m]; tris.Remove(m);
+                if (tris.TryGetValue(to, out var into)) into.AddRange(list); else tris[to] = list;
+            }
+            lastSet = false;
+        }
+
         static Texture2D leadTex;
         /// The texture a stained-glass pane wears: bright in the middle, dark lead along its three edges.
         public static Texture2D LeadTexture

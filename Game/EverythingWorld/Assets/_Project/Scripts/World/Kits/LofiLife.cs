@@ -33,7 +33,7 @@ namespace EverythingWorld.World
             clouds = gameObject.AddComponent<CloudLayer>();
             clouds.center = center; clouds.count = 60; clouds.span = 2400f; clouds.key = "lofihills";
             clouds.minHeight = 120f; clouds.maxHeight = 190f; clouds.size = 4.2f; clouds.speed = 1.6f; clouds.cover = .8f;
-            clouds.color = new Color(.5f, .54f, .7f);
+            clouds.color = new Color(.5f, .52f, .58f);
             Color E(Material m) => m != null ? m.GetColor("_EmissionColor") : Color.black;
             windowBase = E(windows); lampBase = E(lamps); vendBase = E(vending); puddleBase = E(puddles);
             smoke = Particles("Smoke and steam", 400, new Color(.9f, .92f, 1f, .16f), .12f, .3f, false);

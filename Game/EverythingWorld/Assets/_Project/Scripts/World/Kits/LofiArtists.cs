@@ -85,6 +85,7 @@ namespace EverythingWorld.World
             Puddle(z.mk, z.At(reach * .34f, -reach * .2f) + up * .09f, .7f);
             if (z.area.glowLight == null) z.area.glowLight = ArtistBits.PointLight(root, z.c + up * 3.6f + front * 3f, new Color(1f, .8f, .54f), HasStation(a) ? 24f : 15f, 2.3f);
             area.glowRenderers = new Renderer[0];
+            ToInk(z.mk);
             z.mk.Build("Area", root, false);
             z.solid.BuildCollider("Walls", root);
             z.pictures.Build("Covers", root, false);

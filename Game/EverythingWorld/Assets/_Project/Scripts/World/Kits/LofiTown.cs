@@ -12,12 +12,12 @@ namespace EverythingWorld.World
     {
         LofiTownLife tlife; System.Random prng; Transform rootT; LandContext ctx0;
 
-        static readonly Color[] Tops = { new Color(.8f, .74f, .62f), new Color(.46f, .4f, .56f), new Color(.4f, .5f, .62f), new Color(.52f, .6f, .5f), new Color(.86f, .6f, .5f), new Color(.3f, .32f, .4f), new Color(.9f, .8f, .5f) };
-        static readonly Color[] Bottoms = { new Color(.2f, .22f, .32f), new Color(.34f, .32f, .36f), new Color(.5f, .46f, .42f), new Color(.24f, .28f, .3f) };
+        static readonly Color[] Tops = { new Color(.76f, .77f, .8f), new Color(.42f, .44f, .5f), new Color(.5f, .53f, .6f), new Color(.6f, .62f, .66f), new Color(.84f, .85f, .88f), new Color(.28f, .3f, .36f), new Color(.68f, .7f, .74f) };   // (ink: the people too)
+        static readonly Color[] Bottoms = { new Color(.16f, .18f, .24f), new Color(.3f, .32f, .36f), new Color(.44f, .46f, .5f), new Color(.22f, .24f, .28f) };
         static readonly string[] TownTalk =
         {
             "Evening. Still raining. It's the good kind.", "Shop's open. Shop's always open.", "The Study's at the top of Lamp Lane. The light's on; it's always on.",
-            "Mind the cats. They don't move for anyone.", "Nowhere to be. That's the nice thing about here.",
+            "Mind the cats. They don't move for anyone.", "The little ones on legs? Things people left on buses. They live here now. Say hello, they like it.", "Baths are that way and the noodles are the other. The bus is whenever.", "Don't look too long in the puddles. It's a nice day in there and you'll want to go.", "Nowhere to be. That's the nice thing about here.",
         };
 
         void TownStart(LandContext ctx)
@@ -26,7 +26,7 @@ namespace EverythingWorld.World
             tlife = new GameObject("Lo-Fi town life").AddComponent<LofiTownLife>(); tlife.transform.SetParent(life.transform, false);
         }
 
-        Residents.Look Local(Residents.Tool tool = Residents.Tool.None, bool apron = false) { var l = Residents.Random(prng, Tops, Bottoms, new[] { Residents.Hat.Beanie, Residents.Hat.None, Residents.Hat.Bucket, Residents.Hat.None, Residents.Hat.Cap }, new[] { Mauve, RainBlue, Cream, Sage }); l.tool = tool; l.apron = apron; return l; }
+        Residents.Look Local(Residents.Tool tool = Residents.Tool.None, bool apron = false) { var l = Residents.Random(prng, Tops, Bottoms, new[] { Residents.Hat.Beanie, Residents.Hat.None, Residents.Hat.Bucket, Residents.Hat.None, Residents.Hat.Cap }, new[] { new Color(.4f, .42f, .48f), new Color(.6f, .62f, .68f), new Color(.84f, .85f, .88f), new Color(.24f, .26f, .32f) }); l.tool = tool; l.apron = apron; return l; }
         Resident Folk(Vector3 feet, Vector3 face, Resident.Pose pose, string[] lines = null, Residents.Look look = null, Vector3[] route = null, float seatH = HumanScale.SeatHeight)
             => Residents.Make(tlife.transform, feet, face, look ?? Local(), pose, prng, lines ?? TownTalk, route, seatH);
         void Col(Vector3 c, Vector3 size, Quaternion rot) => BoxCol(rootT, c, size, rot);

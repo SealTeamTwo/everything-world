@@ -616,11 +616,11 @@ Hip-hop, R&B and lo-fi beats.
 
 *lo fi, lo fi beats, lo fi hip hop, instrumental hip hop, beats* · 23 songs · energy 0.46, acoustic 0.42, mood 0.48 · top artists: Idealism, digitalluc, Michael Lementi, Alecs DeLarge, Bonus Points
 
-- **Terrain:** Gentle, rain-soaked slopes with a few lit-up houses.
-- **Colours:** `#6C5B7B muted purple`, `#F2C57C lamp glow`, `#8AA4C8 rain blue`, `#9AAE8C sage`
-- **Landmark:** A hillside study tower with one big lit window and a desk lamp.
-- **Props:** Potted plants, sleeping cats, cassette tapes, vinyl, vending machines, puddles.
-- **Light and mood:** Cosy, rainy evening.
+- **Terrain:** Gentle, rain-soaked slopes drawn in ink, planted with umbrellas, with a few lit-up houses: a rest stop for spirits.
+- **Colours:** `#11131C ink black`, `#ADB2BF wet-paper grey`, `#F2C57C lamp glow`, `#FF5742 lantern red`
+- **Landmark:** An umbrella the size of a circus tent over the bus stop; up the hill a study tower with one big lit window.
+- **Props:** Umbrellas for trees, lost things on small legs, a bathhouse, a noodle counter, a bus nobody drives, puddles that show a sunny day, sleeping cats, vending machines.
+- **Light and mood:** Cosy, rainy evening in ink, where only light has colour.
 
 ### 45. The Velvet Rooftops
 

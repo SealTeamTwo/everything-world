@@ -4,7 +4,10 @@ using static EverythingWorld.World.PlaceTools;
 
 namespace EverythingWorld.World
 {
-    /// The Lo-Fi Hills (WORLD_GUIDE.md): a rainy blue dusk on soft green hills. Steady rain, puddles holding the
+    /// The Lo-Fi Hills (WORLD_GUIDE.md): a rest stop for spirits on a rainy dusk (LofiSpirits.cs: the whole land is
+    /// turned to ink where only light has colour, the trees are umbrellas, lost things walk about on small legs,
+    /// there is a bathhouse and a noodle counter and a bus nobody drives). Under that it is what it was:
+    /// a rainy blue dusk on soft hills. Steady rain, puddles holding the
     /// lamplight, small houses each with one warm window, vending machines glowing by the road, power lines from
     /// pole to pole, and cats asleep on everything. You arrive at the Corner: a late-night shop and a bus stop.
     /// Lamp Lane climbs from it to the Study, a tower with one enormous lit window, and a desk inside to sit at.
@@ -18,7 +21,7 @@ namespace EverythingWorld.World
         public static readonly Color Lamp = new Color(1f, .78f, .46f), Mauve = new Color(.46f, .38f, .54f), RainBlue = new Color(.5f, .64f, .86f), Sage = new Color(.56f, .66f, .52f), Cream = new Color(.95f, .9f, .8f), Ink = new Color(.1f, .1f, .16f), Pink = new Color(1f, .6f, .7f);
         static readonly Color[] Walls = { new Color(.8f, .76f, .68f), new Color(.52f, .6f, .52f), new Color(.5f, .44f, .58f), new Color(.46f, .54f, .66f), new Color(.7f, .56f, .5f), new Color(.6f, .62f, .66f) };
         static readonly Color[] Roofs = { new Color(.3f, .3f, .42f), new Color(.42f, .28f, .3f), new Color(.24f, .34f, .36f), new Color(.34f, .3f, .28f) };
-        static readonly Color[] Fur = { new Color(.9f, .6f, .3f), new Color(.2f, .2f, .22f), new Color(.92f, .9f, .86f), new Color(.56f, .56f, .6f), new Color(.7f, .5f, .36f) };
+        static readonly Color[] Fur = { new Color(.62f, .64f, .68f), new Color(.14f, .15f, .19f), new Color(.86f, .87f, .9f), new Color(.46f, .48f, .54f), new Color(.3f, .32f, .38f) };
         const float PathW = 2.6f, StreetW = 4.4f;
 
         Material road, paving, woodM, iron, dark, white, leafM, leafDark, leafMauve, trunkM, windowM, lampM, vendM, puddleM, curtain, quilt;
@@ -55,9 +58,9 @@ namespace EverythingWorld.World
 
         public override bool Ground(float height, float slope, float patch, out Color color)
         {
-            // wet grass, blue in the dusk
-            if (slope > 28f) color = Color.Lerp(new Color(.36f, .38f, .46f), new Color(.42f, .42f, .5f), patch);
-            else color = Color.Lerp(new Color(.26f, .44f, .42f), new Color(.38f, .54f, .44f), Mathf.SmoothStep(0f, 1f, patch));
+            // wet paper under an ink wash: greys, a little blue in them
+            if (slope > 28f) color = Color.Lerp(new Color(.24f, .26f, .32f), new Color(.32f, .34f, .4f), patch);
+            else color = Color.Lerp(new Color(.36f, .39f, .45f), new Color(.5f, .53f, .58f), Mathf.SmoothStep(0f, 1f, patch));
             color.a = 1f;
             return true;
         }
@@ -129,7 +132,9 @@ namespace EverythingWorld.World
             TheStudy(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Cottages(ctx, mk, solid);
+            RestStop(ctx, mk, solid);
             Wilds(ctx, mk, solid);
+            ToInk(mk);
             mk.Build("The Lo-Fi Hills", ctx.Root, false);
             solid.BuildCollider("The Lo-Fi Hills walls", ctx.Root);
         }
@@ -237,9 +242,8 @@ namespace EverythingWorld.World
         /// A round soft tree.
         void Tree(LandContext ctx, MeshKit mk, Vector3 g, float s, System.Random rng, bool mauve = false)
         {
-            var up = Vector3.up; mk.Prism(trunkM, g - up * .2f, up, .16f * s, 2.4f * s, 6, .6f); ArtistBits.PostCollider(ctx.Root, g, 2.2f * s, .2f * s); var m = mauve ? leafMauve : leafM;
-            mk.Blob(m, g + up * 3.2f * s, new Vector3(1.6f, 1.4f, 1.6f) * s, rng, .18f); mk.Blob(mauve ? leafMauve : leafDark, g + up * 2.6f * s + new Vector3(.8f, 0, .3f) * s, new Vector3(1.1f, .9f, 1.1f) * s, rng, .18f); mk.Blob(m, g + up * 2.8f * s - new Vector3(.7f, 0, .5f) * s, new Vector3(1f, .9f, 1f) * s, rng, .18f);
-            noGrass.Add(new Vector3(g.x, .8f * s, g.z));
+            // an umbrella where a tree should be: most of them tree-sized, some as big as a house, some you could hold
+            var roll = rng.NextDouble(); Umbrella(ctx, mk, g, s * (roll < .14 ? 2.4f : roll > .86 ? .42f : 1f), rng, mauve);
         }
 
         /// A wooden bench to sit on.
@@ -335,10 +339,10 @@ namespace EverythingWorld.World
         /// to a warmer green; every blade a touch its own.
         void Verge(LandContext ctx)
         {
-            var mat = WindMesh.Material(.24f, .8f, new Color(.3f, .5f, .44f));
+            var mat = WindMesh.Material(.24f, .8f, new Color(.26f, .29f, .35f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(2000);
             const float st = 2.4f;
-            Color dusk = new Color(.22f, .4f, .42f), warm = new Color(.38f, .54f, .42f), lavender = new Color(.8f, .7f, 1f);
+            Color dusk = new Color(.16f, .18f, .24f), warm = new Color(.28f, .31f, .37f), lavender = new Color(.72f, .75f, .82f);   // (ink strokes; the palest are the wet tips)
             int lawn = 0, longGrass = 0, hollow = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
