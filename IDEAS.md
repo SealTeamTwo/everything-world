@@ -17,6 +17,20 @@ Still to do, for the owner:
 - Placements worth a second look: Sleep (stoner metal) is in the Psychedelic Wilds, Kid Rock in the Hip-Hop Boroughs, Night Tempo in the Fusion Isthmus, Porter Robinson on the Four-on-the-Floor Steppe, Ashy Finn's "Songbird" in the Jam Band Commonwealth (placed by its sound alone: Last.fm knows nothing about it), Manowar and Horizons Edge in the Iron Range (both are power metal). One line in `build/overrides.json` moves any of them.
 - The 20 new artists without a Wikipedia page have written about-cards; the ones about small producers describe the song more than the person. Correct any the owner knows better.
 
+## The western lands: a core theme for each (planning with the owner, from 2026-11-18)
+
+Ten western lands still need a core theme (done: the Far Shores, the Old Jazz Quarter, the Fusion Isthmus, the Afrobeat Coast). The order north: Delta Crossroads, Funk Tropics, Soul Lowlands, Discotopia, Neo Soul Quarter, Boom Bap Harbour, Velvet Rooftops, Lo-Fi Hills, Hip-Hop Boroughs, Roots Bay. The owner wants them all planned before any is built.
+
+What he asked for in a theme: a **contrasting** one. More of the land's own legend stacked on itself is "too tied in to what we are already doing"; the music should sit inside something unexpected (as bossa nova sits in a pop-up book and jazz in a rain globe). No restricted paths. Reasons to slow down and to be sidetracked built in.
+
+**1. The Delta Crossroads: agreed in outline, a tarot deck at a crossroads at midnight.**
+- A real place, not a table: flat delta country in permanent night, the crossroads under one lamp, dark fields, a few warm lit places far apart, heat lightning.
+- The four roads are the four suits (cups: the river and levee; swords: the railway; wands: the cotton and trees; coins: the juke joint and town), each marked in its suit.
+- Each artist is one of the great cards made real: a tall gold frame with its number and name, the card's picture built round it (Robert Johnson the Devil at the crossroads; Howlin' Wolf the Moon, with the wolf, the dog and the crayfish; Muddy Waters the Star; B.B. King the Emperor; Etta James the Empress; and so on, the owner free to swap any). Spare cards become places (a struck water tower, a scarecrow hung upside down, a paddle wheel).
+- The look: deep indigo with everything drawn in gold line and cream, like a printed card.
+- A card reader sits at the crossroads; a card is turned with each song (the same for everyone) and the land takes it on (the Moon swells, the Tower brings a storm, the Star shooting stars, the Sun a false dawn, Death fog and stillness, the Devil stands and makes an offer).
+- Kept from earlier in the talk: the roads loop back to the crossroads without it being obvious (you return from a different side, through a place, to a crossroads that looks changed; one thing, a crooked lamp post, never changes), and the deal as the secret at the centre (take it and you carry a mark friends can see).
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
