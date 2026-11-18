@@ -36,6 +36,12 @@ What he asked for in a theme: a **contrasting** one. More of the land's own lege
 - The ship's beam sweeps slowly across the jungle and lifts whatever it passes over: leaves, fruit, a startled resident, and you. You rise through the canopy into the ship (a glass floor), ride round over the whole land looking down at the lights, and are set down somewhere you did not choose. Step in on purpose and it is how you get around; get caught and it is the sidetrack.
 - Not chosen, could be added later: a second jungle up in the canopy with leaves that throw you on the one; flowers that pass a pattern of light across the land for you to chase.
 
+**3. The Soul Lowlands: agreed, a factory built like a cathedral, all of stained glass.**
+- The owner liked stained glass but asked for a contrast: the glass is used for something it has no business being used for. Much of this music came off a production line in a car town, so the land is an assembly plant made entirely of stained glass.
+- Conveyor belts of glass tiles carry you through it (the land's twist: you can ride the line); presses come down in coloured light; car bodies move overhead as glowing glass shells, half built; chimneys throw coloured beams where smoke should be; each artist has a station on the line.
+- Must read by brightness and by the dark lead lines between panes, not by hue (the owner is colourblind): pale glass against deep glass, lit from inside, set at dusk so the glow carries it.
+- Not chosen: a shattered window mended with seams of gold; a stained-glass greenhouse taken over by real plants; a patchwork quilt; a music box.
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
