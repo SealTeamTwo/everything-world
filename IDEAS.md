@@ -47,6 +47,13 @@ What he asked for in a theme: a **contrasting** one. More of the land's own lege
 - Something to explore and slow down in: the inside of the pyramid, with chambers and a beam of light you turn mirrors to send onward (the tomb puzzle and the mirror ball are the same trick).
 - Ideas offered and not taken as they were: a lost temple of the mirror ball (the nearest, and where this came from), an ice age, a beehive.
 
+**5. The Neo Soul Quarter: agreed, keep it as it is (one of his favourites, with its giant potted plants) and put a sleeping giant under it.**
+- The feeling stays: candlelit courtyards on a slow evening. The twist must be quiet and must not be "more of the same".
+- The whole quarter is built on the shell of a vast sleeping creature (a tortoise the size of the island). The plants are so big because they grow out of it. The ground rises and falls a hand's width with its breathing; candle flames lean with each breath; past the last courtyard the paving gives way to huge plates of shell and a great closed eyelid; residents talk quietly and one tells you why.
+- The land rewards staying still, and the sleeper is what makes that clear: stop, and after a few seconds a soft ring of light spreads from you, fireflies come, flowers open, the breathing deepens. The first time, one line: "Stay a while." If everyone in the quarter stays still long enough, the eye opens a little, looks, and closes.
+- The owner's condition: the rule has to be clear to the player.
+- Not chosen: tending the plants with a watering can; carrying a flame to light the candles.
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
