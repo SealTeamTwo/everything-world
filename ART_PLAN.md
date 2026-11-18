@@ -596,20 +596,20 @@ Hip-hop, R&B and lo-fi beats.
 
 *hip hop, rap, trap, grime, neo soul* · 57 songs · energy 0.66, acoustic 0.20, mood 0.53 · top artists: Kendrick Lamar, Logic, Black Eyed Peas, Childish Gambino, Kanye West
 
-- **Terrain:** Dense city blocks on mesa tops, linked by bridges across the gaps.
+- **Terrain:** Dense city blocks on mesa tops, on the moon: grey dust, craters, a black sky with the Earth overhead.
 - **Colours:** `#7D7D7D concrete`, `#E3B341 gold`, `#3C2C5E night purple`, `#9E3B2E red brick`
 - **Landmark:** A tower with a rooftop stage and a giant boombox on top.
-- **Props:** Graffiti, sneakers hanging on wires, fire hydrants, basketball courts, lowriders.
-- **Light and mood:** Dusk into city night.
+- **Props:** Graffiti, sneakers hanging on wires, fire hydrants, basketball in low gravity, drifting laundry, a stiff flag, lowriders.
+- **Light and mood:** Hard white sun and sharp shadows under a black, starry sky.
 
 ### 25. Boom Bap Harbour
 
 *hip hop, east coast hip hop, rap, old school hip hop, gangster rap* · 24 songs · energy 0.68, acoustic 0.15, mood 0.65 · top artists: Wu-Tang Clan, Outkast, JAŸ-Z, The Notorious B.I.G., A Tribe Called Quest
 
-- **Terrain:** Brownstone streets running down to a sunny harbour beach.
+- **Terrain:** Brownstone streets running down to a sunny harbour beach, under a mountain stacked with brick housing blocks like a monastery.
 - **Colours:** `#7A4B33 brownstone`, `#E3B341 gold`, `#2F8F4A reggae green`, `#C8372D reggae red`
-- **Landmark:** An elevated train line over a block-party stage, with a beach sound system below.
-- **Props:** Boomboxes, turntables, stoops, sound-system speaker stacks, palm trees.
+- **Landmark:** A brick hall under three tiers of roof on the mountain's summit; below it an elevated train line over a block party.
+- **Props:** Boomboxes, stoops, fire escapes like temple stairs, pagoda water towers, a speaker-cone gong, junks with patched sails.
 - **Light and mood:** Summer afternoon.
 
 ### 37. The Lo-Fi Hills

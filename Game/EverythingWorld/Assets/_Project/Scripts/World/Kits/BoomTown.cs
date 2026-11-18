@@ -18,7 +18,7 @@ namespace EverythingWorld.World
         static readonly string[] TownTalk =
         {
             "Hot enough for you? Hydrant's open under the El. Go stand in it.", "Party's been going since noon. Noon which day, I couldn't tell you.", "Every stoop on this block has a story and somebody on it who'll tell you the wrong version.",
-            "Train comes over every minute. You stop hearing it. Then you can't sleep anywhere else.", "Harbour's at the bottom. Ferry's the orange one. It goes to Shaolin.",
+            "Train comes over every minute. You stop hearing it. Then you can't sleep anywhere else.", "Harbour's at the bottom. Ferry's the orange one. It goes to Shaolin.", "Up the stair behind you is the mountain. The old heads live at the top. Take water.", "They say it's thirty-six steps to the summit. Whoever counted was being poetic.",
         };
 
         void TownStart(LandContext ctx)

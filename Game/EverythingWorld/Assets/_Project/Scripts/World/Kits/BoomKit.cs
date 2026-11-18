@@ -4,7 +4,9 @@ using static EverythingWorld.World.PlaceTools;
 
 namespace EverythingWorld.World
 {
-    /// Boom Bap Harbour (WORLD_GUIDE.md): the Boroughs' one sunny island, on a hot summer afternoon. You arrive at the
+    /// Boom Bap Harbour (WORLD_GUIDE.md): a mountain monastery built of brick housing blocks (BoomTemple.cs: a
+    /// mountain behind where you arrive, a stair street up it, blocks stacked on its side, the Hall on the summit,
+    /// junks in the harbour). Below the mountain it is what it was: the Boroughs' one sunny island, on a hot summer afternoon. You arrive at the
     /// top of the Block, a street of brownstones with stoops, and it runs downhill to the harbour. Half way down, an
     /// elevated train line crosses on rusted green iron legs, the train rumbling over every minute, and under it the
     /// street is shut for a block party: a DJ on a flatbed, speaker stacks, a hydrant spraying, bunting, an ice-cream
@@ -89,6 +91,7 @@ namespace EverythingWorld.World
             if (best == float.MaxValue) { D2 = new Vector2(1, 0); roadL = 60f; while (roadL < 300f && Inside(heart2 + D2 * (roadL + 10f), 30f)) roadL += 10f; }
             S2 = new Vector2(-D2.y, D2.x); beach2 = heart2 + D2 * (roadL + 14f);
             elL = 30f; while (elL < 110f && Inside(P2(ElOff, elL + 10f), 22f) && Inside(P2(ElOff, -(elL + 10f)), 22f)) elL += 10f;
+            RaiseMountain(data, index);   // (behind the top of the Block, before anything is placed or levelled on it)
             plazaY = Mathf.Max(data.HeightAt(heart2.x, heart2.y), waterY + 6f);
 
             var keep = new List<string>();
@@ -116,6 +119,7 @@ namespace EverythingWorld.World
                 a.r = Mathf.Max(a.r, Foot(a) + 6f);
                 Level(data, index, new Vector2(a.x, a.z), Foot(a) + 1f, Foot(a) + 10f, Mathf.Max(data.HeightAt(a.x, a.z), waterY + 2.6f));
             }
+            LevelMountain(data, index);
         }
 
         void Level(IslandWorldData data, int index, Vector2 c, float flat, float blend, float level)
@@ -152,7 +156,9 @@ namespace EverythingWorld.World
             TheEl(ctx, mk, solid);
             BlockParty(ctx, mk, solid);
             Harbour(ctx, mk, solid);
+            Temple(ctx, mk, solid);
             Paths(ctx, mk, solid);
+            MountainWalls(ctx, mk);
             Brownstones(ctx, mk, solid);
             Wilds(ctx, mk, solid);
             mk.Build("Boom Bap Harbour", ctx.Root, false);
