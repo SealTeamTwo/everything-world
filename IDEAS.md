@@ -75,6 +75,13 @@ What he asked for in a theme: a **contrasting** one. More of the land's own lege
   5. **Things are the wrong size:** doors of every height, a stool a metre tall beside one like a thimble, a bus as big as a house and one that would fit in a shoebox.
 - Not chosen: a moment on a paused videotape; a night train that never arrives.
 
+**9. The Hip-Hop Boroughs: agreed, the Boroughs on the moon, with three conditions from the owner.**
+- The same brownstones, stoops, corner shops and courts, built in craters under a black sky with the Earth huge overhead. Low gravity: long slow strides, jumps several times your height, laundry floating on its lines, hydrants throwing slow arcs. Basketball in low gravity.
+- **Keep the urban feel:** it is a city first, on the moon second (streets, shopfronts, street lights, traffic of people), not a moon base.
+- **Stay distinct from Boom Bap Harbour:** that one is warm brick stacked up a mountain in summer daylight with a harbour of junks; this one is a wide, lit city on grey ground under a black sky.
+- **A way down:** floating must never take control away. The player needs a way to descend quickly whenever they want (hold a key to drop fast), so they feel as much in control as anywhere else. (This is a rule for any floaty movement in the game, not only here.)
+- Not chosen: a frontier town on the mesa; a playground at giant scale.
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
