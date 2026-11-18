@@ -82,6 +82,14 @@ What he asked for in a theme: a **contrasting** one. More of the land's own lege
 - **A way down:** floating must never take control away. The player needs a way to descend quickly whenever they want (hold a key to drop fast), so they feel as much in control as anywhere else. (This is a rule for any floaty movement in the game, not only here.)
 - Not chosen: a frontier town on the mesa; a playground at giant scale.
 
+**10. The Roots Bay: agreed, a tree of life over a Caribbean island town (the end of the western run).**
+- Keep what play-testing showed works: the feeling of being on a Caribbean island, the town, the yard, the bright morning after rain.
+- The contrast is the tree: one colossal tree of life stands in the bay, its trunk going up into the clouds, and its roots arch over and through the island town as bridges, roads and shelter. Seen from every other island on that side. Roots run everywhere, so paths stay open.
+- The owner's words: "tree of life can be a really good contrasting element from island town".
+- Not chosen: a sunken pirate port in clear shallows; a town made entirely of boats.
+
+**All ten are now planned (2026-11-18). Nothing is built.** The owner sees the work going north in this order and finishing at the Roots Bay, then east for the big land reworks. Lands he loves as they are and that only get a twist added: the Funk Tropics, the Neo Soul Quarter, the Roots Bay (the town kept, the tree added), Discotopia (what is there kept, Egypt added).
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
