@@ -31,6 +31,11 @@ What he asked for in a theme: a **contrasting** one. More of the land's own lege
 - A card reader sits at the crossroads; a card is turned with each song (the same for everyone) and the land takes it on (the Moon swells, the Tower brings a storm, the Star shooting stars, the Sun a false dawn, Death fog and stillness, the Devil stands and makes an offer).
 - Kept from earlier in the talk: the roads loop back to the crossroads without it being obvious (you return from a different side, through a place, to a crossroads that looks changed; one thing, a crooked lamp post, never changes), and the deal as the secret at the centre (take it and you carry a mark friends can see).
 
+**2. The Funk Tropics: agreed, keep the land exactly as it is and give the spaceship a job.**
+- The owner loves it as it stands (the neon jungle, the ship): no re-theme. It only needs a twist in what you do there.
+- The ship's beam sweeps slowly across the jungle and lifts whatever it passes over: leaves, fruit, a startled resident, and you. You rise through the canopy into the ship (a glass floor), ride round over the whole land looking down at the lights, and are set down somewhere you did not choose. Step in on purpose and it is how you get around; get caught and it is the sidetrack.
+- Not chosen, could be added later: a second jungle up in the canopy with leaves that throw you on the one; flowers that pass a pattern of light across the land for you to chase.
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
