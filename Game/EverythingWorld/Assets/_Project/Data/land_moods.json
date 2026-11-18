@@ -91,7 +91,7 @@
    "sunPitch": 48, "sunYaw": 320, "sunIntensity": 0.7, "sunColor": "#C8B8FF",
    "skyLight": "#8E78D8", "horizonLight": "#B8608E", "groundLight": "#5A4A78",
    "fogColor": "#16122E", "fogStart": 200, "fogEnd": 2400, "stars": 0.8, "sunShadows": false, "dailyWeather": false, "bloom": 1.4,
-   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#533359", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.25, "grade": 0.7
+   "weather": "", "weatherAmount": 0, "heightFog": 1, "heightFogColor": "#05040C", "heightFogBase": 18, "heightFogFalloff": 0.12, "heightFogDensity": 0.045, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Roots Bay",

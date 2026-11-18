@@ -5,72 +5,33 @@ using static EverythingWorld.World.PlaceTools;
 
 namespace EverythingWorld.World
 {
-    /// The Velvet Rooftops' hole (part of VelvetKit): a first step toward the owner's floating city, built on ground
-    /// that was empty so that nothing already there has moved.
-    /// - The Hole: a round shaft eighty metres across, its wall lined with rings of lit windows going down into the
-    ///   dark like the inside of a tower. Water runs off the rim into it. There is no bottom to see.
+    /// The Velvet Rooftops' Well (part of VelvetKit; the city round it is VelvetTowers.cs): one great round tower
+    /// whose inside is a shaft.
+    /// - Its wall is lined with rings of lit windows going down into the dark like the inside of a tower. Water runs
+    ///   off the rim into it. There is no bottom to see.
     /// - Towers rise out of it, and on each roof a different kind of late night: a cinema showing nothing, a garden,
     ///   a line of washing with one light on, a helipad, a party that ended an hour ago, a bar that is closing, a
     ///   mattress under a water tower. Walkways of lit glass run from the rim to the roofs and from roof to roof,
     ///   more than one way, up and down.
-    /// - Jump in. You fall past the windows into the dark, come out of the night sky over the city, and land in the
-    ///   pool on the roof where you arrived (VelvetFall): the frightening thing is the best ride and the way home.
-    /// - Neon towers stand inland now as well as out in the sea.
-    /// (Not done here: moving every artist onto a real tower's roof. That needs ground an artist's place can stand on
-    /// that is not the island's own, and is noted in IDEAS.md.)
+    /// - Jump in, here or anywhere in the city. You fall past the windows into the dark, come out of the night sky
+    ///   and land in the pool on the roof where you arrived (VelvetFall).
     public partial class VelvetKit
     {
         Vector2 hole2; bool hasHole; float rimY; const float HoleR = 84f;
 
-        /// Where the Hole can be dug: near, clear of every artist, the straight way to it from the Pool crossing
-        /// nobody's place. Its rim is made level and its inside dropped to just above the sea. (End of ShapeGround.)
-        void SiteHole(IslandWorldData data, int index)
-        {
-            var isl = data.layout.islands[index]; hasHole = false; var best = float.MaxValue;
-            bool Land(Vector2 p) => data.IslandAt(p.x, p.y) == isl;
-            int noLand = 0, nearCoast = 0, nearArtist = 0, wayBlocked = 0;
-            for (var ang = 0f; ang < 360f; ang += 6f) for (var dist = 150f; dist <= 560f; dist += 12f)
-            {
-                var d = new Vector2(Mathf.Cos(ang * Mathf.Deg2Rad), Mathf.Sin(ang * Mathf.Deg2Rad)); var p = heart2 + d * dist; if (!Land(p)) { noLand++; continue; }
-                var ok = true; for (var k = 0; k < 16 && ok; k++) { var a = k * Mathf.PI / 8f; if (!Land(p + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * (HoleR + 30f))) ok = false; }
-                if (!ok) { nearCoast++; continue; }
-                foreach (var a in data.layout.artists)
-                {
-                    if (a.sceneId != isl.sceneId) continue; var ap = new Vector2(a.x, a.z);
-                    if (Vector2.Distance(ap, p) < a.r + HoleR + 18f) { ok = false; nearArtist++; break; }
-                    var t = Mathf.Clamp(Vector2.Dot(ap - heart2, d), 26f, dist); if ((heart2 + d * t - ap).magnitude < a.r + 4f) { ok = false; wayBlocked++; break; }
-                }
-                if (ok && dist < best) { best = dist; hole2 = p; hasHole = true; }
-            }
-            if (!hasHole) { Debug.Log($"The Velvet Rooftops: no site for the Hole ({noLand} off the land, {nearCoast} too near the coast, {nearArtist} too near an artist, {wayBlocked} with the way to it blocked)"); return; }
-            var sum = 0f; for (var k = 0; k < 16; k++) { var a = k * Mathf.PI / 8f; sum += data.HeightAt(hole2.x + Mathf.Cos(a) * (HoleR + 16f), hole2.y + Mathf.Sin(a) * (HoleR + 16f)); }
-            rimY = Mathf.Max(sum / 16f + 12f, waterY + 32f);   // (the rim stands up a little from the roofs round it, so the shaft has some depth before the dark)
-            Level(data, index, hole2, HoleR + 14f, HoleR + 30f, rimY);
-            for (var r = 0; r < data.Nz; r++)
-            {
-                var z = data.layout.depth - r * data.Step; if (Mathf.Abs(z - hole2.y) > HoleR + 2f) continue;
-                for (var col = 0; col < data.Nx; col++) { var x = col * data.Step; var i = r * data.Nx + col; if (data.islandIds[i] != index) continue; if (Vector2.Distance(new Vector2(x, z), hole2) < HoleR + 1f) data.heights[i] = waterY + 1.2f; /* a little wider than the shaft's wall, so the dug slope is all behind it, under the deck */ }
-            }
-        }
-
         void Hole(LandContext ctx, MeshKit mk, MeshKit solid)
         {
             var up = Vector3.up; var rng = new System.Random(303);
-            InlandTowers(ctx, mk, rng);
             if (!hasHole) { Debug.Log("The Velvet Rooftops: no room was found for the Hole"); return; }
             var hc = new Vector3(hole2.x, rimY, hole2.y); var c0 = ctx.OnGround(center.x, center.z); var toHole = FaceTo(c0, hc); var dist = Vector3.Distance(new Vector3(c0.x, 0, c0.z), new Vector3(hc.x, 0, hc.z));
             Mark(hc, HoleR + 14f);
-            // ---- the way there from the Pool: a walk of lit glass, straight
-            var pts = new List<Vector3>(); for (var d = 23f; d <= dist - HoleR - 9f; d += 2f) pts.Add(ctx.OnGround(c0.x + toHole.x * d, c0.z + toHole.z * d));
-            if (pts.Count > 1) { Strip(mk, pts, dark, PathW + .9f, .08f, ctx); Strip(mk, pts, glassWalk, PathW, .15f, ctx); foreach (var p in pts) Remember(p, 7); for (var i = 5; i < pts.Count; i += 12) { var lp = pts[i] + Vector3.Cross(up, toHole) * (PathW / 2f + 1.2f); Lamp(ctx, mk, ctx.OnGround(lp.x, lp.z), true); } }
-
             // ---- the rim: a deck all the way round, a line of light at the edge; and the shaft's wall, ringed with lit windows
             const int Seg = 56; Vector3 Ring(float r, int k, float y) { var a = k * Mathf.PI * 2f / Seg; return new Vector3(hc.x + Mathf.Cos(a) * r, y, hc.z + Mathf.Sin(a) * r); }
             var floorY = waterY + 1.2f; var wins = new[] { windowWarm, windowCool, windowRose, windowWarm };
             for (var k = 0; k < Seg; k++)
             {
-                mk.Quad(deckM, Ring(HoleR - 7.6f, k, rimY + .16f), Ring(HoleR - 7.6f, k + 1, rimY + .16f), Ring(HoleR + 12f, k + 1, rimY + .16f), Ring(HoleR + 12f, k, rimY + .16f), hc - up * 30f);
-                solid.Quad(deckM, Ring(HoleR - 7.6f, k, rimY + .1f), Ring(HoleR - 7.6f, k + 1, rimY + .1f), Ring(HoleR + 12f, k + 1, rimY + .1f), Ring(HoleR + 12f, k, rimY + .1f), hc - up * 30f);   // (the deck covers the dug edge: this is what you stand on there)
+                mk.Quad(deckM, Ring(HoleR - 7.6f, k, rimY + .16f), Ring(HoleR - 7.6f, k + 1, rimY + .16f), Ring(WellOut + .2f, k + 1, rimY + .16f), Ring(WellOut + .2f, k, rimY + .16f), hc - up * 30f);
+                solid.Quad(deckM, Ring(HoleR - 7.6f, k, rimY + .1f), Ring(HoleR - 7.6f, k + 1, rimY + .1f), Ring(WellOut + .2f, k + 1, rimY + .1f), Ring(WellOut + .2f, k, rimY + .1f), hc - up * 30f);   // (the deck covers the dug edge: this is what you stand on there)
                 var e0 = Ring(HoleR - 7.6f, k, rimY + .22f); var e1 = Ring(HoleR - 7.6f, k + 1, rimY + .22f); mk.Prism(neonM[k / 7 % 5], e0, e1 - e0, .09f, (e1 - e0).magnitude + .05f, 4);
                 // the wall: facing inward, so the point it is turned away from is outside it
                 var outside = Ring(HoleR + 40f, k, rimY - 20f);
@@ -79,6 +40,10 @@ namespace EverythingWorld.World
                 if (k % 8 == 0) Remember(Ring(HoleR + 3f, k, rimY + .2f), 7);
             }
             for (var k = 0; k < Seg; k += 7) { var lp = Ring(HoleR + 11f, k, rimY + .16f); Lamp(ctx, mk, lp, k % 14 == 0); }
+            // the Well's outside: a great round tower like the others, down into the dark, a line of light round its top
+            mk.Prism(dark, new Vector3(hc.x, floorY - 1f, hc.z), up, WellOut, rimY - floorY + .7f, Seg, 1f, 0f, false);
+            for (var y = rimY - 4.5f; y > floorY + 3f; y -= 5f) if ((int)(y / 5f) % 4 != 0) mk.Prism(wins[(int)(y / 5f) & 3], new Vector3(hc.x, y, hc.z), up, WellOut + .25f, 1.5f, Seg, 1f, 0f, false);
+            for (var k = 0; k < Seg; k++) { var e0 = Ring(WellOut, k, rimY + .2f); var e1 = Ring(WellOut, k + 1, rimY + .2f); mk.Prism(neonM[(k / 7 + 2) % 5], e0, e1 - e0, .1f, (e1 - e0).magnitude + .05f, 4); }
             // ---- water off the rim: six little basins, each spilling a sheet down the wall
             var fall = new Material(WorldMaterials.Glow(new Color(.5f, .9f, 1f), .7f)) { name = "Velvet falls" };
             for (var k = 4; k < Seg; k += 9)
@@ -161,31 +126,12 @@ namespace EverythingWorld.World
                     Interact.Seat(tlife.transform, P(1.6f, .32f, -1f), rot * Quaternion.Euler(0, 16f, 0) * Vector3.forward, "Lie down and look up").seatHeight = .26f; mk.Box(dark, P(2.9f, .14f, -.2f), new Vector3(.3f, .28f, .2f), rot); mk.Blob(lampM, P(2.9f, .36f, -.2f), Vector3.one * .05f, rng, 0f); break;
             }
         }
-
-        /// Neon towers standing inland among the roofs, not only out in the sea.
-        void InlandTowers(LandContext ctx, MeshKit mk, System.Random rng)
-        {
-            var body = WorldMaterials.Solid(new Color(.07f, .07f, .12f)); var n = 0; const float cell = 74f;
-            for (var x = ctx.MinX; x < ctx.MaxX; x += cell)
-            for (var z = ctx.MinZ; z < ctx.MaxZ; z += cell)
-            {
-                float px = x + (float)rng.NextDouble() * cell, pz = z + (float)rng.NextDouble() * cell; var roll = rng.NextDouble(); var w = 13f + (float)rng.NextDouble() * 10f; var dp = 13f + (float)rng.NextDouble() * 10f; var h = 46f + (float)rng.NextDouble() * 80f; var yaw = (float)rng.NextDouble() * 90f;
-                if (roll > .46 || n >= 22) continue; if (!Open(ctx, px, pz, 15f) || !ctx.IsLand(px, pz, 22f)) continue;
-                if (hasHole && Vector2.Distance(new Vector2(px, pz), hole2) < HoleR + 34f) continue; if (Vector2.Distance(new Vector2(px, pz), heart2) < 60f) continue;
-                var g = ctx.OnGround(px, pz); var (lo, _) = Under(ctx, g, 12f); var b = new Vector3(g.x, lo, g.z); var rot = Quaternion.Euler(0, yaw, 0);
-                mk.Box(body, b + Vector3.up * (h / 2f - 2f), new Vector3(w, h + 4f, dp), rot); var win = n % 3 == 0 ? windowCool : n % 4 == 1 ? windowRose : windowWarm;
-                for (var y = 5f; y < h - 2f; y += 5f) if (rng.NextDouble() < .66) mk.Box(win, b + Vector3.up * y, new Vector3(w + .3f, 1.4f, dp + .3f), rot);
-                mk.Box(neonM[n % 5], b + Vector3.up * (h + 2.1f), new Vector3(w + .4f, .3f, dp + .4f), rot); if (h > 90f) { mk.Prism(body, b + Vector3.up * (h + 2f), Vector3.up, .5f, 12f, 4, .2f); mk.Blob(beaconM, b + Vector3.up * (h + 14f), Vector3.one * .9f, rng, 0f); }
-                BoxCol(ctx.Root, b + Vector3.up * (h / 2f), new Vector3(w, h, dp), rot); Mark(g, Mathf.Max(w, dp) * .75f); n++;
-            }
-            Debug.Log($"The Velvet Rooftops: {n} towers inland");
-        }
     }
 
     /// The Hole has no bottom: the dark that comes up it, and what happens to whoever jumps in.
     public class VelvetFall : MonoBehaviour
     {
-        public Vector3 center, landing, sayAt; public float radius, below; SimplePlayerController player; float last = -99f; int falls;
+        public Vector3 center, landing, sayAt; public float radius, below; public System.Func<Vector3, bool> where; SimplePlayerController player; float last = -99f; int falls;
 
         /// Layers of dark across the shaft, each hiding a little more, and under them nothing at all.
         public void Dark(Vector3 at, float r, float top, float bottom)
@@ -207,7 +153,7 @@ namespace EverythingWorld.World
         {
             if (player == null) player = FindAnyObjectByType<SimplePlayerController>();
             if (player == null || Time.time - last < 3f) return; var p = player.transform.position;
-            if (p.y > below) return; float dx = p.x - center.x, dz = p.z - center.z; if (dx * dx + dz * dz > radius * radius) return;
+            if (p.y > below) return; float dx = p.x - center.x, dz = p.z - center.z; if (dx * dx + dz * dz > radius * radius) return; if (where != null && !where(p)) return;
             // through the dark, and out of the sky over the pool
             last = Time.time; player.Warp(landing);
             if (falls++ < 2) PlaceTools.Say(transform, sayAt, "The dark lets go of you. The whole city is underneath, lit, and the pool is coming up.", 6f);

@@ -4,7 +4,8 @@ using static EverythingWorld.World.PlaceTools;
 
 namespace EverythingWorld.World
 {
-    /// The Velvet Rooftops (WORLD_GUIDE.md): a drowned city, late at night. The island is the tops of towers standing
+    /// The Velvet Rooftops (WORLD_GUIDE.md): a city standing in a hole with no bottom, late at night: every artist's
+    /// place is a tower's roof, joined by glass (VelvetTowers.cs, VelvetHole.cs). As first written: a drowned city, late at night. The island is the tops of towers standing
     /// out of a dark, still sea; you walk from roof to roof over lit glass bridges, and all round more towers rise out
     /// of the water with their windows lit. You arrive beside the Pool, glowing turquoise on the tallest roof, under a
     /// tall VELVET sign: loungers, a bar, palms in pots. Out on the roofs: water towers, skylights glowing from below,
@@ -59,8 +60,9 @@ namespace EverythingWorld.World
         public override bool Ground(float height, float slope, float patch, out Color color)
         {
             // roofing: blue-black tar with patches of pale gravel
-            if (slope > 26f) color = Color.Lerp(new Color(.1f, .1f, .16f), new Color(.14f, .13f, .2f), patch);
-            else color = patch > .6f ? Color.Lerp(new Color(.26f, .26f, .34f), new Color(.3f, .29f, .38f), patch) : Color.Lerp(new Color(.15f, .15f, .23f), new Color(.2f, .19f, .28f), Mathf.SmoothStep(0f, 1f, patch / .6f));
+            if (height < 30f) color = new Color(.012f, .012f, .03f);   /* the floor of the hole, which nobody is meant to see */
+            else if (slope > 26f) color = Color.Lerp(new Color(.1f, .1f, .16f), new Color(.14f, .13f, .2f), patch);
+            else color = Color.Lerp(new Color(.33f, .25f, .29f), new Color(.38f, .28f, .32f), patch);   /* a roof: the same warm dusk colour as the deck round it */
             color.a = 1f;
             return true;
         }
@@ -70,28 +72,7 @@ namespace EverythingWorld.World
         Vector3 Wp(float u, float r) => center + U * u + R * r;
         Vector3 G(LandContext ctx, float u, float r) { var p = Wp(u, r); return ctx.OnGround(p.x, p.z); }
 
-        // ---------------------------------------------------------------- shaping the ground
-        public override void ShapeGround(IslandWorldData data, int index)
-        {
-            var isl = data.layout.islands[index]; heart2 = new Vector2(isl.labelX, isl.labelZ); waterY = data.layout.waterLevel;
-            bool Inside(Vector2 p, float m) { if (data.IslandAt(p.x, p.y) != isl) return false; for (var k = 0; k < 12; k++) { var a = k * Mathf.PI / 6f; if (data.IslandAt(p.x + Mathf.Cos(a) * m, p.y + Mathf.Sin(a) * m) != isl) return false; } return true; }
-            plazaY = Mathf.Max(data.HeightAt(heart2.x, heart2.y), waterY + 6f);
-            var keep = new List<string>();
-            void Put(string name, float u, float rr, float room) { var p = P2(u, rr); if (!Inside(p, room)) return; foreach (var a in data.layout.artists) if (a.sceneId == isl.sceneId && a.name == name) { a.x = p.x; a.z = p.y; keep.Add(name); } }
-            // the four big roofs round the Pool; the Punjabi terrace together, east
-            Put("Rihanna", 52f, 30f, 28f); Put("Frank Ocean", -52f, 28f, 28f); Put("The Weeknd", 16f, -58f, 26f); Put("SZA", -44f, -48f, 26f);
-            Put("Diljit Dosanjh", 6f, 98f, 24f); Put("Karan Aujla", 44f, 118f, 22f); Put("Prabh Singh", -34f, 120f, 22f);
-            ArtistPlacement.Spread(data, index, 54f, heart2, 44f, 42f, new List<Vector3>(), keep, Land, 330f);
-            Level(data, index, heart2, 24f, 42f, plazaY);
-            foreach (var a in data.layout.artists)
-            {
-                if (a.sceneId != isl.sceneId) continue;
-                a.r = Mathf.Max(a.r, Foot(a) + 6f);
-                Level(data, index, new Vector2(a.x, a.z), Foot(a) + 1f, Foot(a) + 10f, Mathf.Max(data.HeightAt(a.x, a.z), waterY + 2.6f));
-            }
-            SiteHole(data, index);
-        }
-
+        // ---------------------------------------------------------------- shaping the ground (ShapeGround is in VelvetTowers.cs)
         void Level(IslandWorldData data, int index, Vector2 c, float flat, float blend, float level)
         {
             for (var r = 0; r < data.Nz; r++)
@@ -122,10 +103,15 @@ namespace EverythingWorld.World
             Remember(ctx.OnGround(center.x, center.z), 0);
             TownStart(ctx);
             PoolRoof(ctx, mk, solid);
-            Paths(ctx, mk, solid);
+            Towers(ctx, mk, solid);
+            Walkways(ctx, mk, solid);
             Hole(ctx, mk, solid);
+            Landings(ctx, mk, solid);
+            RoofThings(ctx, mk, solid);
+            DarkTowers(ctx, mk, new System.Random(303));
             Wilds(ctx, mk, solid);
             Skyline(ctx, mk);
+            TheDark(ctx);
             mk.Build("The Velvet Rooftops", ctx.Root, false);
             solid.BuildCollider("The Velvet Rooftops walls", ctx.Root);
         }
@@ -163,7 +149,7 @@ namespace EverythingWorld.World
         }
 
         bool Open(LandContext ctx, float x, float z, float pad) =>
-            ctx.IsLand(x, z, 5f) && !InFootprint(ctx, x, z, pad) && !NearPath(x, z, pad + 2f) && !InNoGrass(x, z, pad);
+            ctx.IsLand(x, z, 5f) && OnRoofTop(x, z, 1f) && !InFootprint(ctx, x, z, pad) && !NearPath(x, z, pad + 2f) && !InNoGrass(x, z, pad);
 
         void Strip(MeshKit mk, List<Vector3> pts, Material m, float w, float lift, LandContext ground)
         {
@@ -216,43 +202,6 @@ namespace EverythingWorld.World
             var rot = Quaternion.LookRotation(face); var side = rot * Vector3.right; mk.Box(dark, c - face * .04f, new Vector3(w, h, .06f), rot); mk.Box(neonM[colour % 5], c - Vector3.up * (h / 2f - .06f) + face * .01f, new Vector3(w - .2f, .04f, .03f), rot); mk.Box(neonM[colour % 5], c + Vector3.up * (h / 2f - .06f) + face * .01f, new Vector3(w - .2f, .04f, .03f), rot);
             ArtistBits.Label(labels, text, c + face * .02f, face, size, Neons[colour % 5], TextAnchor.MiddleCenter); halos.Add(c + face * .6f, Mathf.Max(w, h) * .6f, Neons[colour % 5], .4f);
             if (posts) foreach (var e in new[] { -1f, 1f }) mk.Prism(steel, c + side * e * (w / 2f - .2f) - Vector3.up * (h / 2f + 2.2f) - face * .1f, Vector3.up, .05f, 2.2f, 4);
-        }
-
-        // ---------------------------------------------------------------- the sky bridges to the artists
-        void Paths(LandContext ctx, MeshKit mk, MeshKit solid)
-        {
-            var walk = 10; var n = 0;
-            void Lay(Vector3 join, Vector3 to, float stopShort, string artist)
-            {
-                var from = new Vector3(join.x, 0, join.z); to.y = 0;
-                var dir = to - from; var total = dir.magnitude; if (total < 2f) return; dir /= total;
-                if (artist != null) facing[artist] = -dir;
-                var side = Vector3.Cross(Vector3.up, dir); var end = total - stopShort; if (end < PathW) return;
-                var pts = new List<Vector3>();
-                for (var d = PathW / 2f + .1f; ; d += 1.5f)
-                {
-                    var dd = Mathf.Min(d, end); var q = from + dir * dd;
-                    if (!ctx.IsLand(q.x, q.z, 0f)) break;
-                    pts.Add(ctx.OnGround(q.x, q.z)); if (dd >= end) break;
-                }
-                if (pts.Count < 2) return;
-                // a walk of lit glass with a darker edge, and a row of small lights down each side
-                Strip(mk, pts, dark, PathW + .5f, .08f, ctx); Strip(mk, pts, glassWalk, PathW - .4f, .15f, ctx);
-                foreach (var p in pts) Remember(p, walk);
-                for (var i = 1; i < pts.Count; i += 3, n++) foreach (var e in new[] { -1f, 1f }) { var lp = pts[i] + side * e * (PathW / 2f + .1f); lp.y = ctx.Ground(lp.x, lp.z); mk.Prism(steel, lp, Vector3.up, .03f, .5f, 4); mk.Blob(neonM[(n / 6) % 5], lp + Vector3.up * .54f, Vector3.one * .06f, new System.Random(n), 0f); }
-                for (var i = 6; i < pts.Count; i += 14) { var lp = pts[i] + side * (PathW / 2f + 1f); if (InFootprint(ctx, lp.x, lp.z, 1f) || InNoGrass(lp.x, lp.z, 1f)) continue; Lamp(ctx, mk, ctx.OnGround(lp.x, lp.z), true); }
-                walk++;
-            }
-            var todo = new List<IslandWorldData.Artist>(ctx.Artists);
-            while (todo.Count > 0)
-            {
-                IslandWorldData.Artist next = null; Vector3 join = default; var best = float.MaxValue;
-                foreach (var a in todo)
-                    foreach (var (p, w) in walkPoints) { var d = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(a.x, a.z)) - Foot(a); if (d < best) { best = d; next = a; join = p; } }
-                if (next == null) break;
-                todo.Remove(next);
-                Lay(join, new Vector3(next.x, 0, next.z), Foot(next) * .8f, next.name);
-            }
         }
 
         // ---------------------------------------------------------------- out on the roofs

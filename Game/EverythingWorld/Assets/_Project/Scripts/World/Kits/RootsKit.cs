@@ -4,7 +4,9 @@ using static EverythingWorld.World.PlaceTools;
 
 namespace EverythingWorld.World
 {
-    /// The Roots Bay (WORLD_GUIDE.md): a bright morning after rain. The hills are wet and very green with mist still
+    /// The Roots Bay (WORLD_GUIDE.md): a town in the roots of the tree of life. There is no island: the tree stands in
+    /// the middle and the land is its roots, rising out of a warm shallow lagoon (RootsRoots.cs, RootsTree.cs). The
+    /// town that was here is still here, on the Great Root. As it was: a bright morning after rain. The hills are wet and very green with mist still
     /// lying in them, the red-earth road is full of puddles, and a rainbow stands over the bay. You arrive in the Yard,
     /// under a great spreading tree, among painted board houses. Bay Road runs from it down to the beach, shacks in
     /// red, gold, green and blue on either side, and at the bottom, on the sand, stands the Sound System: speaker
@@ -37,6 +39,7 @@ namespace EverythingWorld.World
             puddleM = WorldMaterials.Solid(new Color(.62f, .78f, .9f), .95f);
             coneM = new Material(WorldMaterials.Glow(Gold, .6f)) { name = "Roots speaker cones" }; fireM = new Material(WorldMaterials.Glow(new Color(1f, .55f, .12f), 1.8f)) { name = "Roots fires" };
             var bow = new[] { new Color(1f, .2f, .2f), new Color(1f, .6f, .1f), new Color(1f, .9f, .2f), new Color(.2f, .8f, .3f), new Color(.2f, .5f, 1f), new Color(.6f, .3f, .9f) };
+            barkGlow = WorldMaterials.Glow(new Color(.46f, .32f, .2f), .14f); barkDark = WorldMaterials.Glow(new Color(.32f, .22f, .15f), .1f);
             for (var i = 0; i < 6; i++) bowM[i] = new Material(WorldMaterials.Glow(bow[i], .55f)) { name = "Roots rainbow " + i };
         }
 
@@ -54,12 +57,20 @@ namespace EverythingWorld.World
             }
         }
 
-        public override bool Ground(float height, float slope, float patch, out Color color)
+        public override bool GroundAt(float x, float z, float height, float slope, float patch, out Color color)
         {
-            // wet, very green hills; red earth showing through; sand by the water
-            if (height < 3.2f) color = Color.Lerp(new Color(.92f, .84f, .64f), new Color(.86f, .76f, .56f), patch);
-            else if (slope > 28f) color = Color.Lerp(new Color(.56f, .3f, .2f), new Color(.64f, .36f, .22f), patch);
-            else color = patch < .2f ? Color.Lerp(new Color(.66f, .36f, .22f), new Color(.5f, .5f, .26f), patch / .2f) : Color.Lerp(new Color(.22f, .62f, .26f), new Color(.36f, .72f, .3f), Mathf.SmoothStep(0f, 1f, (patch - .2f) / .8f));
+            // the roots: bark on their sides, moss and red earth on their tops; pale sand under the lagoon and at the
+            // Great Root's end
+            var sand = Color.Lerp(new Color(.92f, .84f, .64f), new Color(.86f, .76f, .56f), patch);
+            if (height < 1.1f) color = sand;
+            else if (height < 3.2f && (new Vector2(x, z) - beach2).sqrMagnitude < 48f * 48f) color = sand;
+            else
+            {
+                // wood: darker down the sides, paler and worn on top, with moss lying on it in patches
+                var bark = slope > 20f ? Color.Lerp(new Color(.27f, .19f, .13f), new Color(.4f, .28f, .18f), patch) : Color.Lerp(new Color(.44f, .31f, .2f), new Color(.6f, .45f, .29f), patch);
+                var moss = Color.Lerp(new Color(.2f, .5f, .22f), new Color(.38f, .66f, .26f), patch);
+                color = slope < 16f && patch > .66f ? Color.Lerp(bark, moss, Mathf.Clamp01((patch - .66f) / .08f)) : bark;
+            }
             color.a = 1f;
             return true;
         }
@@ -69,47 +80,7 @@ namespace EverythingWorld.World
         Vector3 Wp(float d, float s) => center + D * d + S * s;
         Vector3 G(LandContext ctx, float d, float s) { var p = Wp(d, s); return ctx.OnGround(p.x, p.z); }
 
-        // ---------------------------------------------------------------- shaping the ground
-        public override void ShapeGround(IslandWorldData data, int index)
-        {
-            var isl = data.layout.islands[index]; heart2 = new Vector2(isl.labelX, isl.labelZ); waterY = data.layout.waterLevel;
-            bool Inside(Vector2 p, float m) { if (data.IslandAt(p.x, p.y) != isl) return false; for (var k = 0; k < 12; k++) { var a = k * Mathf.PI / 6f; if (data.IslandAt(p.x + Mathf.Cos(a) * m, p.y + Mathf.Sin(a) * m) != isl) return false; } return true; }
-            // Bay Road runs downhill to the nearest shore that is far enough away to hold a village
-            var best = float.MaxValue;
-            for (var k = 0; k < 8; k++)
-            {
-                var dir = new Vector2(Mathf.Sin(k * Mathf.PI / 4f), Mathf.Cos(k * Mathf.PI / 4f)); var len = 60f;
-                while (len < 340f && data.IslandAt(heart2.x + dir.x * (len + 34f), heart2.y + dir.y * (len + 34f)) == isl && data.HeightAt(heart2.x + dir.x * len, heart2.y + dir.y * len) > waterY + 3f) len += 6f;
-                if (len < 150f || len >= 340f) continue;
-                // prefer the bay to the north
-                var score = len - Mathf.Max(0f, dir.y) * 60f; if (score < best) { best = score; D2 = dir; roadL = len; }
-            }
-            if (best == float.MaxValue) { D2 = new Vector2(0, 1); roadL = 60f; while (roadL < 300f && Inside(heart2 + D2 * (roadL + 10f), 30f)) roadL += 10f; }
-            S2 = new Vector2(-D2.y, D2.x); beach2 = heart2 + D2 * (roadL + 12f);
-            plazaY = Mathf.Max(data.HeightAt(heart2.x, heart2.y), waterY + 6f);
-
-            var keep = new List<string>();
-            void Put(string name, float d, float s, float room) { var p = P2(d, s); if (!Inside(p, room)) return; foreach (var a in data.layout.artists) if (a.sceneId == isl.sceneId && a.name == name) { a.x = p.x; a.z = p.y; keep.Add(name); } }
-            // the Sound System on the beach; the dance hall and the grey street by the Yard
-            Put("Bob Marley & The Wailers", roadL - 12f, -38f, 24f); Put("Toots & The Maytals", -10f, 52f, 28f); Put("The Specials", -14f, -54f, 28f);
-            // down Bay Road, either side
-            Put("Jimmy Cliff", 60f, 38f, 24f); Put("Desmond Dekker & The Aces", 64f, -38f, 24f);
-            if (roadL > 170f) { Put("Peter Tosh", 120f, 40f, 24f); Put("Burning Spear", 122f, -40f, 24f); }
-            Put("Lee \"Scratch\" Perry", -70f, 6f, 24f);
-            var avoid = new List<Vector3> { new Vector3(beach2.x, 30f, beach2.y) };
-            for (var d = 0f; d <= roadL; d += 22f) avoid.Add(new Vector3(heart2.x + D2.x * d, 12f, heart2.y + D2.y * d));
-            ArtistPlacement.Spread(data, index, 56f, heart2, 44f, 42f, avoid, keep, Land, 330f);
-
-            Level(data, index, heart2, 22f, 40f, plazaY);
-            Level(data, index, beach2, 20f, 46f, waterY + 1.7f);
-            foreach (var a in data.layout.artists)
-            {
-                if (a.sceneId != isl.sceneId) continue;
-                a.r = Mathf.Max(a.r, Foot(a) + 6f);
-                Level(data, index, new Vector2(a.x, a.z), Foot(a) + 1f, Foot(a) + 10f, Mathf.Max(data.HeightAt(a.x, a.z), waterY + 2.6f));
-            }
-        }
-
+        // ---------------------------------------------------------------- shaping the ground (ShapeGround is in RootsRoots.cs)
         void Level(IslandWorldData data, int index, Vector2 c, float flat, float blend, float level)
         {
             for (var r = 0; r < data.Nz; r++)
@@ -139,13 +110,15 @@ namespace EverythingWorld.World
             var mk = new MeshKit(); var solid = new MeshKit();
             Remember(ctx.OnGround(center.x, center.z), 0);
             TownStart(ctx);
+            RootPaths(ctx, mk, solid);
             Yard(ctx, mk, solid);
             BayRoad(ctx, mk, solid);
             Beach(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Village(ctx, mk, solid);
-            Wilds(ctx, mk, solid);
             Tree(ctx, mk, solid);
+            RootTown(ctx, mk, solid);
+            Wilds(ctx, mk, solid);
             Rainbow(ctx, mk);
             mk.Build("The Roots Bay", ctx.Root, false);
             solid.BuildCollider("The Roots Bay walls", ctx.Root);
@@ -422,8 +395,8 @@ namespace EverythingWorld.World
             {
                 var px = x + ((float)rng.NextDouble() - .5f) * st; var pz = z + ((float)rng.NextDouble() - .5f) * st;
                 if (!ctx.IsLand(px, pz, 1f) || NearPath(px, pz, 4f) || InNoGrass(px, pz, 0f) || InFootprint(ctx, px, pz, -2f)) continue;
-                var gy = ctx.Ground(px, pz); if (gy < waterY + 3.4f) continue;
-                if (Mathf.PerlinNoise(px * .04f + 6f, pz * .04f + 3f) < .3f) continue;
+                var gy = ctx.Ground(px, pz); if (gy < waterY + 1.9f) continue;
+                if (Mathf.PerlinNoise(px * .04f + 6f, pz * .04f + 3f) < .6f) continue;   /* moss and fern in patches: the ground is wood */
                 var kind = WindMesh.Patch(px, pz, .014f, 51f);      // thick grass, goat turf or a patch in flower
                 var tone = WindMesh.Patch(px, pz, .026f, 52f);      // the patch's shade, deep blue-green to sunny
                 var r1 = (float)rng.NextDouble(); var r2 = (float)rng.NextDouble();

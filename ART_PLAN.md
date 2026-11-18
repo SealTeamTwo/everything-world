@@ -626,10 +626,10 @@ Hip-hop, R&B and lo-fi beats.
 
 *r&b, soul, hip hop, pop, ambient jazz* · 34 songs · energy 0.55, acoustic 0.27, mood 0.46 · top artists: Frank Ocean, The Weeknd, Rihanna, SZA, 070 Shake
 
-- **Terrain:** City rooftops at night, joined by sky bridges.
+- **Terrain:** A city standing in a hole with no bottom, at night: every roof the top of a tower, joined by walkways of glass.
 - **Colours:** `#A3162B deep red`, `#4B1C4F velvet purple`, `#E3B341 gold`, `#141B33 night blue`
-- **Landmark:** A rooftop pool lounge on top of a glowing tower.
-- **Props:** Lounge chairs, neon signs, sports cars, a city skyline.
+- **Landmark:** A rooftop pool lounge on the tallest tower; step off any roof and you fall through the dark and land in it.
+- **Props:** Lounge chairs, neon signs, sports cars, water towers, towers with lit windows going down into the dark.
 - **Light and mood:** Lush night.
 
 ### 60. The Neo Soul Quarter
@@ -646,10 +646,10 @@ Hip-hop, R&B and lo-fi beats.
 
 *reggae, roots reggae, ska, rocksteady, dancehall* · 20 songs · energy 0.61, acoustic 0.20, mood 0.77 · top artists: Bob Marley & The Wailers, The Specials, Toots & The Maytals, Baha Men, Burning Spear
 
-- **Terrain:** A sunny bay of palm-fringed beaches and green hills, with an island town grown up among the roots of a tree the size of a mountain.
-- **Colours:** `#2E8B57 hill green`, `#F2C14E sun yellow`, `#C0392B roots red`, `#1F6F8B bay blue`
-- **Landmark:** A tree of life standing in the bay, its trunk going up through the clouds; under it a hand-painted sound system on the beach, speaker boxes stacked as tall as a house.
-- **Props:** Painted shacks, hammocks, a ska dance hall, flags in red, gold and green; great roots arching over the town, hung with lanterns.
+- **Terrain:** No island: a tree the size of a mountain standing in a warm shallow lagoon, and a town built on its roots.
+- **Colours:** `#6B4A2E root brown`, `#F2C14E sun yellow`, `#C0392B roots red`, `#1F6F8B bay blue`
+- **Landmark:** The tree of life in the middle of the land, its trunk going up through the clouds; at the end of its greatest root a hand-painted sound system on the sand, speaker boxes stacked as tall as a house.
+- **Props:** Painted shacks, huts on stilts, plank bridges from root to root, hammocks, a ska dance hall, flags in red, gold and green; roots arching over the lagoon, hung with lanterns.
 - **Light and mood:** Easy and uplifting.
 
 ## The Isles of Story
