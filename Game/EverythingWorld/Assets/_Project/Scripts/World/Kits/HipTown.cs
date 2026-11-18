@@ -16,7 +16,7 @@ namespace EverythingWorld.World
         static readonly Color[] Bottoms = { new Color(.16f, .18f, .28f), new Color(.14f, .14f, .16f), new Color(.6f, .56f, .46f), new Color(.3f, .34f, .4f) };
         static readonly string[] TownTalk =
         {
-            "You made it up here! Everybody who's up here made it up here.", "Stage is at the end of Victory Avenue. You can't miss it. It's under the boombox.", "Golden hour's the only hour we've got. Nobody's complained.",
+            "You made it up here! Everybody who's up here made it up here.", "Stage is at the end of Victory Avenue. You can't miss it. It's under the boombox.", "That's the Earth up there. We don't go back much. The rent.", "Jump. Go on. Hold Ctrl when you want the ground back.", "You should see the ball hang at the court. Whole game's different up here.",
             "Hear that? That's the Tower. You feel it in the pavement first.", "Walk like the beat's yours. Up here it is.",
         };
 

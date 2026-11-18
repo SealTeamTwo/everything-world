@@ -34,11 +34,11 @@ namespace EverythingWorld.World
         {
             clouds = gameObject.AddComponent<CloudLayer>();
             clouds.center = center; clouds.count = 30; clouds.span = 2600f; clouds.key = "hiphop";
-            clouds.minHeight = 190f; clouds.maxHeight = 280f; clouds.size = 3.6f; clouds.speed = 2f; clouds.cover = .34f;
+            clouds.minHeight = 190f; clouds.maxHeight = 280f; clouds.size = 3.6f; clouds.speed = 2f; clouds.cover = 0f; clouds.count = 0;   // (no clouds on the moon)
             clouds.color = new Color(1f, .82f, .6f);
             Color E(Material m) => m != null ? m.GetColor("_EmissionColor") : Color.black;
             coneBase = E(cones); windowBase = E(windows); lampBase = E(lamps); stageBase = E(stage);
-            dust = Particles("Gold dust", 300, new Color(1f, .85f, .5f, .5f), .03f, .07f, true);
+            dust = Particles("Moon dust", 300, new Color(.9f, .9f, 1f, .4f), .03f, .07f, true);
             var dm = dust.main; dm.startLifetime = new ParticleSystem.MinMaxCurve(5f, 9f);
             dots = Particles("Confetti", 900, Color.white, .08f, .14f, false);
             var cm = dots.main; cm.startLifetime = new ParticleSystem.MinMaxCurve(5f, 8f);
@@ -104,7 +104,7 @@ namespace EverythingWorld.World
             if (windows != null) windows.SetColor("_EmissionColor", windowBase * (1f + night * .8f + alright * .4f));
             if (lamps != null) lamps.SetColor("_EmissionColor", lampBase * (1f + night * 1.2f));
 
-            var tint = new Color(1f, .92f, .76f); var amount = .04f;
+            var tint = Color.white; var amount = 0f;
             if (alright > 0f) { tint = Color.Lerp(tint, new Color(1f, .8f, .36f), alright); amount = Mathf.Lerp(amount, .34f, alright); }
             if (feeling > 0f) { tint = Color.Lerp(tint, Color.HSVToRGB(Mathf.Repeat(t * .08f, 1f), .5f, 1f), feeling); amount = Mathf.Lerp(amount, .3f, feeling); }
             if (ear > 0f) { tint = Color.Lerp(tint, new Color(1f, .6f, .75f), ear); amount = Mathf.Lerp(amount, .36f, ear); }
@@ -116,7 +116,7 @@ namespace EverythingWorld.World
             if (night > 0f) { tint = Color.Lerp(tint, new Color(.1f, .14f, .36f), night); amount = Mathf.Lerp(amount, .62f, night); }
             SkyDirector.SetSongTint(Land, tint, amount);
             var wind = clouds != null ? clouds.Wind : new Vector2(1, 0);
-            if (here) { Shader.SetGlobalFloat("_EW_Wind", .3f + .15f * energy + ear * .7f); Shader.SetGlobalVector("_EW_WindDir", new Vector4(wind.x, 0, wind.y, 0)); }
+            if (here) { Shader.SetGlobalFloat("_EW_Wind", .03f + ear * .7f); Shader.SetGlobalVector("_EW_WindDir", new Vector4(wind.x, 0, wind.y, 0)); }
 
             var cam = Camera.main; if (!here || cam == null) return; var cp = cam.transform.position;
             if (t >= nextDust)

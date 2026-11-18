@@ -40,6 +40,10 @@ namespace EverythingWorld.Player
         /// wall you are touching, and things in the land can throw you (Launch).
         public static bool Hyper;
         public const float HyperSpeed = 2.2f, HyperJump = 2.8f, HyperGravity = 1.9f;
+        /// A land can change how heavy you are and how high you jump while you are on it (the Hip-Hop Boroughs are on
+        /// the moon). With FastFall on, holding Ctrl or C in the air brings you down hard, so a floaty land never
+        /// takes control away: a rule for any floaty movement in the game.
+        public static float GravityScale = 1f, JumpScale = 1f; public static bool FastFall;
         /// True while something that has taken the body (Take) still lets you look around, like a rail you ride.
         public bool LookWhileControlled;
         Vector3 thrown;                 // sideways speed from a launch or a boost, fading out
@@ -145,7 +149,8 @@ namespace EverythingWorld.Player
 
             if (Flying) { Fly(keyboard, input); return; }
 
-            var hyper = Hyper; var g = hyper ? gravity * HyperGravity : gravity; var jumpH = hyper ? HyperJump : jumpHeight;
+            var hyper = Hyper; var g = (hyper ? gravity * HyperGravity : gravity) * GravityScale; var jumpH = (hyper ? HyperJump : jumpHeight) * JumpScale;
+            if (FastFall && !controller.isGrounded && (keyboard.leftCtrlKey.isPressed || keyboard.cKey.isPressed)) g = gravity * 3.2f;
             var speed = (keyboard.leftShiftKey.isPressed ? runSpeed : walkSpeed) * (hyper ? HyperSpeed : 1f);
             var move = (transform.right * input.x + transform.forward * input.y) * speed;
             // a throw fades quickly on the ground and slowly in the air, and pushing against it cancels it sooner

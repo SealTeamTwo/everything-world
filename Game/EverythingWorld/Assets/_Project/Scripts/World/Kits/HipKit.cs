@@ -32,7 +32,7 @@ namespace EverythingWorld.World
         {
             asphalt = WorldMaterials.Surface(new Color(.24f, .23f, .26f), Surface.Stone); concrete = WorldMaterials.Surface(Concrete, Surface.Stone); concreteDark = WorldMaterials.Surface(new Color(.42f, .41f, .42f), Surface.Stone); brickM = WorldMaterials.Surface(Brick, Surface.Stone);
             woodM = WorldMaterials.Surface(new Color(.44f, .3f, .2f), Surface.Wood); iron = WorldMaterials.Surface(new Color(.14f, .13f, .15f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.07f, .06f, .08f)); white = WorldMaterials.Solid(new Color(.95f, .93f, .88f));
-            goldM = WorldMaterials.Glow(new Color(1f, .7f, .12f), .22f); leafM = WorldMaterials.Surface(new Color(.36f, .5f, .22f), Surface.Foliage); leafGold = WorldMaterials.Glow(new Color(.95f, .7f, .2f), .2f); trunkM = WorldMaterials.Surface(new Color(.34f, .26f, .2f), Surface.Bark); darkGlass = WorldMaterials.Surface(new Color(.16f, .18f, .24f), Surface.Glass); redM = WorldMaterials.Surface(Red, Surface.Painted);
+            goldM = WorldMaterials.Glow(new Color(1f, .7f, .12f), .22f); leafM = WorldMaterials.Surface(new Color(.62f, .66f, .74f), Surface.Foliage); leafGold = WorldMaterials.Glow(new Color(.86f, .88f, .95f), .22f); /* (the street trees have gone silver on the moon) */ trunkM = WorldMaterials.Surface(new Color(.34f, .26f, .2f), Surface.Bark); darkGlass = WorldMaterials.Surface(new Color(.16f, .18f, .24f), Surface.Glass); redM = WorldMaterials.Surface(Red, Surface.Painted);
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .68f, .24f), .8f)) { name = "Hip-Hop windows" }; lampM = new Material(WorldMaterials.Glow(new Color(1f, .82f, .5f), 1.4f)) { name = "Hip-Hop lamps" };
             coneM = new Material(WorldMaterials.Glow(Gold, .9f)) { name = "Hip-Hop boombox cones" }; stageM = new Material(WorldMaterials.Glow(new Color(1f, .8f, .4f), 1.6f)) { name = "Hip-Hop stage lights" };
         }
@@ -54,9 +54,9 @@ namespace EverythingWorld.World
 
         public override bool Ground(float height, float slope, float patch, out Color color)
         {
-            // mesa rock on the slopes, dry gold scrub and dusty concrete on the tops
-            if (slope > 24f) color = Color.Lerp(new Color(.62f, .4f, .28f), new Color(.74f, .5f, .32f), patch);
-            else color = patch < .4f ? Color.Lerp(new Color(.6f, .56f, .5f), new Color(.68f, .6f, .46f), patch / .4f) : Color.Lerp(new Color(.72f, .62f, .38f), new Color(.6f, .62f, .36f), Mathf.SmoothStep(0f, 1f, (patch - .4f) / .6f));
+            // the moon: grey dust, paler in patches, darker rock on the slopes
+            if (slope > 24f) color = Color.Lerp(new Color(.34f, .34f, .37f), new Color(.44f, .44f, .46f), patch);
+            else color = patch < .4f ? Color.Lerp(new Color(.52f, .52f, .54f), new Color(.6f, .6f, .61f), patch / .4f) : Color.Lerp(new Color(.66f, .66f, .66f), new Color(.56f, .56f, .59f), Mathf.SmoothStep(0f, 1f, (patch - .4f) / .6f));
             color.a = 1f;
             return true;
         }
@@ -126,6 +126,7 @@ namespace EverythingWorld.World
             TheStage(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Blocks(ctx, mk, solid);
+            Moon(ctx, mk, solid);
             Wilds(ctx, mk, solid);
             mk.Build("The Hip-Hop Boroughs", ctx.Root, false);
             solid.BuildCollider("The Hip-Hop Boroughs walls", ctx.Root);
@@ -335,7 +336,7 @@ namespace EverythingWorld.World
         /// gold); every blade its own.
         void Verge(LandContext ctx)
         {
-            var mat = WindMesh.Material(.3f, .8f, new Color(.7f, .6f, .34f));
+            var mat = WindMesh.Material(.06f, .1f, new Color(.6f, .6f, .64f));   // (nothing stirs: there is no air to move it)
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1989);
             const float st = 2.8f;
             int scrub = 0, clumps = 0;
