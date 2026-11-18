@@ -234,6 +234,103 @@ namespace EverythingWorld.World
 
         public const float ChunkAbove = 200f, ChunkSize = 80f;
 
+        /// Draws this kit's hard edges into 'into' as thin lines of 'line' (the Delta Crossroads, where everything is
+        /// drawn in gold line like a printed card): every edge at least 'minLen' long where two faces meet at a real
+        /// corner, or where a face simply ends (the side of a road). Bevel skin is left out, so a bevelled box gives the
+        /// edges of its faces; lines that fall on top of one another are drawn once. 'skip' names materials to leave
+        /// plain (leaves, glows, the lines themselves).
+        public int InkEdges(MeshKit into, Material line, float minLen, float thickness, System.Predicate<Material> skip = null)
+        {
+            var edges = new Dictionary<(long, long), (Vector3 a, Vector3 b, Vector3 n, int count, bool hard)>();
+            long Q(Vector3 p) => ((long)Mathf.RoundToInt(p.x * 50f) & 0x1FFFFF) | (((long)Mathf.RoundToInt(p.y * 50f) & 0x1FFFFF) << 21) | (((long)Mathf.RoundToInt(p.z * 50f) & 0x1FFFFF) << 42);
+            foreach (var kv in tris)
+            {
+                if (kv.Key == line || (skip != null && skip(kv.Key))) continue;
+                var l = kv.Value;
+                for (var i = 0; i < l.Count; i += 3)
+                {
+                    if (skin != null && skin.Contains(l[i])) continue;
+                    Vector3 a = verts[l[i]], b = verts[l[i + 1]], c = verts[l[i + 2]]; var n = Vector3.Cross(b - a, c - a).normalized;
+                    for (var e = 0; e < 3; e++)
+                    {
+                        var p = e == 0 ? a : e == 1 ? b : c; var q = e == 0 ? b : e == 1 ? c : a;
+                        if ((p - q).sqrMagnitude < minLen * minLen) continue;
+                        long kp = Q(p), kq = Q(q); var key = kp < kq ? (kp, kq) : (kq, kp);
+                        if (edges.TryGetValue(key, out var had)) edges[key] = (had.a, had.b, had.n, had.count + 1, had.hard || Vector3.Dot(had.n, n) < .72f);
+                        else edges[key] = (p, q, n, 1, false);
+                    }
+                }
+            }
+            var drawn = new HashSet<(int, int, int)>(); var made = 0;
+            foreach (var kv in edges)
+            {
+                var e = kv.Value; if (e.count > 1 && !e.hard) continue;
+                var mid = (e.a + e.b) / 2f; var cell = (Mathf.RoundToInt(mid.x / .14f), Mathf.RoundToInt(mid.y / .14f), Mathf.RoundToInt(mid.z / .14f));
+                if (!drawn.Add(cell)) continue;
+                var len = (e.b - e.a).magnitude; var r = Mathf.Clamp(len * .012f, thickness, thickness * 1.8f);
+                into.Prism(line, e.a, e.b - e.a, r, len, 3, 1f, 0f, false); made++;
+            }
+            return made;
+        }
+
+        /// Turns every face of the chosen materials into stained glass (the Soul Lowlands): each face is cut into
+        /// irregular three-cornered panes no longer than 'size' on a side, and each pane is given one of 'panes' by
+        /// 'pick' (its middle and the way it faces; by default at random from where it is). The pane materials draw
+        /// the lead themselves: every pane's corners are given the texture corners (0,0), (1,0), (0,1), and
+        /// LeadTexture is dark along those three edges. Bevel skin stays as it was, a dark seam along every box edge.
+        public int StainedGlass(Material[] panes, float size, System.Predicate<Material> which, System.Func<Vector3, Vector3, int> pick = null)
+        {
+            var made = 0; var keys = new List<Material>(tris.Keys); var lists = new List<int>[panes.Length];
+            for (var i = 0; i < panes.Length; i++) if (!tris.TryGetValue(panes[i], out lists[i])) tris[panes[i]] = lists[i] = new List<int>();
+            static float Hash(Vector3 p) { var h = Mathf.Sin(p.x * 12.9898f + p.y * 78.233f + p.z * 37.719f) * 43758.5453f; return h - Mathf.Floor(h); }
+            void Cut(Vector3 a, Vector3 b, Vector3 c, int depth)
+            {
+                float ab = (b - a).sqrMagnitude, bc = (c - b).sqrMagnitude, ca = (a - c).sqrMagnitude; var longest = Mathf.Max(ab, Mathf.Max(bc, ca));
+                if (longest <= size * size || depth > 12)
+                {
+                    var mid = (a + b + c) / 3f; var n = Vector3.Cross(b - a, c - a).normalized;
+                    var k = pick != null ? pick(mid, n) : (int)(Hash(mid) * panes.Length); k = Mathf.Clamp(k, 0, panes.Length - 1); var l = lists[k];
+                    l.Add(verts.Count); verts.Add(a); uvs.Add(new Vector2(0, 0)); l.Add(verts.Count); verts.Add(b); uvs.Add(new Vector2(1, 0)); l.Add(verts.Count); verts.Add(c); uvs.Add(new Vector2(0, 1));
+                    if (cols != null) { cols.Add(Color.white); cols.Add(Color.white); cols.Add(Color.white); }
+                    made++; return;
+                }
+                // split the longest side a little off its middle (the same place whichever face is asked), keeping the winding
+                if (bc >= ab && bc >= ca) (a, b, c) = (b, c, a); else if (ca >= ab && ca >= bc) (a, b, c) = (c, a, b);
+                var m = Vector3.Lerp(a, b, .38f + .24f * Hash(a + b));
+                Cut(a, m, c, depth + 1); Cut(m, b, c, depth + 1);
+            }
+            foreach (var mat in keys)
+            {
+                if (System.Array.IndexOf(panes, mat) >= 0 || !which(mat)) continue;
+                var l = tris[mat]; var old = l.ToArray(); l.Clear();
+                for (var i = 0; i < old.Length; i += 3)
+                {
+                    if (skin != null && skin.Contains(old[i])) { l.Add(old[i]); l.Add(old[i + 1]); l.Add(old[i + 2]); continue; }
+                    Cut(verts[old[i]], verts[old[i + 1]], verts[old[i + 2]], 0);
+                }
+            }
+            lastSet = false;
+            return made;
+        }
+
+        static Texture2D leadTex;
+        /// The texture a stained-glass pane wears: bright in the middle, dark lead along its three edges.
+        public static Texture2D LeadTexture
+        {
+            get
+            {
+                if (leadTex != null) return leadTex;
+                const int S = 64; leadTex = new Texture2D(S, S, TextureFormat.RGBA32, true) { name = "Lead", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+                for (var y = 0; y < S; y++) for (var x = 0; x < S; x++)
+                {
+                    float u = (x + .5f) / S, v = (y + .5f) / S; var d = Mathf.Min(u, Mathf.Min(v, 1f - u - v));
+                    var g = d <= 0f ? 0f : Mathf.SmoothStep(.02f, .075f, d) * (.72f + .28f * Mathf.Clamp01(d / .28f));
+                    leadTex.SetPixel(x, y, new Color(g, g, g, 1f));
+                }
+                leadTex.Apply(true); return leadTex;
+            }
+        }
+
         /// Makes the mesh as one object, never split (for a mesh that is moved as a whole, like a cloud, or whose
         /// renderer the caller needs).
         public GameObject BuildSingle(string name, Transform parent, bool collider) => verts.Count == 0 ? null : BuildOne(name, parent, collider);

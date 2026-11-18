@@ -41,6 +41,9 @@ namespace EverythingWorld.World
                 void Add(string artist, string title, string where) { var id = Find(artist, title); if (id != null) list.Add((id, title, where)); }
                 Add("Robert Johnson", "Cross Road Blues", "@the shadow on the west road"); Add("Howlin' Wolf", "Smokestack", "Howlin' Wolf"); Add("Sister Rosetta Tharpe", "Didn't It Rain", "@the crossroads");
                 Add("B.B. King", "The Thrill Is Gone", "B.B. King"); Add("Muddy Waters", "Mannish Boy", "Muddy Waters");
+                // one song for each card the night answers to, seen from the card reader's corner
+                Add("Etta James", "I'd Rather Go Blind", "@the card reader"); Add("Stevie Ray Vaughan", "Pride and Joy", "@the card reader"); Add("Big Mama Thornton", "Hound Dog", "@the card reader");
+                Add("Lead Belly", "Where Did You Sleep", "@the card reader"); Add("Albert King", "Born Under", "@the card reader"); Add("John Lee Hooker", "Boom Boom", "@the card reader"); Add("R.L. Burnside", "Goin' Down South", "@the card reader");
                 return list.ToArray();
             }
         }
@@ -86,11 +89,15 @@ namespace EverythingWorld.World
                 default: Porch(z); Others(z); break;
             }
             SongLamps(z);
+            // the card they are: the frame across the way in, and the card their songs turn at the crossroads
+            CardGate(z, CardOf(a.name));
+            if (cards != null && SongIds.TryGetValue(a.name, out var theirs)) for (var n = 0; n < theirs.Length; n++) cards.bySong[theirs[n].id] = TurnedFor(a.name, n);
             Board(z, z.At(reach * .6f, -reach * .45f - 1.5f), front);
             ArtistBits.Plaque(z.mk, z.solid, labels, a, z.At(reach * .6f + 1.5f, reach * .45f + 1.5f), front, plankDark, plank, Cream, 1.6f);
             BulbPole(ctx, z.mk, z.At(reach * .5f, reach * .64f), -z.side, true);
             if (z.area.glowLight == null) z.area.glowLight = ArtistBits.PointLight(root, z.c + up * 5f + front * 3f, Bulb, HasStation(a) ? 26f : 18f, 1.6f);
             area.glowRenderers = new Renderer[0];
+            GoldLine(z.mk, z.mk);
             z.mk.Build("Area", root, false);
             z.solid.BuildCollider("Walls", root);
             z.pictures.Build("Covers", root, false);

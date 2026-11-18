@@ -151,6 +151,12 @@ namespace EverythingWorld.Player
             SetColor(Palette[index].color);
         }
 
+        /// Whether you have shaken hands at the Delta Crossroads (the bell in its graveyard undoes it). Friends see it on you.
+        public static bool DealMade { get => PlayerPrefs.GetInt("EW_DeltaDeal", 0) == 1; set { PlayerPrefs.SetInt("EW_DeltaDeal", value ? 1 : 0); PlayerPrefs.Save(); } }
+        /// The mark of that deal on this orb: a brand on the brow and a ring of embers round it.
+        public bool Marked { get; private set; }
+        public void SetMarked(bool m) { if (m == Marked) return; Marked = m; Rebuild(); }
+
         /// Puts on a hat and a face (and remembers them, for your own orb).
         public void Dress(int hat, int eyes, int mouth)
         {
@@ -208,6 +214,13 @@ namespace EverythingWorld.Player
                 case 6: foreach (var s in new[] { -1f, 1f }) { Bit(face, cube, M, On(s * .02f, -.07f), new Vector3(.04f, .014f, .012f), Quaternion.Euler(0, 0, s * -32f)); Bit(face, cube, M, On(s * .05f, -.062f), new Vector3(.035f, .014f, .012f), Quaternion.Euler(0, 0, s * 28f)); } break;
             }
 
+            // ---- the mark of the deal: a small burning brand on the brow, embers round the orb (seen from any side)
+            if (Marked)
+            {
+                var mark = new GameObject("Mark").transform; mark.SetParent(look, false); var ember = Shine(1f, .32f, .08f, 2.6f);
+                Bit(mark, cube, ember, On(0f, .135f), new Vector3(.034f, .034f, .008f), Quaternion.Euler(0, 0, 45f)); foreach (var s in new[] { -1f, 1f }) Bit(mark, cube, ember, On(s * .04f, .178f), new Vector3(.012f, .04f, .008f), Quaternion.Euler(0, 0, s * -28f));
+                for (var i = 0; i < 7; i++) { var q = Quaternion.Euler(0, i * 51.4f, 0); Bit(mark, ball, ember, q * new Vector3(0, -.06f + (i % 2) * .05f, R + .05f), Vector3.one * (.022f + (i % 3) * .006f)); }
+            }
             // ---- the hat (its front is +z, the way the player looks)
             if (Hat == 0) return;
             var hat = new GameObject("Hat").transform; hat.SetParent(look, false); hat.localPosition = new Vector3(0, R * .78f, -.01f); hat.localRotation = Quaternion.Euler(-7f, 0, 0);

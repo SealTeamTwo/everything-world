@@ -572,11 +572,11 @@ Soul, funk, disco, world music and jazz.
 
 *blues, classic blues, blues rock, country blues, soul blues* · 18 songs · energy 0.52, acoustic 0.57, mood 0.66 · top artists: Muddy Waters, R.L. Burnside, Robert Johnson, Albert King, B.B. King
 
-- **Terrain:** Flat river delta with cotton fields, cypress swamps and dusty roads that meet at a crossroads.
-- **Colours:** `#3B5BA5 blues blue`, `#8B5A2B delta mud`, `#D9B26F dust`, `#1C1C1C juke-joint black`
-- **Landmark:** A tin-roofed juke joint at the crossroads, lit by one bare bulb and a neon guitar sign.
-- **Props:** Old guitars on porches, a railroad track, a rusting pickup, a river steamboat.
-- **Light and mood:** Weathered and soulful.
+- **Terrain:** Flat river delta at a midnight that never ends: cotton fields and dusty roads that meet at a crossroads, laid out like a tarot deck.
+- **Colours:** `#1F2470 card-back indigo`, `#FFC247 gold line`, `#EDE6CC cotton cream`, `#4D80FF bottle blue`
+- **Landmark:** A card reader at the crossroads under one crooked lamp, and a great card hanging in the air that turns with every song.
+- **Props:** Tall gold card frames, suit signs on posts, old guitars on porches, a railroad track, a river steamboat, a juke joint.
+- **Light and mood:** Haunted and beautiful: everything drawn in gold line on deep blue.
 
 ### 65. The Afrobeat Coast
 

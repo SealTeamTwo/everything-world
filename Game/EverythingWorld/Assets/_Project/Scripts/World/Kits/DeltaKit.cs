@@ -4,25 +4,28 @@ using static EverythingWorld.World.PlaceTools;
 
 namespace EverythingWorld.World
 {
-    /// The Delta Crossroads (WORLD_GUIDE.md): flat cotton country on a hot, white, dusty afternoon, with a storm
-    /// stacked up dark on the horizon that never quite arrives. Raw and haunted. You arrive where two dirt roads
-    /// cross, under a four-armed signpost. The Highway runs north over the railroad and south into the fields; the
-    /// cross road runs east down to the river landing, where an old steamboat lies aground, and west past the
-    /// graveyard. On one corner is the juke joint, tin-roofed, a blue neon guitar over its door. Telegraph poles
-    /// follow the Highway. Out in the cotton: scarecrows, bottle trees hung with blue glass, empty shacks.
-    /// When Robert Johnson plays, the afternoon goes dark, and something stands up at the crossroads.
+    /// The Delta Crossroads (WORLD_GUIDE.md): a tarot deck laid out at a crossroads at midnight. Flat cotton country
+    /// in a night that never ends, deep indigo, with every edge of every thing drawn in gold line like a printed card
+    /// (MeshKit.InkEdges) and the cotton showing cream in the dark. You arrive where two dirt roads cross, under one
+    /// crooked lamp. The four roads are the four suits: swords north over the railroad, cups east down to the river
+    /// landing and the wreck, wands south into the cotton, coins west past the graveyard. Each artist is one of the
+    /// great cards made real: you see their place through a tall gold frame with its number and name. A card reader
+    /// sits at the crossroads, and a card is turned with every song, which the whole land takes on. Follow any road
+    /// to its end and it bends round through a place and brings you back down another (DeltaTarot.cs).
+    /// When Robert Johnson plays, the Devil is turned, and something stands up at the crossroads.
     /// Laid out on purpose (the build-land standard): DeltaTown.cs has the places and the people.
     public partial class DeltaKit : LandKit
     {
         public override string Land => "The Delta Crossroads";
         public override Vector3 ArtistFront(IslandWorldData data, IslandWorldData.Artist a) => facing.TryGetValue(a.name, out var f) ? f : base.ArtistFront(data, a);
 
-        public static readonly Color Blues = new Color(.22f, .42f, 1f), Bulb = new Color(1f, .82f, .5f), Dust = new Color(.85f, .72f, .48f), Cream = new Color(.93f, .9f, .8f), Ink = new Color(.1f, .09f, .08f), Rust = new Color(.58f, .3f, .16f);
-        static readonly Color[] Planks = { new Color(.52f, .46f, .38f), new Color(.44f, .38f, .32f), new Color(.6f, .54f, .46f), new Color(.38f, .33f, .29f) };
+        // (the owner is colourblind: the whole land is two things, deep blue and bright gold or cream, told apart by brightness)
+        public static readonly Color Blues = new Color(.3f, .5f, 1f), Bulb = new Color(1f, .8f, .42f), Gold = new Color(1f, .76f, .28f), Dust = new Color(.85f, .72f, .48f), Cream = new Color(.93f, .9f, .8f), Ink = new Color(.1f, .09f, .08f), Rust = new Color(.36f, .27f, .13f), Night = new Color(.1f, .11f, .3f);
+        static readonly Color[] Planks = { new Color(.15f, .16f, .34f), new Color(.11f, .12f, .27f), new Color(.19f, .2f, .4f), new Color(.09f, .1f, .22f) };
         const float PathW = 3f, RoadW = 6f, RailOff = 105f;
 
-        Material dustM, plank, plankDark, tin, rustM, iron, dark, white, cottonM, leafM, leafDry, trunkM, mossM, steel, bulbM, neonM, bottleM, eyesM, stormM, shadowM;
-        GlowHalos halos; Vector3 center, U, R; DeltaLife life;
+        Material goldM, cardM, lampM, moonM, dustM, plank, plankDark, tin, rustM, iron, dark, white, cottonM, leafM, leafDry, trunkM, mossM, steel, bulbM, neonM, bottleM, eyesM, stormM, shadowM;
+        GlowHalos halos; Vector3 center, U, R; DeltaLife life; DeltaCards cards;
         readonly Dictionary<(int, int), List<Vector3>> pathCells = new Dictionary<(int, int), List<Vector3>>();
         readonly List<(Vector3 p, int w)> walkPoints = new List<(Vector3, int)>();
         readonly Dictionary<string, Vector3> facing = new Dictionary<string, Vector3>();
@@ -36,11 +39,17 @@ namespace EverythingWorld.World
 
         void MakeMaterials()
         {
-            dustM = WorldMaterials.Surface(new Color(.86f, .74f, .52f), Surface.Stone); plank = WorldMaterials.Surface(Planks[0], Surface.Wood); plankDark = WorldMaterials.Surface(Planks[3], Surface.Wood);
-            tin = WorldMaterials.Surface(new Color(.66f, .67f, .66f), Surface.Metal); rustM = WorldMaterials.Surface(Rust, Surface.Metal); iron = WorldMaterials.Surface(new Color(.16f, .15f, .15f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.07f, .06f, .06f));
-            white = WorldMaterials.Solid(new Color(.93f, .91f, .84f)); cottonM = WorldMaterials.Solid(new Color(.97f, .96f, .92f));
-            leafM = WorldMaterials.Surface(new Color(.4f, .46f, .24f), Surface.Foliage); leafDry = WorldMaterials.Surface(new Color(.56f, .5f, .26f), Surface.Foliage); trunkM = WorldMaterials.Surface(new Color(.34f, .27f, .2f), Surface.Bark); mossM = WorldMaterials.Surface(new Color(.52f, .56f, .44f), Surface.Foliage);
-            steel = WorldMaterials.Surface(new Color(.4f, .4f, .42f), Surface.Metal);
+            dustM = WorldMaterials.Surface(new Color(.3f, .3f, .56f), Surface.Stone); plank = WorldMaterials.Surface(Planks[0], Surface.Wood); plankDark = WorldMaterials.Surface(Planks[3], Surface.Wood);
+            tin = WorldMaterials.Surface(new Color(.34f, .37f, .52f), Surface.Metal); rustM = WorldMaterials.Surface(Rust, Surface.Metal); iron = WorldMaterials.Surface(new Color(.07f, .07f, .12f), Surface.Metal); dark = WorldMaterials.Solid(new Color(.04f, .04f, .08f));
+            white = WorldMaterials.Solid(new Color(.93f, .91f, .84f)); cottonM = new Material(WorldMaterials.Glow(new Color(.97f, .95f, .86f), .3f)) { name = "Delta cotton" };
+            leafM = WorldMaterials.Surface(new Color(.12f, .2f, .3f), Surface.Foliage); leafDry = WorldMaterials.Surface(new Color(.2f, .22f, .36f), Surface.Foliage); trunkM = WorldMaterials.Surface(new Color(.12f, .11f, .2f), Surface.Bark); mossM = WorldMaterials.Surface(new Color(.34f, .38f, .56f), Surface.Foliage);
+            steel = WorldMaterials.Surface(new Color(.3f, .32f, .46f), Surface.Metal);
+            // the gold line everything is drawn in; the deep blue of a card's face; the one lamp that never changes; the moon
+            goldM = new Material(WorldMaterials.Glow(Gold, 1.25f)) { name = "Delta gold line" };
+            cardM = new Material(WorldMaterials.Glow(Night, .35f)) { name = "Delta card" };
+            lampM = new Material(WorldMaterials.Glow(Bulb, 2.6f)) { name = "Delta crooked lamp" };
+            moonM = new Material(WorldMaterials.Glow(new Color(.95f, .93f, .82f), 1.1f)) { name = "Delta moon" };
+            WorldMaterials.KindOf(leafM, out leafShared, out _);
             bulbM = new Material(WorldMaterials.Glow(Bulb, 2f)) { name = "Delta bulbs" };
             neonM = new Material(WorldMaterials.Glow(Blues, 2.4f)) { name = "Delta neon" };
             bottleM = new Material(WorldMaterials.Glow(new Color(.2f, .4f, 1f), .9f)) { name = "Delta bottles" };
@@ -50,6 +59,11 @@ namespace EverythingWorld.World
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
+        Material leafShared;
+        /// What the gold line leaves alone: leaves, and anything that glows already.
+        bool NoInk(Material m) => m == leafShared || m == shadowM || m.IsKeywordEnabled("_EMISSION");
+        /// Draws the hard edges of everything in 'from' in gold line (into 'into').
+        int GoldLine(MeshKit from, MeshKit into) => from.InkEdges(into, goldM, .55f, .02f, NoInk);
         static bool HasStation(IslandWorldData.Artist a) => a.stationId != 0;
         static float Foot(IslandWorldData.Artist a)
         {
@@ -65,9 +79,9 @@ namespace EverythingWorld.World
 
         public override bool Ground(float height, float slope, float patch, out Color color)
         {
-            // pale dust and dry grass under a white sky
-            if (slope > 26f) color = Color.Lerp(new Color(.6f, .46f, .32f), new Color(.7f, .56f, .38f), patch);
-            else color = Color.Lerp(new Color(.8f, .68f, .44f), new Color(.7f, .66f, .38f), Mathf.SmoothStep(0f, 1f, patch));
+            // the deep blue of a card's back, a little paler in patches
+            if (slope > 26f) color = Color.Lerp(new Color(.11f, .11f, .3f), new Color(.15f, .15f, .38f), patch);
+            else color = Color.Lerp(new Color(.13f, .14f, .36f), new Color(.19f, .2f, .48f), Mathf.SmoothStep(0f, 1f, patch));
             color.a = 1f;
             return true;
         }
@@ -144,7 +158,7 @@ namespace EverythingWorld.World
             center = ctx.Plaza; U = new Vector3(0, 0, 1); R = new Vector3(1, 0, 0);
             life = new GameObject("Delta life").AddComponent<DeltaLife>();
             life.transform.SetParent(ctx.Root, false);
-            life.center = center; life.bulbs = bulbM; life.neon = neonM; life.bottles = bottleM; life.eyes = eyesM; life.storm = stormM;
+            life.center = center; life.bulbs = bulbM; life.neon = neonM; life.bottles = bottleM; life.eyes = eyesM; life.storm = stormM; life.lamp = lampM;
             var mk = new MeshKit(); var solid = new MeshKit();
             Remember(ctx.OnGround(center.x, center.z), 0);
             TownStart(ctx);
@@ -154,9 +168,17 @@ namespace EverythingWorld.World
             Landing(ctx, mk, solid);
             Graveyard(ctx, mk, solid);
             Store(ctx, mk, solid);
+            LongWayRound(ctx, mk, solid);
+            Suits(ctx, mk, solid);
+            Reader(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Wilds(ctx, mk, solid);
             StormBank(ctx);
+            Moon(ctx);
+            var lines = new MeshKit(); var inked = GoldLine(mk, lines);
+            var lgo = lines.Build("The Delta Crossroads gold line", ctx.Root, false);
+            if (lgo != null) foreach (var r in lgo.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            Debug.Log($"The Delta Crossroads: {inked} edges drawn in gold line");
             mk.Build("The Delta Crossroads", ctx.Root, false);
             solid.BuildCollider("The Delta Crossroads walls", ctx.Root);
         }
@@ -260,10 +282,10 @@ namespace EverythingWorld.World
             var up = Vector3.up; mk.Blob(body, o + up * .28f * s, new Vector3(.2f, .26f, .06f) * s, rng, .04f); mk.Blob(dark, o + up * .3f * s + rot * Vector3.forward * .05f * s, new Vector3(.05f, .05f, .02f) * s, rng, 0f); mk.Box(plankDark, o + up * .86f * s - rot * Vector3.forward * .1f * s, new Vector3(.05f, .72f, .03f) * s, rot * Quaternion.Euler(-9f, 0, 0)); mk.Box(body, o + up * 1.26f * s - rot * Vector3.forward * .17f * s, new Vector3(.07f, .14f, .03f) * s, rot * Quaternion.Euler(-9f, 0, 0));
         }
 
-        /// A dead tree, bleached and bare.
+        /// A dead tree, bleached and bare (pale against the night).
         void DeadTree(LandContext ctx, MeshKit mk, Vector3 g, float s, System.Random rng, Material m = null)
         {
-            var up = Vector3.up; m = m ?? WorldMaterials.Surface(new Color(.6f, .56f, .48f), Surface.Bark); mk.Prism(m, g - up * .3f, up, .2f * s, 3f * s, 6, .6f); ArtistBits.PostCollider(ctx.Root, g, 2.8f * s, .22f * s);
+            var up = Vector3.up; m = m ?? WorldMaterials.Surface(new Color(.5f, .52f, .62f), Surface.Bark); mk.Prism(m, g - up * .3f, up, .2f * s, 3f * s, 6, .6f); ArtistBits.PostCollider(ctx.Root, g, 2.8f * s, .22f * s);
             for (var k = 0; k < 4; k++) { var d = (Quaternion.Euler(0, k * 90f + (float)rng.NextDouble() * 60f, 0) * Vector3.forward + up * (.6f + (float)rng.NextDouble() * .7f)).normalized; var b = g + up * (2f + k * .25f) * s; var len = (1.6f + (float)rng.NextDouble() * 1.3f) * s; mk.Prism(m, b, d, .07f * s, len, 4, .3f); mk.Prism(m, b + d * len * .55f, (d + Quaternion.Euler(0, 80f, 0) * d * .7f).normalized, .04f * s, len * .55f, 3, .3f); }
         }
 
@@ -451,7 +473,7 @@ namespace EverythingWorld.World
             noGrass.Add(new Vector3(g.x, 5.5f, g.z));
         }
 
-        /// The storm stacked on the western horizon: a wall of dark cloud that DeltaLife sets flickering. It is its
+        /// The heat lightning on the western horizon: a wall of dark cloud that DeltaLife sets flickering. It is its
         /// own object, shown only while you're in the Delta: 600 to 900 m out it stands over the Folk Woods, the Jam
         /// Band Commonwealth and the Old Jazz Quarter, where it hung overhead as huge grey slabs.
         void StormBank(LandContext ctx)
@@ -473,10 +495,10 @@ namespace EverythingWorld.World
         /// tired grey-green to bleached straw; every blade its own.
         void Verge(LandContext ctx)
         {
-            var mat = WindMesh.Material(.35f, 1f, new Color(.7f, .62f, .36f));
+            var mat = WindMesh.Material(.35f, 1f, new Color(.16f, .18f, .36f));
             var meshes = new Dictionary<(int, int), WindMesh>(); var rng = new System.Random(1937);
             const float st = 2.4f;
-            Color tired = new Color(.54f, .52f, .34f), bleached = new Color(.74f, .65f, .38f), ditch = new Color(.4f, .46f, .3f);
+            Color tired = new Color(.13f, .16f, .34f), bleached = new Color(.2f, .23f, .44f), ditch = new Color(.12f, .24f, .34f);
             int cotton = 0, bunch = 0, dead = 0, ditches = 0;
             for (var x = ctx.MinX; x < ctx.MaxX; x += st)
             for (var z = ctx.MinZ; z < ctx.MaxZ; z += st)
@@ -489,7 +511,7 @@ namespace EverythingWorld.World
                 {
                     var key0 = (Mathf.FloorToInt(px / 70f), Mathf.FloorToInt(pz / 70f));
                     if (!meshes.TryGetValue(key0, out var wf)) meshes[key0] = wf = new WindMesh();
-                    var cc = Color.Lerp(new Color(.36f, .34f, .2f), new Color(.46f, .42f, .24f), (float)rng.NextDouble()) * (.9f + tone * .2f);
+                    var cc = Color.Lerp(new Color(.1f, .12f, .26f), new Color(.15f, .17f, .34f), (float)rng.NextDouble()) * (.9f + tone * .2f);
                     wf.Tuft(new Vector3(px, ctx.Ground(px, pz) - .04f, pz), .5f + (float)rng.NextDouble() * .25f, cc, new Color(.98f, .97f, .93f), rng, 4, .13f, .06f); cotton++;
                     continue;
                 }

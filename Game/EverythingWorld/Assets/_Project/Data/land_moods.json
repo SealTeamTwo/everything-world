@@ -60,10 +60,10 @@
   },
   {
    "land": "The Delta Crossroads",
-   "sunPitch": 56, "sunYaw": 70, "sunIntensity": 1.3, "sunColor": "#FFF2D2",
-   "skyLight": "#E0D8B4", "horizonLight": "#EBD9A4", "groundLight": "#A48C5C",
-   "fogColor": "#DDCB98", "fogStart": 70, "fogEnd": 1300, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 0.9,
-   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#E1CF9B", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.003, "sunGlow": 0.6, "grade": 0.7
+   "sunPitch": 34, "sunYaw": 332, "sunIntensity": 0.42, "sunColor": "#B4C2F4",
+   "skyLight": "#39428C", "horizonLight": "#3E4488", "groundLight": "#22254E",
+   "fogColor": "#12143A", "fogStart": 60, "fogEnd": 1100, "stars": 0.9, "sunShadows": false, "dailyWeather": false, "bloom": 1.3,
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#1C1F52", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0016, "sunGlow": 0.25, "grade": 0.7
   },
   {
    "land": "The Afrobeat Coast",

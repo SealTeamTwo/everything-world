@@ -18,8 +18,9 @@ namespace EverythingWorld.World
         static readonly Color[] Overalls = { new Color(.26f, .32f, .48f), new Color(.3f, .26f, .22f), new Color(.44f, .4f, .34f) };
         static readonly string[] TownTalk =
         {
-            "Hot. Been hot since morning and it'll be hot till that storm makes up its mind.", "Storm's been sitting out west all day. Sits there most days. Some days it comes.",
-            "You hear a guitar out in the cotton after dark, you keep walking.", "Juke's on the corner. River's east. Don't stand in the crossroads too long.", "Everybody here's either coming from somewhere or waiting on something.",
+            "It's been midnight a good while now. You stop minding.", "That lightning out west never makes a sound. It just looks.",
+            "You hear a guitar out in the cotton, you keep walking.", "Swords north, cups east, wands south, coins west. And every one of them brings you back here.", "Everybody here's a card in somebody's hand. I try not to think whose.",
+            "Watch what she turns over at the crossroads. The night does what the card says.",
         };
 
         void TownStart(LandContext ctx)
@@ -78,8 +79,6 @@ namespace EverythingWorld.World
             var hw = new List<Vector3>(); for (var u = -southL; u <= northL + .01f; u += 2f) hw.Add(G(ctx, u, 0)); Strip(mk, hw, dustM, RoadW, .12f, ctx); foreach (var p in hw) Remember(p, 1);
             var west = new List<Vector3>(); for (var r = -westL; r <= -RoadW / 2f + .01f; r += 2f) west.Add(G(ctx, 0, Mathf.Min(r, -RoadW / 2f))); west.Add(G(ctx, 0, -RoadW / 2f)); Strip(mk, west, dustM, RoadW, .12f, ctx); foreach (var p in west) Remember(p, 2);
             var east = new List<Vector3> { G(ctx, 0, RoadW / 2f) }; for (var r = RoadW / 2f + 2f; r <= eastL - 22f; r += 2f) east.Add(G(ctx, 0, r)); if (east.Count > 1) { Strip(mk, east, dustM, RoadW, .12f, ctx); foreach (var p in east) Remember(p, 2); }
-            // wheel ruts, darker, down the middle of the Highway
-            var rut = WorldMaterials.Surface(new Color(.72f, .6f, .4f), Surface.Stone); foreach (var e in new[] { -1.1f, 1.1f }) { var pts = new List<Vector3>(); for (var u = -southL + 2f; u <= northL - 2f; u += 4f) { if (Mathf.Abs(u) < 6f || Mathf.Abs(u - RailOff) < 5f) { if (pts.Count > 1) Strip(mk, pts, rut, .5f, .135f, ctx); pts = new List<Vector3>(); continue; } pts.Add(G(ctx, u, e)); } if (pts.Count > 1) Strip(mk, pts, rut, .5f, .135f, ctx); }
             // telegraph poles up the east side of the Highway, wires sagging between them
             Vector3 prevA = default, prevB = default; var have = false;
             for (var u = -southL + 10f; u <= northL - 6f; u += 30f)
@@ -100,28 +99,20 @@ namespace EverythingWorld.World
             var up = Vector3.up; var c = ctx.OnGround(center.x, center.z);
             // the signpost on the north-east corner: four arms
             var sp = G(ctx, 5.2f, 5.2f); mk.Prism(trunkM, sp - up * .3f, up, .1f, 4.3f, 5, .8f); ArtistBits.PostCollider(ctx.Root, sp, 4f, .14f);
-            var arms = new[] { (U, "THE RAILROAD", 3.6f), (-U, "DOWN SOUTH", 3.3f), (R, "THE RIVER", 3f), (-R, "THE FIELDS", 2.7f) };
-            foreach (var (d, text, h) in arms) { var rot = Quaternion.LookRotation(Vector3.Cross(up, d)); mk.Box(white, sp + up * h + d * .9f, new Vector3(1.7f, .26f, .05f), rot); foreach (var e in new[] { -1f, 1f }) Sign(sp + up * h + d * .9f + rot * Vector3.forward * e * .035f, rot * Vector3.forward * e, text, .14f, Ink); }
-            // a rusting pickup on the south-east corner, a bare bulb over the north-west
-            var pk = G(ctx, -8.5f, 8.5f); var pr = Quaternion.LookRotation((U + R * .4f).normalized); var pf = pr * Vector3.forward; var ps = pr * Vector3.right;
-            mk.Box(rustM, pk + up * .75f, new Vector3(1.7f, .6f, 4.4f), pr); mk.Box(rustM, pk + up * 1.35f + pf * .5f, new Vector3(1.6f, .7f, 1.5f), pr); mk.Box(WorldMaterials.Surface(new Color(.2f, .22f, .24f), Surface.Glass), pk + up * 1.4f + pf * .5f, new Vector3(1.64f, .4f, 1.3f), pr); mk.Box(plankDark, pk + up * 1.15f - pf * 1.3f, new Vector3(1.6f, .3f, 1.7f), pr);
-            foreach (var e in new[] { -1f, 1f }) foreach (var s in new[] { -1.4f, 1.4f }) mk.Prism(dark, pk + up * .38f + ps * e * .8f + pf * s, ps * e, .38f, .2f, 10); Col(pk + up * .9f, new Vector3(1.8f, 1.6f, 4.5f), pr); Mark(pk, 3f); keepOut.Add(new Vector3(pk.x, 2.8f, pk.z));
-            Interact.Seat(tlife.transform, pk + up * 1.05f - pf * 2.1f, -pf, "Sit on the tailgate").seatHeight = .9f;
-            BulbPole(ctx, mk, G(ctx, 6f, -6f), (R - U).normalized, true);
-            // the old man on a crate, and a spare crate beside him
-            var om = G(ctx, -6.5f, 5.2f); Crate(mk, om, -R, false); Crate(mk, om + U * 1.3f + R * .3f, -R);
-            var old = Local(); old.hat = Residents.Hat.Straw; old.hair = new Color(.8f, .8f, .78f);
-            Folk(om + up * .46f, -R, Resident.Pose.Sit, new[] { "Four ways to go and every one of them's the wrong one. Sit a while instead.", "They say a man can learn to play here, round midnight, if he don't mind who's teaching.", "That shadow on the west road? Been there since before the road. Don't nobody step on it.", "It ain't midnight. But some songs, it gets midnight early." }, old, null, .46f);
+            var arms = new[] { (U, "SWORDS   THE RAILROAD", 3.6f), (-U, "WANDS   THE COTTON", 3.3f), (R, "CUPS   THE RIVER", 3f), (-R, "COINS   THE GRAVES", 2.7f) };
+            foreach (var (d, text, h) in arms) { var rot = Quaternion.LookRotation(Vector3.Cross(up, d)); mk.Box(white, sp + up * h + d * 1.25f, new Vector3(2.4f, .26f, .05f), rot); foreach (var e in new[] { -1f, 1f }) Sign(sp + up * h + d * 1.25f + rot * Vector3.forward * e * .035f, rot * Vector3.forward * e, text, .14f, Ink); }
+            // the corners change while you are away (Faces, in DeltaTarot.cs); the crooked lamp on the north-west corner never does
+            CrookedLamp(ctx, mk, G(ctx, 6f, -6f)); Faces(ctx);
             // a long shadow lying down the west road, hat and all, with nobody to cast it
             var sh = G(ctx, 0, -7f) + up * .145f; mk.Box(shadowM, sh - R * 2.6f, new Vector3(.5f, .01f, 5.2f), Quaternion.LookRotation(R)); mk.Box(shadowM, sh - R * 5.6f, new Vector3(.9f, .01f, .9f), Quaternion.LookRotation(R)); mk.Box(shadowM, sh - R * 5.9f, new Vector3(1.7f, .01f, .24f), Quaternion.LookRotation(R)); mk.Box(shadowM, sh - R * 1f + U * .34f, new Vector3(.2f, .01f, 2.2f), Quaternion.LookRotation((R + U * .12f).normalized));
             // ...and what stands up at the head of it when Robert Johnson plays: tall, thin, a hat, no face
             var fm = new MeshKit(); fm.Box(shadowM, new Vector3(0, 1.5f, 0), new Vector3(.5f, 1.5f, .26f), Quaternion.identity); foreach (var e in new[] { -.14f, .14f }) fm.Box(shadowM, new Vector3(e, .4f, 0), new Vector3(.18f, .8f, .2f), Quaternion.identity); foreach (var e in new[] { -.34f, .34f }) fm.Box(shadowM, new Vector3(e, 1.4f, 0), new Vector3(.13f, 1.5f, .16f), Quaternion.identity);
             fm.Blob(shadowM, new Vector3(0, 2.5f, 0), new Vector3(.18f, .22f, .18f), prng, 0f); fm.Prism(shadowM, new Vector3(0, 2.62f, 0), Vector3.up, .46f, .03f, 10); fm.Prism(shadowM, new Vector3(0, 2.64f, 0), Vector3.up, .22f, .26f, 10, .85f);
             foreach (var e in new[] { -.07f, .07f }) fm.Blob(eyesM, new Vector3(e, 2.52f, .17f), Vector3.one * .025f, prng, 0f);
-            var fgo = fm.BuildSingle("The one at the crossroads", life.transform, false); fgo.transform.SetPositionAndRotation(G(ctx, 0, -13f) + up * .1f, Quaternion.LookRotation(R)); fgo.transform.localScale = new Vector3(1f, .01f, 1f); fgo.isStatic = false; fgo.SetActive(false); life.figure = fgo.transform; { var fq = G(ctx, 0, -13f); fixtures.Add(new Vector3(fq.x, .5f, fq.z)); }
+            var fgo = fm.BuildSingle("The one at the crossroads", life.transform, false); fgo.transform.SetPositionAndRotation(G(ctx, 0, -13f) + up * .1f, Quaternion.LookRotation(R)); fgo.transform.localScale = new Vector3(1f, .01f, 1f); fgo.isStatic = false; fgo.SetActive(false); life.figure = fgo.transform; Offer(G(ctx, 0, -13f)); { var fq = G(ctx, 0, -13f); fixtures.Add(new Vector3(fq.x, .5f, fq.z)); }
             // eyes out in the cotton, low, in pairs
             for (var k = 0; k < 7; k++) { var a = (k * 51f + 20f) * Mathf.Deg2Rad; var d = 24f + (k % 3) * 9f; var e = G(ctx, Mathf.Cos(a) * d, Mathf.Sin(a) * d); if (InFootprint(ctx, e.x, e.z, 1f)) continue; var look = FaceTo(e, c); var sd = Vector3.Cross(up, look); foreach (var q in new[] { -.09f, .09f }) mk.Blob(eyesM, e + up * .55f + sd * q, Vector3.one * .04f, prng, 0f); }
-            string[] stand = { "The dust settles round your feet. Four roads. No wind. Something is deciding.", "You feel looked at, from the cotton, about knee high.", "Nothing happens. That's the frightening part." }; var sn = 0;
+            string[] stand = { "The dust settles round your feet. Four roads, four suits. Something is shuffling.", "You feel looked at, from the cotton, about knee high.", "Nothing happens. That's the frightening part." }; var sn = 0;
             Spot("The middle of the crossroads", c + up * 1.2f, "Stand in the crossroads", new Vector3(3f, 2.4f, 3f)).onUse = _ => Say(tlife.transform, c + up * 2.8f, stand[sn++ % stand.Length], 5f);
             Mark(c, 9f); keepOut.Add(new Vector3(c.x, 10f, c.z));
             Shot(ctx, "the crossroads", G(ctx, -15f, 13f) + up * 2.6f, G(ctx, 12f, -8f) + up * 2.4f);
@@ -137,7 +128,7 @@ namespace EverythingWorld.World
         // ---------------------------------------------------------------- the railroad
         void Railroad(LandContext ctx, MeshKit mk, MeshKit solid)
         {
-            var up = Vector3.up; var gravel = WorldMaterials.Surface(new Color(.56f, .5f, .44f), Surface.Stone); var along = Quaternion.LookRotation(R);
+            var up = Vector3.up; var gravel = WorldMaterials.Surface(new Color(.26f, .26f, .42f), Surface.Stone); var along = Quaternion.LookRotation(R);
             var bed = new List<Vector3>(); for (var r = -railW; r <= railE + .01f; r += 2f) bed.Add(G(ctx, RailOff, r)); Strip(mk, bed, gravel, 4f, .16f, ctx);
             foreach (var e in new[] { -.72f, .72f }) { var rail = new List<Vector3>(); for (var r = -railW; r <= railE + .01f; r += 2f) rail.Add(G(ctx, RailOff + e, r)); Strip(mk, rail, steel, .12f, .36f, ctx); Strip(mk, rail, rustM, .2f, .26f, ctx); }
             for (var r = -railW + .8f; r <= railE; r += 1.6f) { if (Mathf.Abs(r) < RoadW / 2f) continue; var g = G(ctx, RailOff, r); mk.Box(plankDark, g + up * .22f, new Vector3(.28f, .12f, 2.4f), along); }
@@ -168,7 +159,7 @@ namespace EverythingWorld.World
             for (var k = 0; k < 4; k++) { var b = G(ctx, 5f + (k / 2) * 1.5f, lr - 6f - (k % 2) * 1.7f); mk.Box(cottonM, b + up * .5f, new Vector3(1.3f, 1f, 1.5f), Quaternion.Euler(0, k * 8f, 0)); foreach (var e in new[] { -.4f, .4f }) mk.Box(plankDark, b + up * .5f + R * e, new Vector3(.06f, 1.04f, 1.54f), Quaternion.Euler(0, k * 8f, 0)); Col(b + up * .5f, new Vector3(1.3f, 1f, 1.5f), Quaternion.Euler(0, k * 8f, 0)); }
             var fb = new Vector3(g.x + 10f, waterY + .25f, g.z - 3.6f); mk.Box(plankDark, fb, new Vector3(2.4f, .5f, 5f), along); mk.Box(plank, fb + up * .27f, new Vector3(2.2f, .05f, 4.8f), along); mk.Prism(trunkM, fb + up * .3f - R * 2f, (up + R * .3f).normalized, .04f, 3.4f, 4);
             var fe = new Vector3(g.x + jl - 1.2f, deckY + .08f, g.z - .6f); Crate(mk, fe, -U, false);
-            Folk(fe + up * .46f, -U, Resident.Pose.Sit, new[] { "Ferry don't run. River's too low and I'm too old. I'll take you across in a story, though.", "That's the Evening Star out there. Ran aground in a storm like the one that's coming. Light's still on. Nobody's aboard.", "Catfish down there older than me. We got an understanding.", "Some nights you hear her whistle. She ain't got steam. She ain't got a whistle." }, Local(Residents.Tool.Rod), null, .46f);
+            Folk(fe + up * .46f, -U, Resident.Pose.Sit, new[] { "Ferry don't run. River's too low and I'm too old. I'll take you across in a story, though.", "That's the Evening Star out there. Ran aground the night the Tower was turned. Light's still on. Nobody's aboard.", "Catfish down there older than me. We got an understanding.", "Some nights you hear her whistle. She ain't got steam. She ain't got a whistle." }, Local(Residents.Tool.Rod), null, .46f);
             // the wreck: a steamboat aground and listing, stacks broken, one window still lit
             var wk = new PlaceFrame(new Vector3(g.x + 34f, waterY - .4f, g.z + 26f), (U + R * .35f).normalized); var tilt = wk.r * Quaternion.Euler(0, 0, 11f); var hull = WorldMaterials.Surface(new Color(.74f, .72f, .66f), Surface.Painted); var deckM = WorldMaterials.Surface(new Color(.5f, .44f, .38f), Surface.Wood);
             Vector3 K(float x, float y, float z) => wk.o + tilt * new Vector3(x, y, z);
@@ -211,8 +202,14 @@ namespace EverythingWorld.World
             var bl = ch.P(0, 0, D / 2f + 3.4f) + U * 3f; foreach (var e in new[] { -1f, 1f }) { mk.Prism(trunkM, bl + R * e * .8f - up * .2f, up, .09f, 3f, 5); ArtistBits.PostCollider(ctx.Root, bl + R * e * .8f, 2.8f, .1f); } mk.Box(trunkM, bl + up * 2.75f, new Vector3(2f, .12f, .12f), Quaternion.identity);
             var bell = new MeshKit(); bell.Prism(WorldMaterials.Surface(new Color(.5f, .42f, .24f), Surface.Metal), new Vector3(0, -.75f, 0), Vector3.up, .42f, .6f, 10, .45f); bell.Prism(iron, new Vector3(0, -.15f, 0), Vector3.up, .03f, .15f, 4); bell.Blob(iron, new Vector3(0, -.8f, 0), Vector3.one * .08f, rng, 0f);
             var bgo = bell.BuildSingle("The church bell", tlife.transform, false); bgo.transform.position = bl + up * 2.7f; tlife.bell = bgo.transform;
-            string[] ring = { "One slow note goes out flat across the fields. Way off, a dog answers.", "The bell tolls. Out west the storm mutters back.", "It rings longer than it should, as if something far away had hold of the sound." }; var rn = 0;
-            Interact.Toy(bgo, Toy.Kind.Custom, "Ring the bell", new Vector3(1.6f, 2.4f, 1.6f)).onUse = _ => { tlife.rung = Time.time; life.played = Time.time; Say(tlife.transform, bl + up * 3.6f, ring[rn++ % ring.Length], 5f); };
+            string[] ring = { "One slow note goes out flat across the fields. Way off, a dog answers.", "The bell tolls. Out west the lightning answers without a sound.", "It rings longer than it should, as if something far away had hold of the sound." }; var rn = 0;
+            Interact.Toy(bgo, Toy.Kind.Custom, "Ring the bell", new Vector3(1.6f, 2.4f, 1.6f)).onUse = _ =>
+            {
+                tlife.rung = Time.time; life.played = Time.time;
+                // the bell undoes the deal made at the crossroads
+                if (EverythingWorld.Player.PlayerOrb.DealMade) { EverythingWorld.Player.PlayerOrb.DealMade = false; Say(tlife.transform, bl + up * 3.6f, "The note goes through you like cold water. Whatever you were carrying since the crossroads, you have set it down.", 7f); }
+                else Say(tlife.transform, bl + up * 3.6f, ring[rn++ % ring.Length], 5f);
+            };
             var widow = Local(); widow.top = new Color(.1f, .1f, .12f); widow.bottom = new Color(.1f, .1f, .12f); widow.hat = Residents.Hat.None; widow.longHair = true;
             Folk(f.P(-4f, 0, 2f), -U, Resident.Pose.Stand, new[] { "I bring him blue flowers. He never liked any other colour.", "Half of these have no name on them. Guitar players, mostly. They went where the road went.", "Don't ring that bell after dark. It gets answered." }, widow);
             Mark(c, 15f); keepOut.Add(new Vector3(c.x, 15.8f, c.z));
