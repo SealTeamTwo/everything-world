@@ -64,6 +64,17 @@ What he asked for in a theme: a **contrasting** one. More of the land's own lege
 - Added, both accepted: **jump in the hole** (you fall through the dark past the towers, come out of the night sky above the city and land in the pool on the tallest roof: the scariest thing is the best ride, and a way back to the start); and **every roof is a different kind of late night** (a pool, a cinema showing nothing, a garden, a laundry line with one light on, a helipad, a party that ended an hour ago), so each artist has a roof and there are reasons to stop.
 - Walkways run many ways and you can drop to lower roofs and climb back, so there is no single route.
 
+**8. The Lo-Fi Hills: agreed, a rest stop for spirits on a rainy dusk, made its own place.**
+- The feeling the owner named: quiet, kind and a little strange, spirits getting on with their evening (take that mood from the films he mentioned and none of their look or characters).
+- A bus shelter with one buzzing light, a bathhouse steaming in the rain, a noodle counter, vending machines glowing; buses pull in with nobody driving and leave again.
+- What makes it look like nowhere else, all five accepted:
+  1. **A world in ink where only light has colour:** the land in greys and blue-blacks like brushed ink on wet paper; the only colour comes from things that glow. Reads by brightness.
+  2. **Umbrellas where the trees should be:** the hills planted with open umbrellas of every size, a dry circle under each with something in it; one enormous umbrella over the bus stop in the middle.
+  3. **The spirits are lost things:** not ghosts of people but of what gets left at bus stops and on trains (a single glove, a forgotten umbrella, a scarf, a coin, a cassette, a ticket), each with small legs and a quiet life.
+  4. **Puddles that show somewhere else:** each glows faintly and shows a bright sunny place, like a window in the ground.
+  5. **Things are the wrong size:** doors of every height, a stool a metre tall beside one like a thimble, a bus as big as a house and one that would fit in a shoebox.
+- Not chosen: a moment on a paused videotape; a night train that never arrives.
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
