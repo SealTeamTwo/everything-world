@@ -145,6 +145,7 @@ namespace EverythingWorld.World
             Paths(ctx, mk, solid);
             Village(ctx, mk, solid);
             Wilds(ctx, mk, solid);
+            Tree(ctx, mk, solid);
             Rainbow(ctx, mk);
             mk.Build("The Roots Bay", ctx.Root, false);
             solid.BuildCollider("The Roots Bay walls", ctx.Root);

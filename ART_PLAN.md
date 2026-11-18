@@ -646,10 +646,10 @@ Hip-hop, R&B and lo-fi beats.
 
 *reggae, roots reggae, ska, rocksteady, dancehall* · 20 songs · energy 0.61, acoustic 0.20, mood 0.77 · top artists: Bob Marley & The Wailers, The Specials, Toots & The Maytals, Baha Men, Burning Spear
 
-- **Terrain:** A sunny bay of palm-fringed beaches and green hills, with a fishing village on stilts.
+- **Terrain:** A sunny bay of palm-fringed beaches and green hills, with an island town grown up among the roots of a tree the size of a mountain.
 - **Colours:** `#2E8B57 hill green`, `#F2C14E sun yellow`, `#C0392B roots red`, `#1F6F8B bay blue`
-- **Landmark:** A giant hand-painted sound system on the beach, stacked speaker boxes as tall as a house.
-- **Props:** Painted shacks, hammocks, a ska dance hall, flags in red, gold and green.
+- **Landmark:** A tree of life standing in the bay, its trunk going up through the clouds; under it a hand-painted sound system on the beach, speaker boxes stacked as tall as a house.
+- **Props:** Painted shacks, hammocks, a ska dance hall, flags in red, gold and green; great roots arching over the town, hung with lanterns.
 - **Light and mood:** Easy and uplifting.
 
 ## The Isles of Story
