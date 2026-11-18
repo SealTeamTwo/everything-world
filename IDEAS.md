@@ -17,6 +17,46 @@ Still to do, for the owner:
 - Placements worth a second look: Sleep (stoner metal) is in the Psychedelic Wilds, Kid Rock in the Hip-Hop Boroughs, Night Tempo in the Fusion Isthmus, Porter Robinson on the Four-on-the-Floor Steppe, Ashy Finn's "Songbird" in the Jam Band Commonwealth (placed by its sound alone: Last.fm knows nothing about it), Manowar and Horizons Edge in the Iron Range (both are power metal). One line in `build/overrides.json` moves any of them.
 - The 20 new artists without a Wikipedia page have written about-cards; the ones about small producers describe the song more than the person. Correct any the owner knows better.
 
+## The owner's board, sorted (2026-11-18)
+
+The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
+
+**Rules for the whole world (how lands are made)**
+- Every land that has not had a core theme built into its design should get one (the record, the rain globe, the pop-up book, the cake in milk are the model).
+- No land should have its paths restricted the way the Far Shores' are: a friend's view, and the owner passed it on. (So the Far Shores' walls and gateways want opening up, and the idea is not to be used elsewhere.)
+- Build so that audio reactivity is easy to add later, even though it is not possible yet (the music comes from Spotify today; local files are coming).
+- More randomness, and in particular reasons to stop at C on the way from A to B.
+- More reasons to slow down: there are not many now.
+- Places that hold an activity should be more obvious to the eye from a distance.
+
+**The order he sees for the work**
+- Up the western lands first: the Far Shores, the Old Jazz Quarter, the Afrobeat Coast, the Fusion Isthmus, on up that side and finishing in the Roots Bay; then east for the big land reworks.
+
+**Particular lands**
+- The Kawaii Cascades: he does not love the handful of set parkour paths. Wants a great many options all over the island, so you make your own path. The rails should move you faster.
+- The Old Jazz Quarter: the doors' top halves are turned 90 degrees the wrong way; the doors also collide with the border at the bottom of the bubble.
+- The Dubstep Shards: he does not love how the inside of the bass caves looks.
+- The Punk Badlands: he does not like how it looks.
+- The Trip-Hop Undercity: "very M. C. Escher"; from another island you would see stacked brutalist concrete high-rises.
+- The Velvet Rooftops: he wants to pursue the idea already written down below ("bring the neon skyscrapers inland. Walk on rooftops and walkways, like a floating city, maybe the water pouring into a bottomless hole with the towers rising out of it and you crossing building to building").
+- The electronic lands: a flat, two-dimensional sun shows over a land where it should not, in several places round there (a bug).
+
+**The Hub** (fixes only, so each of these needs his say on where)
+- A room to go and sit down in together, a "podcast room". If possible a monitor in it that can reach the internet.
+
+**Activities and play**
+- Activities should still show the song when you press N.
+- The second jump (the terminal's gift) should be a little higher than the first.
+- More ways to make your player your own.
+- A made-up gambling area, low stakes and silly; plinko "is a must".
+- Dog-fighting planes, maybe.
+
+**Moments that worked, to do more of**
+- It started raining during a song about rain, and a friend really liked it. (Weather and light that answer what a song is about.)
+
+**Further off, a story**
+- Sail to the edge of the ocean and you start to hear computer-generated drone music; it could be the enemy if a story is ever built.
+
 ## Looks and character for the whole game (asked 2026-11-17)
 
 - **Ink outlines: tried and taken out again the same day** ("maybe down the road but let's not do it now"). The test (a full-screen pass, a line per land, on the Kawaii Cascades and the Punk Badlands) is in the history as commit 17626c5 and its revert, ready to bring back. It suited objects more than open ground.
