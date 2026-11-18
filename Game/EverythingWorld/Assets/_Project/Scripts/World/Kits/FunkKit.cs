@@ -152,6 +152,7 @@ namespace EverythingWorld.World
             FunkStreet(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Wilds(ctx, mk, solid);
+            Tender(ctx);
             mk.Build("The Funk Tropics", ctx.Root, false);
             solid.BuildCollider("The Funk Tropics walls", ctx.Root);
         }

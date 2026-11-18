@@ -20,6 +20,8 @@ namespace EverythingWorld.World
     public class ShotTour : MonoBehaviour
     {
         string[] lands;
+        /// True while the photo tour is running (things that move on the shared clock can hold still to be photographed).
+        public static bool Running;
         string[] only;   // quick mode: take only the photos whose name contains one of these (lower case); empty = the usual photos, no songs
         bool quick;
         string notesFile;   // "notes": the notes.txt of a feedback pack
@@ -42,7 +44,7 @@ namespace EverythingWorld.World
                         if (args[k] == "-ewNotes" && k + 1 < args.Length) tour.notesFile = args[k + 1];
                         if (args[k] == "-ewOnly" && k + 1 < args.Length) { tour.quick = true; tour.only = args[k + 1].ToLowerInvariant().Split(new[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries); }
                     }
-                    var startup = tour.lands.Length == 1 && tour.lands[0] == "startup";   // "startup": time a normal start (lands near you only), then quit
+                    Running = true; var startup = tour.lands.Length == 1 && tour.lands[0] == "startup";   // "startup": time a normal start (lands near you only), then quit
                     var special = tour.lands.Length == 1 && (tour.lands[0] == "perf" || tour.lands[0] == "bridges" || tour.lands[0] == "about" || tour.lands[0] == "tutorial" || tour.lands[0] == "notes" || tour.lands[0] == "places");   // checks that build everything but need no land audit
                     IslandWorldBuilder.BuildEverything = !startup; IslandWorldBuilder.ForceAudit = !tour.quick && !startup && !special;
                     if (!tour.quick && !startup && !System.Array.Exists(tour.lands, l => l == "all")) { IslandWorldBuilder.AuditOnly = new HashSet<string>(); foreach (var l in tour.lands) IslandWorldBuilder.AuditOnly.Add(l.StartsWith("The ") ? l.Substring(4) : l); }
