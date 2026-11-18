@@ -59,6 +59,11 @@ What he asked for in a theme: a **contrasting** one. More of the land's own lege
 - It must still be boom bap: brick, graffiti, stoops, the block, the summer heat. The monastery is the shape it takes, not a replacement.
 - Not chosen: a comic book with sound-effect words as buildings; a harbour whose containers hold pieces of other lands (sampling).
 
+**7. The Velvet Rooftops: agreed, the owner's own idea with two additions.**
+- His idea (from the tour): bring the neon skyscrapers inland; walk on real rooftops and walkways like a floating city; the water pours into a giant bottomless hole with the towers rising out of it, and you cross building to building.
+- Added, both accepted: **jump in the hole** (you fall through the dark past the towers, come out of the night sky above the city and land in the pool on the tallest roof: the scariest thing is the best ride, and a way back to the start); and **every roof is a different kind of late night** (a pool, a cinema showing nothing, a garden, a laundry line with one light on, a helipad, a party that ended an hour ago), so each artist has a roof and there are reasons to stop.
+- Walkways run many ways and you can drop to lower roofs and climb back, so there is no single route.
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
