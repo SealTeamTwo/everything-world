@@ -18,8 +18,9 @@ namespace EverythingWorld.World
         static readonly Color[] HatC = { new Color(.95f, .93f, .85f), new Color(.2f, .2f, .25f), new Color(.85f, .3f, .35f), new Color(.6f, .45f, .3f) };
         static readonly string[] TownTalk =
         {
-            "Evening! It's always evening here, and it's always a fine one.", "You hear that? Somebody on Main Street's always singing. Half the time it's all of us.",
-            "The light does that every day about now. Gets in the windows like honey.", "If your foot's not tapping you might want to see a doctor.", "Sunday best, every day. You never know when the band's going to strike up.",
+            "Evening! It's always evening here, and it's always a fine one.", "You hear that? Somebody on the Line's always singing. Half the time it's all of us.",
+            "Whole town's glass and nobody's ever broken a pane. We're careful people. We dance careful.", "Step on the belt, it'll take you to the river. Step on the other, it'll bring you home.",
+            "They build cars up there in the roof. Nobody's ever seen one finished. That's not the point of them.", "If your foot's not tapping you might want to see a doctor.", "Sunday best, every day. You never know when the band's going to strike up.",
         };
         static readonly string[] PorchTalk =
         {

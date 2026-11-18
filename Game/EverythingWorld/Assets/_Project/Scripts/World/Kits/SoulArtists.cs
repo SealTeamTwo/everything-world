@@ -89,6 +89,9 @@ namespace EverythingWorld.World
             GlobeLamp(ctx, z.mk, z.At(reach * .5f, reach * .62f));
             if (z.area.glowLight == null) z.area.glowLight = ArtistBits.PointLight(root, z.c + up * 5f + front * 3f, Gold, HasStation(a) ? 24f : 16f, 2f);
             area.glowRenderers = new Renderer[0];
+            // their station on the Line: a lancet window standing at the back corner; then the whole place is turned to glass
+            Lancet(z.mk, root, z.At(-reach * .7f, -reach * .62f), (front + z.side * .5f).normalized, 2.8f, 7.6f, Mathf.Abs(a.name.GetHashCode()) % 97);
+            Glassify(z.mk);
             z.mk.Build("Area", root, false);
             z.solid.BuildCollider("Walls", root);
             z.pictures.Build("Covers", root, false);

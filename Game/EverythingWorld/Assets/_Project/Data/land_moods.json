@@ -314,10 +314,10 @@
   },
   {
    "land": "The Soul Lowlands",
-   "sunPitch": 21, "sunYaw": 100, "sunIntensity": 1.05, "sunColor": "#FFC873",
-   "skyLight": "#8FB4E0", "horizonLight": "#F6D6A6", "groundLight": "#6E5438",
-   "fogColor": "#A9C6DE", "fogStart": 300, "fogEnd": 2200, "stars": 0, "sunShadows": true, "dailyWeather": false, "bloom": 1.05,
-   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#BFCACE", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.0035, "sunGlow": 0.6, "grade": 0.7
+   "sunPitch": 5, "sunYaw": 100, "sunIntensity": 0.45, "sunColor": "#FFB08A",
+   "skyLight": "#3C4488", "horizonLight": "#B8688C", "groundLight": "#2A2848",
+   "fogColor": "#2E2C5C", "fogStart": 200, "fogEnd": 1800, "stars": 0.45, "sunShadows": false, "dailyWeather": false, "bloom": 1.2,
+   "weather": "", "weatherAmount": 0, "heightFog": 0.75, "heightFogColor": "#3A3566", "heightFogBase": 0, "heightFogFalloff": 0.045, "heightFogDensity": 0.002, "sunGlow": 0.5, "grade": 0.7
   },
   {
    "land": "The Nu Metal Quarry",

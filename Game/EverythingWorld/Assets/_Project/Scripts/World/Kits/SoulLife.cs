@@ -32,7 +32,7 @@ namespace EverythingWorld.World
             clouds = gameObject.AddComponent<CloudLayer>();
             clouds.center = center; clouds.count = 34; clouds.span = 2600f; clouds.key = "soul";
             clouds.minHeight = 150f; clouds.maxHeight = 230f; clouds.size = 2.8f; clouds.speed = 2f; clouds.cover = .3f;
-            clouds.color = new Color(1f, .86f, .7f);
+            clouds.color = new Color(.5f, .4f, .6f);
             Color E(Material m) => m != null ? m.GetColor("_EmissionColor") : Color.black;
             lampBase = E(lamps); windowBase = E(windows); bulbBase = bulbs != null && bulbs.Length > 0 ? E(bulbs[0]) : Color.black; flickerBase = E(flicker);
             motes = Particles("Gold motes", 400, new Color(1f, .88f, .55f, .7f), .03f, .07f, true);
@@ -109,7 +109,7 @@ namespace EverythingWorld.World
             if (windows != null) windows.SetColor("_EmissionColor", windowBase * (1f + energy * .25f + moon * 1f + happy * .8f + .04f * Mathf.Sin(t * 1.7f)));
 
             // the sky: honey gold; violet for Superstition, rose for the dock, night for Stand By Me, blazing for Oh Happy Day
-            var tint = new Color(1f, .86f, .6f); var amount = .08f;
+            var tint = new Color(1f, .8f, .62f); var amount = .04f;
             if (super > 0f) { tint = Color.Lerp(tint, new Color(.5f, .3f, .75f), super); amount = Mathf.Lerp(amount, .4f, super); }
             if (dock > 0f) { tint = Color.Lerp(tint, new Color(.95f, .6f, .62f), dock); amount = Mathf.Lerp(amount, .35f, dock); }
             if (moon > 0f) { tint = Color.Lerp(tint, new Color(.07f, .09f, .2f), moon); amount = Mathf.Lerp(amount, .78f, moon); }

@@ -275,21 +275,21 @@ namespace EverythingWorld.World
 
         /// Turns every face of the chosen materials into stained glass (the Soul Lowlands): each face is cut into
         /// irregular three-cornered panes no longer than 'size' on a side, and each pane is given one of 'panes' by
-        /// 'pick' (its middle and the way it faces; by default at random from where it is). The pane materials draw
+        /// 'pick' (its middle, the way it faces, and the colour the face was; by default at random). The pane materials draw
         /// the lead themselves: every pane's corners are given the texture corners (0,0), (1,0), (0,1), and
         /// LeadTexture is dark along those three edges. Bevel skin stays as it was, a dark seam along every box edge.
-        public int StainedGlass(Material[] panes, float size, System.Predicate<Material> which, System.Func<Vector3, Vector3, int> pick = null)
+        public int StainedGlass(Material[] panes, float size, System.Predicate<Material> which, System.Func<Vector3, Vector3, Color, int> pick = null)
         {
             var made = 0; var keys = new List<Material>(tris.Keys); var lists = new List<int>[panes.Length];
             for (var i = 0; i < panes.Length; i++) if (!tris.TryGetValue(panes[i], out lists[i])) tris[panes[i]] = lists[i] = new List<int>();
             static float Hash(Vector3 p) { var h = Mathf.Sin(p.x * 12.9898f + p.y * 78.233f + p.z * 37.719f) * 43758.5453f; return h - Mathf.Floor(h); }
-            void Cut(Vector3 a, Vector3 b, Vector3 c, int depth)
+            void Cut(Vector3 a, Vector3 b, Vector3 c, int depth, Color was)
             {
                 float ab = (b - a).sqrMagnitude, bc = (c - b).sqrMagnitude, ca = (a - c).sqrMagnitude; var longest = Mathf.Max(ab, Mathf.Max(bc, ca));
                 if (longest <= size * size || depth > 12)
                 {
                     var mid = (a + b + c) / 3f; var n = Vector3.Cross(b - a, c - a).normalized;
-                    var k = pick != null ? pick(mid, n) : (int)(Hash(mid) * panes.Length); k = Mathf.Clamp(k, 0, panes.Length - 1); var l = lists[k];
+                    var k = pick != null ? pick(mid, n, was) : (int)(Hash(mid) * panes.Length); k = Mathf.Clamp(k, 0, panes.Length - 1); var l = lists[k];
                     l.Add(verts.Count); verts.Add(a); uvs.Add(new Vector2(0, 0)); l.Add(verts.Count); verts.Add(b); uvs.Add(new Vector2(1, 0)); l.Add(verts.Count); verts.Add(c); uvs.Add(new Vector2(0, 1));
                     if (cols != null) { cols.Add(Color.white); cols.Add(Color.white); cols.Add(Color.white); }
                     made++; return;
@@ -297,16 +297,16 @@ namespace EverythingWorld.World
                 // split the longest side a little off its middle (the same place whichever face is asked), keeping the winding
                 if (bc >= ab && bc >= ca) (a, b, c) = (b, c, a); else if (ca >= ab && ca >= bc) (a, b, c) = (c, a, b);
                 var m = Vector3.Lerp(a, b, .38f + .24f * Hash(a + b));
-                Cut(a, m, c, depth + 1); Cut(m, b, c, depth + 1);
+                Cut(a, m, c, depth + 1, was); Cut(m, b, c, depth + 1, was);
             }
             foreach (var mat in keys)
             {
                 if (System.Array.IndexOf(panes, mat) >= 0 || !which(mat)) continue;
-                var l = tris[mat]; var old = l.ToArray(); l.Clear();
+                var l = tris[mat]; var old = l.ToArray(); l.Clear(); var tint = mat.HasProperty("_BaseColor") ? mat.GetColor("_BaseColor").linear : Color.white;
                 for (var i = 0; i < old.Length; i += 3)
                 {
                     if (skin != null && skin.Contains(old[i])) { l.Add(old[i]); l.Add(old[i + 1]); l.Add(old[i + 2]); continue; }
-                    Cut(verts[old[i]], verts[old[i + 1]], verts[old[i + 2]], 0);
+                    Cut(verts[old[i]], verts[old[i + 1]], verts[old[i + 2]], 0, cols != null ? cols[old[i]] * tint : tint);
                 }
             }
             lastSet = false;
@@ -324,7 +324,7 @@ namespace EverythingWorld.World
                 for (var y = 0; y < S; y++) for (var x = 0; x < S; x++)
                 {
                     float u = (x + .5f) / S, v = (y + .5f) / S; var d = Mathf.Min(u, Mathf.Min(v, 1f - u - v));
-                    var g = d <= 0f ? 0f : Mathf.SmoothStep(.02f, .075f, d) * (.72f + .28f * Mathf.Clamp01(d / .28f));
+                    var g = d <= 0f ? 0f : Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.014f, .05f, d)) * (.72f + .28f * Mathf.Clamp01(d / .28f));   // (Unity's SmoothStep blends between its first two numbers: it is not the shader one)
                     leadTex.SetPixel(x, y, new Color(g, g, g, 1f));
                 }
                 leadTex.Apply(true); return leadTex;

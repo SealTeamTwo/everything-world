@@ -4,7 +4,10 @@ using static EverythingWorld.World.PlaceTools;
 
 namespace EverythingWorld.World
 {
-    /// The Soul Lowlands (WORLD_GUIDE.md): a wooden river town at golden hour, warm and joyful. You arrive in the
+    /// The Soul Lowlands (WORLD_GUIDE.md): a factory built like a cathedral, all of stained glass, at dusk
+    /// (SoulGlass.cs: the whole town below is turned to glowing panes, conveyor belts run down its main street
+    /// under a nave of glass arches, presses come down on the beat, chimneys throw light). Under the glass it is
+    /// still the river town it was, warm and joyful. You arrive in the
     /// town square: The Royal, a theatre with a lit marquee of chasing bulbs, stands on one side with a white chapel
     /// beside it, doors open, the choir inside. Main Street runs from the square down toward the river between
     /// pastel shopfronts under strings of bulbs (a record shop and a diner to walk into, a barbershop, a radio
@@ -40,6 +43,7 @@ namespace EverythingWorld.World
             lampM = new Material(WorldMaterials.Glow(Gold, 1.5f)) { name = "Soul lamps" };
             windowM = new Material(WorldMaterials.Glow(new Color(1f, .82f, .5f), 1.1f)) { name = "Soul windows" };
             for (var i = 0; i < 3; i++) bulbM[i] = new Material(WorldMaterials.Glow(new Color(1f, .86f, .55f), 1.6f)) { name = "Soul bulbs " + i };
+            MakeGlass();
         }
 
         Material GlowM(Color c, float s = 2f) => WorldMaterials.Glow(c, s * .65f);
@@ -169,6 +173,8 @@ namespace EverythingWorld.World
             RiverRoad(ctx, mk, solid);
             Paths(ctx, mk, solid);
             Wilds(ctx, mk, solid);
+            Works(ctx, mk, solid);
+            Debug.Log($"The Soul Lowlands: {Glassify(mk)} panes of glass in the town");
             mk.Build("The Soul Lowlands", ctx.Root, false);
             solid.BuildCollider("The Soul Lowlands walls", ctx.Root);
         }

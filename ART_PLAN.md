@@ -512,11 +512,11 @@ Soul, funk, disco, world music and jazz.
 
 *soul, motown, classic soul, gospel, funk* · 31 songs · energy 0.56, acoustic 0.34, mood 0.65 · top artists: Stevie Wonder, Kirk Franklin, Marvin Gaye, Otis Redding, Ray Charles
 
-- **Terrain:** Warm river country with slow bends and wooden towns.
-- **Colours:** `#7B4A2D warm brown`, `#E0A43B gold`, `#4F7FA3 river blue`, `#8E2B3A velvet red`
-- **Landmark:** A riverside theatre with a lit-up marquee, next to a white chapel.
-- **Props:** Jukeboxes, porch swings, vintage microphones, riverboats, choir risers.
-- **Light and mood:** Warm, humid sunset.
+- **Terrain:** Warm river country with slow bends; its river town is an assembly plant built like a cathedral, all of stained glass.
+- **Colours:** `#FFEDBD pale glass`, `#FFCC66 gold glass`, `#2652FF cobalt glass`, `#0F144D lead and indigo`
+- **Landmark:** A rose window of stained glass fifteen metres across over the head of the Line, a nave of glass arches running from it to the river.
+- **Props:** Conveyor belts of glass tiles, presses, glass car bodies on a ridge rail, chimneys throwing beams of light; jukeboxes, porch swings, riverboats, choir risers.
+- **Light and mood:** Dusk: pale glass against deep glass, lit from inside.
 
 ### 30. The Funk Tropics
 
