@@ -90,6 +90,29 @@ What he asked for in a theme: a **contrasting** one. More of the land's own lege
 
 **All ten are now planned (2026-11-18). Nothing is built.** The owner sees the work going north in this order and finishing at the Roots Bay, then east for the big land reworks. Lands he loves as they are and that only get a twist added: the Funk Tropics, the Neo Soul Quarter, the Roots Bay (the town kept, the tree added), Discotopia (what is there kept, Egypt added).
 
+## The western lands: what was built overnight, 2026-11-18 (none of it played yet)
+
+Built from the plan above while the owner slept, each checked in photographs (the photo tour), none of it in Play. What photographs can't show is listed per land: that is the short list for when he is playing anyway.
+
+**1. The Delta Crossroads (tarot): built.** Permanent night in deep blue, every hard edge drawn in gold line (`MeshKit.InkEdges`); the four roads marked as the four suits; each artist seen through a tall gold card frame; a card reader and a great turning card at the crossroads; eight cards the night answers to (Moon, Tower, Star, Sun, Death, Hermit, Wheel, Devil); the long way round joining the road ends through four places (the Tower, the Hanged Man, the Fool, the World); three dressings of the crossroads' corners that swap while you are away; the crooked lamp; the deal and its mark (undone by the graveyard bell).
+- Chosen without him, easy to change: which artist is which card (`CardOf` in DeltaTarot.cs), and which card each artist's songs turn (`TurnedFor`).
+- Not seen in photos: whether the loop feels unobvious on foot; the corners changing; the deal (hear the offer, shake, the mark on your orb as a friend sees it, the bell); falling stars and mist in motion.
+
+**2. The Funk Tropics (the beam): built.** The Mothership stays landed; her tender, a small glass saucer, flies a round over the jungle on the shared clock with a gold beam under her, and lifts you if you step into it (Space to be put down).
+- Not seen in photos: the whole ride (being caught, rising, the ride, being set down), since it needs a player. This is the one most worth trying first.
+
+**3. The Soul Lowlands (stained-glass works): built.** The whole town, trees and all, cut into glowing panes with lead between (`MeshKit.StainedGlass`); the Line (two conveyor belts down Main Street and River Road that carry you); a nave of glass arches, a rose window, presses on the beat, glass car bodies on the ridge, four chimneys with beams; a lancet window at every artist's place.
+- Not seen in photos: riding the belts; the presses and car bodies moving; whether the glass glares when played at night (the pale panes were turned down once already).
+
+**4. Discotopia (Egypt): built.** Lotus columns and sarcophagi at the Floor; a processional way to a mirror-tiled pyramid with a sun-disc mirror ball; obelisks of light, dancers' walls, a sphinx in sunglasses, a river of glitter; the tomb inside with the four-mirror puzzle.
+- The pyramid stands where there was room (about 105 m from the Floor), chosen by the code, not by hand.
+- Not seen in photos: the puzzle being solved (turning mirrors, the beam reaching the ball, the pyramid waking).
+
+**5. The Neo Soul Quarter (the sleeper): built.** Kept as it is. STAY A WHILE in lights at the Courtyard; the Shell Walk to plates of shell that breathe and the sleeper's head on the shore; a gardener; staying still brings a ring of light motes, fireflies and flowers.
+- Not seen in photos: the eye opening (needs about 35 seconds of stillness); the plates moving underfoot; the one-line hint on screen.
+
+**Still to build, in his order: 6 Boom Bap Harbour (monastery mountain), 7 Velvet Rooftops (floating city and the hole), 8 Lo-Fi Hills (rest stop for spirits), 9 Hip-Hop Boroughs (the moon), 10 Roots Bay (tree of life).** Six, seven and eight are complete rebuilds of lands he has seen; nine and ten are additions to lands that stay.
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
