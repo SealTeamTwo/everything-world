@@ -54,6 +54,11 @@ What he asked for in a theme: a **contrasting** one. More of the land's own lege
 - The owner's condition: the rule has to be clear to the player.
 - Not chosen: tending the plants with a watering can; carrying a flame to light the candles.
 
+**6. Boom Bap Harbour: agreed, a mountain monastery built of brick housing blocks ("as long as it still fits boom bap").**
+- The blocks are stacked up a mountainside like a temple complex: fire escapes are the temple stairs, rooftops are training yards, water towers are pagodas, old masters sit on stoops, and the harbour below is full of junks with patched sails.
+- It must still be boom bap: brick, graffiti, stoops, the block, the summer heat. The monastery is the shape it takes, not a replacement.
+- Not chosen: a comic book with sound-effect words as buildings; a harbour whose containers hold pieces of other lands (sampling).
+
 ## The owner's board, sorted (2026-11-18)
 
 The owner keeps a private board of thoughts as they come (not in the repo); this is its first sorting. Nothing here is started. He said he is "not thinking so negatively", these are just what was in his head.
